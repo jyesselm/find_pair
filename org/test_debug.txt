@@ -1,0 +1,2469 @@
+
+handling file <../legacy_archive/fixtures/pdb/1EHZ.pdb>
+[i] uncommon residue 2MG   10  on chain A [#10] assigned to: g
+[i] uncommon residue H2U   16  on chain A [#16] assigned to: u
+[i] uncommon residue H2U   17  on chain A [#17] assigned to: u
+[i] uncommon residue M2G   26  on chain A [#26] assigned to: g
+[i] uncommon residue OMC   32  on chain A [#32] assigned to: c
+[i] uncommon residue OMG   34  on chain A [#34] assigned to: g
+[i] uncommon residue YYG   37  on chain A [#37] assigned to: g
+[i] uncommon residue PSU   39  on chain A [#39] assigned to: P
+[i] uncommon residue 5MC   40  on chain A [#40] assigned to: c
+[i] uncommon residue 7MG   46  on chain A [#46] assigned to: g
+[i] uncommon residue 5MC   49  on chain A [#49] assigned to: c
+[i] uncommon residue 5MU   54  on chain A [#54] assigned to: t
+[i] uncommon residue PSU   55  on chain A [#55] assigned to: P
+[i] uncommon residue 1MA   58  on chain A [#58] assigned to: a
+[DEBUG check_pair] i=1 j=2 dir_z=0.995622
+[DEBUG] orien[1][7-9]=0.798801 0.487792 -0.352102
+[DEBUG] orien[2][7-9]=0.748575 0.505531 -0.429039
+
+[DEBUG calculate_more_bppars] i=1 j=72 dir_z=-0.979314
+[DEBUG] orien[1][7-9]=0.798801 0.487792 -0.352102
+[DEBUG] orien[72][7-9]=-0.796713 -0.344565 0.496511
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.258885 (from orien[1][1])
+[DEBUG]     r2[1][1]=-0.402278 (from orien[72][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.249594 (from orien[1][2])
+[DEBUG]     r2[2][1]=-0.310757 (from orien[72][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.933103 (from orien[1][3])
+[DEBUG]     r2[3][1]=-0.861163 (from orien[72][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.543043 (from orien[1][4])
+[DEBUG]     r2[1][2]=-0.451021 (from orien[72][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.836517 (from orien[1][5])
+[DEBUG]     r2[2][2]=0.885836 (from orien[72][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.073093 (from orien[1][6])
+[DEBUG]     r2[3][2]=-0.108973 (from orien[72][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.798801 (from orien[1][7])
+[DEBUG]     r2[1][3]=0.796713 (from orien[72][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.487792 (from orien[1][8])
+[DEBUG]     r2[2][3]=0.344565 (from orien[72][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.352102 (from orien[1][9])
+[DEBUG]     r2[3][3]=-0.496511 (from orien[72][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.258885, -0.543043, 0.798801]
+[DEBUG]   [-0.249594, 0.836517, 0.487792]
+[DEBUG]   [-0.933103, -0.073093, -0.352102]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.402278, -0.451021, 0.796713]
+[DEBUG]   [-0.310757, 0.885836, 0.344565]
+[DEBUG]   [-0.861163, -0.108973, -0.496511]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.553283 Slide=-0.279921 Rise=-0.429286 Tilt=-6.298044 Roll=-9.829653 Twist=-0.697623
+
+[DEBUG calculate_more_bppars] i=72 j=1 dir_z=-0.979314
+[DEBUG] orien[72][7-9]=-0.796713 -0.344565 0.496511
+[DEBUG] orien[1][7-9]=0.798801 0.487792 -0.352102
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.402278 (from orien[72][1])
+[DEBUG]     r2[1][1]=-0.258885 (from orien[1][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.310757 (from orien[72][2])
+[DEBUG]     r2[2][1]=-0.249594 (from orien[1][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.861163 (from orien[72][3])
+[DEBUG]     r2[3][1]=-0.933103 (from orien[1][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.451021 (from orien[72][4])
+[DEBUG]     r2[1][2]=0.543043 (from orien[1][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.885836 (from orien[72][5])
+[DEBUG]     r2[2][2]=-0.836517 (from orien[1][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.108973 (from orien[72][6])
+[DEBUG]     r2[3][2]=0.073093 (from orien[1][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.796713 (from orien[72][7])
+[DEBUG]     r2[1][3]=-0.798801 (from orien[1][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.344565 (from orien[72][8])
+[DEBUG]     r2[2][3]=-0.487792 (from orien[1][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.496511 (from orien[72][9])
+[DEBUG]     r2[3][3]=0.352102 (from orien[1][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.402278, 0.451021, -0.796713]
+[DEBUG]   [-0.310757, -0.885836, -0.344565]
+[DEBUG]   [-0.861163, 0.108973, 0.496511]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.258885, 0.543043, -0.798801]
+[DEBUG]   [-0.249594, -0.836517, -0.487792]
+[DEBUG]   [-0.933103, 0.073093, 0.352102]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.553283 Slide=-0.279921 Rise=-0.429286 Tilt=6.298044 Roll=-9.829653 Twist=-0.697623
+
+[DEBUG calculate_more_bppars] i=2 j=71 dir_z=-0.974291
+[DEBUG] orien[2][7-9]=0.748575 0.505531 -0.429039
+[DEBUG] orien[71][7-9]=-0.660840 -0.421933 0.620696
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.594100 (from orien[2][1])
+[DEBUG]     r2[1][1]=-0.732135 (from orien[71][1], sign=keep)
+[DEBUG]     r1[2][1]=0.224068 (from orien[2][2])
+[DEBUG]     r2[2][1]=0.180443 (from orien[71][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.772553 (from orien[2][3])
+[DEBUG]     r2[3][1]=-0.656825 (from orien[71][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.294415 (from orien[2][4])
+[DEBUG]     r2[1][2]=-0.165136 (from orien[71][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.833206 (from orien[2][5])
+[DEBUG]     r2[2][2]=0.888489 (from orien[71][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.468067 (from orien[2][6])
+[DEBUG]     r2[3][2]=0.428156 (from orien[71][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.748575 (from orien[2][7])
+[DEBUG]     r2[1][3]=0.660840 (from orien[71][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.505531 (from orien[2][8])
+[DEBUG]     r2[2][3]=0.421933 (from orien[71][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.429039 (from orien[2][9])
+[DEBUG]     r2[3][3]=-0.620696 (from orien[71][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.594100, -0.294415, 0.748575]
+[DEBUG]   [0.224068, 0.833206, 0.505531]
+[DEBUG]   [-0.772553, 0.468067, -0.429039]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.732135, -0.165136, 0.660840]
+[DEBUG]   [0.180443, 0.888489, 0.421933]
+[DEBUG]   [-0.656825, 0.428156, -0.620696]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.127900 Slide=-0.077692 Rise=0.026511 Tilt=-7.959471 Roll=-10.303987 Twist=-2.672152
+
+[DEBUG calculate_more_bppars] i=71 j=2 dir_z=-0.974291
+[DEBUG] orien[71][7-9]=-0.660840 -0.421933 0.620696
+[DEBUG] orien[2][7-9]=0.748575 0.505531 -0.429039
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.732135 (from orien[71][1])
+[DEBUG]     r2[1][1]=-0.594100 (from orien[2][1], sign=keep)
+[DEBUG]     r1[2][1]=0.180443 (from orien[71][2])
+[DEBUG]     r2[2][1]=0.224068 (from orien[2][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.656825 (from orien[71][3])
+[DEBUG]     r2[3][1]=-0.772553 (from orien[2][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.165136 (from orien[71][4])
+[DEBUG]     r2[1][2]=0.294415 (from orien[2][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.888489 (from orien[71][5])
+[DEBUG]     r2[2][2]=-0.833206 (from orien[2][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.428156 (from orien[71][6])
+[DEBUG]     r2[3][2]=-0.468067 (from orien[2][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.660840 (from orien[71][7])
+[DEBUG]     r2[1][3]=-0.748575 (from orien[2][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.421933 (from orien[71][8])
+[DEBUG]     r2[2][3]=-0.505531 (from orien[2][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.620696 (from orien[71][9])
+[DEBUG]     r2[3][3]=0.429039 (from orien[2][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.732135, 0.165136, -0.660840]
+[DEBUG]   [0.180443, -0.888489, -0.421933]
+[DEBUG]   [-0.656825, -0.428156, 0.620696]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.594100, 0.294415, -0.748575]
+[DEBUG]   [0.224068, -0.833206, -0.505531]
+[DEBUG]   [-0.772553, -0.468067, 0.429039]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.127900 Slide=-0.077692 Rise=0.026511 Tilt=7.959471 Roll=-10.303987 Twist=-2.672152
+
+[DEBUG calculate_more_bppars] i=3 j=70 dir_z=-0.975059
+[DEBUG] orien[3][7-9]=0.674850 0.484031 -0.557038
+[DEBUG] orien[70][7-9]=-0.496776 -0.539257 0.680011
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.721780 (from orien[3][1])
+[DEBUG]     r2[1][1]=-0.844729 (from orien[70][1], sign=keep)
+[DEBUG]     r1[2][1]=0.590114 (from orien[3][2])
+[DEBUG]     r2[2][1]=0.480204 (from orien[70][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.361662 (from orien[3][3])
+[DEBUG]     r2[3][1]=-0.236301 (from orien[70][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.153660 (from orien[3][4])
+[DEBUG]     r2[1][2]=0.199117 (from orien[70][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.646126 (from orien[3][5])
+[DEBUG]     r2[2][2]=0.691813 (from orien[70][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.747603 (from orien[3][6])
+[DEBUG]     r2[3][2]=0.694080 (from orien[70][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.674850 (from orien[3][7])
+[DEBUG]     r2[1][3]=0.496776 (from orien[70][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.484031 (from orien[3][8])
+[DEBUG]     r2[2][3]=0.539257 (from orien[70][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.557038 (from orien[3][9])
+[DEBUG]     r2[3][3]=-0.680011 (from orien[70][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.721780, 0.153660, 0.674850]
+[DEBUG]   [0.590114, 0.646126, 0.484031]
+[DEBUG]   [-0.361662, 0.747603, -0.557038]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.844729, 0.199117, 0.496776]
+[DEBUG]   [0.480204, 0.691813, 0.539257]
+[DEBUG]   [-0.236301, 0.694080, -0.680011]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.085166 Slide=-0.113081 Rise=0.081894 Tilt=-4.801865 Roll=-11.890483 Twist=0.281283
+
+[DEBUG calculate_more_bppars] i=70 j=3 dir_z=-0.975059
+[DEBUG] orien[70][7-9]=-0.496776 -0.539257 0.680011
+[DEBUG] orien[3][7-9]=0.674850 0.484031 -0.557038
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.844729 (from orien[70][1])
+[DEBUG]     r2[1][1]=-0.721780 (from orien[3][1], sign=keep)
+[DEBUG]     r1[2][1]=0.480204 (from orien[70][2])
+[DEBUG]     r2[2][1]=0.590114 (from orien[3][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.236301 (from orien[70][3])
+[DEBUG]     r2[3][1]=-0.361662 (from orien[3][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.199117 (from orien[70][4])
+[DEBUG]     r2[1][2]=-0.153660 (from orien[3][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.691813 (from orien[70][5])
+[DEBUG]     r2[2][2]=-0.646126 (from orien[3][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.694080 (from orien[70][6])
+[DEBUG]     r2[3][2]=-0.747603 (from orien[3][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.496776 (from orien[70][7])
+[DEBUG]     r2[1][3]=-0.674850 (from orien[3][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.539257 (from orien[70][8])
+[DEBUG]     r2[2][3]=-0.484031 (from orien[3][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.680011 (from orien[70][9])
+[DEBUG]     r2[3][3]=0.557038 (from orien[3][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.844729, -0.199117, -0.496776]
+[DEBUG]   [0.480204, -0.691813, -0.539257]
+[DEBUG]   [-0.236301, -0.694080, 0.680011]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.721780, -0.153660, -0.674850]
+[DEBUG]   [0.590114, -0.646126, -0.484031]
+[DEBUG]   [-0.361662, -0.747603, 0.557038]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.085166 Slide=-0.113081 Rise=0.081894 Tilt=4.801865 Roll=-11.890483 Twist=0.281283
+
+[DEBUG calculate_more_bppars] i=4 j=69 dir_z=-0.967261
+[DEBUG] orien[4][7-9]=0.537539 0.539415 -0.648138
+[DEBUG] orien[69][7-9]=-0.496449 -0.725221 0.477067
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.697662 (from orien[4][1])
+[DEBUG]     r2[1][1]=-0.773862 (from orien[69][1], sign=keep)
+[DEBUG]     r1[2][1]=0.716214 (from orien[4][2])
+[DEBUG]     r2[2][1]=0.618738 (from orien[69][2], sign=keep)
+[DEBUG]     r1[3][1]=0.017459 (from orien[4][3])
+[DEBUG]     r2[3][1]=0.135283 (from orien[69][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.473623 (from orien[4][4])
+[DEBUG]     r2[1][2]=0.393290 (from orien[69][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.442797 (from orien[4][5])
+[DEBUG]     r2[2][2]=0.302023 (from orien[69][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.761322 (from orien[4][6])
+[DEBUG]     r2[3][2]=0.868393 (from orien[69][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.537539 (from orien[4][7])
+[DEBUG]     r2[1][3]=0.496449 (from orien[69][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.539415 (from orien[4][8])
+[DEBUG]     r2[2][3]=0.725221 (from orien[69][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.648138 (from orien[4][9])
+[DEBUG]     r2[3][3]=-0.477067 (from orien[69][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.697662, 0.473623, 0.537539]
+[DEBUG]   [0.716214, 0.442797, 0.539415]
+[DEBUG]   [0.017459, 0.761322, -0.648138]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.773862, 0.393290, 0.496449]
+[DEBUG]   [0.618738, 0.302023, 0.725221]
+[DEBUG]   [0.135283, 0.868393, -0.477067]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-2.556165 Slide=-0.512842 Rise=0.458405 Tilt=11.053021 Roll=-9.693560 Twist=-1.554271
+
+[DEBUG calculate_more_bppars] i=69 j=4 dir_z=-0.967261
+[DEBUG] orien[69][7-9]=-0.496449 -0.725221 0.477067
+[DEBUG] orien[4][7-9]=0.537539 0.539415 -0.648138
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.773862 (from orien[69][1])
+[DEBUG]     r2[1][1]=-0.697662 (from orien[4][1], sign=keep)
+[DEBUG]     r1[2][1]=0.618738 (from orien[69][2])
+[DEBUG]     r2[2][1]=0.716214 (from orien[4][2], sign=keep)
+[DEBUG]     r1[3][1]=0.135283 (from orien[69][3])
+[DEBUG]     r2[3][1]=0.017459 (from orien[4][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.393290 (from orien[69][4])
+[DEBUG]     r2[1][2]=-0.473623 (from orien[4][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.302023 (from orien[69][5])
+[DEBUG]     r2[2][2]=-0.442797 (from orien[4][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.868393 (from orien[69][6])
+[DEBUG]     r2[3][2]=-0.761322 (from orien[4][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.496449 (from orien[69][7])
+[DEBUG]     r2[1][3]=-0.537539 (from orien[4][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.725221 (from orien[69][8])
+[DEBUG]     r2[2][3]=-0.539415 (from orien[4][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.477067 (from orien[69][9])
+[DEBUG]     r2[3][3]=0.648138 (from orien[4][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.773862, -0.393290, -0.496449]
+[DEBUG]   [0.618738, -0.302023, -0.725221]
+[DEBUG]   [0.135283, -0.868393, 0.477067]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.697662, -0.473623, -0.537539]
+[DEBUG]   [0.716214, -0.442797, -0.539415]
+[DEBUG]   [0.017459, -0.761322, 0.648138]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=2.556165 Slide=-0.512842 Rise=0.458405 Tilt=-11.053021 Roll=-9.693560 Twist=-1.554271
+
+[DEBUG calculate_more_bppars] i=5 j=68 dir_z=-0.952520
+[DEBUG] orien[5][7-9]=0.455964 0.616600 -0.641796
+[DEBUG] orien[68][7-9]=-0.424476 -0.810235 0.404152
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.160511 (from orien[5][1])
+[DEBUG]     r2[1][1]=-0.377976 (from orien[68][1], sign=keep)
+[DEBUG]     r1[2][1]=0.766268 (from orien[5][2])
+[DEBUG]     r2[2][1]=0.564174 (from orien[68][2], sign=keep)
+[DEBUG]     r1[3][1]=0.622150 (from orien[5][3])
+[DEBUG]     r2[3][1]=0.734059 (from orien[68][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.875404 (from orien[5][4])
+[DEBUG]     r2[1][2]=0.822772 (from orien[68][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.180662 (from orien[5][5])
+[DEBUG]     r2[2][2]=-0.158831 (from orien[68][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.448362 (from orien[5][6])
+[DEBUG]     r2[3][2]=0.545728 (from orien[68][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.455964 (from orien[5][7])
+[DEBUG]     r2[1][3]=0.424476 (from orien[68][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.616600 (from orien[5][8])
+[DEBUG]     r2[2][3]=0.810235 (from orien[68][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.641796 (from orien[5][9])
+[DEBUG]     r2[3][3]=-0.404152 (from orien[68][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.160511, 0.875404, 0.455964]
+[DEBUG]   [0.766268, -0.180662, 0.616600]
+[DEBUG]   [0.622150, 0.448362, -0.641796]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.377976, 0.822772, 0.424476]
+[DEBUG]   [0.564174, -0.158831, 0.810235]
+[DEBUG]   [0.734059, 0.545728, -0.404152]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.102642 Slide=-0.018580 Rise=0.065455 Tilt=3.410744 Roll=-17.395473 Twist=5.567677
+
+[DEBUG calculate_more_bppars] i=68 j=5 dir_z=-0.952520
+[DEBUG] orien[68][7-9]=-0.424476 -0.810235 0.404152
+[DEBUG] orien[5][7-9]=0.455964 0.616600 -0.641796
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.377976 (from orien[68][1])
+[DEBUG]     r2[1][1]=-0.160511 (from orien[5][1], sign=keep)
+[DEBUG]     r1[2][1]=0.564174 (from orien[68][2])
+[DEBUG]     r2[2][1]=0.766268 (from orien[5][2], sign=keep)
+[DEBUG]     r1[3][1]=0.734059 (from orien[68][3])
+[DEBUG]     r2[3][1]=0.622150 (from orien[5][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.822772 (from orien[68][4])
+[DEBUG]     r2[1][2]=-0.875404 (from orien[5][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.158831 (from orien[68][5])
+[DEBUG]     r2[2][2]=0.180662 (from orien[5][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.545728 (from orien[68][6])
+[DEBUG]     r2[3][2]=-0.448362 (from orien[5][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.424476 (from orien[68][7])
+[DEBUG]     r2[1][3]=-0.455964 (from orien[5][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.810235 (from orien[68][8])
+[DEBUG]     r2[2][3]=-0.616600 (from orien[5][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.404152 (from orien[68][9])
+[DEBUG]     r2[3][3]=0.641796 (from orien[5][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.377976, -0.822772, -0.424476]
+[DEBUG]   [0.564174, 0.158831, -0.810235]
+[DEBUG]   [0.734059, -0.545728, 0.404152]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.160511, -0.875404, -0.455964]
+[DEBUG]   [0.766268, 0.180662, -0.616600]
+[DEBUG]   [0.622150, -0.448362, 0.641796]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.102642 Slide=-0.018580 Rise=0.065455 Tilt=-3.410744 Roll=-17.395473 Twist=5.567677
+
+[DEBUG calculate_more_bppars] i=6 j=67 dir_z=-0.915518
+[DEBUG] orien[6][7-9]=0.363018 0.731217 -0.577529
+[DEBUG] orien[67][7-9]=-0.420029 -0.885054 0.200637
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.284910 (from orien[6][1])
+[DEBUG]     r2[1][1]=0.034097 (from orien[67][1], sign=keep)
+[DEBUG]     r1[2][1]=0.503019 (from orien[6][2])
+[DEBUG]     r2[2][1]=0.205538 (from orien[67][2], sign=keep)
+[DEBUG]     r1[3][1]=0.815965 (from orien[6][3])
+[DEBUG]     r2[3][1]=0.978055 (from orien[67][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.887155 (from orien[6][4])
+[DEBUG]     r2[1][2]=0.906870 (from orien[67][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.460753 (from orien[6][5])
+[DEBUG]     r2[2][2]=-0.417653 (from orien[67][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.025726 (from orien[6][6])
+[DEBUG]     r2[3][2]=0.056155 (from orien[67][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.363018 (from orien[6][7])
+[DEBUG]     r2[1][3]=0.420029 (from orien[67][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.731217 (from orien[6][8])
+[DEBUG]     r2[2][3]=0.885054 (from orien[67][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.577529 (from orien[6][9])
+[DEBUG]     r2[3][3]=-0.200637 (from orien[67][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.284910, 0.887155, 0.363018]
+[DEBUG]   [0.503019, -0.460753, 0.731217]
+[DEBUG]   [0.815965, -0.025726, -0.577529]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.034097, 0.906870, 0.420029]
+[DEBUG]   [0.205538, -0.417653, 0.885054]
+[DEBUG]   [0.978055, 0.056155, -0.200637]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.063078 Slide=-0.127060 Rise=-0.080005 Tilt=-0.631147 Roll=-23.712178 Twist=5.503871
+
+[DEBUG calculate_more_bppars] i=67 j=6 dir_z=-0.915518
+[DEBUG] orien[67][7-9]=-0.420029 -0.885054 0.200637
+[DEBUG] orien[6][7-9]=0.363018 0.731217 -0.577529
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.034097 (from orien[67][1])
+[DEBUG]     r2[1][1]=0.284910 (from orien[6][1], sign=keep)
+[DEBUG]     r1[2][1]=0.205538 (from orien[67][2])
+[DEBUG]     r2[2][1]=0.503019 (from orien[6][2], sign=keep)
+[DEBUG]     r1[3][1]=0.978055 (from orien[67][3])
+[DEBUG]     r2[3][1]=0.815965 (from orien[6][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.906870 (from orien[67][4])
+[DEBUG]     r2[1][2]=-0.887155 (from orien[6][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.417653 (from orien[67][5])
+[DEBUG]     r2[2][2]=0.460753 (from orien[6][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.056155 (from orien[67][6])
+[DEBUG]     r2[3][2]=0.025726 (from orien[6][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.420029 (from orien[67][7])
+[DEBUG]     r2[1][3]=-0.363018 (from orien[6][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.885054 (from orien[67][8])
+[DEBUG]     r2[2][3]=-0.731217 (from orien[6][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.200637 (from orien[67][9])
+[DEBUG]     r2[3][3]=0.577529 (from orien[6][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.034097, -0.906870, -0.420029]
+[DEBUG]   [0.205538, 0.417653, -0.885054]
+[DEBUG]   [0.978055, -0.056155, 0.200637]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.284910, -0.887155, -0.363018]
+[DEBUG]   [0.503019, 0.460753, -0.731217]
+[DEBUG]   [0.815965, 0.025726, 0.577529]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.063078 Slide=-0.127060 Rise=-0.080005 Tilt=0.631147 Roll=-23.712178 Twist=5.503871
+
+[DEBUG calculate_more_bppars] i=7 j=66 dir_z=-0.997593
+[DEBUG] orien[7][7-9]=0.493124 0.827296 -0.269091
+[DEBUG] orien[66][7-9]=-0.475088 -0.854981 0.208083
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.526456 (from orien[7][1])
+[DEBUG]     r2[1][1]=0.502632 (from orien[66][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.037531 (from orien[7][2])
+[DEBUG]     r2[2][1]=-0.069580 (from orien[66][2], sign=keep)
+[DEBUG]     r1[3][1]=0.849374 (from orien[7][3])
+[DEBUG]     r2[3][1]=0.861696 (from orien[66][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.692584 (from orien[7][4])
+[DEBUG]     r2[1][2]=0.722255 (from orien[66][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.560511 (from orien[7][5])
+[DEBUG]     r2[2][2]=-0.513971 (from orien[66][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.454042 (from orien[7][6])
+[DEBUG]     r2[3][2]=-0.462798 (from orien[66][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.493124 (from orien[7][7])
+[DEBUG]     r2[1][3]=0.475088 (from orien[66][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.827296 (from orien[7][8])
+[DEBUG]     r2[2][3]=0.854981 (from orien[66][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.269091 (from orien[7][9])
+[DEBUG]     r2[3][3]=-0.208083 (from orien[66][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.526456, 0.692584, 0.493124]
+[DEBUG]   [-0.037531, -0.560511, 0.827296]
+[DEBUG]   [0.849374, -0.454042, -0.269091]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.502632, 0.722255, 0.475088]
+[DEBUG]   [-0.069580, -0.513971, 0.854981]
+[DEBUG]   [0.861696, -0.462798, -0.208083]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.006228 Slide=-0.196550 Rise=0.017672 Tilt=-3.188219 Roll=-2.375727 Twist=0.303114
+
+[DEBUG calculate_more_bppars] i=66 j=7 dir_z=-0.997593
+[DEBUG] orien[66][7-9]=-0.475088 -0.854981 0.208083
+[DEBUG] orien[7][7-9]=0.493124 0.827296 -0.269091
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.502632 (from orien[66][1])
+[DEBUG]     r2[1][1]=0.526456 (from orien[7][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.069580 (from orien[66][2])
+[DEBUG]     r2[2][1]=-0.037531 (from orien[7][2], sign=keep)
+[DEBUG]     r1[3][1]=0.861696 (from orien[66][3])
+[DEBUG]     r2[3][1]=0.849374 (from orien[7][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.722255 (from orien[66][4])
+[DEBUG]     r2[1][2]=-0.692584 (from orien[7][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.513971 (from orien[66][5])
+[DEBUG]     r2[2][2]=0.560511 (from orien[7][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.462798 (from orien[66][6])
+[DEBUG]     r2[3][2]=0.454042 (from orien[7][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.475088 (from orien[66][7])
+[DEBUG]     r2[1][3]=-0.493124 (from orien[7][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.854981 (from orien[66][8])
+[DEBUG]     r2[2][3]=-0.827296 (from orien[7][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.208083 (from orien[66][9])
+[DEBUG]     r2[3][3]=0.269091 (from orien[7][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.502632, -0.722255, -0.475088]
+[DEBUG]   [-0.069580, 0.513971, -0.854981]
+[DEBUG]   [0.861696, 0.462798, 0.208083]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.526456, -0.692584, -0.493124]
+[DEBUG]   [-0.037531, 0.560511, -0.827296]
+[DEBUG]   [0.849374, 0.454042, 0.269091]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.006228 Slide=-0.196550 Rise=0.017672 Tilt=3.188219 Roll=-2.375727 Twist=0.303114
+
+[DEBUG calculate_more_bppars] i=8 j=14 dir_z=-0.974502
+[DEBUG] orien[8][7-9]=-0.497636 -0.298823 -0.814287
+[DEBUG] orien[14][7-9]=0.290709 0.316344 0.903003
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.209780 (from orien[8][1])
+[DEBUG]     r2[1][1]=-0.849286 (from orien[14][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.869449 (from orien[8][2])
+[DEBUG]     r2[2][1]=0.519986 (from orien[14][2], sign=keep)
+[DEBUG]     r1[3][1]=0.447270 (from orien[8][3])
+[DEBUG]     r2[3][1]=0.091252 (from orien[14][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.841636 (from orien[8][4])
+[DEBUG]     r2[1][2]=0.440682 (from orien[14][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.393398 (from orien[8][5])
+[DEBUG]     r2[2][2]=0.793436 (from orien[14][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.369983 (from orien[8][6])
+[DEBUG]     r2[3][2]=-0.419831 (from orien[14][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.497636 (from orien[8][7])
+[DEBUG]     r2[1][3]=-0.290709 (from orien[14][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.298823 (from orien[8][8])
+[DEBUG]     r2[2][3]=-0.316344 (from orien[14][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.814287 (from orien[8][9])
+[DEBUG]     r2[3][3]=-0.903003 (from orien[14][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.209780, -0.841636, -0.497636]
+[DEBUG]   [-0.869449, 0.393398, -0.298823]
+[DEBUG]   [0.447270, 0.369983, -0.814287]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.849286, 0.440682, -0.290709]
+[DEBUG]   [0.519986, 0.793436, -0.316344]
+[DEBUG]   [0.091252, -0.419831, -0.903003]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=4.136844 Slide=-1.909606 Rise=0.765729 Tilt=-4.615418 Roll=12.117177 Twist=-103.090730
+
+[DEBUG calculate_more_bppars] i=14 j=8 dir_z=-0.974502
+[DEBUG] orien[14][7-9]=0.290709 0.316344 0.903003
+[DEBUG] orien[8][7-9]=-0.497636 -0.298823 -0.814287
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.849286 (from orien[14][1])
+[DEBUG]     r2[1][1]=-0.209780 (from orien[8][1], sign=keep)
+[DEBUG]     r1[2][1]=0.519986 (from orien[14][2])
+[DEBUG]     r2[2][1]=-0.869449 (from orien[8][2], sign=keep)
+[DEBUG]     r1[3][1]=0.091252 (from orien[14][3])
+[DEBUG]     r2[3][1]=0.447270 (from orien[8][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.440682 (from orien[14][4])
+[DEBUG]     r2[1][2]=0.841636 (from orien[8][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.793436 (from orien[14][5])
+[DEBUG]     r2[2][2]=-0.393398 (from orien[8][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.419831 (from orien[14][6])
+[DEBUG]     r2[3][2]=-0.369983 (from orien[8][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.290709 (from orien[14][7])
+[DEBUG]     r2[1][3]=0.497636 (from orien[8][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.316344 (from orien[14][8])
+[DEBUG]     r2[2][3]=0.298823 (from orien[8][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.903003 (from orien[14][9])
+[DEBUG]     r2[3][3]=0.814287 (from orien[8][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.849286, -0.440682, 0.290709]
+[DEBUG]   [0.519986, -0.793436, 0.316344]
+[DEBUG]   [0.091252, 0.419831, 0.903003]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.209780, 0.841636, 0.497636]
+[DEBUG]   [-0.869449, -0.393398, 0.298823]
+[DEBUG]   [0.447270, -0.369983, 0.814287]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-4.136844 Slide=-1.909606 Rise=0.765729 Tilt=4.615418 Roll=12.117177 Twist=-103.090730
+
+[DEBUG calculate_more_bppars] i=9 j=23 dir_z=0.982139
+[DEBUG] orien[9][7-9]=-0.184691 -0.493403 -0.849966
+[DEBUG] orien[23][7-9]=-0.311813 -0.356928 -0.880554
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.597344 (from orien[9][1])
+[DEBUG]     r2[1][1]=-0.521591 (from orien[23][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.743121 (from orien[9][2])
+[DEBUG]     r2[2][1]=0.838932 (from orien[23][2], sign=keep)
+[DEBUG]     r1[3][1]=0.301582 (from orien[9][3])
+[DEBUG]     r2[3][1]=-0.155357 (from orien[23][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.780429 (from orien[9][4])
+[DEBUG]     r2[1][2]=0.794176 (from orien[23][4], sign=keep)
+[DEBUG]     r1[2][2]=-0.452023 (from orien[9][5])
+[DEBUG]     r2[2][2]=0.410846 (from orien[23][5], sign=keep)
+[DEBUG]     r1[3][2]=0.431979 (from orien[9][6])
+[DEBUG]     r2[3][2]=-0.447760 (from orien[23][6], sign=keep)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.184691 (from orien[9][7])
+[DEBUG]     r2[1][3]=-0.311813 (from orien[23][7], sign=keep)
+[DEBUG]     r1[2][3]=-0.493403 (from orien[9][8])
+[DEBUG]     r2[2][3]=-0.356928 (from orien[23][8], sign=keep)
+[DEBUG]     r1[3][3]=-0.849966 (from orien[9][9])
+[DEBUG]     r2[3][3]=-0.880554 (from orien[23][9], sign=keep)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.597344, -0.780429, -0.184691]
+[DEBUG]   [-0.743121, -0.452023, -0.493403]
+[DEBUG]   [0.301582, 0.431979, -0.849966]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.521591, 0.794176, -0.311813]
+[DEBUG]   [0.838932, 0.410846, -0.356928]
+[DEBUG]   [-0.155357, -0.447760, -0.880554]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=6.115631 Slide=-5.061124 Rise=-0.262700 Tilt=-10.726470 Roll=1.599695 Twist=177.880290
+
+[DEBUG calculate_more_bppars] i=23 j=9 dir_z=0.982139
+[DEBUG] orien[23][7-9]=-0.311813 -0.356928 -0.880554
+[DEBUG] orien[9][7-9]=-0.184691 -0.493403 -0.849966
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.521591 (from orien[23][1])
+[DEBUG]     r2[1][1]=0.597344 (from orien[9][1], sign=keep)
+[DEBUG]     r1[2][1]=0.838932 (from orien[23][2])
+[DEBUG]     r2[2][1]=-0.743121 (from orien[9][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.155357 (from orien[23][3])
+[DEBUG]     r2[3][1]=0.301582 (from orien[9][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.794176 (from orien[23][4])
+[DEBUG]     r2[1][2]=-0.780429 (from orien[9][4], sign=keep)
+[DEBUG]     r1[2][2]=0.410846 (from orien[23][5])
+[DEBUG]     r2[2][2]=-0.452023 (from orien[9][5], sign=keep)
+[DEBUG]     r1[3][2]=-0.447760 (from orien[23][6])
+[DEBUG]     r2[3][2]=0.431979 (from orien[9][6], sign=keep)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.311813 (from orien[23][7])
+[DEBUG]     r2[1][3]=-0.184691 (from orien[9][7], sign=keep)
+[DEBUG]     r1[2][3]=-0.356928 (from orien[23][8])
+[DEBUG]     r2[2][3]=-0.493403 (from orien[9][8], sign=keep)
+[DEBUG]     r1[3][3]=-0.880554 (from orien[23][9])
+[DEBUG]     r2[3][3]=-0.849966 (from orien[9][9], sign=keep)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.521591, 0.794176, -0.311813]
+[DEBUG]   [0.838932, 0.410846, -0.356928]
+[DEBUG]   [-0.155357, -0.447760, -0.880554]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.597344, -0.780429, -0.184691]
+[DEBUG]   [-0.743121, -0.452023, -0.493403]
+[DEBUG]   [0.301582, 0.431979, -0.849966]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-6.115631 Slide=5.061124 Rise=0.262700 Tilt=10.726470 Roll=-1.599695 Twist=-177.880290
+
+[DEBUG calculate_more_bppars] i=23 j=12 dir_z=-0.980212
+[DEBUG] orien[23][7-9]=-0.311813 -0.356928 -0.880554
+[DEBUG] orien[12][7-9]=0.190499 0.219004 0.956947
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.521591 (from orien[23][1])
+[DEBUG]     r2[1][1]=-0.416469 (from orien[12][1], sign=keep)
+[DEBUG]     r1[2][1]=0.838932 (from orien[23][2])
+[DEBUG]     r2[2][1]=0.900758 (from orien[12][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.155357 (from orien[23][3])
+[DEBUG]     r2[3][1]=-0.123239 (from orien[12][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.794176 (from orien[23][4])
+[DEBUG]     r2[1][2]=0.888968 (from orien[12][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.410846 (from orien[23][5])
+[DEBUG]     r2[2][2]=0.375062 (from orien[12][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.447760 (from orien[23][6])
+[DEBUG]     r2[3][2]=-0.262802 (from orien[12][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.311813 (from orien[23][7])
+[DEBUG]     r2[1][3]=-0.190499 (from orien[12][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.356928 (from orien[23][8])
+[DEBUG]     r2[2][3]=-0.219004 (from orien[12][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.880554 (from orien[23][9])
+[DEBUG]     r2[3][3]=-0.956947 (from orien[12][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.521591, 0.794176, -0.311813]
+[DEBUG]   [0.838932, 0.410846, -0.356928]
+[DEBUG]   [-0.155357, -0.447760, -0.880554]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.416469, 0.888968, -0.190499]
+[DEBUG]   [0.900758, 0.375062, -0.219004]
+[DEBUG]   [-0.123239, -0.262802, -0.956947]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.142852 Slide=-0.013429 Rise=0.191328 Tilt=10.593756 Roll=-4.257154 Twist=-5.875301
+
+[DEBUG calculate_more_bppars] i=10 j=25 dir_z=-0.962271
+[DEBUG] orien[10][7-9]=0.154232 0.013188 0.987947
+[DEBUG] orien[25][7-9]=-0.414077 -0.053809 -0.908650
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.690346 (from orien[10][1])
+[DEBUG]     r2[1][1]=0.618030 (from orien[25][1], sign=keep)
+[DEBUG]     r1[2][1]=0.713907 (from orien[10][2])
+[DEBUG]     r2[2][1]=0.716259 (from orien[25][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.117302 (from orien[10][3])
+[DEBUG]     r2[3][1]=-0.324056 (from orien[25][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.706849 (from orien[10][4])
+[DEBUG]     r2[1][2]=-0.668266 (from orien[25][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.700116 (from orien[10][5])
+[DEBUG]     r2[2][2]=0.695757 (from orien[25][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.101003 (from orien[10][6])
+[DEBUG]     r2[3][2]=0.263330 (from orien[25][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.154232 (from orien[10][7])
+[DEBUG]     r2[1][3]=0.414077 (from orien[25][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.013188 (from orien[10][8])
+[DEBUG]     r2[2][3]=0.053809 (from orien[25][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.987947 (from orien[10][9])
+[DEBUG]     r2[3][3]=0.908650 (from orien[25][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.690346, -0.706849, 0.154232]
+[DEBUG]   [0.713907, 0.700116, 0.013188]
+[DEBUG]   [-0.117302, 0.101003, 0.987947]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.618030, -0.668266, 0.414077]
+[DEBUG]   [0.716259, 0.695757, 0.053809]
+[DEBUG]   [-0.324056, 0.263330, 0.908650]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.166800 Slide=-0.114666 Rise=-0.278129 Tilt=-9.560386 Roll=-12.565224 Twist=-0.799990
+
+[DEBUG calculate_more_bppars] i=10 j=45 dir_z=0.881467
+[DEBUG] orien[10][7-9]=0.154232 0.013188 0.987947
+[DEBUG] orien[45][7-9]=0.020486 0.469381 0.882758
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.690346 (from orien[10][1])
+[DEBUG]     r2[1][1]=0.818521 (from orien[45][1], sign=keep)
+[DEBUG]     r1[2][1]=0.713907 (from orien[10][2])
+[DEBUG]     r2[2][1]=0.499140 (from orien[45][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.117302 (from orien[10][3])
+[DEBUG]     r2[3][1]=-0.284399 (from orien[45][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.706849 (from orien[10][4])
+[DEBUG]     r2[1][2]=-0.574112 (from orien[45][4], sign=keep)
+[DEBUG]     r1[2][2]=0.700116 (from orien[10][5])
+[DEBUG]     r2[2][2]=0.728382 (from orien[45][5], sign=keep)
+[DEBUG]     r1[3][2]=0.101003 (from orien[10][6])
+[DEBUG]     r2[3][2]=-0.373973 (from orien[45][6], sign=keep)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.154232 (from orien[10][7])
+[DEBUG]     r2[1][3]=0.020486 (from orien[45][7], sign=keep)
+[DEBUG]     r1[2][3]=0.013188 (from orien[10][8])
+[DEBUG]     r2[2][3]=0.469381 (from orien[45][8], sign=keep)
+[DEBUG]     r1[3][3]=0.987947 (from orien[10][9])
+[DEBUG]     r2[3][3]=0.882758 (from orien[45][9], sign=keep)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.690346, -0.706849, 0.154232]
+[DEBUG]   [0.713907, 0.700116, 0.013188]
+[DEBUG]   [-0.117302, 0.101003, 0.987947]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.818521, -0.574112, 0.020486]
+[DEBUG]   [0.499140, 0.728382, 0.469381]
+[DEBUG]   [-0.284399, -0.373973, 0.882758]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-7.210652 Slide=-0.965071 Rise=-0.918049 Tilt=25.577957 Roll=-11.827379 Twist=13.066579
+
+[DEBUG calculate_more_bppars] i=25 j=10 dir_z=-0.962271
+[DEBUG] orien[25][7-9]=-0.414077 -0.053809 -0.908650
+[DEBUG] orien[10][7-9]=0.154232 0.013188 0.987947
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.618030 (from orien[25][1])
+[DEBUG]     r2[1][1]=0.690346 (from orien[10][1], sign=keep)
+[DEBUG]     r1[2][1]=0.716259 (from orien[25][2])
+[DEBUG]     r2[2][1]=0.713907 (from orien[10][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.324056 (from orien[25][3])
+[DEBUG]     r2[3][1]=-0.117302 (from orien[10][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.668266 (from orien[25][4])
+[DEBUG]     r2[1][2]=0.706849 (from orien[10][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.695757 (from orien[25][5])
+[DEBUG]     r2[2][2]=-0.700116 (from orien[10][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.263330 (from orien[25][6])
+[DEBUG]     r2[3][2]=-0.101003 (from orien[10][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.414077 (from orien[25][7])
+[DEBUG]     r2[1][3]=-0.154232 (from orien[10][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.053809 (from orien[25][8])
+[DEBUG]     r2[2][3]=-0.013188 (from orien[10][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.908650 (from orien[25][9])
+[DEBUG]     r2[3][3]=-0.987947 (from orien[10][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.618030, 0.668266, -0.414077]
+[DEBUG]   [0.716259, -0.695757, -0.053809]
+[DEBUG]   [-0.324056, -0.263330, -0.908650]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.690346, 0.706849, -0.154232]
+[DEBUG]   [0.713907, -0.700116, -0.013188]
+[DEBUG]   [-0.117302, -0.101003, -0.987947]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.166800 Slide=-0.114666 Rise=-0.278129 Tilt=9.560386 Roll=-12.565224 Twist=-0.799990
+
+[DEBUG calculate_more_bppars] i=25 j=45 dir_z=-0.835858
+[DEBUG] orien[25][7-9]=-0.414077 -0.053809 -0.908650
+[DEBUG] orien[45][7-9]=0.020486 0.469381 0.882758
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.618030 (from orien[25][1])
+[DEBUG]     r2[1][1]=0.818521 (from orien[45][1], sign=keep)
+[DEBUG]     r1[2][1]=0.716259 (from orien[25][2])
+[DEBUG]     r2[2][1]=0.499140 (from orien[45][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.324056 (from orien[25][3])
+[DEBUG]     r2[3][1]=-0.284399 (from orien[45][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.668266 (from orien[25][4])
+[DEBUG]     r2[1][2]=0.574112 (from orien[45][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.695757 (from orien[25][5])
+[DEBUG]     r2[2][2]=-0.728382 (from orien[45][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.263330 (from orien[25][6])
+[DEBUG]     r2[3][2]=0.373973 (from orien[45][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.414077 (from orien[25][7])
+[DEBUG]     r2[1][3]=-0.020486 (from orien[45][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.053809 (from orien[25][8])
+[DEBUG]     r2[2][3]=-0.469381 (from orien[45][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.908650 (from orien[25][9])
+[DEBUG]     r2[3][3]=-0.882758 (from orien[45][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.618030, 0.668266, -0.414077]
+[DEBUG]   [0.716259, -0.695757, -0.053809]
+[DEBUG]   [-0.324056, -0.263330, -0.908650]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.818521, 0.574112, -0.020486]
+[DEBUG]   [0.499140, -0.728382, -0.469381]
+[DEBUG]   [-0.284399, 0.373973, -0.882758]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-6.949673 Slide=0.815119 Rise=1.427819 Tilt=33.266608 Roll=-1.368289 Twist=-17.848047
+
+[DEBUG calculate_more_bppars] i=11 j=24 dir_z=-0.950177
+[DEBUG] orien[11][7-9]=0.198654 0.037864 0.979338
+[DEBUG] orien[24][7-9]=-0.320565 -0.315942 -0.892983
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.074891 (from orien[11][1])
+[DEBUG]     r2[1][1]=0.032722 (from orien[24][1], sign=keep)
+[DEBUG]     r1[2][1]=0.995745 (from orien[11][2])
+[DEBUG]     r2[2][1]=0.938478 (from orien[24][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.053689 (from orien[11][3])
+[DEBUG]     r2[3][1]=-0.343784 (from orien[24][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.977204 (from orien[11][4])
+[DEBUG]     r2[1][2]=-0.946661 (from orien[24][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.084009 (from orien[11][5])
+[DEBUG]     r2[2][2]=0.139425 (from orien[24][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.194973 (from orien[11][6])
+[DEBUG]     r2[3][2]=0.290505 (from orien[24][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.198654 (from orien[11][7])
+[DEBUG]     r2[1][3]=0.320565 (from orien[24][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.037864 (from orien[11][8])
+[DEBUG]     r2[2][3]=0.315942 (from orien[24][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.979338 (from orien[11][9])
+[DEBUG]     r2[3][3]=0.892983 (from orien[24][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.074891, -0.977204, 0.198654]
+[DEBUG]   [0.995745, 0.084009, 0.037864]
+[DEBUG]   [-0.053689, 0.194973, 0.979338]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.032722, -0.946661, 0.320565]
+[DEBUG]   [0.938478, 0.139425, 0.315942]
+[DEBUG]   [-0.343784, 0.290505, 0.892983]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.234019 Slide=-0.184608 Rise=0.234055 Tilt=-6.245271 Roll=-17.054928 Twist=2.130585
+
+[DEBUG calculate_more_bppars] i=24 j=11 dir_z=-0.950177
+[DEBUG] orien[24][7-9]=-0.320565 -0.315942 -0.892983
+[DEBUG] orien[11][7-9]=0.198654 0.037864 0.979338
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.032722 (from orien[24][1])
+[DEBUG]     r2[1][1]=0.074891 (from orien[11][1], sign=keep)
+[DEBUG]     r1[2][1]=0.938478 (from orien[24][2])
+[DEBUG]     r2[2][1]=0.995745 (from orien[11][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.343784 (from orien[24][3])
+[DEBUG]     r2[3][1]=-0.053689 (from orien[11][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.946661 (from orien[24][4])
+[DEBUG]     r2[1][2]=0.977204 (from orien[11][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.139425 (from orien[24][5])
+[DEBUG]     r2[2][2]=-0.084009 (from orien[11][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.290505 (from orien[24][6])
+[DEBUG]     r2[3][2]=-0.194973 (from orien[11][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.320565 (from orien[24][7])
+[DEBUG]     r2[1][3]=-0.198654 (from orien[11][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.315942 (from orien[24][8])
+[DEBUG]     r2[2][3]=-0.037864 (from orien[11][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.892983 (from orien[24][9])
+[DEBUG]     r2[3][3]=-0.979338 (from orien[11][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.032722, 0.946661, -0.320565]
+[DEBUG]   [0.938478, -0.139425, -0.315942]
+[DEBUG]   [-0.343784, -0.290505, -0.892983]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.074891, 0.977204, -0.198654]
+[DEBUG]   [0.995745, -0.084009, -0.037864]
+[DEBUG]   [-0.053689, -0.194973, -0.979338]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.234019 Slide=-0.184608 Rise=0.234055 Tilt=6.245271 Roll=-17.054928 Twist=2.130585
+
+[DEBUG calculate_more_bppars] i=12 j=23 dir_z=-0.980212
+[DEBUG] orien[12][7-9]=0.190499 0.219004 0.956947
+[DEBUG] orien[23][7-9]=-0.311813 -0.356928 -0.880554
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.416469 (from orien[12][1])
+[DEBUG]     r2[1][1]=-0.521591 (from orien[23][1], sign=keep)
+[DEBUG]     r1[2][1]=0.900758 (from orien[12][2])
+[DEBUG]     r2[2][1]=0.838932 (from orien[23][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.123239 (from orien[12][3])
+[DEBUG]     r2[3][1]=-0.155357 (from orien[23][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.888968 (from orien[12][4])
+[DEBUG]     r2[1][2]=-0.794176 (from orien[23][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.375062 (from orien[12][5])
+[DEBUG]     r2[2][2]=-0.410846 (from orien[23][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.262802 (from orien[12][6])
+[DEBUG]     r2[3][2]=0.447760 (from orien[23][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.190499 (from orien[12][7])
+[DEBUG]     r2[1][3]=0.311813 (from orien[23][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.219004 (from orien[12][8])
+[DEBUG]     r2[2][3]=0.356928 (from orien[23][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.956947 (from orien[12][9])
+[DEBUG]     r2[3][3]=0.880554 (from orien[23][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.416469, -0.888968, 0.190499]
+[DEBUG]   [0.900758, -0.375062, 0.219004]
+[DEBUG]   [-0.123239, 0.262802, 0.956947]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.521591, -0.794176, 0.311813]
+[DEBUG]   [0.838932, -0.410846, 0.356928]
+[DEBUG]   [-0.155357, 0.447760, 0.880554]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.142852 Slide=-0.013429 Rise=0.191328 Tilt=-10.593756 Roll=-4.257154 Twist=-5.875301
+
+[DEBUG calculate_more_bppars] i=23 j=9 dir_z=0.982139
+[DEBUG] orien[23][7-9]=-0.311813 -0.356928 -0.880554
+[DEBUG] orien[9][7-9]=-0.184691 -0.493403 -0.849966
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.521591 (from orien[23][1])
+[DEBUG]     r2[1][1]=0.597344 (from orien[9][1], sign=keep)
+[DEBUG]     r1[2][1]=0.838932 (from orien[23][2])
+[DEBUG]     r2[2][1]=-0.743121 (from orien[9][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.155357 (from orien[23][3])
+[DEBUG]     r2[3][1]=0.301582 (from orien[9][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.794176 (from orien[23][4])
+[DEBUG]     r2[1][2]=-0.780429 (from orien[9][4], sign=keep)
+[DEBUG]     r1[2][2]=0.410846 (from orien[23][5])
+[DEBUG]     r2[2][2]=-0.452023 (from orien[9][5], sign=keep)
+[DEBUG]     r1[3][2]=-0.447760 (from orien[23][6])
+[DEBUG]     r2[3][2]=0.431979 (from orien[9][6], sign=keep)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.311813 (from orien[23][7])
+[DEBUG]     r2[1][3]=-0.184691 (from orien[9][7], sign=keep)
+[DEBUG]     r1[2][3]=-0.356928 (from orien[23][8])
+[DEBUG]     r2[2][3]=-0.493403 (from orien[9][8], sign=keep)
+[DEBUG]     r1[3][3]=-0.880554 (from orien[23][9])
+[DEBUG]     r2[3][3]=-0.849966 (from orien[9][9], sign=keep)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.521591, 0.794176, -0.311813]
+[DEBUG]   [0.838932, 0.410846, -0.356928]
+[DEBUG]   [-0.155357, -0.447760, -0.880554]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.597344, -0.780429, -0.184691]
+[DEBUG]   [-0.743121, -0.452023, -0.493403]
+[DEBUG]   [0.301582, 0.431979, -0.849966]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-6.115631 Slide=5.061124 Rise=0.262700 Tilt=10.726470 Roll=-1.599695 Twist=-177.880290
+
+[DEBUG calculate_more_bppars] i=23 j=12 dir_z=-0.980212
+[DEBUG] orien[23][7-9]=-0.311813 -0.356928 -0.880554
+[DEBUG] orien[12][7-9]=0.190499 0.219004 0.956947
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.521591 (from orien[23][1])
+[DEBUG]     r2[1][1]=-0.416469 (from orien[12][1], sign=keep)
+[DEBUG]     r1[2][1]=0.838932 (from orien[23][2])
+[DEBUG]     r2[2][1]=0.900758 (from orien[12][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.155357 (from orien[23][3])
+[DEBUG]     r2[3][1]=-0.123239 (from orien[12][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.794176 (from orien[23][4])
+[DEBUG]     r2[1][2]=0.888968 (from orien[12][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.410846 (from orien[23][5])
+[DEBUG]     r2[2][2]=0.375062 (from orien[12][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.447760 (from orien[23][6])
+[DEBUG]     r2[3][2]=-0.262802 (from orien[12][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.311813 (from orien[23][7])
+[DEBUG]     r2[1][3]=-0.190499 (from orien[12][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.356928 (from orien[23][8])
+[DEBUG]     r2[2][3]=-0.219004 (from orien[12][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.880554 (from orien[23][9])
+[DEBUG]     r2[3][3]=-0.956947 (from orien[12][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.521591, 0.794176, -0.311813]
+[DEBUG]   [0.838932, 0.410846, -0.356928]
+[DEBUG]   [-0.155357, -0.447760, -0.880554]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.416469, 0.888968, -0.190499]
+[DEBUG]   [0.900758, 0.375062, -0.219004]
+[DEBUG]   [-0.123239, -0.262802, -0.956947]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.142852 Slide=-0.013429 Rise=0.191328 Tilt=10.593756 Roll=-4.257154 Twist=-5.875301
+
+[DEBUG calculate_more_bppars] i=13 j=22 dir_z=-0.994469
+[DEBUG] orien[13][7-9]=0.288968 0.384439 0.876758
+[DEBUG] orien[22][7-9]=-0.253327 -0.295926 -0.921007
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.820290 (from orien[13][1])
+[DEBUG]     r2[1][1]=-0.810351 (from orien[22][1], sign=keep)
+[DEBUG]     r1[2][1]=0.571608 (from orien[13][2])
+[DEBUG]     r2[2][1]=0.584901 (from orien[22][2], sign=keep)
+[DEBUG]     r1[3][1]=0.019720 (from orien[13][3])
+[DEBUG]     r2[3][1]=0.034958 (from orien[22][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.493580 (from orien[13][4])
+[DEBUG]     r2[1][2]=-0.528353 (from orien[22][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.724894 (from orien[13][5])
+[DEBUG]     r2[2][2]=-0.755195 (from orien[22][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.480528 (from orien[13][6])
+[DEBUG]     r2[3][2]=0.387975 (from orien[22][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.288968 (from orien[13][7])
+[DEBUG]     r2[1][3]=0.253327 (from orien[22][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.384439 (from orien[13][8])
+[DEBUG]     r2[2][3]=0.295926 (from orien[22][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.876758 (from orien[13][9])
+[DEBUG]     r2[3][3]=0.921007 (from orien[22][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.820290, -0.493580, 0.288968]
+[DEBUG]   [0.571608, -0.724894, 0.384439]
+[DEBUG]   [0.019720, 0.480528, 0.876758]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.810351, -0.528353, 0.253327]
+[DEBUG]   [0.584901, -0.755195, 0.295926]
+[DEBUG]   [0.034958, 0.387975, 0.921007]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.250737 Slide=-0.146655 Rise=0.003840 Tilt=5.908421 Roll=1.200499 Twist=0.476819
+
+[DEBUG calculate_more_bppars] i=22 j=13 dir_z=-0.994469
+[DEBUG] orien[22][7-9]=-0.253327 -0.295926 -0.921007
+[DEBUG] orien[13][7-9]=0.288968 0.384439 0.876758
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.810351 (from orien[22][1])
+[DEBUG]     r2[1][1]=-0.820290 (from orien[13][1], sign=keep)
+[DEBUG]     r1[2][1]=0.584901 (from orien[22][2])
+[DEBUG]     r2[2][1]=0.571608 (from orien[13][2], sign=keep)
+[DEBUG]     r1[3][1]=0.034958 (from orien[22][3])
+[DEBUG]     r2[3][1]=0.019720 (from orien[13][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.528353 (from orien[22][4])
+[DEBUG]     r2[1][2]=0.493580 (from orien[13][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.755195 (from orien[22][5])
+[DEBUG]     r2[2][2]=0.724894 (from orien[13][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.387975 (from orien[22][6])
+[DEBUG]     r2[3][2]=-0.480528 (from orien[13][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.253327 (from orien[22][7])
+[DEBUG]     r2[1][3]=-0.288968 (from orien[13][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.295926 (from orien[22][8])
+[DEBUG]     r2[2][3]=-0.384439 (from orien[13][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.921007 (from orien[22][9])
+[DEBUG]     r2[3][3]=-0.876758 (from orien[13][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.810351, 0.528353, -0.253327]
+[DEBUG]   [0.584901, 0.755195, -0.295926]
+[DEBUG]   [0.034958, -0.387975, -0.921007]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.820290, 0.493580, -0.288968]
+[DEBUG]   [0.571608, 0.724894, -0.384439]
+[DEBUG]   [0.019720, -0.480528, -0.876758]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.250737 Slide=-0.146655 Rise=0.003840 Tilt=-5.908421 Roll=1.200499 Twist=0.476819
+
+[DEBUG calculate_more_bppars] i=22 j=46 dir_z=-0.986033
+[DEBUG] orien[22][7-9]=-0.253327 -0.295926 -0.921007
+[DEBUG] orien[46][7-9]=0.245103 0.450668 0.858384
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.810351 (from orien[22][1])
+[DEBUG]     r2[1][1]=0.796026 (from orien[46][1], sign=keep)
+[DEBUG]     r1[2][1]=0.584901 (from orien[22][2])
+[DEBUG]     r2[2][1]=0.411854 (from orien[46][2], sign=keep)
+[DEBUG]     r1[3][1]=0.034958 (from orien[22][3])
+[DEBUG]     r2[3][1]=-0.443529 (from orien[46][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.528353 (from orien[22][4])
+[DEBUG]     r2[1][2]=0.553413 (from orien[46][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.755195 (from orien[22][5])
+[DEBUG]     r2[2][2]=-0.792007 (from orien[46][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.387975 (from orien[22][6])
+[DEBUG]     r2[3][2]=0.257797 (from orien[46][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.253327 (from orien[22][7])
+[DEBUG]     r2[1][3]=-0.245103 (from orien[46][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.295926 (from orien[22][8])
+[DEBUG]     r2[2][3]=-0.450668 (from orien[46][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.921007 (from orien[22][9])
+[DEBUG]     r2[3][3]=-0.858384 (from orien[46][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.810351, 0.528353, -0.253327]
+[DEBUG]   [0.584901, 0.755195, -0.295926]
+[DEBUG]   [0.034958, -0.387975, -0.921007]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.796026, 0.553413, -0.245103]
+[DEBUG]   [0.411854, -0.792007, -0.450668]
+[DEBUG]   [-0.443529, 0.257797, -0.858384]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-5.644805 Slide=-0.346731 Rise=-0.081766 Tilt=0.342921 Roll=9.581219 Twist=-114.557631
+
+[DEBUG calculate_more_bppars] i=15 j=48 dir_z=0.996431
+[DEBUG] orien[15][7-9]=0.291013 0.398027 0.869992
+[DEBUG] orien[48][7-9]=0.228218 0.354952 0.906601
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.737924 (from orien[15][1])
+[DEBUG]     r2[1][1]=0.441834 (from orien[48][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.485384 (from orien[15][2])
+[DEBUG]     r2[2][1]=0.792011 (from orien[48][2], sign=keep)
+[DEBUG]     r1[3][1]=0.468903 (from orien[15][3])
+[DEBUG]     r2[3][1]=-0.421310 (from orien[48][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.608917 (from orien[15][4])
+[DEBUG]     r2[1][2]=-0.867583 (from orien[48][4], sign=keep)
+[DEBUG]     r1[2][2]=-0.778445 (from orien[15][5])
+[DEBUG]     r2[2][2]=0.496717 (from orien[48][5], sign=keep)
+[DEBUG]     r1[3][2]=0.152461 (from orien[15][6])
+[DEBUG]     r2[3][2]=0.023922 (from orien[48][6], sign=keep)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.291013 (from orien[15][7])
+[DEBUG]     r2[1][3]=0.228218 (from orien[48][7], sign=keep)
+[DEBUG]     r1[2][3]=0.398027 (from orien[15][8])
+[DEBUG]     r2[2][3]=0.354952 (from orien[48][8], sign=keep)
+[DEBUG]     r1[3][3]=0.869992 (from orien[15][9])
+[DEBUG]     r2[3][3]=0.906601 (from orien[48][9], sign=keep)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.737924, 0.608917, 0.291013]
+[DEBUG]   [-0.485384, -0.778445, 0.398027]
+[DEBUG]   [0.468903, 0.152461, 0.869992]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.441834, -0.867583, 0.228218]
+[DEBUG]   [0.792011, 0.496717, 0.354952]
+[DEBUG]   [-0.421310, 0.023922, 0.906601]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.120423 Slide=3.744903 Rise=0.168956 Tilt=4.744218 Roll=-0.970652 Twist=155.684318
+
+[DEBUG calculate_more_bppars] i=48 j=15 dir_z=0.996431
+[DEBUG] orien[48][7-9]=0.228218 0.354952 0.906601
+[DEBUG] orien[15][7-9]=0.291013 0.398027 0.869992
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.441834 (from orien[48][1])
+[DEBUG]     r2[1][1]=-0.737924 (from orien[15][1], sign=keep)
+[DEBUG]     r1[2][1]=0.792011 (from orien[48][2])
+[DEBUG]     r2[2][1]=-0.485384 (from orien[15][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.421310 (from orien[48][3])
+[DEBUG]     r2[3][1]=0.468903 (from orien[15][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.867583 (from orien[48][4])
+[DEBUG]     r2[1][2]=0.608917 (from orien[15][4], sign=keep)
+[DEBUG]     r1[2][2]=0.496717 (from orien[48][5])
+[DEBUG]     r2[2][2]=-0.778445 (from orien[15][5], sign=keep)
+[DEBUG]     r1[3][2]=0.023922 (from orien[48][6])
+[DEBUG]     r2[3][2]=0.152461 (from orien[15][6], sign=keep)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.228218 (from orien[48][7])
+[DEBUG]     r2[1][3]=0.291013 (from orien[15][7], sign=keep)
+[DEBUG]     r1[2][3]=0.354952 (from orien[48][8])
+[DEBUG]     r2[2][3]=0.398027 (from orien[15][8], sign=keep)
+[DEBUG]     r1[3][3]=0.906601 (from orien[48][9])
+[DEBUG]     r2[3][3]=0.869992 (from orien[15][9], sign=keep)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.441834, -0.867583, 0.228218]
+[DEBUG]   [0.792011, 0.496717, 0.354952]
+[DEBUG]   [-0.421310, 0.023922, 0.906601]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.737924, 0.608917, 0.291013]
+[DEBUG]   [-0.485384, -0.778445, 0.398027]
+[DEBUG]   [0.468903, 0.152461, 0.869992]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.120423 Slide=-3.744903 Rise=-0.168956 Tilt=-4.744218 Roll=0.970652 Twist=-155.684318
+
+[DEBUG calculate_more_bppars] i=16 j=59 dir_z=0.551758
+[DEBUG] orien[16][7-9]=-0.166469 0.973932 0.154091
+[DEBUG] orien[59][7-9]=0.283301 0.483951 0.827968
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.209543 (from orien[16][1])
+[DEBUG]     r2[1][1]=0.777650 (from orien[59][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.187643 (from orien[16][2])
+[DEBUG]     r2[2][1]=0.389325 (from orien[59][2], sign=keep)
+[DEBUG]     r1[3][1]=0.959626 (from orien[16][3])
+[DEBUG]     r2[3][1]=-0.493646 (from orien[59][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.963525 (from orien[16][4])
+[DEBUG]     r2[1][2]=-0.561249 (from orien[59][4], sign=keep)
+[DEBUG]     r1[2][2]=0.127459 (from orien[16][5])
+[DEBUG]     r2[2][2]=0.783720 (from orien[59][5], sign=keep)
+[DEBUG]     r1[3][2]=0.235318 (from orien[16][6])
+[DEBUG]     r2[3][2]=-0.266049 (from orien[59][6], sign=keep)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.166469 (from orien[16][7])
+[DEBUG]     r2[1][3]=0.283301 (from orien[59][7], sign=keep)
+[DEBUG]     r1[2][3]=0.973932 (from orien[16][8])
+[DEBUG]     r2[2][3]=0.483951 (from orien[59][8], sign=keep)
+[DEBUG]     r1[3][3]=0.154091 (from orien[16][9])
+[DEBUG]     r2[3][3]=0.827968 (from orien[59][9], sign=keep)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.209543, 0.963525, -0.166469]
+[DEBUG]   [-0.187643, 0.127459, 0.973932]
+[DEBUG]   [0.959626, 0.235318, 0.154091]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.777650, -0.561249, 0.283301]
+[DEBUG]   [0.389325, 0.783720, 0.483951]
+[DEBUG]   [-0.493646, -0.266049, 0.827968]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-2.446876 Slide=-3.673344 Rise=0.113939 Tilt=-29.362350 Roll=-48.285555 Twist=-141.428540
+
+[DEBUG calculate_more_bppars] i=59 j=16 dir_z=0.551758
+[DEBUG] orien[59][7-9]=0.283301 0.483951 0.827968
+[DEBUG] orien[16][7-9]=-0.166469 0.973932 0.154091
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.777650 (from orien[59][1])
+[DEBUG]     r2[1][1]=-0.209543 (from orien[16][1], sign=keep)
+[DEBUG]     r1[2][1]=0.389325 (from orien[59][2])
+[DEBUG]     r2[2][1]=-0.187643 (from orien[16][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.493646 (from orien[59][3])
+[DEBUG]     r2[3][1]=0.959626 (from orien[16][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.561249 (from orien[59][4])
+[DEBUG]     r2[1][2]=0.963525 (from orien[16][4], sign=keep)
+[DEBUG]     r1[2][2]=0.783720 (from orien[59][5])
+[DEBUG]     r2[2][2]=0.127459 (from orien[16][5], sign=keep)
+[DEBUG]     r1[3][2]=-0.266049 (from orien[59][6])
+[DEBUG]     r2[3][2]=0.235318 (from orien[16][6], sign=keep)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.283301 (from orien[59][7])
+[DEBUG]     r2[1][3]=-0.166469 (from orien[16][7], sign=keep)
+[DEBUG]     r1[2][3]=0.483951 (from orien[59][8])
+[DEBUG]     r2[2][3]=0.973932 (from orien[16][8], sign=keep)
+[DEBUG]     r1[3][3]=0.827968 (from orien[59][9])
+[DEBUG]     r2[3][3]=0.154091 (from orien[16][9], sign=keep)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.777650, -0.561249, 0.283301]
+[DEBUG]   [0.389325, 0.783720, 0.483951]
+[DEBUG]   [-0.493646, -0.266049, 0.827968]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.209543, 0.963525, -0.166469]
+[DEBUG]   [-0.187643, 0.127459, 0.973932]
+[DEBUG]   [0.959626, 0.235318, 0.154091]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=2.446876 Slide=3.673344 Rise=-0.113939 Tilt=29.362350 Roll=48.285555 Twist=141.428540
+
+[DEBUG calculate_more_bppars] i=18 j=55 dir_z=0.937821
+[DEBUG] orien[18][7-9]=0.772711 0.553452 -0.310821
+[DEBUG] orien[55][7-9]=0.512489 0.698411 -0.499577
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.234682 (from orien[18][1])
+[DEBUG]     r2[1][1]=-0.776293 (from orien[55][1], sign=keep)
+[DEBUG]     r1[2][1]=0.205880 (from orien[18][2])
+[DEBUG]     r2[2][1]=0.625513 (from orien[55][2], sign=keep)
+[DEBUG]     r1[3][1]=0.950020 (from orien[18][3])
+[DEBUG]     r2[3][1]=0.078114 (from orien[55][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.589782 (from orien[18][4])
+[DEBUG]     r2[1][2]=0.367048 (from orien[55][4], sign=keep)
+[DEBUG]     r1[2][2]=-0.807035 (from orien[18][5])
+[DEBUG]     r2[2][2]=0.347786 (from orien[55][5], sign=keep)
+[DEBUG]     r1[3][2]=0.029200 (from orien[18][6])
+[DEBUG]     r2[3][2]=0.862740 (from orien[55][6], sign=keep)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.772711 (from orien[18][7])
+[DEBUG]     r2[1][3]=0.512489 (from orien[55][7], sign=keep)
+[DEBUG]     r1[2][3]=0.553452 (from orien[18][8])
+[DEBUG]     r2[2][3]=0.698411 (from orien[55][8], sign=keep)
+[DEBUG]     r1[3][3]=-0.310821 (from orien[18][9])
+[DEBUG]     r2[3][3]=-0.499577 (from orien[55][9], sign=keep)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.234682, 0.589782, 0.772711]
+[DEBUG]   [0.205880, -0.807035, 0.553452]
+[DEBUG]   [0.950020, 0.029200, -0.310821]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.776293, 0.367048, 0.512489]
+[DEBUG]   [0.625513, 0.347786, 0.698411]
+[DEBUG]   [0.078114, 0.862740, -0.499577]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.684029 Slide=5.633360 Rise=-0.204998 Tilt=-20.117034 Roll=-2.801507 Twist=90.538038
+
+[DEBUG calculate_more_bppars] i=55 j=18 dir_z=0.937821
+[DEBUG] orien[55][7-9]=0.512489 0.698411 -0.499577
+[DEBUG] orien[18][7-9]=0.772711 0.553452 -0.310821
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.776293 (from orien[55][1])
+[DEBUG]     r2[1][1]=0.234682 (from orien[18][1], sign=keep)
+[DEBUG]     r1[2][1]=0.625513 (from orien[55][2])
+[DEBUG]     r2[2][1]=0.205880 (from orien[18][2], sign=keep)
+[DEBUG]     r1[3][1]=0.078114 (from orien[55][3])
+[DEBUG]     r2[3][1]=0.950020 (from orien[18][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.367048 (from orien[55][4])
+[DEBUG]     r2[1][2]=0.589782 (from orien[18][4], sign=keep)
+[DEBUG]     r1[2][2]=0.347786 (from orien[55][5])
+[DEBUG]     r2[2][2]=-0.807035 (from orien[18][5], sign=keep)
+[DEBUG]     r1[3][2]=0.862740 (from orien[55][6])
+[DEBUG]     r2[3][2]=0.029200 (from orien[18][6], sign=keep)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.512489 (from orien[55][7])
+[DEBUG]     r2[1][3]=0.772711 (from orien[18][7], sign=keep)
+[DEBUG]     r1[2][3]=0.698411 (from orien[55][8])
+[DEBUG]     r2[2][3]=0.553452 (from orien[18][8], sign=keep)
+[DEBUG]     r1[3][3]=-0.499577 (from orien[55][9])
+[DEBUG]     r2[3][3]=-0.310821 (from orien[18][9], sign=keep)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.776293, 0.367048, 0.512489]
+[DEBUG]   [0.625513, 0.347786, 0.698411]
+[DEBUG]   [0.078114, 0.862740, -0.499577]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.234682, 0.589782, 0.772711]
+[DEBUG]   [0.205880, -0.807035, 0.553452]
+[DEBUG]   [0.950020, 0.029200, -0.310821]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.684029 Slide=-5.633360 Rise=0.204998 Tilt=20.117034 Roll=2.801507 Twist=-90.538038
+
+[DEBUG calculate_more_bppars] i=19 j=56 dir_z=-0.809014
+[DEBUG] orien[19][7-9]=0.771934 0.284725 -0.568375
+[DEBUG] orien[56][7-9]=-0.873623 -0.486556 -0.006861
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.635457 (from orien[19][1])
+[DEBUG]     r2[1][1]=0.262854 (from orien[56][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.320729 (from orien[19][2])
+[DEBUG]     r2[2][1]=-0.483733 (from orien[56][2], sign=keep)
+[DEBUG]     r1[3][1]=0.702373 (from orien[19][3])
+[DEBUG]     r2[3][1]=0.834812 (from orien[56][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.017689 (from orien[19][4])
+[DEBUG]     r2[1][2]=0.409501 (from orien[56][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.903363 (from orien[19][5])
+[DEBUG]     r2[2][2]=-0.727507 (from orien[56][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.428512 (from orien[19][6])
+[DEBUG]     r2[3][2]=-0.550493 (from orien[56][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.771934 (from orien[19][7])
+[DEBUG]     r2[1][3]=0.873623 (from orien[56][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.284725 (from orien[19][8])
+[DEBUG]     r2[2][3]=0.486556 (from orien[56][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.568375 (from orien[19][9])
+[DEBUG]     r2[3][3]=0.006861 (from orien[56][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.635457, 0.017689, 0.771934]
+[DEBUG]   [-0.320729, -0.903363, 0.284725]
+[DEBUG]   [0.702373, -0.428512, -0.568375]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.262854, 0.409501, 0.873623]
+[DEBUG]   [-0.483733, -0.727507, 0.486556]
+[DEBUG]   [0.834812, -0.550493, 0.006861]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.456321 Slide=-0.052171 Rise=-0.074023 Tilt=-25.996091 Roll=-24.904285 Twist=0.728247
+
+[DEBUG calculate_more_bppars] i=56 j=19 dir_z=-0.809014
+[DEBUG] orien[56][7-9]=-0.873623 -0.486556 -0.006861
+[DEBUG] orien[19][7-9]=0.771934 0.284725 -0.568375
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.262854 (from orien[56][1])
+[DEBUG]     r2[1][1]=0.635457 (from orien[19][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.483733 (from orien[56][2])
+[DEBUG]     r2[2][1]=-0.320729 (from orien[19][2], sign=keep)
+[DEBUG]     r1[3][1]=0.834812 (from orien[56][3])
+[DEBUG]     r2[3][1]=0.702373 (from orien[19][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.409501 (from orien[56][4])
+[DEBUG]     r2[1][2]=-0.017689 (from orien[19][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.727507 (from orien[56][5])
+[DEBUG]     r2[2][2]=0.903363 (from orien[19][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.550493 (from orien[56][6])
+[DEBUG]     r2[3][2]=0.428512 (from orien[19][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.873623 (from orien[56][7])
+[DEBUG]     r2[1][3]=-0.771934 (from orien[19][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.486556 (from orien[56][8])
+[DEBUG]     r2[2][3]=-0.284725 (from orien[19][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.006861 (from orien[56][9])
+[DEBUG]     r2[3][3]=0.568375 (from orien[19][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.262854, -0.409501, -0.873623]
+[DEBUG]   [-0.483733, 0.727507, -0.486556]
+[DEBUG]   [0.834812, 0.550493, -0.006861]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.635457, -0.017689, -0.771934]
+[DEBUG]   [-0.320729, 0.903363, -0.284725]
+[DEBUG]   [0.702373, 0.428512, 0.568375]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.456321 Slide=-0.052171 Rise=-0.074023 Tilt=25.996091 Roll=-24.904285 Twist=0.728247
+
+[DEBUG calculate_more_bppars] i=26 j=44 dir_z=-0.758554
+[DEBUG] orien[26][7-9]=-0.229692 0.010826 -0.973203
+[DEBUG] orien[44][7-9]=-0.271295 0.454318 0.848525
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.971426 (from orien[26][1])
+[DEBUG]     r2[1][1]=0.893822 (from orien[44][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.058859 (from orien[26][2])
+[DEBUG]     r2[2][1]=-0.208111 (from orien[44][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.229928 (from orien[26][3])
+[DEBUG]     r2[3][1]=0.397205 (from orien[44][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.059771 (from orien[26][4])
+[DEBUG]     r2[1][2]=-0.357045 (from orien[44][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.998208 (from orien[26][5])
+[DEBUG]     r2[2][2]=-0.866190 (from orien[44][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.003003 (from orien[26][6])
+[DEBUG]     r2[3][2]=0.349619 (from orien[44][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.229692 (from orien[26][7])
+[DEBUG]     r2[1][3]=0.271295 (from orien[44][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.010826 (from orien[26][8])
+[DEBUG]     r2[2][3]=-0.454318 (from orien[44][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.973203 (from orien[26][9])
+[DEBUG]     r2[3][3]=-0.848525 (from orien[44][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.971426, -0.059771, -0.229692]
+[DEBUG]   [-0.058859, -0.998208, 0.010826]
+[DEBUG]   [-0.229928, 0.003003, -0.973203]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.893822, -0.357045, 0.271295]
+[DEBUG]   [-0.208111, -0.866190, -0.454318]
+[DEBUG]   [0.397205, 0.349619, -0.848525]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.313817 Slide=1.433493 Rise=-0.300776 Tilt=22.176031 Roll=-34.083898 Twist=-17.600634
+
+[DEBUG calculate_more_bppars] i=44 j=26 dir_z=-0.758554
+[DEBUG] orien[44][7-9]=-0.271295 0.454318 0.848525
+[DEBUG] orien[26][7-9]=-0.229692 0.010826 -0.973203
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.893822 (from orien[44][1])
+[DEBUG]     r2[1][1]=0.971426 (from orien[26][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.208111 (from orien[44][2])
+[DEBUG]     r2[2][1]=-0.058859 (from orien[26][2], sign=keep)
+[DEBUG]     r1[3][1]=0.397205 (from orien[44][3])
+[DEBUG]     r2[3][1]=-0.229928 (from orien[26][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.357045 (from orien[44][4])
+[DEBUG]     r2[1][2]=0.059771 (from orien[26][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.866190 (from orien[44][5])
+[DEBUG]     r2[2][2]=0.998208 (from orien[26][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.349619 (from orien[44][6])
+[DEBUG]     r2[3][2]=-0.003003 (from orien[26][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.271295 (from orien[44][7])
+[DEBUG]     r2[1][3]=0.229692 (from orien[26][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.454318 (from orien[44][8])
+[DEBUG]     r2[2][3]=-0.010826 (from orien[26][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.848525 (from orien[44][9])
+[DEBUG]     r2[3][3]=0.973203 (from orien[26][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.893822, 0.357045, -0.271295]
+[DEBUG]   [-0.208111, 0.866190, 0.454318]
+[DEBUG]   [0.397205, -0.349619, 0.848525]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.971426, 0.059771, 0.229692]
+[DEBUG]   [-0.058859, 0.998208, -0.010826]
+[DEBUG]   [-0.229928, -0.003003, 0.973203]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.313817 Slide=1.433493 Rise=-0.300776 Tilt=-22.176031 Roll=-34.083898 Twist=-17.600634
+
+[DEBUG calculate_more_bppars] i=27 j=43 dir_z=-0.946132
+[DEBUG] orien[27][7-9]=0.030499 -0.244078 -0.969276
+[DEBUG] orien[43][7-9]=-0.142375 0.524114 0.839663
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.685943 (from orien[27][1])
+[DEBUG]     r2[1][1]=0.602616 (from orien[43][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.700224 (from orien[27][2])
+[DEBUG]     r2[2][1]=-0.627070 (from orien[43][2], sign=keep)
+[DEBUG]     r1[3][1]=0.197911 (from orien[27][3])
+[DEBUG]     r2[3][1]=0.493595 (from orien[43][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.727016 (from orien[27][4])
+[DEBUG]     r2[1][2]=-0.785228 (from orien[43][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.670904 (from orien[27][5])
+[DEBUG]     r2[2][2]=-0.576271 (from orien[43][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.146067 (from orien[27][6])
+[DEBUG]     r2[3][2]=0.226560 (from orien[43][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.030499 (from orien[27][7])
+[DEBUG]     r2[1][3]=0.142375 (from orien[43][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.244078 (from orien[27][8])
+[DEBUG]     r2[2][3]=-0.524114 (from orien[43][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.969276 (from orien[27][9])
+[DEBUG]     r2[3][3]=-0.839663 (from orien[43][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.685943, -0.727016, 0.030499]
+[DEBUG]   [-0.700224, -0.670904, -0.244078]
+[DEBUG]   [0.197911, 0.146067, -0.969276]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.602616, -0.785228, 0.142375]
+[DEBUG]   [-0.627070, -0.576271, -0.524114]
+[DEBUG]   [0.493595, 0.226560, -0.839663]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.164562 Slide=-0.122234 Rise=0.367729 Tilt=6.666934 Roll=-17.676222 Twist=-4.271569
+
+[DEBUG calculate_more_bppars] i=43 j=27 dir_z=-0.946132
+[DEBUG] orien[43][7-9]=-0.142375 0.524114 0.839663
+[DEBUG] orien[27][7-9]=0.030499 -0.244078 -0.969276
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.602616 (from orien[43][1])
+[DEBUG]     r2[1][1]=0.685943 (from orien[27][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.627070 (from orien[43][2])
+[DEBUG]     r2[2][1]=-0.700224 (from orien[27][2], sign=keep)
+[DEBUG]     r1[3][1]=0.493595 (from orien[43][3])
+[DEBUG]     r2[3][1]=0.197911 (from orien[27][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.785228 (from orien[43][4])
+[DEBUG]     r2[1][2]=0.727016 (from orien[27][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.576271 (from orien[43][5])
+[DEBUG]     r2[2][2]=0.670904 (from orien[27][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.226560 (from orien[43][6])
+[DEBUG]     r2[3][2]=-0.146067 (from orien[27][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.142375 (from orien[43][7])
+[DEBUG]     r2[1][3]=-0.030499 (from orien[27][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.524114 (from orien[43][8])
+[DEBUG]     r2[2][3]=0.244078 (from orien[27][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.839663 (from orien[43][9])
+[DEBUG]     r2[3][3]=0.969276 (from orien[27][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.602616, 0.785228, -0.142375]
+[DEBUG]   [-0.627070, 0.576271, 0.524114]
+[DEBUG]   [0.493595, -0.226560, 0.839663]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.685943, 0.727016, -0.030499]
+[DEBUG]   [-0.700224, 0.670904, 0.244078]
+[DEBUG]   [0.197911, -0.146067, 0.969276]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.164562 Slide=-0.122234 Rise=0.367729 Tilt=-6.666934 Roll=-17.676222 Twist=-4.271569
+
+[DEBUG calculate_more_bppars] i=28 j=42 dir_z=-0.981832
+[DEBUG] orien[28][7-9]=0.126221 -0.357729 -0.925256
+[DEBUG] orien[42][7-9]=-0.089553 0.526815 0.845249
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.022009 (from orien[28][1])
+[DEBUG]     r2[1][1]=0.044485 (from orien[42][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.931476 (from orien[28][2])
+[DEBUG]     r2[2][1]=-0.845696 (from orien[42][2], sign=keep)
+[DEBUG]     r1[3][1]=0.363136 (from orien[28][3])
+[DEBUG]     r2[3][1]=0.531807 (from orien[42][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.991758 (from orien[28][4])
+[DEBUG]     r2[1][2]=-0.994988 (from orien[42][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.066200 (from orien[28][5])
+[DEBUG]     r2[2][2]=-0.085226 (from orien[42][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.109698 (from orien[28][6])
+[DEBUG]     r2[3][2]=-0.052300 (from orien[42][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.126221 (from orien[28][7])
+[DEBUG]     r2[1][3]=0.089553 (from orien[42][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.357729 (from orien[28][8])
+[DEBUG]     r2[2][3]=-0.526815 (from orien[42][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.925256 (from orien[28][9])
+[DEBUG]     r2[3][3]=-0.845249 (from orien[42][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.022009, -0.991758, 0.126221]
+[DEBUG]   [-0.931476, -0.066200, -0.357729]
+[DEBUG]   [0.363136, -0.109698, -0.925256]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.044485, -0.994988, 0.089553]
+[DEBUG]   [-0.845696, -0.085226, -0.526815]
+[DEBUG]   [0.531807, -0.052300, -0.845249]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.148869 Slide=-0.015249 Rise=0.370224 Tilt=2.464685 Roll=-10.656982 Twist=2.457185
+
+[DEBUG calculate_more_bppars] i=42 j=28 dir_z=-0.981832
+[DEBUG] orien[42][7-9]=-0.089553 0.526815 0.845249
+[DEBUG] orien[28][7-9]=0.126221 -0.357729 -0.925256
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.044485 (from orien[42][1])
+[DEBUG]     r2[1][1]=0.022009 (from orien[28][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.845696 (from orien[42][2])
+[DEBUG]     r2[2][1]=-0.931476 (from orien[28][2], sign=keep)
+[DEBUG]     r1[3][1]=0.531807 (from orien[42][3])
+[DEBUG]     r2[3][1]=0.363136 (from orien[28][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.994988 (from orien[42][4])
+[DEBUG]     r2[1][2]=0.991758 (from orien[28][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.085226 (from orien[42][5])
+[DEBUG]     r2[2][2]=0.066200 (from orien[28][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.052300 (from orien[42][6])
+[DEBUG]     r2[3][2]=0.109698 (from orien[28][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.089553 (from orien[42][7])
+[DEBUG]     r2[1][3]=-0.126221 (from orien[28][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.526815 (from orien[42][8])
+[DEBUG]     r2[2][3]=0.357729 (from orien[28][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.845249 (from orien[42][9])
+[DEBUG]     r2[3][3]=0.925256 (from orien[28][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.044485, 0.994988, -0.089553]
+[DEBUG]   [-0.845696, 0.085226, 0.526815]
+[DEBUG]   [0.531807, 0.052300, 0.845249]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.022009, 0.991758, -0.126221]
+[DEBUG]   [-0.931476, 0.066200, 0.357729]
+[DEBUG]   [0.363136, 0.109698, 0.925256]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.148869 Slide=-0.015249 Rise=0.370224 Tilt=-2.464685 Roll=-10.656982 Twist=2.457185
+
+[DEBUG calculate_more_bppars] i=29 j=41 dir_z=-0.985498
+[DEBUG] orien[29][7-9]=0.171681 -0.481706 -0.859352
+[DEBUG] orien[41][7-9]=-0.061019 0.596789 0.800075
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.456604 (from orien[29][1])
+[DEBUG]     r2[1][1]=-0.436420 (from orien[41][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.811860 (from orien[29][2])
+[DEBUG]     r2[2][1]=-0.736840 (from orien[41][2], sign=keep)
+[DEBUG]     r1[3][1]=0.363864 (from orien[29][3])
+[DEBUG]     r2[3][1]=0.516337 (from orien[41][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.872948 (from orien[29][4])
+[DEBUG]     r2[1][2]=-0.897671 (from orien[41][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.329914 (from orien[29][5])
+[DEBUG]     r2[2][2]=0.317663 (from orien[41][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.359330 (from orien[29][6])
+[DEBUG]     r2[3][2]=-0.305412 (from orien[41][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.171681 (from orien[29][7])
+[DEBUG]     r2[1][3]=0.061019 (from orien[41][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.481706 (from orien[29][8])
+[DEBUG]     r2[2][3]=-0.596789 (from orien[41][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.859352 (from orien[29][9])
+[DEBUG]     r2[3][3]=-0.800075 (from orien[41][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.456604, -0.872948, 0.171681]
+[DEBUG]   [-0.811860, 0.329914, -0.481706]
+[DEBUG]   [0.363864, -0.359330, -0.859352]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.436420, -0.897671, 0.061019]
+[DEBUG]   [-0.736840, 0.317663, -0.596789]
+[DEBUG]   [0.516337, -0.305412, -0.800075]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.358726 Slide=-0.059024 Rise=-0.010136 Tilt=2.361498 Roll=-9.479956 Twist=2.555035
+
+[DEBUG calculate_more_bppars] i=41 j=29 dir_z=-0.985498
+[DEBUG] orien[41][7-9]=-0.061019 0.596789 0.800075
+[DEBUG] orien[29][7-9]=0.171681 -0.481706 -0.859352
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.436420 (from orien[41][1])
+[DEBUG]     r2[1][1]=-0.456604 (from orien[29][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.736840 (from orien[41][2])
+[DEBUG]     r2[2][1]=-0.811860 (from orien[29][2], sign=keep)
+[DEBUG]     r1[3][1]=0.516337 (from orien[41][3])
+[DEBUG]     r2[3][1]=0.363864 (from orien[29][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.897671 (from orien[41][4])
+[DEBUG]     r2[1][2]=0.872948 (from orien[29][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.317663 (from orien[41][5])
+[DEBUG]     r2[2][2]=-0.329914 (from orien[29][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.305412 (from orien[41][6])
+[DEBUG]     r2[3][2]=0.359330 (from orien[29][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.061019 (from orien[41][7])
+[DEBUG]     r2[1][3]=-0.171681 (from orien[29][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.596789 (from orien[41][8])
+[DEBUG]     r2[2][3]=0.481706 (from orien[29][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.800075 (from orien[41][9])
+[DEBUG]     r2[3][3]=0.859352 (from orien[29][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.436420, 0.897671, -0.061019]
+[DEBUG]   [-0.736840, -0.317663, 0.596789]
+[DEBUG]   [0.516337, 0.305412, 0.800075]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.456604, 0.872948, -0.171681]
+[DEBUG]   [-0.811860, -0.329914, 0.481706]
+[DEBUG]   [0.363864, 0.359330, 0.859352]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.358726 Slide=-0.059024 Rise=-0.010136 Tilt=-2.361498 Roll=-9.479956 Twist=2.555035
+
+[DEBUG calculate_more_bppars] i=30 j=40 dir_z=-0.915622
+[DEBUG] orien[30][7-9]=0.136557 -0.476520 -0.868493
+[DEBUG] orien[40][7-9]=-0.005616 0.780484 0.625150
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.862116 (from orien[30][1])
+[DEBUG]     r2[1][1]=-0.815516 (from orien[40][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.489011 (from orien[30][2])
+[DEBUG]     r2[2][1]=-0.365365 (from orien[40][2], sign=keep)
+[DEBUG]     r1[3][1]=0.132753 (from orien[30][3])
+[DEBUG]     r2[3][1]=0.448823 (from orien[40][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.487962 (from orien[30][4])
+[DEBUG]     r2[1][2]=-0.578707 (from orien[40][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.730614 (from orien[30][5])
+[DEBUG]     r2[2][2]=0.507299 (from orien[40][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.477594 (from orien[30][6])
+[DEBUG]     r2[3][2]=-0.638549 (from orien[40][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.136557 (from orien[30][7])
+[DEBUG]     r2[1][3]=0.005616 (from orien[40][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.476520 (from orien[30][8])
+[DEBUG]     r2[2][3]=-0.780484 (from orien[40][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.868493 (from orien[30][9])
+[DEBUG]     r2[3][3]=-0.625150 (from orien[40][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.862116, -0.487962, 0.136557]
+[DEBUG]   [-0.489011, 0.730614, -0.476520]
+[DEBUG]   [0.132753, -0.477594, -0.868493]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.815516, -0.578707, 0.005616]
+[DEBUG]   [-0.365365, 0.507299, -0.780484]
+[DEBUG]   [0.448823, -0.638549, -0.625150]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.427806 Slide=0.114431 Rise=-0.044225 Tilt=-15.015130 Roll=-18.344158 Twist=7.481433
+
+[DEBUG calculate_more_bppars] i=40 j=30 dir_z=-0.915622
+[DEBUG] orien[40][7-9]=-0.005616 0.780484 0.625150
+[DEBUG] orien[30][7-9]=0.136557 -0.476520 -0.868493
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.815516 (from orien[40][1])
+[DEBUG]     r2[1][1]=-0.862116 (from orien[30][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.365365 (from orien[40][2])
+[DEBUG]     r2[2][1]=-0.489011 (from orien[30][2], sign=keep)
+[DEBUG]     r1[3][1]=0.448823 (from orien[40][3])
+[DEBUG]     r2[3][1]=0.132753 (from orien[30][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.578707 (from orien[40][4])
+[DEBUG]     r2[1][2]=0.487962 (from orien[30][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.507299 (from orien[40][5])
+[DEBUG]     r2[2][2]=-0.730614 (from orien[30][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.638549 (from orien[40][6])
+[DEBUG]     r2[3][2]=0.477594 (from orien[30][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.005616 (from orien[40][7])
+[DEBUG]     r2[1][3]=-0.136557 (from orien[30][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.780484 (from orien[40][8])
+[DEBUG]     r2[2][3]=0.476520 (from orien[30][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.625150 (from orien[40][9])
+[DEBUG]     r2[3][3]=0.868493 (from orien[30][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.815516, 0.578707, -0.005616]
+[DEBUG]   [-0.365365, -0.507299, 0.780484]
+[DEBUG]   [0.448823, 0.638549, 0.625150]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.862116, 0.487962, -0.136557]
+[DEBUG]   [-0.489011, -0.730614, 0.476520]
+[DEBUG]   [0.132753, 0.477594, 0.868493]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.427806 Slide=0.114431 Rise=-0.044225 Tilt=15.015130 Roll=-18.344158 Twist=7.481433
+
+[DEBUG calculate_more_bppars] i=31 j=39 dir_z=-0.941721
+[DEBUG] orien[31][7-9]=0.033302 -0.617936 -0.785523
+[DEBUG] orien[39][7-9]=0.203526 0.775928 0.597087
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.895426 (from orien[31][1])
+[DEBUG]     r2[1][1]=-0.957191 (from orien[39][1], sign=keep)
+[DEBUG]     r1[2][1]=0.330684 (from orien[31][2])
+[DEBUG]     r2[2][1]=0.285898 (from orien[39][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.298096 (from orien[31][3])
+[DEBUG]     r2[3][1]=-0.045258 (from orien[39][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.443964 (from orien[31][4])
+[DEBUG]     r2[1][2]=0.205823 (from orien[39][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.713305 (from orien[31][5])
+[DEBUG]     r2[2][2]=0.562315 (from orien[39][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.542303 (from orien[31][6])
+[DEBUG]     r2[3][2]=-0.800898 (from orien[39][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.033302 (from orien[31][7])
+[DEBUG]     r2[1][3]=-0.203526 (from orien[39][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.617936 (from orien[31][8])
+[DEBUG]     r2[2][3]=-0.775928 (from orien[39][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.785523 (from orien[31][9])
+[DEBUG]     r2[3][3]=-0.597087 (from orien[39][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.895426, 0.443964, 0.033302]
+[DEBUG]   [0.330684, 0.713305, -0.617936]
+[DEBUG]   [-0.298096, -0.542303, -0.785523]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.957191, 0.205823, -0.203526]
+[DEBUG]   [0.285898, 0.562315, -0.775928]
+[DEBUG]   [-0.045258, -0.800898, -0.597087]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=4.278989 Slide=-0.211052 Rise=-0.109334 Tilt=-17.895012 Roll=-8.135038 Twist=13.002509
+
+[DEBUG calculate_more_bppars] i=39 j=31 dir_z=-0.941721
+[DEBUG] orien[39][7-9]=0.203526 0.775928 0.597087
+[DEBUG] orien[31][7-9]=0.033302 -0.617936 -0.785523
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.957191 (from orien[39][1])
+[DEBUG]     r2[1][1]=-0.895426 (from orien[31][1], sign=keep)
+[DEBUG]     r1[2][1]=0.285898 (from orien[39][2])
+[DEBUG]     r2[2][1]=0.330684 (from orien[31][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.045258 (from orien[39][3])
+[DEBUG]     r2[3][1]=-0.298096 (from orien[31][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.205823 (from orien[39][4])
+[DEBUG]     r2[1][2]=-0.443964 (from orien[31][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.562315 (from orien[39][5])
+[DEBUG]     r2[2][2]=-0.713305 (from orien[31][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.800898 (from orien[39][6])
+[DEBUG]     r2[3][2]=0.542303 (from orien[31][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.203526 (from orien[39][7])
+[DEBUG]     r2[1][3]=-0.033302 (from orien[31][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.775928 (from orien[39][8])
+[DEBUG]     r2[2][3]=0.617936 (from orien[31][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.597087 (from orien[39][9])
+[DEBUG]     r2[3][3]=0.785523 (from orien[31][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.957191, -0.205823, 0.203526]
+[DEBUG]   [0.285898, -0.562315, 0.775928]
+[DEBUG]   [-0.045258, 0.800898, 0.597087]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.895426, -0.443964, -0.033302]
+[DEBUG]   [0.330684, -0.713305, 0.617936]
+[DEBUG]   [-0.298096, 0.542303, 0.785523]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-4.278989 Slide=-0.211052 Rise=-0.109334 Tilt=17.895012 Roll=-8.135038 Twist=13.002509
+
+[DEBUG calculate_more_bppars] i=32 j=38 dir_z=-0.981407
+[DEBUG] orien[32][7-9]=-0.228863 -0.582923 -0.779629
+[DEBUG] orien[38][7-9]=0.207983 0.727537 0.653783
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.429845 (from orien[32][1])
+[DEBUG]     r2[1][1]=-0.695229 (from orien[38][1], sign=keep)
+[DEBUG]     r1[2][1]=0.779094 (from orien[32][2])
+[DEBUG]     r2[2][1]=0.580122 (from orien[38][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.456340 (from orien[32][3])
+[DEBUG]     r2[3][1]=-0.424399 (from orien[38][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.873416 (from orien[32][4])
+[DEBUG]     r2[1][2]=0.688040 (from orien[38][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.230680 (from orien[32][5])
+[DEBUG]     r2[2][2]=0.366262 (from orien[38][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.428873 (from orien[32][6])
+[DEBUG]     r2[3][2]=-0.626461 (from orien[38][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.228863 (from orien[32][7])
+[DEBUG]     r2[1][3]=-0.207983 (from orien[38][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.582923 (from orien[32][8])
+[DEBUG]     r2[2][3]=-0.727537 (from orien[38][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.779629 (from orien[32][9])
+[DEBUG]     r2[3][3]=-0.653783 (from orien[38][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.429845, 0.873416, -0.228863]
+[DEBUG]   [0.779094, 0.230680, -0.582923]
+[DEBUG]   [-0.456340, -0.428873, -0.779629]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.695229, 0.688040, -0.207983]
+[DEBUG]   [0.580122, 0.366262, -0.727537]
+[DEBUG]   [-0.424399, -0.626461, -0.653783]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=6.786778 Slide=-1.659992 Rise=0.711796 Tilt=-5.434171 Roll=9.639796 Twist=16.624298
+
+[DEBUG calculate_more_bppars] i=38 j=32 dir_z=-0.981407
+[DEBUG] orien[38][7-9]=0.207983 0.727537 0.653783
+[DEBUG] orien[32][7-9]=-0.228863 -0.582923 -0.779629
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.695229 (from orien[38][1])
+[DEBUG]     r2[1][1]=-0.429845 (from orien[32][1], sign=keep)
+[DEBUG]     r1[2][1]=0.580122 (from orien[38][2])
+[DEBUG]     r2[2][1]=0.779094 (from orien[32][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.424399 (from orien[38][3])
+[DEBUG]     r2[3][1]=-0.456340 (from orien[32][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.688040 (from orien[38][4])
+[DEBUG]     r2[1][2]=-0.873416 (from orien[32][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.366262 (from orien[38][5])
+[DEBUG]     r2[2][2]=-0.230680 (from orien[32][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.626461 (from orien[38][6])
+[DEBUG]     r2[3][2]=0.428873 (from orien[32][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.207983 (from orien[38][7])
+[DEBUG]     r2[1][3]=0.228863 (from orien[32][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.727537 (from orien[38][8])
+[DEBUG]     r2[2][3]=0.582923 (from orien[32][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.653783 (from orien[38][9])
+[DEBUG]     r2[3][3]=0.779629 (from orien[32][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.695229, -0.688040, 0.207983]
+[DEBUG]   [0.580122, -0.366262, 0.727537]
+[DEBUG]   [-0.424399, 0.626461, 0.653783]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.429845, -0.873416, 0.228863]
+[DEBUG]   [0.779094, -0.230680, 0.582923]
+[DEBUG]   [-0.456340, 0.428873, 0.779629]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-6.786778 Slide=-1.659992 Rise=0.711796 Tilt=5.434171 Roll=9.639796 Twist=16.624298
+
+[DEBUG calculate_more_bppars] i=33 j=35 dir_z=-0.904973
+[DEBUG] orien[33][7-9]=-0.235418 -0.165774 -0.957652
+[DEBUG] orien[35][7-9]=0.123629 0.563031 0.817137
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.285105 (from orien[33][1])
+[DEBUG]     r2[1][1]=0.987663 (from orien[35][1], sign=keep)
+[DEBUG]     r1[2][1]=0.930216 (from orien[33][2])
+[DEBUG]     r2[2][1]=0.009941 (from orien[35][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.231111 (from orien[33][3])
+[DEBUG]     r2[3][1]=-0.156278 (from orien[35][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.929136 (from orien[33][4])
+[DEBUG]     r2[1][2]=0.096112 (from orien[35][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.327439 (from orien[33][5])
+[DEBUG]     r2[2][2]=-0.826376 (from orien[35][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.171727 (from orien[33][6])
+[DEBUG]     r2[3][2]=0.554855 (from orien[35][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.235418 (from orien[33][7])
+[DEBUG]     r2[1][3]=-0.123629 (from orien[35][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.165774 (from orien[33][8])
+[DEBUG]     r2[2][3]=-0.563031 (from orien[35][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.957652 (from orien[33][9])
+[DEBUG]     r2[3][3]=-0.817137 (from orien[35][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.285105, 0.929136, -0.235418]
+[DEBUG]   [0.930216, -0.327439, -0.165774]
+[DEBUG]   [-0.231111, -0.171727, -0.957652]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.987663, 0.096112, -0.123629]
+[DEBUG]   [0.009941, -0.826376, -0.563031]
+[DEBUG]   [-0.156278, 0.554855, -0.817137]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=4.916360 Slide=-8.490061 Rise=-2.489560 Tilt=22.913399 Roll=10.441638 Twist=-71.908583
+
+[DEBUG calculate_more_bppars] i=33 j=36 dir_z=-0.913212
+[DEBUG] orien[33][7-9]=-0.235418 -0.165774 -0.957652
+[DEBUG] orien[36][7-9]=0.304714 0.538751 0.785427
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.285105 (from orien[33][1])
+[DEBUG]     r2[1][1]=0.857898 (from orien[36][1], sign=keep)
+[DEBUG]     r1[2][1]=0.930216 (from orien[33][2])
+[DEBUG]     r2[2][1]=0.202949 (from orien[36][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.231111 (from orien[33][3])
+[DEBUG]     r2[3][1]=-0.472040 (from orien[36][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.929136 (from orien[33][4])
+[DEBUG]     r2[1][2]=0.413714 (from orien[36][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.327439 (from orien[33][5])
+[DEBUG]     r2[2][2]=-0.817654 (from orien[36][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.171727 (from orien[33][6])
+[DEBUG]     r2[3][2]=0.400352 (from orien[36][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.235418 (from orien[33][7])
+[DEBUG]     r2[1][3]=-0.304714 (from orien[36][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.165774 (from orien[33][8])
+[DEBUG]     r2[2][3]=-0.538751 (from orien[36][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.957652 (from orien[33][9])
+[DEBUG]     r2[3][3]=-0.785427 (from orien[36][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.285105, 0.929136, -0.235418]
+[DEBUG]   [0.930216, -0.327439, -0.165774]
+[DEBUG]   [-0.231111, -0.171727, -0.957652]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.857898, 0.413714, -0.304714]
+[DEBUG]   [0.202949, -0.817654, -0.538751]
+[DEBUG]   [-0.472040, 0.400352, -0.785427]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=6.007860 Slide=-9.479788 Rise=1.179240 Tilt=12.363350 Roll=20.625272 Twist=-53.952177
+
+[DEBUG calculate_more_bppars] i=36 j=33 dir_z=-0.913212
+[DEBUG] orien[36][7-9]=0.304714 0.538751 0.785427
+[DEBUG] orien[33][7-9]=-0.235418 -0.165774 -0.957652
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.857898 (from orien[36][1])
+[DEBUG]     r2[1][1]=0.285105 (from orien[33][1], sign=keep)
+[DEBUG]     r1[2][1]=0.202949 (from orien[36][2])
+[DEBUG]     r2[2][1]=0.930216 (from orien[33][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.472040 (from orien[36][3])
+[DEBUG]     r2[3][1]=-0.231111 (from orien[33][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.413714 (from orien[36][4])
+[DEBUG]     r2[1][2]=-0.929136 (from orien[33][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.817654 (from orien[36][5])
+[DEBUG]     r2[2][2]=0.327439 (from orien[33][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.400352 (from orien[36][6])
+[DEBUG]     r2[3][2]=0.171727 (from orien[33][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.304714 (from orien[36][7])
+[DEBUG]     r2[1][3]=0.235418 (from orien[33][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.538751 (from orien[36][8])
+[DEBUG]     r2[2][3]=0.165774 (from orien[33][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.785427 (from orien[36][9])
+[DEBUG]     r2[3][3]=0.957652 (from orien[33][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.857898, -0.413714, 0.304714]
+[DEBUG]   [0.202949, 0.817654, 0.538751]
+[DEBUG]   [-0.472040, -0.400352, 0.785427]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.285105, -0.929136, 0.235418]
+[DEBUG]   [0.930216, 0.327439, 0.165774]
+[DEBUG]   [-0.231111, 0.171727, 0.957652]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-6.007860 Slide=-9.479788 Rise=1.179240 Tilt=-12.363350 Roll=20.625272 Twist=-53.952177
+
+[DEBUG calculate_more_bppars] i=49 j=65 dir_z=-0.977992
+[DEBUG] orien[49][7-9]=0.404838 0.887255 -0.221100
+[DEBUG] orien[65][7-9]=-0.582008 -0.798918 0.151650
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.859314 (from orien[49][1])
+[DEBUG]     r2[1][1]=0.751411 (from orien[65][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.286515 (from orien[49][2])
+[DEBUG]     r2[2][1]=-0.457067 (from orien[65][2], sign=keep)
+[DEBUG]     r1[3][1]=0.423661 (from orien[49][3])
+[DEBUG]     r2[3][1]=0.475890 (from orien[65][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.312547 (from orien[49][4])
+[DEBUG]     r2[1][2]=0.310883 (from orien[65][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.361508 (from orien[49][5])
+[DEBUG]     r2[2][2]=-0.390923 (from orien[65][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.878423 (from orien[49][6])
+[DEBUG]     r2[3][2]=-0.866332 (from orien[65][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.404838 (from orien[49][7])
+[DEBUG]     r2[1][3]=0.582008 (from orien[65][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.887255 (from orien[49][8])
+[DEBUG]     r2[2][3]=0.798918 (from orien[65][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.221100 (from orien[49][9])
+[DEBUG]     r2[3][3]=-0.151650 (from orien[65][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.859314, 0.312547, 0.404838]
+[DEBUG]   [-0.286515, -0.361508, 0.887255]
+[DEBUG]   [0.423661, -0.878423, -0.221100]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.751411, 0.310883, 0.582008]
+[DEBUG]   [-0.457067, -0.390923, 0.798918]
+[DEBUG]   [0.475890, -0.866332, -0.151650]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.273716 Slide=0.020897 Rise=0.039815 Tilt=1.608890 Roll=-11.934817 Twist=0.871000
+
+[DEBUG calculate_more_bppars] i=65 j=49 dir_z=-0.977992
+[DEBUG] orien[65][7-9]=-0.582008 -0.798918 0.151650
+[DEBUG] orien[49][7-9]=0.404838 0.887255 -0.221100
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.751411 (from orien[65][1])
+[DEBUG]     r2[1][1]=0.859314 (from orien[49][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.457067 (from orien[65][2])
+[DEBUG]     r2[2][1]=-0.286515 (from orien[49][2], sign=keep)
+[DEBUG]     r1[3][1]=0.475890 (from orien[65][3])
+[DEBUG]     r2[3][1]=0.423661 (from orien[49][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.310883 (from orien[65][4])
+[DEBUG]     r2[1][2]=-0.312547 (from orien[49][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.390923 (from orien[65][5])
+[DEBUG]     r2[2][2]=0.361508 (from orien[49][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.866332 (from orien[65][6])
+[DEBUG]     r2[3][2]=0.878423 (from orien[49][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.582008 (from orien[65][7])
+[DEBUG]     r2[1][3]=-0.404838 (from orien[49][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.798918 (from orien[65][8])
+[DEBUG]     r2[2][3]=-0.887255 (from orien[49][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.151650 (from orien[65][9])
+[DEBUG]     r2[3][3]=0.221100 (from orien[49][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.751411, -0.310883, -0.582008]
+[DEBUG]   [-0.457067, 0.390923, -0.798918]
+[DEBUG]   [0.475890, 0.866332, 0.151650]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.859314, -0.312547, -0.404838]
+[DEBUG]   [-0.286515, 0.361508, -0.887255]
+[DEBUG]   [0.423661, 0.878423, 0.221100]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.273716 Slide=0.020897 Rise=0.039815 Tilt=-1.608890 Roll=-11.934817 Twist=0.871000
+
+[DEBUG calculate_more_bppars] i=50 j=64 dir_z=-0.993741
+[DEBUG] orien[50][7-9]=0.546631 0.817617 -0.180822
+[DEBUG] orien[64][7-9]=-0.635411 -0.757802 0.148284
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.833264 (from orien[50][1])
+[DEBUG]     r2[1][1]=0.765998 (from orien[64][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.552482 (from orien[50][2])
+[DEBUG]     r2[2][1]=-0.642836 (from orien[64][2], sign=keep)
+[DEBUG]     r1[3][1]=0.020844 (from orien[50][3])
+[DEBUG]     r2[3][1]=-0.002824 (from orien[64][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.082858 (from orien[50][4])
+[DEBUG]     r2[1][2]=-0.097462 (from orien[64][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.162066 (from orien[50][5])
+[DEBUG]     r2[2][2]=-0.111791 (from orien[64][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.983295 (from orien[50][6])
+[DEBUG]     r2[3][2]=-0.988941 (from orien[64][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.546631 (from orien[50][7])
+[DEBUG]     r2[1][3]=0.635411 (from orien[64][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.817617 (from orien[50][8])
+[DEBUG]     r2[2][3]=0.757802 (from orien[64][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.180822 (from orien[50][9])
+[DEBUG]     r2[3][3]=-0.148284 (from orien[64][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.833264, -0.082858, 0.546631]
+[DEBUG]   [-0.552482, -0.162066, 0.817617]
+[DEBUG]   [0.020844, -0.983295, -0.180822]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.765998, -0.097462, 0.635411]
+[DEBUG]   [-0.642836, -0.111791, 0.757802]
+[DEBUG]   [-0.002824, -0.988941, -0.148284]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.131841 Slide=-0.165491 Rise=-0.106001 Tilt=-1.831962 Roll=-6.146743 Twist=-2.401810
+
+[DEBUG calculate_more_bppars] i=64 j=50 dir_z=-0.993741
+[DEBUG] orien[64][7-9]=-0.635411 -0.757802 0.148284
+[DEBUG] orien[50][7-9]=0.546631 0.817617 -0.180822
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.765998 (from orien[64][1])
+[DEBUG]     r2[1][1]=0.833264 (from orien[50][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.642836 (from orien[64][2])
+[DEBUG]     r2[2][1]=-0.552482 (from orien[50][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.002824 (from orien[64][3])
+[DEBUG]     r2[3][1]=0.020844 (from orien[50][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.097462 (from orien[64][4])
+[DEBUG]     r2[1][2]=0.082858 (from orien[50][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.111791 (from orien[64][5])
+[DEBUG]     r2[2][2]=0.162066 (from orien[50][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.988941 (from orien[64][6])
+[DEBUG]     r2[3][2]=0.983295 (from orien[50][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.635411 (from orien[64][7])
+[DEBUG]     r2[1][3]=-0.546631 (from orien[50][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.757802 (from orien[64][8])
+[DEBUG]     r2[2][3]=-0.817617 (from orien[50][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.148284 (from orien[64][9])
+[DEBUG]     r2[3][3]=0.180822 (from orien[50][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.765998, 0.097462, -0.635411]
+[DEBUG]   [-0.642836, 0.111791, -0.757802]
+[DEBUG]   [-0.002824, 0.988941, 0.148284]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.833264, 0.082858, -0.546631]
+[DEBUG]   [-0.552482, 0.162066, -0.817617]
+[DEBUG]   [0.020844, 0.983295, 0.180822]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.131841 Slide=-0.165491 Rise=-0.106001 Tilt=1.831962 Roll=-6.146743 Twist=-2.401810
+
+[DEBUG calculate_more_bppars] i=51 j=63 dir_z=-0.965470
+[DEBUG] orien[51][7-9]=0.608545 0.776968 -0.161226
+[DEBUG] orien[63][7-9]=-0.788320 -0.586776 0.185056
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.615431 (from orien[51][1])
+[DEBUG]     r2[1][1]=0.464487 (from orien[63][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.590384 (from orien[51][2])
+[DEBUG]     r2[2][1]=-0.764822 (from orien[63][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.522198 (from orien[51][3])
+[DEBUG]     r2[3][1]=-0.446431 (from orien[63][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.500916 (from orien[51][4])
+[DEBUG]     r2[1][2]=-0.403490 (from orien[63][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.218557 (from orien[51][5])
+[DEBUG]     r2[2][2]=0.265974 (from orien[63][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.837446 (from orien[51][6])
+[DEBUG]     r2[3][2]=-0.875474 (from orien[63][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.608545 (from orien[51][7])
+[DEBUG]     r2[1][3]=0.788320 (from orien[63][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.776968 (from orien[51][8])
+[DEBUG]     r2[2][3]=0.586776 (from orien[63][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.161226 (from orien[51][9])
+[DEBUG]     r2[3][3]=-0.185056 (from orien[63][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.615431, -0.500916, 0.608545]
+[DEBUG]   [-0.590384, 0.218557, 0.776968]
+[DEBUG]   [-0.522198, -0.837446, -0.161226]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.464487, -0.403490, 0.788320]
+[DEBUG]   [-0.764822, 0.265974, 0.586776]
+[DEBUG]   [-0.446431, -0.875474, -0.185056]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.139993 Slide=-0.172183 Rise=-0.264392 Tilt=-6.201218 Roll=-13.768508 Twist=2.268208
+
+[DEBUG calculate_more_bppars] i=63 j=51 dir_z=-0.965470
+[DEBUG] orien[63][7-9]=-0.788320 -0.586776 0.185056
+[DEBUG] orien[51][7-9]=0.608545 0.776968 -0.161226
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.464487 (from orien[63][1])
+[DEBUG]     r2[1][1]=0.615431 (from orien[51][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.764822 (from orien[63][2])
+[DEBUG]     r2[2][1]=-0.590384 (from orien[51][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.446431 (from orien[63][3])
+[DEBUG]     r2[3][1]=-0.522198 (from orien[51][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.403490 (from orien[63][4])
+[DEBUG]     r2[1][2]=0.500916 (from orien[51][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.265974 (from orien[63][5])
+[DEBUG]     r2[2][2]=-0.218557 (from orien[51][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.875474 (from orien[63][6])
+[DEBUG]     r2[3][2]=0.837446 (from orien[51][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.788320 (from orien[63][7])
+[DEBUG]     r2[1][3]=-0.608545 (from orien[51][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.586776 (from orien[63][8])
+[DEBUG]     r2[2][3]=-0.776968 (from orien[51][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.185056 (from orien[63][9])
+[DEBUG]     r2[3][3]=0.161226 (from orien[51][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.464487, 0.403490, -0.788320]
+[DEBUG]   [-0.764822, -0.265974, -0.586776]
+[DEBUG]   [-0.446431, 0.875474, 0.185056]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.615431, 0.500916, -0.608545]
+[DEBUG]   [-0.590384, -0.218557, -0.776968]
+[DEBUG]   [-0.522198, 0.837446, 0.161226]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.139993 Slide=-0.172183 Rise=-0.264392 Tilt=6.201218 Roll=-13.768508 Twist=2.268208
+
+[DEBUG calculate_more_bppars] i=52 j=62 dir_z=-0.981821
+[DEBUG] orien[52][7-9]=0.686552 0.701788 -0.190103
+[DEBUG] orien[62][7-9]=-0.736729 -0.587705 0.334415
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.224628 (from orien[52][1])
+[DEBUG]     r2[1][1]=0.119669 (from orien[62][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.453399 (from orien[52][2])
+[DEBUG]     r2[2][1]=-0.600075 (from orien[62][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.862538 (from orien[52][3])
+[DEBUG]     r2[3][1]=-0.790942 (from orien[62][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.691512 (from orien[52][4])
+[DEBUG]     r2[1][2]=-0.665515 (from orien[62][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.549474 (from orien[52][5])
+[DEBUG]     r2[2][2]=0.542690 (from orien[62][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.468924 (from orien[52][6])
+[DEBUG]     r2[3][2]=-0.512423 (from orien[62][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.686552 (from orien[52][7])
+[DEBUG]     r2[1][3]=0.736729 (from orien[62][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.701788 (from orien[52][8])
+[DEBUG]     r2[2][3]=0.587705 (from orien[62][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.190103 (from orien[52][9])
+[DEBUG]     r2[3][3]=-0.334415 (from orien[62][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.224628, -0.691512, 0.686552]
+[DEBUG]   [-0.453399, 0.549474, 0.701788]
+[DEBUG]   [-0.862538, -0.468924, -0.190103]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.119669, -0.665515, 0.736729]
+[DEBUG]   [-0.600075, 0.542690, 0.587705]
+[DEBUG]   [-0.790942, -0.512423, -0.334415]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.266608 Slide=-0.092688 Rise=0.030059 Tilt=-1.472326 Roll=-10.842251 Twist=2.545609
+
+[DEBUG calculate_more_bppars] i=62 j=52 dir_z=-0.981821
+[DEBUG] orien[62][7-9]=-0.736729 -0.587705 0.334415
+[DEBUG] orien[52][7-9]=0.686552 0.701788 -0.190103
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=0.119669 (from orien[62][1])
+[DEBUG]     r2[1][1]=0.224628 (from orien[52][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.600075 (from orien[62][2])
+[DEBUG]     r2[2][1]=-0.453399 (from orien[52][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.790942 (from orien[62][3])
+[DEBUG]     r2[3][1]=-0.862538 (from orien[52][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.665515 (from orien[62][4])
+[DEBUG]     r2[1][2]=0.691512 (from orien[52][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.542690 (from orien[62][5])
+[DEBUG]     r2[2][2]=-0.549474 (from orien[52][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.512423 (from orien[62][6])
+[DEBUG]     r2[3][2]=0.468924 (from orien[52][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.736729 (from orien[62][7])
+[DEBUG]     r2[1][3]=-0.686552 (from orien[52][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.587705 (from orien[62][8])
+[DEBUG]     r2[2][3]=-0.701788 (from orien[52][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.334415 (from orien[62][9])
+[DEBUG]     r2[3][3]=0.190103 (from orien[52][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [0.119669, 0.665515, -0.736729]
+[DEBUG]   [-0.600075, -0.542690, -0.587705]
+[DEBUG]   [-0.790942, 0.512423, 0.334415]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [0.224628, 0.691512, -0.686552]
+[DEBUG]   [-0.453399, -0.549474, -0.701788]
+[DEBUG]   [-0.862538, 0.468924, 0.190103]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.266608 Slide=-0.092688 Rise=0.030059 Tilt=1.472326 Roll=-10.842251 Twist=2.545609
+
+[DEBUG calculate_more_bppars] i=53 j=61 dir_z=-0.967243
+[DEBUG] orien[53][7-9]=0.692732 0.677358 -0.247608
+[DEBUG] orien[61][7-9]=-0.764193 -0.495483 0.412923
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.208092 (from orien[53][1])
+[DEBUG]     r2[1][1]=-0.332239 (from orien[61][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.140998 (from orien[53][2])
+[DEBUG]     r2[2][1]=-0.246335 (from orien[61][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.967893 (from orien[53][3])
+[DEBUG]     r2[3][1]=-0.910459 (from orien[61][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.690522 (from orien[53][4])
+[DEBUG]     r2[1][2]=-0.552835 (from orien[61][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.722015 (from orien[53][5])
+[DEBUG]     r2[2][2]=0.832956 (from orien[61][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.043279 (from orien[53][6])
+[DEBUG]     r2[3][2]=-0.023629 (from orien[61][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.692732 (from orien[53][7])
+[DEBUG]     r2[1][3]=0.764193 (from orien[61][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.677358 (from orien[53][8])
+[DEBUG]     r2[2][3]=0.495483 (from orien[61][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.247608 (from orien[53][9])
+[DEBUG]     r2[3][3]=-0.412923 (from orien[61][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.208092, -0.690522, 0.692732]
+[DEBUG]   [-0.140998, 0.722015, 0.677358]
+[DEBUG]   [-0.967893, 0.043279, -0.247608]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.332239, -0.552835, 0.764193]
+[DEBUG]   [-0.246335, 0.832956, 0.495483]
+[DEBUG]   [-0.910459, -0.023629, -0.412923]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-0.278638 Slide=-0.146313 Rise=-0.138783 Tilt=-10.859232 Roll=-9.916264 Twist=0.242002
+
+[DEBUG calculate_more_bppars] i=61 j=53 dir_z=-0.967243
+[DEBUG] orien[61][7-9]=-0.764193 -0.495483 0.412923
+[DEBUG] orien[53][7-9]=0.692732 0.677358 -0.247608
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.332239 (from orien[61][1])
+[DEBUG]     r2[1][1]=-0.208092 (from orien[53][1], sign=keep)
+[DEBUG]     r1[2][1]=-0.246335 (from orien[61][2])
+[DEBUG]     r2[2][1]=-0.140998 (from orien[53][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.910459 (from orien[61][3])
+[DEBUG]     r2[3][1]=-0.967893 (from orien[53][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=0.552835 (from orien[61][4])
+[DEBUG]     r2[1][2]=0.690522 (from orien[53][4], sign=reverse)
+[DEBUG]     r1[2][2]=-0.832956 (from orien[61][5])
+[DEBUG]     r2[2][2]=-0.722015 (from orien[53][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.023629 (from orien[61][6])
+[DEBUG]     r2[3][2]=-0.043279 (from orien[53][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.764193 (from orien[61][7])
+[DEBUG]     r2[1][3]=-0.692732 (from orien[53][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.495483 (from orien[61][8])
+[DEBUG]     r2[2][3]=-0.677358 (from orien[53][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.412923 (from orien[61][9])
+[DEBUG]     r2[3][3]=0.247608 (from orien[53][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.332239, 0.552835, -0.764193]
+[DEBUG]   [-0.246335, -0.832956, -0.495483]
+[DEBUG]   [-0.910459, 0.023629, 0.412923]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.208092, 0.690522, -0.692732]
+[DEBUG]   [-0.140998, -0.722015, -0.677358]
+[DEBUG]   [-0.967893, -0.043279, 0.247608]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=0.278638 Slide=-0.146313 Rise=-0.138783 Tilt=10.859232 Roll=-9.916264 Twist=0.242002
+
+[DEBUG calculate_more_bppars] i=54 j=58 dir_z=-0.989811
+[DEBUG] orien[54][7-9]=0.727464 0.632020 -0.267107
+[DEBUG] orien[58][7-9]=-0.772288 -0.527726 0.353661
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.577014 (from orien[54][1])
+[DEBUG]     r2[1][1]=-0.114300 (from orien[58][1], sign=keep)
+[DEBUG]     r1[2][1]=0.352854 (from orien[54][2])
+[DEBUG]     r2[2][1]=0.663051 (from orien[58][2], sign=keep)
+[DEBUG]     r1[3][1]=-0.736579 (from orien[54][3])
+[DEBUG]     r2[3][1]=0.739796 (from orien[58][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.371283 (from orien[54][4])
+[DEBUG]     r2[1][2]=0.624905 (from orien[58][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.689960 (from orien[54][5])
+[DEBUG]     r2[2][2]=-0.530913 (from orien[58][5], sign=reverse)
+[DEBUG]     r1[3][2]=0.621373 (from orien[54][6])
+[DEBUG]     r2[3][2]=0.572386 (from orien[58][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=0.727464 (from orien[54][7])
+[DEBUG]     r2[1][3]=0.772288 (from orien[58][7], sign=reverse)
+[DEBUG]     r1[2][3]=0.632020 (from orien[54][8])
+[DEBUG]     r2[2][3]=0.527726 (from orien[58][8], sign=reverse)
+[DEBUG]     r1[3][3]=-0.267107 (from orien[54][9])
+[DEBUG]     r2[3][3]=-0.353661 (from orien[58][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.577014, -0.371283, 0.727464]
+[DEBUG]   [0.352854, 0.689960, 0.632020]
+[DEBUG]   [-0.736579, 0.621373, -0.267107]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.114300, 0.624905, 0.772288]
+[DEBUG]   [0.663051, -0.530913, 0.527726]
+[DEBUG]   [0.739796, 0.572386, -0.353661]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=4.192539 Slide=-1.616954 Rise=0.237442 Tilt=-5.078531 Roll=6.420241 Twist=-104.186613
+
+[DEBUG calculate_more_bppars] i=58 j=54 dir_z=-0.989811
+[DEBUG] orien[58][7-9]=-0.772288 -0.527726 0.353661
+[DEBUG] orien[54][7-9]=0.727464 0.632020 -0.267107
+[DEBUG] Building r1 and r2 matrices from orien arrays:
+[DEBUG]   Column k=1, koffset=0:
+[DEBUG]     r1[1][1]=-0.114300 (from orien[58][1])
+[DEBUG]     r2[1][1]=-0.577014 (from orien[54][1], sign=keep)
+[DEBUG]     r1[2][1]=0.663051 (from orien[58][2])
+[DEBUG]     r2[2][1]=0.352854 (from orien[54][2], sign=keep)
+[DEBUG]     r1[3][1]=0.739796 (from orien[58][3])
+[DEBUG]     r2[3][1]=-0.736579 (from orien[54][3], sign=keep)
+[DEBUG]   Column k=2, koffset=3:
+[DEBUG]     r1[1][2]=-0.624905 (from orien[58][4])
+[DEBUG]     r2[1][2]=0.371283 (from orien[54][4], sign=reverse)
+[DEBUG]     r1[2][2]=0.530913 (from orien[58][5])
+[DEBUG]     r2[2][2]=-0.689960 (from orien[54][5], sign=reverse)
+[DEBUG]     r1[3][2]=-0.572386 (from orien[58][6])
+[DEBUG]     r2[3][2]=-0.621373 (from orien[54][6], sign=reverse)
+[DEBUG]   Column k=3, koffset=6:
+[DEBUG]     r1[1][3]=-0.772288 (from orien[58][7])
+[DEBUG]     r2[1][3]=-0.727464 (from orien[54][7], sign=reverse)
+[DEBUG]     r1[2][3]=-0.527726 (from orien[58][8])
+[DEBUG]     r2[2][3]=-0.632020 (from orien[54][8], sign=reverse)
+[DEBUG]     r1[3][3]=0.353661 (from orien[58][9])
+[DEBUG]     r2[3][3]=0.267107 (from orien[54][9], sign=reverse)
+[DEBUG] Final r1 matrix:
+[DEBUG]   [-0.114300, -0.624905, -0.772288]
+[DEBUG]   [0.663051, 0.530913, -0.527726]
+[DEBUG]   [0.739796, -0.572386, 0.353661]
+[DEBUG] Final r2 matrix:
+[DEBUG]   [-0.577014, 0.371283, -0.727464]
+[DEBUG]   [0.352854, -0.689960, -0.632020]
+[DEBUG]   [-0.736579, -0.621373, 0.267107]
+[DEBUG] Calling bpstep_par(r2, org[j], r1, org[i], ...)
+[DEBUG] Result: Shift=-4.192539 Slide=-1.616954 Rise=0.237442 Tilt=5.078531 Roll=6.420241 Twist=-104.186613
+
+Time used: 00:00:00:00
