@@ -353,6 +353,36 @@ src/fncs_slre.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/find_pair_analyze.dir/build.make CMakeFiles/find_pair_analyze.dir/src/fncs_slre.c.s
 .PHONY : src/fncs_slre.c.s
 
+src/json_writer.o: src/json_writer.c.o
+.PHONY : src/json_writer.o
+
+# target to build an object file
+src/json_writer.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/find_pair_original.dir/build.make CMakeFiles/find_pair_original.dir/src/json_writer.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/analyze_original.dir/build.make CMakeFiles/analyze_original.dir/src/json_writer.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/find_pair_analyze.dir/build.make CMakeFiles/find_pair_analyze.dir/src/json_writer.c.o
+.PHONY : src/json_writer.c.o
+
+src/json_writer.i: src/json_writer.c.i
+.PHONY : src/json_writer.i
+
+# target to preprocess a source file
+src/json_writer.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/find_pair_original.dir/build.make CMakeFiles/find_pair_original.dir/src/json_writer.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/analyze_original.dir/build.make CMakeFiles/analyze_original.dir/src/json_writer.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/find_pair_analyze.dir/build.make CMakeFiles/find_pair_analyze.dir/src/json_writer.c.i
+.PHONY : src/json_writer.c.i
+
+src/json_writer.s: src/json_writer.c.s
+.PHONY : src/json_writer.s
+
+# target to generate assembly for a file
+src/json_writer.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/find_pair_original.dir/build.make CMakeFiles/find_pair_original.dir/src/json_writer.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/analyze_original.dir/build.make CMakeFiles/analyze_original.dir/src/json_writer.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/find_pair_analyze.dir/build.make CMakeFiles/find_pair_analyze.dir/src/json_writer.c.s
+.PHONY : src/json_writer.c.s
+
 src/nrutil.o: src/nrutil.c.o
 .PHONY : src/nrutil.o
 
@@ -415,6 +445,9 @@ help:
 	@echo "... src/fncs_slre.o"
 	@echo "... src/fncs_slre.i"
 	@echo "... src/fncs_slre.s"
+	@echo "... src/json_writer.o"
+	@echo "... src/json_writer.i"
+	@echo "... src/json_writer.s"
 	@echo "... src/nrutil.o"
 	@echo "... src/nrutil.i"
 	@echo "... src/nrutil.s"

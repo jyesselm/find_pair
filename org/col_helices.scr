@@ -1,73 +1,29 @@
 zap
 load nmrpdb hel_regions.pdb
-# load ../legacy_archive/fixtures/pdb/1EHZ.pdb
+# load ../data/pdb/100D.pdb
 # restrict not (protein or water)
 
 
 #------Helix #1, color: red------
-select 1:A, 72:A
+select 1:A, 20:B
 color red
-select 2:A, 71:A
+select 2:A, 19:B
 color red
-select 3:A, 70:A
+select 3:A, 18:B
 color red
-select 4:A, 69:A
+select 4:A, 17:B
 color red
-select 5:A, 68:A
+select 5:A, 16:B
 color red
-select 6:A, 67:A
+select 6:A, 15:B
 color red
-select 7:A, 66:A
+select 7:A, 14:B
 color red
-select 49:A, 65:A
+select 8:A, 13:B
 color red
-select 50:A, 64:A
+select 9:A, 12:B
 color red
-select 51:A, 63:A
+select 10:A, 11:B
 color red
-select 52:A, 62:A
-color red
-select 53:A, 61:A
-color red
-select 54:A, 58:A
-color red
-select 55:A, 18:A
-color red
-
-#------Helix #2, color: green------
-select 36:A, 33:A
-color green
-select 38:A, 32:A
-color green
-select 39:A, 31:A
-color green
-select 40:A, 30:A
-color green
-select 41:A, 29:A
-color green
-select 42:A, 28:A
-color green
-select 43:A, 27:A
-color green
-select 44:A, 26:A
-color green
-select 10:A, 25:A
-color green
-select 11:A, 24:A
-color green
-select 12:A, 23:A
-color green
-select 13:A, 22:A
-color green
-select 14:A, 8:A
-color green
-select 15:A, 48:A
-color green
-select 16:A, 59:A
-color green
-
-#------Helix #3, color: blue------
-select 19:A, 56:A
-color blue
 
 select all

@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/analyze_original.dir/src/cmn_fncs.c.o.d"
   "CMakeFiles/analyze_original.dir/src/fncs_slre.c.o"
   "CMakeFiles/analyze_original.dir/src/fncs_slre.c.o.d"
+  "CMakeFiles/analyze_original.dir/src/json_writer.c.o"
+  "CMakeFiles/analyze_original.dir/src/json_writer.c.o.d"
   "CMakeFiles/analyze_original.dir/src/nrutil.c.o"
   "CMakeFiles/analyze_original.dir/src/nrutil.c.o.d"
   "bin/analyze_original"

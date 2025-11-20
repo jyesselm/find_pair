@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/find_pair_original.dir/src/find_pair.c.o.d"
   "CMakeFiles/find_pair_original.dir/src/fncs_slre.c.o"
   "CMakeFiles/find_pair_original.dir/src/fncs_slre.c.o.d"
+  "CMakeFiles/find_pair_original.dir/src/json_writer.c.o"
+  "CMakeFiles/find_pair_original.dir/src/json_writer.c.o.d"
   "CMakeFiles/find_pair_original.dir/src/nrutil.c.o"
   "CMakeFiles/find_pair_original.dir/src/nrutil.c.o.d"
   "bin/find_pair_original"

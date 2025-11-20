@@ -1,4 +1,5 @@
 #include "x3dna.h"
+#include "json_writer.h"
 long set_3letter_base_pdb(char *res_name, char *spdb)
 {
     char str[BUF32];
@@ -392,7 +393,6 @@ FILE *open_tmpfile(void)
 FILE *open_file(char *filename, char *filemode)
 {
     FILE *fp;
-    extern long json_writer_is_initialized(void);
     errno = 0;
     if (filename == NULL)
         filename = "\0";

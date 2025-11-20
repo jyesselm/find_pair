@@ -121,4 +121,5 @@ CMakeFiles/find_pair_original.dir/src/ana_fncs.c.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/arm/limits.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/arm/_limits.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/syslimits.h \
-  /Users/jyesselman2/Dropbox/2_code/cpp/find_pair_2/org/include/x3dna_fncs.h
+  /Users/jyesselman2/Dropbox/2_code/cpp/find_pair_2/org/include/x3dna_fncs.h \
+  /Users/jyesselman2/Dropbox/2_code/cpp/find_pair_2/org/include/json_writer.h

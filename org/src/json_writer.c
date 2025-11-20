@@ -65,6 +65,7 @@ static void json_write_matrix(FILE *fp, double **m) {
 long json_writer_init(const char *pdbfile) {
     char pdb_name[BUF512];
     char dir_path[BUF1K];
+    char data_dir[BUF1K];
     struct stat st = {0};
     
     if (initialized) {
@@ -72,10 +73,31 @@ long json_writer_init(const char *pdbfile) {
     }
     
     /* Extract base name without extension */
-    bname_noext(pdbfile, pdb_name);
+    bname_noext((char *)pdbfile, pdb_name);
     
-    /* Create directory if it doesn't exist */
-    sprintf(dir_path, "data/json_legacy");
+    /* Determine project root data directory */
+    /* Check if ../data exists (we're in org/ directory) */
+    if (stat("../data", &st) == 0) {
+        sprintf(data_dir, "../data");
+        sprintf(dir_path, "../data/json_legacy");
+    } else if (stat("data", &st) == 0) {
+        /* We're already at project root */
+        sprintf(data_dir, "data");
+        sprintf(dir_path, "data/json_legacy");
+    } else {
+        /* Create data directory at current location */
+        sprintf(data_dir, "data");
+        sprintf(dir_path, "data/json_legacy");
+    }
+    
+    /* Create parent directory 'data' if it doesn't exist */
+    if (stat(data_dir, &st) == -1) {
+        if (mkdir(data_dir, 0755) != 0) {
+            fprintf(stderr, "[JSON_WRITER] Warning: Could not create directory %s\n", data_dir);
+            return FALSE;
+        }
+    }
+    /* Create json_legacy directory */
     if (stat(dir_path, &st) == -1) {
         if (mkdir(dir_path, 0755) != 0) {
             fprintf(stderr, "[JSON_WRITER] Warning: Could not create directory %s\n", dir_path);
