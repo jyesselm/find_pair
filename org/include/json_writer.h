@@ -76,6 +76,55 @@ void json_writer_record_input_parameters(miscPars *misc_pars, long ds, long heta
 /* Record all global variables (writes to separate file for constants) */
 void json_writer_record_global_variables(void);
 
+/* Record hydrogen bond details for a base pair */
+void json_writer_record_hbonds(long base_i, long base_j,
+                                long num_hbonds,
+                                char **hb_atom1, char **hb_atom2,
+                                double *hb_dist, char *hb_type,
+                                long *lkg_type);
+
+/* Record base frame calculation details (from base_frame or ref_frames) */
+void json_writer_record_base_frame_calc(long residue_idx, char base_type,
+                                         const char *standard_template,
+                                         double rms_fit, long num_matched,
+                                         char **matched_atoms, long num_atoms);
+
+/* Record pair validation results (from check_pair) */
+void json_writer_record_pair_validation(long base_i, long base_j,
+                                         long is_valid, long bp_type_id,
+                                         double dir_x, double dir_y, double dir_z,
+                                         double *rtn_val,  /* rtn_val[1..5] */
+                                         miscPars *misc_pars);
+
+/* Record hydrogen bond list (detailed from get_hbond_ij) */
+void json_writer_record_hbond_list(long base_i, long base_j,
+                                    long num_hbonds,
+                                    char **hb_atom1, char **hb_atom2,
+                                    double *hb_dist, char *hb_type,
+                                    const char *hb_info_string);
+
+/* Record base frame calculation with full details (alternative signature) */
+void json_writer_record_frame_calc(long residue_idx, char base_type,
+                                    const char *template_file, double rms_fit,
+                                    long num_matched_atoms,
+                                    double **matched_std_xyz,
+                                    double **matched_exp_xyz);
+
+/* Record ring atom indices for a residue */
+void json_writer_record_ring_atoms(long residue_idx, long *ring_atom_indices,
+                                    long num_ring_atoms);
+
+/* Record distance and angle checks */
+void json_writer_record_distance_checks(long base_i, long base_j,
+                                         double dorg, double dNN,
+                                         double plane_angle, double d_v,
+                                         double overlap_area);
+
+/* Record least squares fitting details */
+void json_writer_record_ls_fitting(long residue_idx, long num_points,
+                                    double rms_fit, double **rotation_matrix,
+                                    double *translation);
+
 /* Check if JSON writer is initialized */
 long json_writer_is_initialized(void);
 

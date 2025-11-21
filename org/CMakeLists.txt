@@ -1,8 +1,21 @@
 cmake_minimum_required(VERSION 3.15)
-project(x3dna_original_debug)
+project(x3dna_original)
 
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -Wall")
+
+# Set Release mode by default if not specified
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# Set optimization flags based on build type
+set(CMAKE_C_FLAGS_DEBUG "-g -O0 -Wall")
+set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG -Wall")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -O2 -Wall")
+set(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG -Wall")
+
+# Base flags (common to all build types)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 # Include directories
 include_directories(include)

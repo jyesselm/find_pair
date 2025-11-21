@@ -403,17 +403,25 @@ FILE *open_file(char *filename, char *filemode)
     else if (!strcmp(filename, "stderr"))
         fp = stderr;
     else {
-        /* When JSON writer is active, disable all output file writes */
-        /* Still allow reads for input files (like .inp files) */
+        /* When JSON writer is active, disable most output file writes */
+        /* BUT: Allow .inp files to be written (needed for analyze step) */
+        /* Also allow reads for input files */
         if (json_writer_is_initialized() && 
             (filemode[0] == 'w' || filemode[0] == 'a' || strstr(filemode, "w") != NULL)) {
-            /* Return /dev/null or stdout but discard writes */
-            /* Using stdout with a flag would require more changes, so just don't open the file */
-            /* This will cause writes to fail silently or we can return a dummy */
-            fp = fopen("/dev/null", "w");  /* Discard writes */
-            if (fp == NULL) {
-                /* Fallback: return stdout but it will be written to console */
-                fp = stdout;
+            /* Check if this is an .inp file (needed for analyze) */
+            long len = strlen(filename);
+            if (len >= 4 && strcmp(filename + len - 4, ".inp") == 0) {
+                /* Allow .inp files to be written - they're needed for analyze step */
+                fp = fopen(filename, filemode);
+                if (fp == NULL)
+                    fatal("open_file <%s> failed: %s\n", filename, strerror(errno));
+            } else {
+                /* Discard writes to other output files when JSON writer is active */
+                fp = fopen("/dev/null", "w");  /* Discard writes */
+                if (fp == NULL) {
+                    /* Fallback: return stdout but it will be written to console */
+                    fp = stdout;
+                }
             }
         } else {
             fp = fopen(filename, filemode);
@@ -3903,6 +3911,10 @@ void get_hbond_ij(long i, long j, char basei, char basej, miscPars *misc_pars,
             sprintf(stmp, " %s%c%s %4.2f", aname1, hb_type[k], aname2, hb_dist[k]);
             strcat(hb_info, stmp);
         }
+        /* Record hydrogen bond details to JSON (before freeing arrays) */
+        json_writer_record_hbond_list(i, j, num_hbonds, hb_atom1, hb_atom2, hb_dist, hb_type, hb_info);
+        /* Also record detailed H-bond data */
+        json_writer_record_hbonds(i, j, num_hbonds, hb_atom1, hb_atom2, hb_dist, hb_type, lkg_type);
         free_cvector(hb_type, 1, num_hbonds);
         free_lvector(lkg_type, 1, num_hbonds);
     }
@@ -4349,9 +4361,14 @@ static void calculate_more_bppars(long i, long j, double dir_x, double dir_y,
     bpstep_par(r2, org[j], r1, org[i], pars, mst, &rtn_val[5]);
     fprintf(stderr, "[DEBUG] Result: Shift=%.6f Slide=%.6f Rise=%.6f Tilt=%.6f Roll=%.6f Twist=%.6f\n",
             pars[1], pars[2], pars[3], pars[4], pars[5], pars[6]);
+    sprintf(bpi, "%c%c", toupper((int) bseq[i]), toupper((int) bseq[j]));
+    /* Record base pair frame details to JSON (from calculate_more_bppars) */
+    {
+        double dir_xyz_arr[4] = {dir_x, dir_y, dir_z};
+        json_writer_record_base_pair(i, j, bpi, dir_xyz_arr, r1, r2, org[i], org[j]);
+    }
     for (k = 1; k <= 6; k++)
         rtn_val[26 + k] = pars[k];
-    sprintf(bpi, "%c%c", toupper((int) bseq[i]), toupper((int) bseq[j]));
     *bpid = -1;
     if (dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0) {
         check_wc_wobble_pair(bpid, bpi, pars[1], pars[2], pars[6]);
@@ -4456,6 +4473,15 @@ void check_pair(long i, long j, char *bseq, long **seidx, double **xyz,
             rtn_val[5] +=
                 adjust_pairQuality(i, j, bseq[i], bseq[j], seidx, idx, AtomName, xyz,
                                    misc_pars);
+            /* Record pair validation results to JSON */
+            json_writer_record_pair_validation(i, j, (*bpid != 0) ? 1 : 0, *bpid,
+                                                 dir_x, dir_y, dir_z, rtn_val, misc_pars);
+            /* Record distance checks */
+            json_writer_record_distance_checks(i, j, rtn_val[1], rtn_val[4], rtn_val[3],
+                                                 rtn_val[2], get_oarea(i, j, ring_atom, oave, zave, xyz, 0));
+        } else {
+            /* Record validation even for rejected pairs */
+            json_writer_record_pair_validation(i, j, 0, 0, dir_x, dir_y, dir_z, rtn_val, misc_pars);
         }
     }
 }

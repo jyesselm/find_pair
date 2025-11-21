@@ -6,7 +6,7 @@ C_DEFINES =
 
 C_INCLUDES = -I/Users/jyesselman2/Dropbox/2_code/cpp/find_pair_2/org/include
 
-C_FLAGSarm64 =  -g -O0 -Wall -std=gnu99 -arch arm64
+C_FLAGSarm64 =  -Wall -O3 -DNDEBUG -Wall -std=gnu99 -arch arm64
 
-C_FLAGS =  -g -O0 -Wall -std=gnu99 -arch arm64
+C_FLAGS =  -Wall -O3 -DNDEBUG -Wall -std=gnu99 -arch arm64
 

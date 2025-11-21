@@ -763,3 +763,306 @@ void json_writer_record_global_variables(void) {
     fclose(globals_file);
     fprintf(stderr, "[JSON_WRITER] Global variables and constants saved to: %s\n", globals_filename);
 }
+
+void json_writer_record_hbonds(long base_i, long base_j, long num_hbonds,
+                                char **hb_atom1, char **hb_atom2,
+                                double *hb_dist, char *hb_type,
+                                long *lkg_type) {
+    long i;
+    char esc_atom1[BUF512], esc_atom2[BUF512];
+    
+    if (!json_writer_is_initialized()) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"hydrogen_bonds\",\n");
+    fprintf(json_file, "      \"base_i\": %ld,\n", base_i);
+    fprintf(json_file, "      \"base_j\": %ld,\n", base_j);
+    fprintf(json_file, "      \"num_hbonds\": %ld,\n", num_hbonds);
+    fprintf(json_file, "      \"hbonds\": [\n");
+    
+    for (i = 1; i <= num_hbonds; i++) {
+        if (i > 1) fprintf(json_file, ",\n");
+        json_escape_string(hb_atom1[i], esc_atom1, sizeof(esc_atom1));
+        json_escape_string(hb_atom2[i], esc_atom2, sizeof(esc_atom2));
+        fprintf(json_file, "        {\n");
+        fprintf(json_file, "          \"hbond_idx\": %ld,\n", i);
+        fprintf(json_file, "          \"donor_atom\": \"%s\",\n", esc_atom1);
+        fprintf(json_file, "          \"acceptor_atom\": \"%s\",\n", esc_atom2);
+        fprintf(json_file, "          \"distance\": %.6f,\n", hb_dist ? fabs(hb_dist[i]) : 0.0);
+        fprintf(json_file, "          \"type\": \"%c\",\n", hb_type && hb_type[i] ? hb_type[i] : ' ');
+        fprintf(json_file, "          \"linkage_type\": %ld\n", lkg_type ? lkg_type[i] : 0);
+        fprintf(json_file, "        }");
+    }
+    
+    fprintf(json_file, "\n      ]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_base_frame_calc(long residue_idx, char base_type,
+                                         const char *standard_template,
+                                         double rms_fit, long num_matched,
+                                         char **matched_atoms, long num_atoms) {
+    long i;
+    char esc_atom[BUF512], esc_template[BUF512];
+    
+    if (!json_writer_is_initialized()) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"base_frame_calc\",\n");
+    fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
+    fprintf(json_file, "      \"base_type\": \"%c\",\n", base_type);
+    json_escape_string(standard_template, esc_template, sizeof(esc_template));
+    fprintf(json_file, "      \"standard_template\": \"%s\",\n", esc_template);
+    fprintf(json_file, "      \"rms_fit\": %.6f,\n", rms_fit);
+    fprintf(json_file, "      \"num_matched_atoms\": %ld,\n", num_matched);
+    fprintf(json_file, "      \"matched_atoms\": [");
+    
+    for (i = 1; i <= num_matched && i <= num_atoms; i++) {
+        if (i > 1) fprintf(json_file, ", ");
+        if (matched_atoms && matched_atoms[i]) {
+            json_escape_string(matched_atoms[i], esc_atom, sizeof(esc_atom));
+            fprintf(json_file, "\"%s\"", esc_atom);
+        } else {
+            fprintf(json_file, "\"\"");
+        }
+    }
+    
+    fprintf(json_file, "]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_pair_validation(long base_i, long base_j,
+                                         long is_valid, long bp_type_id,
+                                         double dir_x, double dir_y, double dir_z,
+                                         double *rtn_val, miscPars *misc_pars) {
+    if (!json_writer_is_initialized()) return;
+    if (!rtn_val || !misc_pars) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"pair_validation\",\n");
+    fprintf(json_file, "      \"base_i\": %ld,\n", base_i);
+    fprintf(json_file, "      \"base_j\": %ld,\n", base_j);
+    fprintf(json_file, "      \"is_valid\": %ld,\n", is_valid);
+    fprintf(json_file, "      \"bp_type_id\": %ld,\n", bp_type_id);
+    fprintf(json_file, "      \"direction_vectors\": {\n");
+    fprintf(json_file, "        \"dir_x\": %.6f,\n", dir_x);
+    fprintf(json_file, "        \"dir_y\": %.6f,\n", dir_y);
+    fprintf(json_file, "        \"dir_z\": %.6f\n", dir_z);
+    fprintf(json_file, "      },\n");
+    fprintf(json_file, "      \"calculated_values\": {\n");
+    fprintf(json_file, "        \"dorg\": %.6f,\n", rtn_val[1]);
+    fprintf(json_file, "        \"d_v\": %.6f,\n", rtn_val[2]);
+    fprintf(json_file, "        \"plane_angle\": %.6f,\n", rtn_val[3]);
+    fprintf(json_file, "        \"dNN\": %.6f,\n", rtn_val[4]);
+    fprintf(json_file, "        \"quality_score\": %.6f\n", rtn_val[5]);
+    fprintf(json_file, "      },\n");
+    fprintf(json_file, "      \"validation_checks\": {\n");
+    fprintf(json_file, "        \"distance_check\": %s,\n",
+            (dval_in_range(rtn_val[1], misc_pars->min_dorg, misc_pars->max_dorg)) ? "true" : "false");
+    fprintf(json_file, "        \"d_v_check\": %s,\n",
+            (dval_in_range(rtn_val[2], misc_pars->min_dv, misc_pars->max_dv)) ? "true" : "false");
+    fprintf(json_file, "        \"plane_angle_check\": %s,\n",
+            (dval_in_range(rtn_val[3], misc_pars->min_plane_angle, misc_pars->max_plane_angle)) ? "true" : "false");
+    fprintf(json_file, "        \"dNN_check\": %s\n",
+            (dval_in_range(rtn_val[4], misc_pars->min_dNN, misc_pars->max_dNN)) ? "true" : "false");
+    fprintf(json_file, "      },\n");
+    fprintf(json_file, "      \"thresholds\": {\n");
+    fprintf(json_file, "        \"min_dorg\": %.6f,\n", misc_pars->min_dorg);
+    fprintf(json_file, "        \"max_dorg\": %.6f,\n", misc_pars->max_dorg);
+    fprintf(json_file, "        \"min_dv\": %.6f,\n", misc_pars->min_dv);
+    fprintf(json_file, "        \"max_dv\": %.6f,\n", misc_pars->max_dv);
+    fprintf(json_file, "        \"min_plane_angle\": %.6f,\n", misc_pars->min_plane_angle);
+    fprintf(json_file, "        \"max_plane_angle\": %.6f,\n", misc_pars->max_plane_angle);
+    fprintf(json_file, "        \"min_dNN\": %.6f,\n", misc_pars->min_dNN);
+    fprintf(json_file, "        \"max_dNN\": %.6f\n", misc_pars->max_dNN);
+    fprintf(json_file, "      }\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_hbond_list(long base_i, long base_j, long num_hbonds,
+                                    char **hb_atom1, char **hb_atom2,
+                                    double *hb_dist, char *hb_type,
+                                    const char *hb_info_string) {
+    long i;
+    char esc_atom1[BUF512], esc_atom2[BUF512], esc_info[BUF1K];
+    
+    if (!json_writer_is_initialized()) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"hbond_list\",\n");
+    fprintf(json_file, "      \"base_i\": %ld,\n", base_i);
+    fprintf(json_file, "      \"base_j\": %ld,\n", base_j);
+    fprintf(json_file, "      \"num_hbonds\": %ld,\n", num_hbonds);
+    json_escape_string(hb_info_string, esc_info, sizeof(esc_info));
+    fprintf(json_file, "      \"hb_info_string\": \"%s\",\n", esc_info);
+    fprintf(json_file, "      \"hbonds\": [\n");
+    
+    for (i = 1; i <= num_hbonds && hb_atom1 && hb_atom2; i++) {
+        if (i > 1) fprintf(json_file, ",\n");
+        json_escape_string(hb_atom1[i], esc_atom1, sizeof(esc_atom1));
+        json_escape_string(hb_atom2[i], esc_atom2, sizeof(esc_atom2));
+        fprintf(json_file, "        {\n");
+        fprintf(json_file, "          \"hbond_idx\": %ld,\n", i);
+        fprintf(json_file, "          \"donor_atom\": \"%s\",\n", esc_atom1);
+        fprintf(json_file, "          \"acceptor_atom\": \"%s\",\n", esc_atom2);
+        if (hb_dist) {
+            fprintf(json_file, "          \"distance\": %.6f", fabs(hb_dist[i]));
+        } else {
+            fprintf(json_file, "          \"distance\": null");
+        }
+        if (hb_type && hb_type[i]) {
+            fprintf(json_file, ",\n          \"type\": \"%c\"", hb_type[i]);
+        }
+        fprintf(json_file, "\n        }");
+    }
+    
+    fprintf(json_file, "\n      ]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_frame_calc(long residue_idx, char base_type,
+                                    const char *template_file, double rms_fit,
+                                    long num_matched_atoms,
+                                    double **matched_std_xyz,
+                                    double **matched_exp_xyz) {
+    long i;
+    char esc_template[BUF512];
+    
+    if (!json_writer_is_initialized()) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"frame_calc\",\n");
+    fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
+    fprintf(json_file, "      \"base_type\": \"%c\",\n", base_type);
+    json_escape_string(template_file, esc_template, sizeof(esc_template));
+    fprintf(json_file, "      \"template_file\": \"%s\",\n", esc_template);
+    fprintf(json_file, "      \"rms_fit\": %.6f,\n", rms_fit);
+    fprintf(json_file, "      \"num_matched_atoms\": %ld,\n", num_matched_atoms);
+    
+    if (matched_std_xyz && matched_exp_xyz) {
+        fprintf(json_file, "      \"matched_coordinates\": [\n");
+        for (i = 1; i <= num_matched_atoms; i++) {
+            if (i > 1) fprintf(json_file, ",\n");
+            fprintf(json_file, "        {\n");
+            fprintf(json_file, "          \"atom_idx\": %ld,\n", i);
+            fprintf(json_file, "          \"std_xyz\": [%.6f, %.6f, %.6f],\n",
+                    matched_std_xyz[i][1], matched_std_xyz[i][2], matched_std_xyz[i][3]);
+            fprintf(json_file, "          \"exp_xyz\": [%.6f, %.6f, %.6f]\n",
+                    matched_exp_xyz[i][1], matched_exp_xyz[i][2], matched_exp_xyz[i][3]);
+            fprintf(json_file, "        }");
+        }
+        fprintf(json_file, "\n      ]\n");
+    }
+    
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_ring_atoms(long residue_idx, long *ring_atom_indices,
+                                    long num_ring_atoms) {
+    long i;
+    
+    if (!json_writer_is_initialized()) return;
+    if (!ring_atom_indices) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"ring_atoms\",\n");
+    fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
+    fprintf(json_file, "      \"num_ring_atoms\": %ld,\n", num_ring_atoms);
+    fprintf(json_file, "      \"ring_atom_indices\": [");
+    
+    for (i = 1; i <= num_ring_atoms; i++) {
+        if (i > 1) fprintf(json_file, ", ");
+        fprintf(json_file, "%ld", ring_atom_indices[i]);
+    }
+    
+    fprintf(json_file, "]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_distance_checks(long base_i, long base_j,
+                                         double dorg, double dNN,
+                                         double plane_angle, double d_v,
+                                         double overlap_area) {
+    if (!json_writer_is_initialized()) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"distance_checks\",\n");
+    fprintf(json_file, "      \"base_i\": %ld,\n", base_i);
+    fprintf(json_file, "      \"base_j\": %ld,\n", base_j);
+    fprintf(json_file, "      \"values\": {\n");
+    fprintf(json_file, "        \"dorg\": %.6f,\n", dorg);
+    fprintf(json_file, "        \"dNN\": %.6f,\n", dNN);
+    fprintf(json_file, "        \"plane_angle\": %.6f,\n", plane_angle);
+    fprintf(json_file, "        \"d_v\": %.6f,\n", d_v);
+    fprintf(json_file, "        \"overlap_area\": %.6f\n", overlap_area);
+    fprintf(json_file, "      }\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_ls_fitting(long residue_idx, long num_points,
+                                    double rms_fit, double **rotation_matrix,
+                                    double *translation) {
+    long i, j;
+    
+    if (!json_writer_is_initialized()) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"ls_fitting\",\n");
+    fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
+    fprintf(json_file, "      \"num_points\": %ld,\n", num_points);
+    fprintf(json_file, "      \"rms_fit\": %.6f,\n", rms_fit);
+    
+    if (rotation_matrix) {
+        fprintf(json_file, "      \"rotation_matrix\": ");
+        json_write_matrix(json_file, rotation_matrix);
+        fprintf(json_file, ",\n");
+    }
+    
+    if (translation) {
+        fprintf(json_file, "      \"translation\": ");
+        json_write_double_array(json_file, &translation[1], 3);
+        fprintf(json_file, "\n");
+    }
+    
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}

@@ -1282,6 +1282,12 @@ void ref_frames(long ds, long num_bp, long **pair_num, char **bp_seq, long **sei
             }
             rms_fit[i][j] = ls_fitting(sRing_xyz, eRing_xyz, nmatch, fitted_xyz, R, orgi);
             ioffset9 = (j - 1) * 9;
+            /* Record frame calculation details in ref_frames */
+            json_writer_record_base_frame_calc(rnum, bp_seq[i][j], spdb, rms_fit[i][j], nmatch,
+                                                 irna ? (char**)rRingAtom : (char**)RingAtom, RingAtom_num);
+            json_writer_record_ls_fitting(rnum, nmatch, rms_fit[i][j], R, orgi);
+            json_writer_record_frame_calc(rnum, bp_seq[i][j], spdb, rms_fit[i][j], nmatch,
+                                           sRing_xyz, eRing_xyz);
             if (i == 2) {
                 for (k = 1; k <= 3; k++)
                     vz[k] = R[k][3];
@@ -3146,9 +3152,13 @@ void ring_oidx(long num, long num_residue, long *RY, long **seidx, char **AtomNa
     connect = lmatrix(1, num, 1, 7);
     get_bonds(num, AtomName, xyz, num_residue, RY, seidx, connect);
     all_bring_atoms(num_residue, RY, seidx, AtomName, &num_ring, ring_atom);
-    for (i = 1; i <= num_residue; i++)
-        if (ring_atom[i][10] > 0)
+    for (i = 1; i <= num_residue; i++) {
+        if (ring_atom[i][10] > 0) {
             get_cntatom(ring_atom[i], connect, idx);
+            /* Record ring atom indices to JSON */
+            json_writer_record_ring_atoms(i, ring_atom[i], ring_atom[i][10]);
+        }
+    }
     free_lmatrix(connect, 1, num, 1, 7);
 }
 

@@ -1,4 +1,5 @@
 #include "x3dna.h"
+#include "json_writer.h"
 struct_Gvars Gvars;
 static char *CMARKERS = "||x+0";
 static char *REBUILD_CIDS = "ABCDEFGHI";
@@ -420,8 +421,18 @@ void base_frame(long num_residue, char *bseq, long **seidx, long *res_type,
                 cpxyz(sxyz[std_katom], sRing_xyz[nmatch]);
             }
         }
-        (void) ls_fitting(sRing_xyz, eRing_xyz, nmatch, fitted_xyz, R, org[i]);
-        mst2orien(orien[i], 0, R);
+        if (nmatch >= 3) {
+            double rms_fit = ls_fitting(sRing_xyz, eRing_xyz, nmatch, fitted_xyz, R, org[i]);
+            mst2orien(orien[i], 0, R);
+            /* Record base frame calculation details to JSON */
+            json_writer_record_base_frame_calc(i, bseq[i], spdb, rms_fit, nmatch, 
+                                                 (char**)RingAtom, RingAtom_num);
+            /* Record least squares fitting details */
+            json_writer_record_ls_fitting(i, nmatch, rms_fit, R, org[i]);
+            /* Record frame calculation with matched coordinates */
+            json_writer_record_frame_calc(i, bseq[i], spdb, rms_fit, nmatch,
+                                           sRing_xyz, eRing_xyz);
+        }
     }
     free_pdb(NUM_RESIDUE_ATOMS, NULL, sAtomName, sResName, sChainID, sResSeq, sxyz, sMiscs);
     free_dmatrix(eRing_xyz, 1, RR9, 1, 3);
