@@ -44,6 +44,38 @@ void json_writer_record_sequence(long num_residue, char *bseq);
 /* Record base pair sequence */
 void json_writer_record_bp_sequence(long num_bp, char **bp_seq, long ds);
 
+/* Record PDB atom data */
+void json_writer_record_pdb_atoms(long num, char **AtomName, char **ResName,
+                                   char *ChainID, long *ResSeq, double **xyz,
+                                   char **Miscs);
+
+/* Record residue index mapping (seidx) */
+void json_writer_record_residue_indices(long num_residue, long **seidx);
+
+/* Record base pair information */
+void json_writer_record_base_pairs(long ds, long num_bp, long **pair_num);
+
+/* Record reference frames for all residues */
+void json_writer_record_all_ref_frames(long ds, long num_bp, double **orien, double **org);
+
+/* Record WC_info (Watson-Crick information) */
+void json_writer_record_wc_info(long num_bp, long *WC_info);
+
+/* Record RY (Purine/Pyrimidine classification) */
+void json_writer_record_ry(long num_residue, long *RY);
+
+/* Record helix information (bphlx) */
+void json_writer_record_helices(long num_bp, long *bphlx);
+
+/* Record twist and rise for each step */
+void json_writer_record_twist_rise(long nbpm1, double **twist_rise);
+
+/* Record input parameters and thresholds */
+void json_writer_record_input_parameters(miscPars *misc_pars, long ds, long hetatm, long ip);
+
+/* Record all global variables (writes to separate file for constants) */
+void json_writer_record_global_variables(void);
+
 /* Check if JSON writer is initialized */
 long json_writer_is_initialized(void);
 

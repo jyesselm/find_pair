@@ -1,4 +1,5 @@
 #include "x3dna.h"
+#include "json_writer.h"
 
 // Define struct_args - it's defined differently in find_pair.c and analyze.c
 // We'll use a union or define both versions
@@ -167,6 +168,10 @@ int main(int argc, char *argv[])
     
     fprintf(stderr, "\n=== Step 1: Running find_pair on <%s> ===\n", fp_args.pdbfile);
     
+    // Initialize JSON writer BEFORE running find_pair to suppress file creation
+    json_writer_init(fp_args.pdbfile);
+    json_writer_record_global_variables();
+    
     // Step 1: Run find_pair
     handle_str(&fp_args);
     
@@ -195,6 +200,9 @@ int main(int argc, char *argv[])
     process_str(inpfile, &ana_args);
     
     fprintf(stderr, "\n=== Combined analysis complete ===\n");
+    
+    // Finalize JSON writer
+    json_writer_finalize();
     
     free(fp_argv);
     clear_my_globals();

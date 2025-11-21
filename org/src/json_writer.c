@@ -6,6 +6,7 @@
 static long initialized = FALSE;
 static FILE *json_file = NULL;
 static char json_filename[BUF1K];
+static char globals_filename[BUF1K];
 static long first_entry = TRUE;
 
 /* Helper: Escape string for JSON */
@@ -65,7 +66,6 @@ static void json_write_matrix(FILE *fp, double **m) {
 long json_writer_init(const char *pdbfile) {
     char pdb_name[BUF512];
     char dir_path[BUF1K];
-    char data_dir[BUF1K];
     struct stat st = {0};
     
     if (initialized) {
@@ -78,26 +78,30 @@ long json_writer_init(const char *pdbfile) {
     /* Determine project root data directory */
     /* Check if ../data exists (we're in org/ directory) */
     if (stat("../data", &st) == 0) {
-        sprintf(data_dir, "../data");
-        sprintf(dir_path, "../data/json_legacy");
+        sprintf(dir_path, "../data");
+        sprintf(json_filename, "../data/json_legacy/%s.json", pdb_name);
+        sprintf(globals_filename, "../data/json_legacy/%s_globals.json", pdb_name);
     } else if (stat("data", &st) == 0) {
         /* We're already at project root */
-        sprintf(data_dir, "data");
-        sprintf(dir_path, "data/json_legacy");
+        sprintf(dir_path, "data");
+        sprintf(json_filename, "data/json_legacy/%s.json", pdb_name);
+        sprintf(globals_filename, "data/json_legacy/%s_globals.json", pdb_name);
     } else {
         /* Create data directory at current location */
-        sprintf(data_dir, "data");
-        sprintf(dir_path, "data/json_legacy");
+        sprintf(dir_path, "data");
+        sprintf(json_filename, "data/json_legacy/%s.json", pdb_name);
+        sprintf(globals_filename, "data/json_legacy/%s_globals.json", pdb_name);
     }
     
     /* Create parent directory 'data' if it doesn't exist */
-    if (stat(data_dir, &st) == -1) {
-        if (mkdir(data_dir, 0755) != 0) {
-            fprintf(stderr, "[JSON_WRITER] Warning: Could not create directory %s\n", data_dir);
+    if (stat(dir_path, &st) == -1) {
+        if (mkdir(dir_path, 0755) != 0) {
+            fprintf(stderr, "[JSON_WRITER] Warning: Could not create directory %s\n", dir_path);
             return FALSE;
         }
     }
     /* Create json_legacy directory */
+    sprintf(dir_path, "%s/json_legacy", dir_path);
     if (stat(dir_path, &st) == -1) {
         if (mkdir(dir_path, 0755) != 0) {
             fprintf(stderr, "[JSON_WRITER] Warning: Could not create directory %s\n", dir_path);
@@ -105,8 +109,14 @@ long json_writer_init(const char *pdbfile) {
         }
     }
     
-    /* Create JSON filename */
-    sprintf(json_filename, "%s/%s.json", dir_path, pdb_name);
+    /* Create JSON filename with corrected path */
+    if (stat("../data", &st) == 0) {
+        sprintf(json_filename, "../data/json_legacy/%s.json", pdb_name);
+        sprintf(globals_filename, "../data/json_legacy/%s_globals.json", pdb_name);
+    } else {
+        sprintf(json_filename, "data/json_legacy/%s.json", pdb_name);
+        sprintf(globals_filename, "data/json_legacy/%s_globals.json", pdb_name);
+    }
     
     /* Open file for writing */
     json_file = fopen(json_filename, "w");
@@ -330,3 +340,426 @@ void json_writer_record_bp_sequence(long num_bp, char **bp_seq, long ds) {
     fflush(json_file);
 }
 
+void json_writer_record_pdb_atoms(long num, char **AtomName, char **ResName,
+                                   char *ChainID, long *ResSeq, double **xyz,
+                                   char **Miscs) {
+    char esc_atom[BUF32], esc_res[BUF32];
+    long i;
+    
+    if (!json_writer_is_initialized()) return;
+    if (!AtomName || !ResName || !ChainID || !ResSeq || !xyz) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"pdb_atoms\",\n");
+    fprintf(json_file, "      \"num_atoms\": %ld,\n", num);
+    fprintf(json_file, "      \"atoms\": [\n");
+    
+    for (i = 1; i <= num; i++) {
+        if (i > 1) fprintf(json_file, ",\n");
+        fprintf(json_file, "        {\n");
+        
+        /* Atom index/position in array */
+        fprintf(json_file, "          \"atom_idx\": %ld,\n", i);
+        
+        /* Atom name */
+        json_escape_string(AtomName[i], esc_atom, sizeof(esc_atom));
+        fprintf(json_file, "          \"atom_name\": \"%s\",\n", esc_atom);
+        
+        /* Residue name */
+        json_escape_string(ResName[i], esc_res, sizeof(esc_res));
+        fprintf(json_file, "          \"residue_name\": \"%s\",\n", esc_res);
+        
+        /* Chain ID */
+        fprintf(json_file, "          \"chain_id\": \"%c\",\n", ChainID[i]);
+        
+        /* Residue sequence number */
+        fprintf(json_file, "          \"residue_seq\": %ld,\n", ResSeq[i]);
+        
+        /* Coordinates */
+        fprintf(json_file, "          \"xyz\": [%.6f, %.6f, %.6f]", 
+                xyz[i][1], xyz[i][2], xyz[i][3]);
+        
+        /* Miscellaneous info if available */
+        if (Miscs && Miscs[i]) {
+            fprintf(json_file, ",\n          \"record_type\": \"%c\"", Miscs[i][0]);
+            if (Miscs[i][1] != ' ') {
+                fprintf(json_file, ",\n          \"alt_loc\": \"%c\"", Miscs[i][1]);
+            }
+            if (Miscs[i][2] != ' ') {
+                fprintf(json_file, ",\n          \"insertion\": \"%c\"", Miscs[i][2]);
+            }
+        }
+        
+        fprintf(json_file, "\n        }");
+    }
+    
+    fprintf(json_file, "\n      ]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_residue_indices(long num_residue, long **seidx) {
+    long i;
+    
+    if (!json_writer_is_initialized()) return;
+    if (!seidx) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"residue_indices\",\n");
+    fprintf(json_file, "      \"num_residue\": %ld,\n", num_residue);
+    fprintf(json_file, "      \"seidx\": [\n");
+    
+    for (i = 1; i <= num_residue; i++) {
+        if (i > 1) fprintf(json_file, ",\n");
+        fprintf(json_file, "        {\"residue_idx\": %ld, \"start_atom\": %ld, \"end_atom\": %ld}",
+                i, seidx[i][1], seidx[i][2]);
+    }
+    
+    fprintf(json_file, "\n      ]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_base_pairs(long ds, long num_bp, long **pair_num) {
+    long i, j;
+    
+    if (!json_writer_is_initialized()) return;
+    if (!pair_num) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"base_pairs\",\n");
+    fprintf(json_file, "      \"ds\": %ld,\n", ds);
+    fprintf(json_file, "      \"num_bp\": %ld,\n", num_bp);
+    fprintf(json_file, "      \"pair_num\": [\n");
+    
+    for (i = 1; i <= ds + 1; i++) {
+        if (i > 1) fprintf(json_file, ",\n");
+        fprintf(json_file, "        [");
+        for (j = 1; j <= num_bp; j++) {
+            if (j > 1) fprintf(json_file, ", ");
+            fprintf(json_file, "%ld", pair_num[i][j]);
+        }
+        fprintf(json_file, "]");
+    }
+    
+    fprintf(json_file, "\n      ]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_all_ref_frames(long ds, long num_bp, double **orien, double **org) {
+    long i, j, k, idx;
+    
+    if (!json_writer_is_initialized()) return;
+    if (!orien || !org) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"all_ref_frames\",\n");
+    fprintf(json_file, "      \"ds\": %ld,\n", ds);
+    fprintf(json_file, "      \"num_bp\": %ld,\n", num_bp);
+    fprintf(json_file, "      \"frames\": [\n");
+    
+    for (i = 1; i <= ds; i++) {
+        if (i > 1) fprintf(json_file, ",\n");
+        fprintf(json_file, "        {\"strand\": %ld, \"bp_frames\": [\n", i);
+        
+        for (j = 1; j <= num_bp; j++) {
+            if (j > 1) fprintf(json_file, ",\n");
+            fprintf(json_file, "          {\"bp_idx\": %ld, \"orien\": ", j);
+            
+            /* Write 3x3 matrix */
+            fprintf(json_file, "[[");
+            for (k = 1; k <= 3; k++) {
+                if (k > 1) fprintf(json_file, "], [");
+                idx = (j - 1) * 9 + (k - 1) * 3;
+                fprintf(json_file, "%.6f, %.6f, %.6f",
+                        orien[i][idx + 1], orien[i][idx + 2], orien[i][idx + 3]);
+            }
+            fprintf(json_file, "]], ");
+            
+            /* Write origin */
+            idx = (j - 1) * 3;
+            fprintf(json_file, "\"org\": [%.6f, %.6f, %.6f]",
+                    org[i][idx + 1], org[i][idx + 2], org[i][idx + 3]);
+            fprintf(json_file, "}");
+        }
+        
+        fprintf(json_file, "\n        ]}");
+    }
+    
+    fprintf(json_file, "\n      ]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_wc_info(long num_bp, long *WC_info) {
+    long i;
+    
+    if (!json_writer_is_initialized()) return;
+    if (!WC_info) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"wc_info\",\n");
+    fprintf(json_file, "      \"num_bp\": %ld,\n", num_bp);
+    fprintf(json_file, "      \"wc_values\": [");
+    
+    for (i = 1; i <= num_bp; i++) {
+        if (i > 1) fprintf(json_file, ", ");
+        fprintf(json_file, "%ld", WC_info[i]);
+    }
+    
+    fprintf(json_file, "]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_ry(long num_residue, long *RY) {
+    long i;
+    
+    if (!json_writer_is_initialized()) return;
+    if (!RY) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"ry_classification\",\n");
+    fprintf(json_file, "      \"num_residue\": %ld,\n", num_residue);
+    fprintf(json_file, "      \"ry_values\": [");
+    
+    for (i = 1; i <= num_residue; i++) {
+        if (i > 1) fprintf(json_file, ", ");
+        fprintf(json_file, "%ld", RY[i]);
+    }
+    
+    fprintf(json_file, "]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_helices(long num_bp, long *bphlx) {
+    long i;
+    
+    if (!json_writer_is_initialized()) return;
+    if (!bphlx) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"helices\",\n");
+    fprintf(json_file, "      \"num_bp\": %ld,\n", num_bp);
+    fprintf(json_file, "      \"bphlx\": [");
+    
+    for (i = 1; i <= num_bp; i++) {
+        if (i > 1) fprintf(json_file, ", ");
+        fprintf(json_file, "%ld", bphlx[i]);
+    }
+    
+    fprintf(json_file, "]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_twist_rise(long nbpm1, double **twist_rise) {
+    long i;
+    
+    if (!json_writer_is_initialized()) return;
+    if (!twist_rise) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"twist_rise\",\n");
+    fprintf(json_file, "      \"num_steps\": %ld,\n", nbpm1);
+    fprintf(json_file, "      \"steps\": [\n");
+    
+    for (i = 1; i <= nbpm1; i++) {
+        if (i > 1) fprintf(json_file, ",\n");
+        fprintf(json_file, "        {\"step_idx\": %ld, \"twist\": %.6f, \"rise\": %.6f}",
+                i, twist_rise[i][1], twist_rise[i][2]);
+    }
+    
+    fprintf(json_file, "\n      ]\n");
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_input_parameters(miscPars *misc_pars, long ds, long hetatm, long ip) {
+    if (!json_writer_is_initialized()) return;
+    if (!misc_pars) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"input_parameters\",\n");
+    fprintf(json_file, "      \"ds\": %ld,\n", ds);
+    fprintf(json_file, "      \"hetatm\": %ld,\n", hetatm);
+    fprintf(json_file, "      \"ip\": %ld\n", ip);
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_global_variables(void) {
+    FILE *globals_file;
+    long i;
+    char esc_str[BUF512];
+    
+    if (!initialized) return;
+    
+    /* Open globals file for writing */
+    globals_file = fopen(globals_filename, "w");
+    if (!globals_file) {
+        fprintf(stderr, "[JSON_WRITER] Warning: Could not open %s for writing\n", globals_filename);
+        return;
+    }
+    
+    /* Write global variables JSON */
+    fprintf(globals_file, "{\n");
+    fprintf(globals_file, "  \"global_variables\": {\n");
+    
+    /* Gvars structure values */
+    fprintf(globals_file, "    \"DEBUG\": %ld,\n", Gvars.DEBUG);
+    fprintf(globals_file, "    \"VERBOSE\": %ld,\n", Gvars.VERBOSE);
+    fprintf(globals_file, "    \"NUM_ELE\": %ld,\n", Gvars.NUM_ELE);
+    fprintf(globals_file, "    \"CHAIN_CASE\": %ld,\n", Gvars.CHAIN_CASE);
+    fprintf(globals_file, "    \"ALL_MODEL\": %ld,\n", Gvars.ALL_MODEL);
+    fprintf(globals_file, "    \"ATTACH_RESIDUE\": %ld,\n", Gvars.ATTACH_RESIDUE);
+    fprintf(globals_file, "    \"THREE_LETTER_NTS\": %ld,\n", Gvars.THREE_LETTER_NTS);
+    fprintf(globals_file, "    \"PDBV3\": %ld,\n", Gvars.PDBV3);
+    fprintf(globals_file, "    \"ORIGINAL_COORDINATE\": %ld,\n", Gvars.ORIGINAL_COORDINATE);
+    fprintf(globals_file, "    \"OCCUPANCY\": %ld,\n", Gvars.OCCUPANCY);
+    fprintf(globals_file, "    \"HEADER\": %ld,\n", Gvars.HEADER);
+    fprintf(globals_file, "    \"mmcif\": %ld,\n", Gvars.mmcif);
+    fprintf(globals_file, "    \"NT_CUTOFF\": %.6f,\n", Gvars.NT_CUTOFF);
+    
+    json_escape_string(Gvars.X3DNA_VER, esc_str, sizeof(esc_str));
+    fprintf(globals_file, "    \"X3DNA_VER\": \"%s\",\n", esc_str);
+    
+    json_escape_string(Gvars.X3DNA_HOMEDIR, esc_str, sizeof(esc_str));
+    fprintf(globals_file, "    \"X3DNA_HOMEDIR\": \"%s\",\n", esc_str);
+    
+    json_escape_string(Gvars.CHAIN_MARKERS, esc_str, sizeof(esc_str));
+    fprintf(globals_file, "    \"CHAIN_MARKERS\": \"%s\",\n", esc_str);
+    
+    json_escape_string(Gvars.REBUILD_CHAIN_IDS, esc_str, sizeof(esc_str));
+    fprintf(globals_file, "    \"REBUILD_CHAIN_IDS\": \"%s\",\n", esc_str);
+    
+    if (Gvars.PROGNAME) {
+        json_escape_string(Gvars.PROGNAME, esc_str, sizeof(esc_str));
+        fprintf(globals_file, "    \"PROGNAME\": \"%s\",\n", esc_str);
+    } else {
+        fprintf(globals_file, "    \"PROGNAME\": \"\",\n");
+    }
+    
+    fprintf(globals_file, "    \"NUM_SATOM\": %ld,\n", Gvars.NUM_SATOM);
+    fprintf(globals_file, "    \"NUM_SBASE\": %ld,\n", Gvars.NUM_SBASE);
+    fprintf(globals_file, "    \"Name0\": %ld,\n", Gvars.Name0);
+    fprintf(globals_file, "    \"label_RC8_YC6\": %ld,\n", Gvars.label_RC8_YC6);
+    
+    /* ATOMLIST */
+    fprintf(globals_file, "    \"ATOMLIST\": [\n");
+    if (Gvars.ATOMLIST) {
+        for (i = 1; i <= Gvars.NUM_SATOM; i++) {
+            if (i > 1) fprintf(globals_file, ",\n");
+            json_escape_string(Gvars.ATOMLIST[i], esc_str, sizeof(esc_str));
+            fprintf(globals_file, "      \"%s\"", esc_str);
+        }
+    }
+    fprintf(globals_file, "\n    ],\n");
+    
+    /* BASELIST */
+    fprintf(globals_file, "    \"BASELIST\": [\n");
+    if (Gvars.BASELIST) {
+        for (i = 1; i <= Gvars.NUM_SBASE; i++) {
+            if (i > 1) fprintf(globals_file, ",\n");
+            json_escape_string(Gvars.BASELIST[i], esc_str, sizeof(esc_str));
+            fprintf(globals_file, "      \"%s\"", esc_str);
+        }
+    }
+    fprintf(globals_file, "\n    ],\n");
+    
+    /* misc_pars */
+    fprintf(globals_file, "    \"misc_pars\": {\n");
+    fprintf(globals_file, "      \"min_base_hb\": %ld,\n", Gvars.misc_pars.min_base_hb);
+    fprintf(globals_file, "      \"hb_lower\": %.6f,\n", Gvars.misc_pars.hb_lower);
+    fprintf(globals_file, "      \"hb_dist1\": %.6f,\n", Gvars.misc_pars.hb_dist1);
+    fprintf(globals_file, "      \"hb_dist2\": %.6f,\n", Gvars.misc_pars.hb_dist2);
+    fprintf(globals_file, "      \"max_dorg\": %.6f,\n", Gvars.misc_pars.max_dorg);
+    fprintf(globals_file, "      \"min_dorg\": %.6f,\n", Gvars.misc_pars.min_dorg);
+    fprintf(globals_file, "      \"max_dv\": %.6f,\n", Gvars.misc_pars.max_dv);
+    fprintf(globals_file, "      \"min_dv\": %.6f,\n", Gvars.misc_pars.min_dv);
+    fprintf(globals_file, "      \"max_plane_angle\": %.6f,\n", Gvars.misc_pars.max_plane_angle);
+    fprintf(globals_file, "      \"min_plane_angle\": %.6f,\n", Gvars.misc_pars.min_plane_angle);
+    fprintf(globals_file, "      \"max_dNN\": %.6f,\n", Gvars.misc_pars.max_dNN);
+    fprintf(globals_file, "      \"min_dNN\": %.6f,\n", Gvars.misc_pars.min_dNN);
+    fprintf(globals_file, "      \"helix_break\": %.6f,\n", Gvars.misc_pars.helix_break);
+    fprintf(globals_file, "      \"std_curved\": %.6f,\n", Gvars.misc_pars.std_curved);
+    fprintf(globals_file, "      \"water_dist\": %.6f,\n", Gvars.misc_pars.water_dist);
+    fprintf(globals_file, "      \"water_dlow\": %.6f,\n", Gvars.misc_pars.water_dlow);
+    fprintf(globals_file, "      \"o3p_dist\": %.6f,\n", Gvars.misc_pars.o3p_dist);
+    
+    json_escape_string(Gvars.misc_pars.alt_list, esc_str, sizeof(esc_str));
+    fprintf(globals_file, "      \"alt_list\": \"%s\",\n", esc_str);
+    
+    json_escape_string(Gvars.misc_pars.hb_atoms, esc_str, sizeof(esc_str));
+    fprintf(globals_file, "      \"hb_atoms\": \"%s\",\n", esc_str);
+    
+    json_escape_string(Gvars.misc_pars.water_atoms, esc_str, sizeof(esc_str));
+    fprintf(globals_file, "      \"water_atoms\": \"%s\"\n", esc_str);
+    fprintf(globals_file, "    }\n");
+    
+    fprintf(globals_file, "  },\n");
+    
+    /* Constants */
+    fprintf(globals_file, "  \"constants\": {\n");
+    fprintf(globals_file, "    \"NR_END\": %ld,\n", (long)NR_END);
+    fprintf(globals_file, "    \"TRUE\": %ld,\n", (long)TRUE);
+    fprintf(globals_file, "    \"FALSE\": %ld,\n", (long)FALSE);
+    fprintf(globals_file, "    \"BUF32\": %d,\n", BUF32);
+    fprintf(globals_file, "    \"BUF512\": %d,\n", BUF512);
+    fprintf(globals_file, "    \"BUF1K\": %d,\n", BUF1K);
+    fprintf(globals_file, "    \"BUF2K\": %d,\n", BUF2K);
+    fprintf(globals_file, "    \"BUFBIG\": %d,\n", BUFBIG);
+    fprintf(globals_file, "    \"PI\": %.15f,\n", PI);
+    fprintf(globals_file, "    \"XEPS\": %.10e,\n", XEPS);
+    fprintf(globals_file, "    \"XBIG\": %.10e,\n", XBIG);
+    fprintf(globals_file, "    \"XBIG_CUTOFF\": %.10e,\n", XBIG_CUTOFF);
+    fprintf(globals_file, "    \"MFACTOR\": %.6f,\n", MFACTOR);
+    fprintf(globals_file, "    \"NMISC\": %d,\n", NMISC);
+    fprintf(globals_file, "    \"DEBUG_LEVEL\": %d,\n", DEBUG_LEVEL);
+    fprintf(globals_file, "    \"EMPTY_CRITERION\": %ld,\n", (long)EMPTY_CRITERION);
+    fprintf(globals_file, "    \"EMPTY_NUMBER\": %.6f\n", EMPTY_NUMBER);
+    fprintf(globals_file, "  }\n");
+    
+    fprintf(globals_file, "}\n");
+    
+    fclose(globals_file);
+    fprintf(stderr, "[JSON_WRITER] Global variables and constants saved to: %s\n", globals_filename);
+}

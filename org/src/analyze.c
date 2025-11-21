@@ -310,6 +310,8 @@ void process_str(char *inpfile, struct_args_ana *args)
     bphlx = lvector(1, num_bp);
     for (i = 1; i <= num_bp; i++)
         bphlx[i] = args->icnt ? 0 : pair_num[ds + 1][i];
+    /* Record helix information */
+    json_writer_record_helices(num_bp, bphlx);
     fp = open_file(outfile, "w");
     num = number_of_atoms(pdbfile, hetatm, Gvars.misc_pars.alt_list);
     AtomName = cmatrix(1, num, 0, 4);
@@ -320,18 +322,30 @@ void process_str(char *inpfile, struct_args_ana *args)
     Miscs = cmatrix(1, num, 0, NMISC);
     read_pdb(pdbfile, NULL, AtomName, ResName, ChainID, ResSeq, xyz, Miscs,
              hetatm, Gvars.misc_pars.alt_list);
-    /* Initialize JSON writer for capturing calculations */
-    json_writer_init(pdbfile);
+    /* JSON writer should already be initialized in find_pair_analyze */
+    /* If running analyze standalone, initialize it here */
+    if (!json_writer_is_initialized()) {
+        json_writer_init(pdbfile);
+        json_writer_record_global_variables();
+    }
+    /* Record PDB atom data */
+    json_writer_record_pdb_atoms(num, AtomName, ResName, ChainID, ResSeq, xyz, Miscs);
     idx = lvector(1, num);
     atom_idx(num, AtomName, NULL, idx);
     seidx = residue_idx(num, ResSeq, Miscs, ChainID, ResName, &num_residue);
+    /* Record residue indices */
+    json_writer_record_residue_indices(num_residue, seidx);
     pair_checking(ip, ds, num_residue, pdbfile, &num_bp, pair_num);
+    /* Record base pairs */
+    json_writer_record_base_pairs(ds, num_bp, pair_num);
     o3p_brk = lmatrix(1, ds, 1, num_bp);
     drct_checking(ds, num_bp, pair_num, seidx, AtomName, xyz, &parallel, &bbexist, o3p_brk, fp);
     bp_seq = cmatrix(0, ds, 1, num_bp);
     RY = lvector(1, num_residue);
     get_bpseq(ds, num_bp, pair_num, seidx, AtomName, ResName, ChainID,
               ResSeq, Miscs, xyz, bp_seq, RY);
+    /* Record RY classification */
+    json_writer_record_ry(num_residue, RY);
     bseq = cvector(1, num_residue);
     get_seq(num_residue, seidx, AtomName, ResName, ChainID, ResSeq, Miscs, xyz, bseq, RY);
     print_header(ds, num_bp, num, pdbfile, fp);
@@ -349,6 +363,9 @@ void process_str(char *inpfile, struct_args_ana *args)
     WC_info = lvector(1, num_bp);
     ref_frames(ds, num_bp, pair_num, bp_seq, seidx, RY, AtomName, ResName, ChainID,
                ResSeq, Miscs, xyz, fp, orien, org, WC_info, &str_type, 0, o3p_brk);
+    /* Record reference frames and WC info */
+    json_writer_record_all_ref_frames(ds, num_bp, orien, org);
+    json_writer_record_wc_info(num_bp, WC_info);
     nt_bb_torsion = dmatrix(1, num_residue, 1, 6);
     get_nt_bb_torsion(nt_bb_torsion, num_residue, seidx, RY, AtomName, ResName,
                       ChainID, ResSeq, Miscs, xyz);
@@ -365,6 +382,10 @@ void process_str(char *inpfile, struct_args_ana *args)
     get_parameters(ds, num_bp, bp_seq, orien, org, WC_info, fp, twist_rise, mst_orien,
                    mst_org, mst_orienH, mst_orgH, bphlx, args->istart, args->istep,
                    args->bz, &str_type, pair_num, nt_info);
+    /* Record twist and rise */
+    json_writer_record_twist_rise(nbpm1, twist_rise);
+    /* Record input parameters */
+    json_writer_record_input_parameters(&Gvars.misc_pars, ds, hetatm, ip);
     htm_water = lmatrix(1, 4, 0, num);
     init_htm_water(args->waters, num, num_residue, idx, htm_water);
     identify_htw(num_residue, seidx, RY, AtomName, ResName, ChainID, ResSeq,
