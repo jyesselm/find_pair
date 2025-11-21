@@ -25,8 +25,7 @@ inline bool approximately_equal(double a, double b, double tolerance = 0.001) {
 /**
  * @brief Assert that two values are approximately equal
  */
-#define EXPECT_APPROX_EQ(a, b, tolerance) \
+#define EXPECT_APPROX_EQ(a, b, tolerance)                                                          \
     EXPECT_NEAR((a), (b), (tolerance)) << "Values not approximately equal: " << (a) << " vs " << (b)
 
 } // namespace x3dna::test
-

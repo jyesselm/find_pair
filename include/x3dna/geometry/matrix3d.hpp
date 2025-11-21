@@ -17,7 +17,7 @@ namespace geometry {
 /**
  * @class Matrix3D
  * @brief Represents a 3x3 matrix for rotations and transformations
- * 
+ *
  * Matrix is stored in row-major order: [r11, r12, r13, r21, r22, r23, r31, r32, r33]
  */
 class Matrix3D {
@@ -26,9 +26,7 @@ public:
      * @brief Default constructor (creates identity matrix)
      */
     Matrix3D() {
-        data_ = {1.0, 0.0, 0.0,
-                 0.0, 1.0, 0.0,
-                 0.0, 0.0, 1.0};
+        data_ = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
     }
 
     /**
@@ -39,12 +37,9 @@ public:
     /**
      * @brief Constructor from individual elements (row-major)
      */
-    Matrix3D(double m00, double m01, double m02,
-              double m10, double m11, double m12,
-              double m20, double m21, double m22) {
-        data_ = {m00, m01, m02,
-                 m10, m11, m12,
-                 m20, m21, m22};
+    Matrix3D(double m00, double m01, double m02, double m10, double m11, double m12, double m20,
+             double m21, double m22) {
+        data_ = {m00, m01, m02, m10, m11, m12, m20, m21, m22};
     }
 
     /**
@@ -115,11 +110,9 @@ public:
      * @brief Matrix-vector multiplication
      */
     Vector3D operator*(const Vector3D& vec) const {
-        return Vector3D(
-            data_[0] * vec.x() + data_[1] * vec.y() + data_[2] * vec.z(),
-            data_[3] * vec.x() + data_[4] * vec.y() + data_[5] * vec.z(),
-            data_[6] * vec.x() + data_[7] * vec.y() + data_[8] * vec.z()
-        );
+        return Vector3D(data_[0] * vec.x() + data_[1] * vec.y() + data_[2] * vec.z(),
+                        data_[3] * vec.x() + data_[4] * vec.y() + data_[5] * vec.z(),
+                        data_[6] * vec.x() + data_[7] * vec.y() + data_[8] * vec.z());
     }
 
     /**
@@ -259,7 +252,8 @@ public:
     }
 
     /**
-     * @brief Convert to legacy JSON format (3x3 nested array: [[r11, r12, r13], [r21, r22, r23], [r31, r32, r33]])
+     * @brief Convert to legacy JSON format (3x3 nested array: [[r11, r12, r13], [r21, r22, r23],
+     * [r31, r32, r33]])
      */
     nlohmann::json to_json_legacy() const {
         nlohmann::json result = nlohmann::json::array();
@@ -319,11 +313,7 @@ public:
     static Matrix3D rotation_x(double angle) {
         double c = std::cos(angle);
         double s = std::sin(angle);
-        return Matrix3D(
-            1.0, 0.0, 0.0,
-            0.0, c,   -s,
-            0.0, s,    c
-        );
+        return Matrix3D(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
     }
 
     /**
@@ -332,11 +322,7 @@ public:
     static Matrix3D rotation_y(double angle) {
         double c = std::cos(angle);
         double s = std::sin(angle);
-        return Matrix3D(
-            c,   0.0, s,
-            0.0, 1.0, 0.0,
-            -s,  0.0, c
-        );
+        return Matrix3D(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
     }
 
     /**
@@ -345,15 +331,11 @@ public:
     static Matrix3D rotation_z(double angle) {
         double c = std::cos(angle);
         double s = std::sin(angle);
-        return Matrix3D(
-            c,   -s,  0.0,
-            s,    c,  0.0,
-            0.0, 0.0, 1.0
-        );
+        return Matrix3D(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
     }
 
 private:
-    std::array<double, 9> data_;  // Row-major: [r11, r12, r13, r21, r22, r23, r31, r32, r33]
+    std::array<double, 9> data_; // Row-major: [r11, r12, r13, r21, r22, r23, r31, r32, r33]
 };
 
 // Scalar multiplication from left
@@ -363,4 +345,3 @@ inline Matrix3D operator*(double scalar, const Matrix3D& mat) {
 
 } // namespace geometry
 } // namespace x3dna
-

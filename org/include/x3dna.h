@@ -22,7 +22,7 @@
 #define BUF2K 2048
 #define BUFBIG 8192
 #define UNUSED_PARAMETER(x) (void)(x)
-#define NELEMS(x) ((sizeof (x))/(sizeof ((x)[0])))
+#define NELEMS(x) ((sizeof(x)) / (sizeof((x)[0])))
 enum slre_option { SLRE_CASE_SENSITIVE = 0, SLRE_CASE_INSENSITIVE = 1 };
 enum slre_capture { SLRE_STRING, SLRE_INT, SLRE_FLOAT };
 typedef struct {
@@ -67,14 +67,14 @@ typedef struct {
     char X3DNA_HOMEDIR[BUF512];
     char CHAIN_MARKERS[BUF512];
     char REBUILD_CHAIN_IDS[BUF512];
-    char *PROGNAME;
-    char **ATOM_NAMES;
+    char* PROGNAME;
+    char** ATOM_NAMES;
     long NUM_SATOM;
-    char **ATOMLIST;
+    char** ATOMLIST;
     long NUM_SBASE;
-    char **BASELIST;
-    char **AtomName0;
-    char **ResName0;
+    char** BASELIST;
+    char** AtomName0;
+    char** ResName0;
     long Name0;
     long label_RC8_YC6;
     miscPars misc_pars;
@@ -86,7 +86,7 @@ extern struct_Gvars Gvars;
 #define SKIPS "#\0"
 #define UNKATM "XX"
 #define DUMSTR "XXXXXX"
-#define SFACTOR    2L
+#define SFACTOR 2L
 #define PI 3.141592653589793
 #define XEPS 1.0e-7
 #define XBIG 1.0e+18
@@ -134,8 +134,8 @@ extern struct_Gvars Gvars;
 #define BOND_UPPER_LIMIT 2.5
 #define HTWIST0 0.05
 #define BOND_FACTOR 1.15
-#define NBOND_FNUM  2.0
-#define NON_WC_IDX  6
+#define NBOND_FNUM 2.0
+#define NON_WC_IDX 6
 #define AXIS_LENGTH 3.5
 #define NUM_BASE_ATOMS BUF512
 #define NUM_RESIDUE_ATOMS BUF512
@@ -156,16 +156,15 @@ extern struct_Gvars Gvars;
 #define WC_LIST "XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"
 #define CX_LIST "ACGITUX"
 #define CB_LIST "ACGITU"
-#define NT_LIST "  A", "  C", "  G", "  I", "  T", "  U", \
-                "ADE", "CYT", "GUA", "INO", "THY", "URA", \
-                " +A", " +C", " +G", " +I", " +T", " +U"
+#define NT_LIST                                                                                    \
+    "  A", "  C", "  G", "  I", "  T", "  U", "ADE", "CYT", "GUA", "INO", "THY", "URA", " +A",     \
+        " +C", " +G", " +I", " +T", " +U"
 #define WATER_LIST "H2O", "HHO", "OHH", "HOH", "OH2", "SOL", "WAT", "TIP"
 #define NUM_SAA 20
 #define NUM_ATM 12
-#define AA_LIST "ALA", "VAL", "PHE", "PRO", "MET", "ILE", "LEU",   \
-                "ASP", "GLU", "LYS", "ARG",   \
-                "SER", "THR", "TYR", "HIS", "CYS", "ASN", "GLN", "TRP",   \
-                "GLY"
+#define AA_LIST                                                                                    \
+    "ALA", "VAL", "PHE", "PRO", "MET", "ILE", "LEU", "ASP", "GLU", "LYS", "ARG", "SER", "THR",     \
+        "TYR", "HIS", "CYS", "ASN", "GLN", "TRP", "GLY"
 #define OVERLAP 0.01
 #define PBLKALC_FILE "pblk_lkg.alc"
 #define SNAP_PEP_PDB "snap_pep.pdb"

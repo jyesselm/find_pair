@@ -28,7 +28,7 @@ public:
      * @param name Atom name (e.g., " C1'", " N3 ")
      * @param position 3D position vector
      */
-    Atom(const std::string &name, const geometry::Vector3D &position)
+    Atom(const std::string& name, const geometry::Vector3D& position)
         : name_(name), position_(position) {}
 
     /**
@@ -40,19 +40,19 @@ public:
      * @param residue_seq Residue sequence number
      * @param record_type PDB record type (e.g., 'A' for ATOM, 'H' for HETATM)
      */
-    Atom(const std::string &name, const geometry::Vector3D &position,
-         const std::string &residue_name, char chain_id, int residue_seq, char record_type = 'A')
+    Atom(const std::string& name, const geometry::Vector3D& position,
+         const std::string& residue_name, char chain_id, int residue_seq, char record_type = 'A')
         : name_(name), position_(position), residue_name_(residue_name), chain_id_(chain_id),
           residue_seq_(residue_seq), record_type_(record_type) {}
 
     // Getters
-    const std::string &name() const {
+    const std::string& name() const {
         return name_;
     }
-    const geometry::Vector3D &position() const {
+    const geometry::Vector3D& position() const {
         return position_;
     }
-    const std::string &residue_name() const {
+    const std::string& residue_name() const {
         return residue_name_;
     }
     char chain_id() const {
@@ -66,13 +66,13 @@ public:
     }
 
     // Setters
-    void set_name(const std::string &name) {
+    void set_name(const std::string& name) {
         name_ = name;
     }
-    void set_position(const geometry::Vector3D &position) {
+    void set_position(const geometry::Vector3D& position) {
         position_ = position;
     }
-    void set_residue_name(const std::string &residue_name) {
+    void set_residue_name(const std::string& residue_name) {
         residue_name_ = residue_name;
     }
     void set_chain_id(char chain_id) {
@@ -90,7 +90,7 @@ public:
      * @param other Another atom
      * @return Distance in Angstroms
      */
-    double distance_to(const Atom &other) const {
+    double distance_to(const Atom& other) const {
         return position_.distance_to(other.position_);
     }
 
@@ -154,17 +154,27 @@ public:
      * @param j JSON object from pdb_atoms record
      * @return Atom object
      */
-    static Atom from_json_legacy(const nlohmann::json &j) {
+    static Atom from_json_legacy(const nlohmann::json& j) {
         std::string name = j.value("atom_name", "");
         std::vector<double> xyz = j.value("xyz", std::vector<double>{0.0, 0.0, 0.0});
         geometry::Vector3D position(xyz[0], xyz[1], xyz[2]);
 
         std::string residue_name = j.value("residue_name", "");
         std::string chain_str = j.value("chain_id", "");
-        char chain_id = chain_str.empty() ? '\0' : chain_str[0];
+        char chain_id;
+        if (chain_str.empty()) {
+            chain_id = '\0';
+        } else {
+            chain_id = chain_str[0];
+        }
         int residue_seq = j.value("residue_seq", 0);
         std::string record_str = j.value("record_type", "A");
-        char record_type = record_str.empty() ? 'A' : record_str[0];
+        char record_type;
+        if (record_str.empty()) {
+            record_type = 'A';
+        } else {
+            record_type = record_str[0];
+        }
 
         return Atom(name, position, residue_name, chain_id, residue_seq, record_type);
     }
@@ -194,16 +204,26 @@ public:
     /**
      * @brief Create Atom from modern JSON format
      */
-    static Atom from_json(const nlohmann::json &j) {
+    static Atom from_json(const nlohmann::json& j) {
         std::string name = j.value("name", "");
         geometry::Vector3D position = geometry::Vector3D::from_json(j["position"]);
 
         std::string residue_name = j.value("residue_name", "");
         std::string chain_str = j.value("chain_id", "");
-        char chain_id = chain_str.empty() ? '\0' : chain_str[0];
+        char chain_id;
+        if (chain_str.empty()) {
+            chain_id = '\0';
+        } else {
+            chain_id = chain_str[0];
+        }
         int residue_seq = j.value("residue_seq", 0);
         std::string record_str = j.value("record_type", "A");
-        char record_type = record_str.empty() ? 'A' : record_str[0];
+        char record_type;
+        if (record_str.empty()) {
+            record_type = 'A';
+        } else {
+            record_type = record_str[0];
+        }
 
         return Atom(name, position, residue_name, chain_id, residue_seq, record_type);
     }

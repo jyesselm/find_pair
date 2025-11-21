@@ -18,7 +18,7 @@ protected:
         atom2_ = Atom(" N3 ", Vector3D(4.0, 5.0, 6.0), "  G", 'A', 2);
         atom3_ = Atom(" O2 ", Vector3D(0.0, 0.0, 0.0));
     }
-    
+
     Atom atom1_;
     Atom atom2_;
     Atom atom3_;
@@ -59,7 +59,7 @@ TEST_F(AtomTest, Setters) {
     atom.set_chain_id('B');
     atom.set_residue_seq(10);
     atom.set_record_type('H');
-    
+
     EXPECT_EQ(atom.name(), " N1 ");
     EXPECT_EQ(atom.position(), Vector3D(5.0, 6.0, 7.0));
     EXPECT_EQ(atom.residue_name(), "  A");
@@ -73,7 +73,7 @@ TEST_F(AtomTest, DistanceTo) {
     double dist = atom1_.distance_to(atom2_);
     double expected = Vector3D(1.0, 2.0, 3.0).distance_to(Vector3D(4.0, 5.0, 6.0));
     EXPECT_NEAR(dist, expected, 1e-9);
-    EXPECT_NEAR(dist, std::sqrt(27.0), 1e-9);  // sqrt((4-1)^2 + (5-2)^2 + (6-3)^2)
+    EXPECT_NEAR(dist, std::sqrt(27.0), 1e-9); // sqrt((4-1)^2 + (5-2)^2 + (6-3)^2)
 }
 
 TEST_F(AtomTest, DistanceToSelf) {
@@ -92,7 +92,7 @@ TEST_F(AtomTest, IsRingAtom) {
     EXPECT_TRUE(Atom(" N7 ", Vector3D(0, 0, 0)).is_ring_atom());
     EXPECT_TRUE(Atom(" C8 ", Vector3D(0, 0, 0)).is_ring_atom());
     EXPECT_TRUE(Atom(" N9 ", Vector3D(0, 0, 0)).is_ring_atom());
-    
+
     EXPECT_FALSE(Atom(" C1'", Vector3D(0, 0, 0)).is_ring_atom());
     EXPECT_FALSE(Atom(" O2 ", Vector3D(0, 0, 0)).is_ring_atom());
     EXPECT_FALSE(Atom(" P  ", Vector3D(0, 0, 0)).is_ring_atom());
@@ -107,7 +107,7 @@ TEST_F(AtomTest, IsHydrogenBondDonor) {
     EXPECT_TRUE(Atom(" N6 ", Vector3D(0, 0, 0)).is_hydrogen_bond_donor());
     EXPECT_TRUE(Atom(" N7 ", Vector3D(0, 0, 0)).is_hydrogen_bond_donor());
     EXPECT_TRUE(Atom(" N9 ", Vector3D(0, 0, 0)).is_hydrogen_bond_donor());
-    
+
     EXPECT_FALSE(Atom(" O2 ", Vector3D(0, 0, 0)).is_hydrogen_bond_donor());
     EXPECT_FALSE(Atom(" C1'", Vector3D(0, 0, 0)).is_hydrogen_bond_donor());
 }
@@ -118,7 +118,7 @@ TEST_F(AtomTest, IsHydrogenBondAcceptor) {
     EXPECT_TRUE(Atom(" O6 ", Vector3D(0, 0, 0)).is_hydrogen_bond_acceptor());
     EXPECT_TRUE(Atom(" N3 ", Vector3D(0, 0, 0)).is_hydrogen_bond_acceptor());
     EXPECT_TRUE(Atom(" N7 ", Vector3D(0, 0, 0)).is_hydrogen_bond_acceptor());
-    
+
     EXPECT_FALSE(Atom(" N1 ", Vector3D(0, 0, 0)).is_hydrogen_bond_acceptor());
     EXPECT_FALSE(Atom(" C1'", Vector3D(0, 0, 0)).is_hydrogen_bond_acceptor());
 }
@@ -126,7 +126,7 @@ TEST_F(AtomTest, IsHydrogenBondAcceptor) {
 // JSON serialization tests - Legacy format
 TEST_F(AtomTest, ToJsonLegacy) {
     auto json = atom1_.to_json_legacy();
-    
+
     EXPECT_EQ(json["atom_name"], " C1'");
     std::vector<double> expected_xyz = {1.0, 2.0, 3.0};
     EXPECT_EQ(json["xyz"], expected_xyz);
@@ -137,17 +137,11 @@ TEST_F(AtomTest, ToJsonLegacy) {
 }
 
 TEST_F(AtomTest, FromJsonLegacy) {
-    nlohmann::json j = {
-        {"atom_name", " N3 "},
-        {"xyz", {4.0, 5.0, 6.0}},
-        {"residue_name", "  G"},
-        {"chain_id", "B"},
-        {"residue_seq", 2},
-        {"record_type", "A"}
-    };
-    
+    nlohmann::json j = {{"atom_name", " N3 "}, {"xyz", {4.0, 5.0, 6.0}}, {"residue_name", "  G"},
+                        {"chain_id", "B"},     {"residue_seq", 2},       {"record_type", "A"}};
+
     Atom atom = Atom::from_json_legacy(j);
-    
+
     EXPECT_EQ(atom.name(), " N3 ");
     EXPECT_EQ(atom.position(), Vector3D(4.0, 5.0, 6.0));
     EXPECT_EQ(atom.residue_name(), "  G");
@@ -159,7 +153,7 @@ TEST_F(AtomTest, FromJsonLegacy) {
 TEST_F(AtomTest, JsonLegacyRoundTrip) {
     auto json = atom1_.to_json_legacy();
     Atom atom = Atom::from_json_legacy(json);
-    
+
     EXPECT_EQ(atom.name(), atom1_.name());
     EXPECT_EQ(atom.position(), atom1_.position());
     EXPECT_EQ(atom.residue_name(), atom1_.residue_name());
@@ -171,7 +165,7 @@ TEST_F(AtomTest, JsonLegacyRoundTrip) {
 // JSON serialization tests - Modern format
 TEST_F(AtomTest, ToJsonModern) {
     auto json = atom1_.to_json();
-    
+
     EXPECT_EQ(json["name"], " C1'");
     std::vector<double> expected_pos = {1.0, 2.0, 3.0};
     EXPECT_EQ(json["position"], expected_pos);
@@ -182,17 +176,12 @@ TEST_F(AtomTest, ToJsonModern) {
 }
 
 TEST_F(AtomTest, FromJsonModern) {
-    nlohmann::json j = {
-        {"name", " N3 "},
-        {"position", {4.0, 5.0, 6.0}},
-        {"residue_name", "  G"},
-        {"chain_id", "B"},
-        {"residue_seq", 2},
-        {"record_type", "A"}
-    };
-    
+    nlohmann::json j = {{"name", " N3 "},        {"position", {4.0, 5.0, 6.0}},
+                        {"residue_name", "  G"}, {"chain_id", "B"},
+                        {"residue_seq", 2},      {"record_type", "A"}};
+
     Atom atom = Atom::from_json(j);
-    
+
     EXPECT_EQ(atom.name(), " N3 ");
     EXPECT_EQ(atom.position(), Vector3D(4.0, 5.0, 6.0));
     EXPECT_EQ(atom.residue_name(), "  G");
@@ -204,7 +193,7 @@ TEST_F(AtomTest, FromJsonModern) {
 TEST_F(AtomTest, JsonModernRoundTrip) {
     auto json = atom1_.to_json();
     Atom atom = Atom::from_json(json);
-    
+
     EXPECT_EQ(atom.name(), atom1_.name());
     EXPECT_EQ(atom.position(), atom1_.position());
     EXPECT_EQ(atom.residue_name(), atom1_.residue_name());
@@ -215,11 +204,8 @@ TEST_F(AtomTest, JsonModernRoundTrip) {
 
 // Edge cases
 TEST_F(AtomTest, MinimalJsonLegacy) {
-    nlohmann::json j = {
-        {"atom_name", " C1'"},
-        {"xyz", {1.0, 2.0, 3.0}}
-    };
-    
+    nlohmann::json j = {{"atom_name", " C1'"}, {"xyz", {1.0, 2.0, 3.0}}};
+
     Atom atom = Atom::from_json_legacy(j);
     EXPECT_EQ(atom.name(), " C1'");
     EXPECT_EQ(atom.position(), Vector3D(1.0, 2.0, 3.0));
@@ -234,4 +220,3 @@ TEST_F(AtomTest, AtomNameWithSpaces) {
     // Ring atom check should handle spaces
     EXPECT_FALSE(atom.is_ring_atom());
 }
-

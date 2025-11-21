@@ -10,4 +10,3 @@
 #define X3DNA_VERSION_PATCH 0
 
 #define X3DNA_VERSION_STRING "1.0.0"
-

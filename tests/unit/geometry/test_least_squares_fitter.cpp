@@ -23,13 +23,9 @@ protected:
 
 // Test with simple translation (no rotation)
 TEST_F(LeastSquaresFitterTest, SimpleTranslation) {
-    std::vector<Vector3D> points1 = {
-        Vector3D(0.0, 0.0, 0.0),
-        Vector3D(1.0, 0.0, 0.0),
-        Vector3D(0.0, 1.0, 0.0),
-        Vector3D(0.0, 0.0, 1.0)
-    };
-    
+    std::vector<Vector3D> points1 = {Vector3D(0.0, 0.0, 0.0), Vector3D(1.0, 0.0, 0.0),
+                                     Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0)};
+
     Vector3D translation(1.0, 2.0, 3.0);
     std::vector<Vector3D> points2;
     for (const auto& p : points1) {
@@ -40,29 +36,25 @@ TEST_F(LeastSquaresFitterTest, SimpleTranslation) {
 
     // Rotation should be identity (approximately)
     EXPECT_TRUE(result.rotation.approximately_equals(Matrix3D::identity(), TOLERANCE));
-    
+
     // Translation should match
     EXPECT_NEAR(result.translation.x(), translation.x(), TOLERANCE);
     EXPECT_NEAR(result.translation.y(), translation.y(), TOLERANCE);
     EXPECT_NEAR(result.translation.z(), translation.z(), TOLERANCE);
-    
+
     // RMS should be very small (perfect fit)
     EXPECT_NEAR(result.rms, 0.0, TOLERANCE);
 }
 
 // Test with simple rotation around Z axis
 TEST_F(LeastSquaresFitterTest, SimpleRotationZ) {
-    std::vector<Vector3D> points1 = {
-        Vector3D(1.0, 0.0, 0.0),
-        Vector3D(0.0, 1.0, 0.0),
-        Vector3D(-1.0, 0.0, 0.0),
-        Vector3D(0.0, -1.0, 0.0)
-    };
+    std::vector<Vector3D> points1 = {Vector3D(1.0, 0.0, 0.0), Vector3D(0.0, 1.0, 0.0),
+                                     Vector3D(-1.0, 0.0, 0.0), Vector3D(0.0, -1.0, 0.0)};
 
     // Rotate 90 degrees around Z axis
     double angle = M_PI / 2.0;
     Matrix3D rot = Matrix3D::rotation_z(angle);
-    
+
     std::vector<Vector3D> points2;
     for (const auto& p : points1) {
         points2.push_back(rot * p);
@@ -76,24 +68,20 @@ TEST_F(LeastSquaresFitterTest, SimpleRotationZ) {
         double dist = transformed.distance_to(points2[i]);
         EXPECT_NEAR(dist, 0.0, 0.01) << "Point " << i << " doesn't match";
     }
-    
+
     // RMS should be very small
     EXPECT_NEAR(result.rms, 0.0, 0.01);
 }
 
 // Test with combined rotation and translation
 TEST_F(LeastSquaresFitterTest, CombinedRotationAndTranslation) {
-    std::vector<Vector3D> points1 = {
-        Vector3D(0.0, 0.0, 0.0),
-        Vector3D(1.0, 0.0, 0.0),
-        Vector3D(0.0, 1.0, 0.0),
-        Vector3D(0.0, 0.0, 1.0),
-        Vector3D(1.0, 1.0, 1.0)
-    };
+    std::vector<Vector3D> points1 = {Vector3D(0.0, 0.0, 0.0), Vector3D(1.0, 0.0, 0.0),
+                                     Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0),
+                                     Vector3D(1.0, 1.0, 1.0)};
 
     Matrix3D rot = Matrix3D::rotation_y(M_PI / 4.0);
     Vector3D trans(5.0, 10.0, 15.0);
-    
+
     std::vector<Vector3D> points2;
     for (const auto& p : points1) {
         points2.push_back(rot * p + trans);
@@ -107,23 +95,20 @@ TEST_F(LeastSquaresFitterTest, CombinedRotationAndTranslation) {
         double dist = transformed.distance_to(points2[i]);
         EXPECT_NEAR(dist, 0.0, TOLERANCE) << "Point " << i << " doesn't match";
     }
-    
+
     // RMS should be very small
     EXPECT_NEAR(result.rms, 0.0, TOLERANCE);
 }
 
 // Test with known 3D triangle
 TEST_F(LeastSquaresFitterTest, TriangleTransformation) {
-    std::vector<Vector3D> points1 = {
-        Vector3D(0.0, 0.0, 0.0),
-        Vector3D(3.0, 0.0, 0.0),
-        Vector3D(0.0, 4.0, 0.0)
-    };
+    std::vector<Vector3D> points1 = {Vector3D(0.0, 0.0, 0.0), Vector3D(3.0, 0.0, 0.0),
+                                     Vector3D(0.0, 4.0, 0.0)};
 
     // Apply known transformation
-    Matrix3D rot = Matrix3D::rotation_x(M_PI / 6.0);  // 30 degrees
+    Matrix3D rot = Matrix3D::rotation_x(M_PI / 6.0); // 30 degrees
     Vector3D trans(1.0, 2.0, 3.0);
-    
+
     std::vector<Vector3D> points2;
     for (const auto& p : points1) {
         points2.push_back(rot * p + trans);
@@ -154,12 +139,8 @@ TEST_F(LeastSquaresFitterTest, ErrorHandling) {
 
 // Test with collinear points (degenerate case)
 TEST_F(LeastSquaresFitterTest, CollinearPoints) {
-    std::vector<Vector3D> points1 = {
-        Vector3D(0.0, 0.0, 0.0),
-        Vector3D(1.0, 0.0, 0.0),
-        Vector3D(2.0, 0.0, 0.0),
-        Vector3D(3.0, 0.0, 0.0)
-    };
+    std::vector<Vector3D> points1 = {Vector3D(0.0, 0.0, 0.0), Vector3D(1.0, 0.0, 0.0),
+                                     Vector3D(2.0, 0.0, 0.0), Vector3D(3.0, 0.0, 0.0)};
 
     Vector3D trans(1.0, 2.0, 3.0);
     std::vector<Vector3D> points2;
@@ -169,23 +150,20 @@ TEST_F(LeastSquaresFitterTest, CollinearPoints) {
 
     // Should still work (translation only)
     auto result = fitter_->fit(points1, points2);
-    
+
     // Translation should be correct
     EXPECT_NEAR(result.translation.x(), trans.x(), TOLERANCE);
     EXPECT_NEAR(result.translation.y(), trans.y(), TOLERANCE);
     EXPECT_NEAR(result.translation.z(), trans.z(), TOLERANCE);
-    
+
     // RMS should be small
     EXPECT_NEAR(result.rms, 0.0, TOLERANCE);
 }
 
 // Test RMS calculation accuracy
 TEST_F(LeastSquaresFitterTest, RMSCalculation) {
-    std::vector<Vector3D> points1 = {
-        Vector3D(0.0, 0.0, 0.0),
-        Vector3D(1.0, 0.0, 0.0),
-        Vector3D(0.0, 1.0, 0.0)
-    };
+    std::vector<Vector3D> points1 = {Vector3D(0.0, 0.0, 0.0), Vector3D(1.0, 0.0, 0.0),
+                                     Vector3D(0.0, 1.0, 0.0)};
 
     // Perfect fit
     std::vector<Vector3D> points2 = points1;
@@ -198,28 +176,28 @@ TEST_F(LeastSquaresFitterTest, RMSCalculation) {
         points3.push_back(p + Vector3D(0.01, 0.01, 0.01));
     }
     auto result2 = fitter_->fit(points1, points3);
-    
+
     // RMS should be approximately the noise level
     EXPECT_GT(result2.rms, 0.0);
-    EXPECT_LT(result2.rms, 0.02);  // Should be close to noise level
+    EXPECT_LT(result2.rms, 0.02); // Should be close to noise level
 }
 
 // Test with real-world like coordinates (atom positions)
 TEST_F(LeastSquaresFitterTest, RealWorldCoordinates) {
     // Simulate base ring atoms
     std::vector<Vector3D> points1 = {
-        Vector3D(2.5, 0.0, 0.0),      // N1
-        Vector3D(1.5, 1.5, 0.0),     // C2
-        Vector3D(0.0, 1.5, 0.0),     // N3
-        Vector3D(-0.5, 0.0, 0.0),    // C4
-        Vector3D(0.0, -1.5, 0.0),    // C5
-        Vector3D(1.5, -1.5, 0.0)     // C6
+        Vector3D(2.5, 0.0, 0.0),  // N1
+        Vector3D(1.5, 1.5, 0.0),  // C2
+        Vector3D(0.0, 1.5, 0.0),  // N3
+        Vector3D(-0.5, 0.0, 0.0), // C4
+        Vector3D(0.0, -1.5, 0.0), // C5
+        Vector3D(1.5, -1.5, 0.0)  // C6
     };
 
     // Apply transformation
     Matrix3D rot = Matrix3D::rotation_z(M_PI / 3.0) * Matrix3D::rotation_x(M_PI / 6.0);
     Vector3D trans(10.0, 20.0, 30.0);
-    
+
     std::vector<Vector3D> points2;
     for (const auto& p : points1) {
         points2.push_back(rot * p + trans);
@@ -235,18 +213,15 @@ TEST_F(LeastSquaresFitterTest, RealWorldCoordinates) {
         max_error = std::max(max_error, dist);
         EXPECT_NEAR(dist, 0.0, 0.1) << "Atom " << i << " doesn't match, distance: " << dist;
     }
-    
+
     // RMS should be reasonable (algorithm may have numerical precision issues)
     EXPECT_LT(result.rms, 0.2);
 }
 
 // Test JSON serialization
 TEST_F(LeastSquaresFitterTest, JSONSerialization) {
-    std::vector<Vector3D> points1 = {
-        Vector3D(0.0, 0.0, 0.0),
-        Vector3D(1.0, 0.0, 0.0),
-        Vector3D(0.0, 1.0, 0.0)
-    };
+    std::vector<Vector3D> points1 = {Vector3D(0.0, 0.0, 0.0), Vector3D(1.0, 0.0, 0.0),
+                                     Vector3D(0.0, 1.0, 0.0)};
 
     Vector3D trans(1.0, 2.0, 3.0);
     std::vector<Vector3D> points2;
@@ -272,16 +247,13 @@ TEST_F(LeastSquaresFitterTest, JSONSerialization) {
 TEST_F(LeastSquaresFitterTest, ManyPoints) {
     std::vector<Vector3D> points1;
     for (int i = 0; i < 100; ++i) {
-        points1.push_back(Vector3D(
-            static_cast<double>(i % 10),
-            static_cast<double>((i / 10) % 10),
-            static_cast<double>(i / 100)
-        ));
+        points1.push_back(Vector3D(static_cast<double>(i % 10), static_cast<double>((i / 10) % 10),
+                                   static_cast<double>(i / 100)));
     }
 
     Matrix3D rot = Matrix3D::rotation_x(M_PI / 4.0);
     Vector3D trans(5.0, 10.0, 15.0);
-    
+
     std::vector<Vector3D> points2;
     for (const auto& p : points1) {
         points2.push_back(rot * p + trans);
@@ -296,31 +268,26 @@ TEST_F(LeastSquaresFitterTest, ManyPoints) {
         double dist = transformed.distance_to(points2[i]);
         max_error = std::max(max_error, dist);
     }
-    
+
     EXPECT_NEAR(max_error, 0.0, 0.01);
     EXPECT_NEAR(result.rms, 0.0, 0.01);
 }
 
 // Test identity transformation
 TEST_F(LeastSquaresFitterTest, IdentityTransformation) {
-    std::vector<Vector3D> points1 = {
-        Vector3D(0.0, 0.0, 0.0),
-        Vector3D(1.0, 0.0, 0.0),
-        Vector3D(0.0, 1.0, 0.0),
-        Vector3D(0.0, 0.0, 1.0)
-    };
+    std::vector<Vector3D> points1 = {Vector3D(0.0, 0.0, 0.0), Vector3D(1.0, 0.0, 0.0),
+                                     Vector3D(0.0, 1.0, 0.0), Vector3D(0.0, 0.0, 1.0)};
 
-    std::vector<Vector3D> points2 = points1;  // Same points
+    std::vector<Vector3D> points2 = points1; // Same points
 
     auto result = fitter_->fit(points1, points2);
 
     // Rotation should be identity
     EXPECT_TRUE(result.rotation.approximately_equals(Matrix3D::identity(), TOLERANCE));
-    
+
     // Translation should be zero
     EXPECT_NEAR(result.translation.length(), 0.0, TOLERANCE);
-    
+
     // RMS should be zero
     EXPECT_NEAR(result.rms, 0.0, TOLERANCE);
 }
-

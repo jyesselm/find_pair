@@ -25,15 +25,15 @@ protected:
     void SetUp() override {
         // Discover all PDB/JSON pairs
         pairs_ = test_data_discovery::discover_pairs();
-        
+
         if (pairs_.empty()) {
             GTEST_SKIP() << "No PDB/JSON pairs found for testing. "
-                        << "Place JSON files in data/json_legacy/ to enable tests.";
+                         << "Place JSON files in data/json_legacy/ to enable tests.";
         }
     }
-    
+
     std::vector<pdb_json_pair> pairs_;
-    
+
     /**
      * @brief Load legacy JSON file
      * @param json_file Path to JSON file
@@ -48,32 +48,29 @@ protected:
         file >> json;
         return json;
     }
-    
+
     /**
      * @brief Find records by type in calculations array
      * @param json JSON object containing calculations
      * @param type Record type to find
      * @return Vector of matching records
      */
-    std::vector<nlohmann::json> find_records_by_type(
-        const nlohmann::json& json,
-        const std::string& type
-    ) {
+    std::vector<nlohmann::json> find_records_by_type(const nlohmann::json& json,
+                                                     const std::string& type) {
         std::vector<nlohmann::json> results;
-        
+
         if (!json.contains("calculations")) {
             return results;
         }
-        
+
         for (const auto& calc : json["calculations"]) {
             if (calc.contains("type") && calc["type"] == type) {
                 results.push_back(calc);
             }
         }
-        
+
         return results;
     }
 };
 
 } // namespace x3dna::test
-

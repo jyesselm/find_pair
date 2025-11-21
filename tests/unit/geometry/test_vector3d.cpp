@@ -46,7 +46,7 @@ TEST_F(Vector3DTest, GettersSetters) {
     EXPECT_DOUBLE_EQ(v.x(), 1.0);
     EXPECT_DOUBLE_EQ(v.y(), 2.0);
     EXPECT_DOUBLE_EQ(v.z(), 3.0);
-    
+
     v.set(4.0, 5.0, 6.0);
     EXPECT_DOUBLE_EQ(v.x(), 4.0);
     EXPECT_DOUBLE_EQ(v.y(), 5.0);
@@ -78,7 +78,7 @@ TEST_F(Vector3DTest, ScalarMultiplication) {
     EXPECT_DOUBLE_EQ(result.x(), 2.0);
     EXPECT_DOUBLE_EQ(result.y(), 4.0);
     EXPECT_DOUBLE_EQ(result.z(), 6.0);
-    
+
     // Test left multiplication
     Vector3D result2 = 2.0 * v;
     EXPECT_DOUBLE_EQ(result2.x(), 2.0);
@@ -107,7 +107,7 @@ TEST_F(Vector3DTest, DotProduct) {
     Vector3D v1(1.0, 2.0, 3.0);
     Vector3D v2(4.0, 5.0, 6.0);
     double result = v1.dot(v2);
-    EXPECT_DOUBLE_EQ(result, 32.0);  // 1*4 + 2*5 + 3*6 = 4 + 10 + 18 = 32
+    EXPECT_DOUBLE_EQ(result, 32.0); // 1*4 + 2*5 + 3*6 = 4 + 10 + 18 = 32
 }
 
 // Cross product
@@ -118,7 +118,7 @@ TEST_F(Vector3DTest, CrossProduct) {
     EXPECT_NEAR(result.x(), 0.0, 1e-9);
     EXPECT_NEAR(result.y(), 0.0, 1e-9);
     EXPECT_NEAR(result.z(), 1.0, 1e-9);
-    
+
     // Test orthogonality
     EXPECT_NEAR(result.dot(v1), 0.0, 1e-9);
     EXPECT_NEAR(result.dot(v2), 0.0, 1e-9);
@@ -127,8 +127,8 @@ TEST_F(Vector3DTest, CrossProduct) {
 // Length
 TEST_F(Vector3DTest, Length) {
     Vector3D v(3.0, 4.0, 0.0);
-    EXPECT_DOUBLE_EQ(v.length(), 5.0);  // 3-4-5 triangle
-    
+    EXPECT_DOUBLE_EQ(v.length(), 5.0); // 3-4-5 triangle
+
     Vector3D v2(1.0, 1.0, 1.0);
     EXPECT_NEAR(v2.length(), std::sqrt(3.0), 1e-9);
 }
@@ -146,7 +146,7 @@ TEST_F(Vector3DTest, Normalize) {
     EXPECT_NEAR(normalized.x(), 0.6, 1e-9);
     EXPECT_NEAR(normalized.y(), 0.8, 1e-9);
     EXPECT_NEAR(normalized.z(), 0.0, 1e-9);
-    
+
     // Original vector should be unchanged
     EXPECT_DOUBLE_EQ(v.length(), 5.0);
 }
@@ -156,7 +156,7 @@ TEST_F(Vector3DTest, NormalizeInPlace) {
     bool success = v.normalize();
     EXPECT_TRUE(success);
     EXPECT_NEAR(v.length(), 1.0, 1e-9);
-    
+
     // Test zero vector
     Vector3D zero;
     bool fail = zero.normalize();
@@ -181,7 +181,7 @@ TEST_F(Vector3DTest, Equality) {
     Vector3D v1(1.0, 2.0, 3.0);
     Vector3D v2(1.0, 2.0, 3.0);
     Vector3D v3(1.0, 2.0, 3.0001);
-    
+
     EXPECT_TRUE(v1 == v2);
     EXPECT_FALSE(v1 == v3);
     EXPECT_TRUE(v1 != v3);
@@ -191,13 +191,13 @@ TEST_F(Vector3DTest, Equality) {
 TEST_F(Vector3DTest, JSONSerialization) {
     Vector3D v(1.0, 2.0, 3.0);
     auto json = v.to_json();
-    
+
     EXPECT_TRUE(json.is_array());
     EXPECT_EQ(json.size(), 3);
     EXPECT_DOUBLE_EQ(json[0].get<double>(), 1.0);
     EXPECT_DOUBLE_EQ(json[1].get<double>(), 2.0);
     EXPECT_DOUBLE_EQ(json[2].get<double>(), 3.0);
-    
+
     Vector3D restored = Vector3D::from_json(json);
     EXPECT_TRUE(v == restored);
 }
@@ -207,7 +207,7 @@ TEST_F(Vector3DTest, ZeroVector) {
     Vector3D zero;
     EXPECT_DOUBLE_EQ(zero.length(), 0.0);
     EXPECT_DOUBLE_EQ(zero.dot(zero), 0.0);
-    
+
     Vector3D normalized = zero.normalized();
     EXPECT_DOUBLE_EQ(normalized.length(), 0.0);
 }
@@ -215,25 +215,24 @@ TEST_F(Vector3DTest, ZeroVector) {
 TEST_F(Vector3DTest, CompoundAssignment) {
     Vector3D v1(1.0, 2.0, 3.0);
     Vector3D v2(4.0, 5.0, 6.0);
-    
+
     v1 += v2;
     EXPECT_DOUBLE_EQ(v1.x(), 5.0);
     EXPECT_DOUBLE_EQ(v1.y(), 7.0);
     EXPECT_DOUBLE_EQ(v1.z(), 9.0);
-    
+
     v1 -= v2;
     EXPECT_DOUBLE_EQ(v1.x(), 1.0);
     EXPECT_DOUBLE_EQ(v1.y(), 2.0);
     EXPECT_DOUBLE_EQ(v1.z(), 3.0);
-    
+
     v1 *= 2.0;
     EXPECT_DOUBLE_EQ(v1.x(), 2.0);
     EXPECT_DOUBLE_EQ(v1.y(), 4.0);
     EXPECT_DOUBLE_EQ(v1.z(), 6.0);
-    
+
     v1 /= 2.0;
     EXPECT_DOUBLE_EQ(v1.x(), 1.0);
     EXPECT_DOUBLE_EQ(v1.y(), 2.0);
     EXPECT_DOUBLE_EQ(v1.z(), 3.0);
 }
-

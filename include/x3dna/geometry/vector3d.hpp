@@ -31,18 +31,29 @@ public:
     /**
      * @brief Constructor from array
      */
-    explicit Vector3D(const std::array<double, 3>& arr) 
-        : x_(arr[0]), y_(arr[1]), z_(arr[2]) {}
+    explicit Vector3D(const std::array<double, 3>& arr) : x_(arr[0]), y_(arr[1]), z_(arr[2]) {}
 
     // Getters
-    double x() const { return x_; }
-    double y() const { return y_; }
-    double z() const { return z_; }
+    double x() const {
+        return x_;
+    }
+    double y() const {
+        return y_;
+    }
+    double z() const {
+        return z_;
+    }
 
     // Setters
-    void set_x(double x) { x_ = x; }
-    void set_y(double y) { y_ = y; }
-    void set_z(double z) { z_ = z; }
+    void set_x(double x) {
+        x_ = x;
+    }
+    void set_y(double y) {
+        y_ = y;
+    }
+    void set_z(double z) {
+        z_ = z;
+    }
     void set(double x, double y, double z) {
         x_ = x;
         y_ = y;
@@ -102,8 +113,7 @@ public:
     // Comparison operators
     bool operator==(const Vector3D& other) const {
         constexpr double epsilon = 1e-9;
-        return std::abs(x_ - other.x_) < epsilon &&
-               std::abs(y_ - other.y_) < epsilon &&
+        return std::abs(x_ - other.x_) < epsilon && std::abs(y_ - other.y_) < epsilon &&
                std::abs(z_ - other.z_) < epsilon;
     }
 
@@ -123,11 +133,8 @@ public:
      * @brief Calculate cross product with another vector
      */
     Vector3D cross(const Vector3D& other) const {
-        return Vector3D(
-            y_ * other.z_ - z_ * other.y_,
-            z_ * other.x_ - x_ * other.z_,
-            x_ * other.y_ - y_ * other.x_
-        );
+        return Vector3D(y_ * other.z_ - z_ * other.y_, z_ * other.x_ - x_ * other.z_,
+                        x_ * other.y_ - y_ * other.x_);
     }
 
     /**
@@ -208,9 +215,7 @@ public:
         if (!json.is_array() || json.size() != 3) {
             throw std::invalid_argument("JSON must be array of 3 numbers");
         }
-        return Vector3D(json[0].get<double>(), 
-                        json[1].get<double>(), 
-                        json[2].get<double>());
+        return Vector3D(json[0].get<double>(), json[1].get<double>(), json[2].get<double>());
     }
 
 private:
@@ -226,4 +231,3 @@ inline Vector3D operator*(double scalar, const Vector3D& vec) {
 
 } // namespace geometry
 } // namespace x3dna
-

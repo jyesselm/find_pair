@@ -16,7 +16,7 @@ namespace core {
 /**
  * @class ReferenceFrame
  * @brief Represents a local coordinate frame with rotation matrix and origin
- * 
+ *
  * The reference frame is used to represent the orientation and position of
  * nucleic acid bases. The rotation matrix (orien) defines the orientation,
  * and the origin (org) defines the position.
@@ -26,9 +26,8 @@ public:
     /**
      * @brief Default constructor (identity rotation, zero origin)
      */
-    ReferenceFrame() 
-        : rotation_(geometry::Matrix3D::identity()), 
-          origin_(geometry::Vector3D(0, 0, 0)) {}
+    ReferenceFrame()
+        : rotation_(geometry::Matrix3D::identity()), origin_(geometry::Vector3D(0, 0, 0)) {}
 
     /**
      * @brief Constructor with rotation matrix and origin
@@ -40,20 +39,24 @@ public:
 
     /**
      * @brief Constructor from 9-element rotation array and 3-element origin array
-     * @param rotation_array Array of 9 elements (row-major: [r00, r01, r02, r10, r11, r12, r20, r21, r22])
+     * @param rotation_array Array of 9 elements (row-major: [r00, r01, r02, r10, r11, r12, r20,
+     * r21, r22])
      * @param origin_array Array of 3 elements [x, y, z]
      */
     ReferenceFrame(const std::array<double, 9>& rotation_array,
                    const std::array<double, 3>& origin_array)
-        : rotation_(geometry::Matrix3D(
-              rotation_array[0], rotation_array[1], rotation_array[2],
-              rotation_array[3], rotation_array[4], rotation_array[5],
-              rotation_array[6], rotation_array[7], rotation_array[8])),
+        : rotation_(geometry::Matrix3D(rotation_array[0], rotation_array[1], rotation_array[2],
+                                       rotation_array[3], rotation_array[4], rotation_array[5],
+                                       rotation_array[6], rotation_array[7], rotation_array[8])),
           origin_(geometry::Vector3D(origin_array[0], origin_array[1], origin_array[2])) {}
 
     // Getters
-    const geometry::Matrix3D& rotation() const { return rotation_; }
-    const geometry::Vector3D& origin() const { return origin_; }
+    const geometry::Matrix3D& rotation() const {
+        return rotation_;
+    }
+    const geometry::Vector3D& origin() const {
+        return origin_;
+    }
 
     /**
      * @brief Get x-axis (first column of rotation matrix)
@@ -71,7 +74,7 @@ public:
 
     /**
      * @brief Get z-axis (third column of rotation matrix)
-     * 
+     *
      * The z-axis is the normal to the base plane in nucleic acids.
      */
     geometry::Vector3D z_axis() const {
@@ -80,10 +83,10 @@ public:
 
     /**
      * @brief Calculate direction dot product with another frame
-     * 
+     *
      * This is used to validate base pairs - the z-axes should point
      * in opposite directions (dot product should be negative).
-     * 
+     *
      * @param other Another reference frame
      * @return Dot product of z-axes
      */
@@ -114,11 +117,9 @@ public:
      * @brief Get rotation matrix as 9-element array (row-major)
      */
     std::array<double, 9> rotation_as_array() const {
-        return {
-            rotation_.at(0, 0), rotation_.at(0, 1), rotation_.at(0, 2),
-            rotation_.at(1, 0), rotation_.at(1, 1), rotation_.at(1, 2),
-            rotation_.at(2, 0), rotation_.at(2, 1), rotation_.at(2, 2)
-        };
+        return {rotation_.at(0, 0), rotation_.at(0, 1), rotation_.at(0, 2),
+                rotation_.at(1, 0), rotation_.at(1, 1), rotation_.at(1, 2),
+                rotation_.at(2, 0), rotation_.at(2, 1), rotation_.at(2, 2)};
     }
 
     /**
@@ -130,12 +131,12 @@ public:
 
     /**
      * @brief Convert to legacy JSON format
-     * 
+     *
      * Legacy format uses "orien" (3x3 nested array) and "org" (3-element array)
      */
     nlohmann::json to_json_legacy() const {
         nlohmann::json j;
-        
+
         // orien: 3x3 nested array (row-major)
         j["orien"] = nlohmann::json::array();
         for (int i = 0; i < 3; ++i) {
@@ -145,10 +146,10 @@ public:
             }
             j["orien"].push_back(row);
         }
-        
+
         // org: 3-element array
         j["org"] = {origin_.x(), origin_.y(), origin_.z()};
-        
+
         return j;
     }
 
@@ -193,7 +194,7 @@ public:
      */
     nlohmann::json to_json() const {
         nlohmann::json j;
-        j["rotation"] = rotation_.to_json_legacy();  // Use nested array format
+        j["rotation"] = rotation_.to_json_legacy(); // Use nested array format
         j["origin"] = origin_.to_json();
         return j;
     }
@@ -208,10 +209,9 @@ public:
     }
 
 private:
-    geometry::Matrix3D rotation_;  // 3x3 rotation matrix (orientation)
+    geometry::Matrix3D rotation_; // 3x3 rotation matrix (orientation)
     geometry::Vector3D origin_;   // 3D origin vector (position)
 };
 
 } // namespace core
 } // namespace x3dna
-

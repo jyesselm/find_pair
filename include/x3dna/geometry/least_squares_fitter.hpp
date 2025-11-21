@@ -57,7 +57,7 @@ public:
      * @return FitResult with rotation, translation, and RMS
      * @throws std::invalid_argument if fewer than 3 points or sizes don't match
      */
-    FitResult fit(const std::vector<Vector3D> &points1, const std::vector<Vector3D> &points2) {
+    FitResult fit(const std::vector<Vector3D>& points1, const std::vector<Vector3D>& points2) {
         if (points1.size() != points2.size()) {
             throw std::invalid_argument("Point sets must have same size");
         }
@@ -100,8 +100,8 @@ private:
     /**
      * @brief Compute covariance matrix between two point sets
      */
-    Matrix3D compute_covariance_matrix(const std::vector<Vector3D> &points1,
-                                       const std::vector<Vector3D> &points2, size_t n) {
+    Matrix3D compute_covariance_matrix(const std::vector<Vector3D>& points1,
+                                       const std::vector<Vector3D>& points2, size_t n) {
         // Compute centroids
         Vector3D centroid1 = compute_centroid(points1);
         Vector3D centroid2 = compute_centroid(points2);
@@ -114,8 +114,23 @@ private:
                 for (size_t k = 0; k < n; ++k) {
                     Vector3D d1 = points1[k] - centroid1;
                     Vector3D d2 = points2[k] - centroid2;
-                    sum += (i == 0 ? d1.x() : (i == 1 ? d1.y() : d1.z())) *
-                           (j == 0 ? d2.x() : (j == 1 ? d2.y() : d2.z()));
+                    double d1_component;
+                    if (i == 0) {
+                        d1_component = d1.x();
+                    } else if (i == 1) {
+                        d1_component = d1.y();
+                    } else {
+                        d1_component = d1.z();
+                    }
+                    double d2_component;
+                    if (j == 0) {
+                        d2_component = d2.x();
+                    } else if (j == 1) {
+                        d2_component = d2.y();
+                    } else {
+                        d2_component = d2.z();
+                    }
+                    sum += d1_component * d2_component;
                 }
                 cov.set(i, j, sum / (n - 1));
             }
@@ -126,7 +141,7 @@ private:
     /**
      * @brief Build 4x4 quaternion matrix from 3x3 covariance matrix
      */
-    Matrix4D build_quaternion_matrix(const Matrix3D &U) {
+    Matrix4D build_quaternion_matrix(const Matrix3D& U) {
         Matrix4D N;
 
         // Diagonal elements
@@ -161,31 +176,35 @@ private:
      * @brief Find largest eigenvalue and corresponding eigenvector using Jacobi method
      * @note Implements simplified Jacobi for 4x4 symmetric matrix (matching original algorithm)
      */
-    Vector4D find_largest_eigenvector(const Matrix4D &N) {
+    Vector4D find_largest_eigenvector(const Matrix4D& N) {
         constexpr double XEPS = 1.0e-7;
         constexpr size_t max_iterations = 100;
-        
+
         // Working copies
         Matrix4D a = N;
         Matrix4D v;
-        
+
         // Initialize V as identity
         for (size_t i = 0; i < 4; ++i) {
             for (size_t j = 0; j < 4; ++j) {
-                v[i][j] = (i == j) ? 1.0 : 0.0;
+                if (i == j) {
+                    v[i][j] = 1.0;
+                } else {
+                    v[i][j] = 0.0;
+                }
             }
         }
-        
+
         // Diagonal elements (eigenvalues)
         std::array<double, 4> d;
         std::array<double, 4> b;
         std::array<double, 4> z;
-        
+
         for (size_t i = 0; i < 4; ++i) {
             b[i] = d[i] = a[i][i];
             z[i] = 0.0;
         }
-        
+
         // Jacobi iterations
         for (size_t iter = 0; iter < max_iterations; ++iter) {
             // Sum of off-diagonal elements
@@ -195,86 +214,61 @@ private:
                     sm += std::abs(a[i][j]);
                 }
             }
-            
+
             if (sm < XEPS) {
                 // Converged - sort eigenvalues and return largest eigenvector
                 sort_eigenvalues(d, v);
                 Vector4D result;
                 for (size_t i = 0; i < 4; ++i) {
-                    result[i] = v[i][3];  // Last column (largest eigenvalue)
+                    result[i] = v[i][3]; // Last column (largest eigenvalue)
                 }
                 return result;
             }
-            
-            double tresh = (iter < 4) ? 0.2 * sm / 16.0 : 0.0;
-            
+
+            double tresh;
+            if (iter < 4) {
+                tresh = 0.2 * sm / 16.0;
+            } else {
+                tresh = 0.0;
+            }
+
             for (size_t ip = 0; ip < 3; ++ip) {
                 for (size_t iq = ip + 1; iq < 4; ++iq) {
                     double g = 100.0 * std::abs(a[ip][iq]);
-                    
+
+                    // Skip if element is negligible
                     if (iter > 4 && (std::abs(d[ip]) + g) == std::abs(d[ip]) &&
                         (std::abs(d[iq]) + g) == std::abs(d[iq])) {
                         a[ip][iq] = 0.0;
-                    } else if (std::abs(a[ip][iq]) > tresh) {
-                        double h = d[iq] - d[ip];
-                        double t;
-                        
-                        if ((std::abs(h) + g) == std::abs(h)) {
-                            t = a[ip][iq] / h;
-                        } else {
-                            double theta = 0.5 * h / a[ip][iq];
-                            t = 1.0 / (std::abs(theta) + std::sqrt(1.0 + theta * theta));
-                            if (theta < 0.0) {
-                                t = -t;
-                            }
-                        }
-                        
-                        double c = 1.0 / std::sqrt(1.0 + t * t);
-                        double s = t * c;
-                        double tau = s / (1.0 + c);
-                        h = t * a[ip][iq];
-                        
-                        z[ip] -= h;
-                        z[iq] += h;
-                        d[ip] -= h;
-                        d[iq] += h;
-                        a[ip][iq] = 0.0;
-                        
-                        // Rotate matrix a
-                        for (size_t j = 0; j < ip; ++j) {
-                            rotate_matrix(a, j, ip, j, iq, s, tau);
-                        }
-                        for (size_t j = ip + 1; j < iq; ++j) {
-                            rotate_matrix(a, ip, j, j, iq, s, tau);
-                        }
-                        for (size_t j = iq + 1; j < 4; ++j) {
-                            rotate_matrix(a, ip, j, iq, j, s, tau);
-                        }
-                        
-                        // Rotate eigenvector matrix v
-                        for (size_t j = 0; j < 4; ++j) {
-                            rotate_matrix(v, j, ip, j, iq, s, tau);
-                        }
+                        continue;
                     }
+
+                    // Skip if below threshold
+                    if (std::abs(a[ip][iq]) <= tresh) {
+                        continue;
+                    }
+
+                    // Perform Jacobi rotation
+                    perform_jacobi_rotation(a, v, d, z, ip, iq, g);
                 }
             }
-            
+
             for (size_t i = 0; i < 4; ++i) {
                 b[i] += z[i];
                 d[i] = b[i];
                 z[i] = 0.0;
             }
         }
-        
+
         // If we get here, sort and return
         sort_eigenvalues(d, v);
         Vector4D result;
         for (size_t i = 0; i < 4; ++i) {
-            result[i] = v[i][3];  // Last column (largest eigenvalue)
+            result[i] = v[i][3]; // Last column (largest eigenvalue)
         }
         return result;
     }
-    
+
     /**
      * @brief Rotate matrix elements (helper for Jacobi)
      */
@@ -284,7 +278,61 @@ private:
         a[i][j] = g - s * (h + g * tau);
         a[k][l] = h + s * (g - h * tau);
     }
-    
+
+    /**
+     * @brief Compute rotation angle for Jacobi method
+     * Reduces nesting by extracting angle calculation
+     */
+    double compute_rotation_angle(const Matrix4D& a, size_t ip, size_t iq, double h, double g) {
+        if ((std::abs(h) + g) == std::abs(h)) {
+            return a[ip][iq] / h;
+        }
+
+        double theta = 0.5 * h / a[ip][iq];
+        double t = 1.0 / (std::abs(theta) + std::sqrt(1.0 + theta * theta));
+        if (theta < 0.0) {
+            t = -t;
+        }
+        return t;
+    }
+
+    /**
+     * @brief Perform a single Jacobi rotation step
+     * Reduces nesting by extracting complex rotation logic
+     */
+    void perform_jacobi_rotation(Matrix4D& a, Matrix4D& v, std::array<double, 4>& d,
+                                 std::array<double, 4>& z, size_t ip, size_t iq, double g) {
+        double h = d[iq] - d[ip];
+        double t = compute_rotation_angle(a, ip, iq, h, g);
+
+        double c = 1.0 / std::sqrt(1.0 + t * t);
+        double s = t * c;
+        double tau = s / (1.0 + c);
+        h = t * a[ip][iq];
+
+        z[ip] -= h;
+        z[iq] += h;
+        d[ip] -= h;
+        d[iq] += h;
+        a[ip][iq] = 0.0;
+
+        // Rotate matrix a
+        for (size_t j = 0; j < ip; ++j) {
+            rotate_matrix(a, j, ip, j, iq, s, tau);
+        }
+        for (size_t j = ip + 1; j < iq; ++j) {
+            rotate_matrix(a, ip, j, j, iq, s, tau);
+        }
+        for (size_t j = iq + 1; j < 4; ++j) {
+            rotate_matrix(a, ip, j, iq, j, s, tau);
+        }
+
+        // Rotate eigenvector matrix v
+        for (size_t j = 0; j < 4; ++j) {
+            rotate_matrix(v, j, ip, j, iq, s, tau);
+        }
+    }
+
     /**
      * @brief Sort eigenvalues in ascending order and reorder eigenvectors
      */
@@ -313,7 +361,7 @@ private:
      * @brief Convert quaternion to rotation matrix
      * @param q Quaternion [q0, q1, q2, q3] where q0 is scalar part
      */
-    Matrix3D quaternion_to_rotation_matrix(const Vector4D &q) {
+    Matrix3D quaternion_to_rotation_matrix(const Vector4D& q) {
         // Build quaternion outer product matrix N (as in original code)
         Matrix4D N;
         for (size_t i = 0; i < 4; ++i) {
@@ -340,9 +388,9 @@ private:
     /**
      * @brief Compute centroid of point set
      */
-    Vector3D compute_centroid(const std::vector<Vector3D> &points) {
+    Vector3D compute_centroid(const std::vector<Vector3D>& points) {
         Vector3D sum(0, 0, 0);
-        for (const auto &p : points) {
+        for (const auto& p : points) {
             sum += p;
         }
         return sum / static_cast<double>(points.size());
@@ -351,8 +399,8 @@ private:
     /**
      * @brief Compute RMS between transformed points1 and points2
      */
-    double compute_rms(const std::vector<Vector3D> &points1, const std::vector<Vector3D> &points2,
-                       const Matrix3D &rotation, const Vector3D &translation, size_t n) {
+    double compute_rms(const std::vector<Vector3D>& points1, const std::vector<Vector3D>& points2,
+                       const Matrix3D& rotation, const Vector3D& translation, size_t n) {
         double sum_sq_diff = 0.0;
         for (size_t i = 0; i < n; ++i) {
             Vector3D transformed = rotation * points1[i] + translation;

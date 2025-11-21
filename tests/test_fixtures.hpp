@@ -19,4 +19,3 @@ protected:
 };
 
 } // namespace x3dna::test
-

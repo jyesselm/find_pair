@@ -25,4 +25,3 @@ inline const char* version() {
 }
 
 } // namespace x3dna
-
