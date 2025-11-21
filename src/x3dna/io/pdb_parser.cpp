@@ -90,10 +90,8 @@ char PdbParser::parse_chain_id(const std::string& line) {
     }
     
     char chain_id = line[21];  // 0-indexed: position 21
-    // Normalize '0' to space to match legacy behavior
-    if (chain_id == '0') {
-        return ' ';
-    }
+    // Keep '0' as '0' (legacy code preserves '0', doesn't normalize to space)
+    // Only normalize actual space character
     return (chain_id == ' ') ? ' ' : chain_id;
 }
 
@@ -252,18 +250,34 @@ std::string PdbParser::normalize_atom_name(const std::string& name) const {
     
     std::string normalized = name;
     
-    // Normalize phosphate atom names to match legacy format
-    // Legacy uses " O1P" and " O2P", but PDB files may use " OP1" and " OP2"
-    std::string trimmed = normalized;
-    trimmed.erase(0, trimmed.find_first_not_of(" \t"));
-    trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
-    
-    if (trimmed == "OP1") {
+    // Normalize atom names to match legacy format
+    // Legacy code transforms these (see org/src/cmn_fncs.c lines 758-777)
+    // Check exact 4-character matches first (preserving spaces)
+    if (normalized == " OP1") {
         normalized = " O1P";
-    } else if (trimmed == "OP2") {
+    } else if (normalized == " OP2") {
         normalized = " O2P";
-    } else if (trimmed == "OP3") {
+    } else if (normalized == " OP3") {
         normalized = " O3P";
+    } else if (normalized == " C5A") {
+        normalized = " C5M";  // Legacy transforms C5A to C5M
+    } else if (normalized == " O5T") {
+        normalized = " O5'";
+    } else if (normalized == " O3T") {
+        normalized = " O3'";
+    } else {
+        // Also check trimmed version for phosphate names
+        std::string trimmed = normalized;
+        trimmed.erase(0, trimmed.find_first_not_of(" \t"));
+        trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
+        
+        if (trimmed == "OP1") {
+            normalized = " O1P";
+        } else if (trimmed == "OP2") {
+            normalized = " O2P";
+        } else if (trimmed == "OP3") {
+            normalized = " O3P";
+        }
     }
     
     if (normalized.length() == 4) {
@@ -313,12 +327,29 @@ core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& p
     
     size_t line_number = 0;
     std::string line;
+    bool all_models = false;  // Default: only process first MODEL (legacy behavior)
     
     while (std::getline(stream, line)) {
         line_number++;
         
         // Skip empty lines
         if (line.empty() || line.find_first_not_of(" \t") == std::string::npos) {
+            continue;
+        }
+        
+        // Check for END records (legacy stops at first END unless ALL_MODEL is TRUE)
+        // Legacy: is_end_of_structure_to_process returns TRUE for END if ALL_MODEL is FALSE
+        if (line.length() >= 3 && line.substr(0, 3) == "END") {
+            // If it's ENDMDL and we're processing all models, continue to next model
+            if (all_models && line.length() >= 6 && line.substr(0, 6) == "ENDMDL") {
+                continue;  // Continue to next model
+            }
+            // Otherwise, stop at first END (including ENDMDL if all_models is false)
+            break;
+        }
+        
+        // Skip MODEL lines (we process atoms from all models until we hit ENDMDL)
+        if (line.length() >= 6 && line.substr(0, 6) == "MODEL ") {
             continue;
         }
         
