@@ -17,11 +17,9 @@ namespace io {
 
 // ParseError implementation
 PdbParser::ParseError::ParseError(const std::string& message, size_t line_number)
-    : std::runtime_error(line_number > 0 
-                         ? message + " (line " + std::to_string(line_number) + ")"
-                         : message), 
-      line_number_(line_number) {
-}
+    : std::runtime_error(line_number > 0 ? message + " (line " + std::to_string(line_number) + ")"
+                                         : message),
+      line_number_(line_number) {}
 
 // Public methods
 core::Structure PdbParser::parse_file(const std::filesystem::path& path) {
@@ -36,7 +34,7 @@ core::Structure PdbParser::parse_file(const std::filesystem::path& path) {
 
     // Extract PDB ID from filename (without extension)
     std::string pdb_id = path.stem().string();
-    
+
     return parse_impl(file, pdb_id);
 }
 
@@ -58,12 +56,12 @@ std::string PdbParser::parse_atom_name(const std::string& line) {
     // Atom name is exactly 4 characters (may have leading/trailing spaces)
     // We normalize to match legacy JSON format
     if (line.length() < 16) {
-        return "    ";  // Return 4 spaces if line too short
+        return "    "; // Return 4 spaces if line too short
     }
-    
+
     // Extract exactly 4 characters
-    std::string name = line.substr(12, 4);  // 0-indexed: [12, 16)
-    
+    std::string name = line.substr(12, 4); // 0-indexed: [12, 16)
+
     // Normalize to match legacy format (handles OP1->O1P, OP2->O2P, etc.)
     return normalize_atom_name(name);
 }
@@ -73,23 +71,34 @@ std::string PdbParser::parse_residue_name(const std::string& line) {
     if (line.length() < 20) {
         return "";
     }
-    
-    std::string name = line.substr(17, 3);  // 0-indexed: [17, 20)
-    
-    // Trim whitespace
-    name.erase(0, name.find_first_not_of(" \t"));
-    name.erase(name.find_last_not_of(" \t") + 1);
-    
+
+    std::string name = line.substr(17, 3); // 0-indexed: [17, 20)
+
+    // Legacy code normalizes residue names by shifting left if last char is space
+    // (see org/src/cmn_fncs.c lines 782-787)
+    // This is done up to 2 times: if rname[2] == ' ', shift left
+    // IMPORTANT: This happens BEFORE any trimming, on the raw 3-character field
+    for (int i = 0; i < 2; i++) {
+        if (name.length() == 3 && name[2] == ' ') {
+            name[2] = name[1];
+            name[1] = name[0];
+            name[0] = ' ';
+        }
+    }
+
+    // Legacy code also checks if rname[2] is still space and errors if so
+    // We'll just return the normalized name (which may still have trailing spaces)
+
     return normalize_residue_name(name);
 }
 
 char PdbParser::parse_chain_id(const std::string& line) {
     // PDB format: column 22 (1-indexed)
     if (line.length() < 22) {
-        return ' ';  // Default to space if not specified
+        return ' '; // Default to space if not specified
     }
-    
-    char chain_id = line[21];  // 0-indexed: position 21
+
+    char chain_id = line[21]; // 0-indexed: position 21
     // Keep '0' as '0' (legacy code preserves '0', doesn't normalize to space)
     // Only normalize actual space character
     return (chain_id == ' ') ? ' ' : chain_id;
@@ -98,43 +107,43 @@ char PdbParser::parse_chain_id(const std::string& line) {
 char PdbParser::parse_alt_loc(const std::string& line) {
     // PDB format: column 17 (1-indexed)
     if (line.length() < 17) {
-        return ' ';  // Default to space if not specified
+        return ' '; // Default to space if not specified
     }
-    
-    char alt_loc = line[16];  // 0-indexed: position 16
+
+    char alt_loc = line[16]; // 0-indexed: position 16
     return (alt_loc == ' ') ? ' ' : alt_loc;
 }
 
 char PdbParser::parse_insertion(const std::string& line) {
     // PDB format: column 27 (1-indexed)
     if (line.length() < 27) {
-        return ' ';  // Default to space if not specified
+        return ' '; // Default to space if not specified
     }
-    
-    char insertion = line[26];  // 0-indexed: position 26
+
+    char insertion = line[26]; // 0-indexed: position 26
     return (insertion == ' ') ? ' ' : insertion;
 }
 
 double PdbParser::parse_occupancy(const std::string& line) {
     // PDB format: columns 55-60 (1-indexed)
     if (line.length() < 60) {
-        return 1.0;  // Default to 1.0 if not specified
+        return 1.0; // Default to 1.0 if not specified
     }
-    
-    std::string occ_str = line.substr(54, 6);  // 0-indexed: [54, 60)
-    
+
+    std::string occ_str = line.substr(54, 6); // 0-indexed: [54, 60)
+
     // Trim whitespace
     occ_str.erase(0, occ_str.find_first_not_of(" \t"));
     occ_str.erase(occ_str.find_last_not_of(" \t") + 1);
-    
+
     if (occ_str.empty()) {
-        return 1.0;  // Default to 1.0 if empty
+        return 1.0; // Default to 1.0 if empty
     }
-    
+
     try {
         return std::stod(occ_str);
     } catch (const std::exception& e) {
-        return 1.0;  // Default to 1.0 if parsing fails
+        return 1.0; // Default to 1.0 if parsing fails
     }
 }
 
@@ -143,17 +152,17 @@ int PdbParser::parse_residue_seq(const std::string& line) {
     if (line.length() < 26) {
         throw ParseError("Line too short to contain residue sequence number");
     }
-    
-    std::string seq_str = line.substr(22, 4);  // 0-indexed: [22, 26)
-    
+
+    std::string seq_str = line.substr(22, 4); // 0-indexed: [22, 26)
+
     // Trim whitespace
     seq_str.erase(0, seq_str.find_first_not_of(" \t"));
     seq_str.erase(seq_str.find_last_not_of(" \t") + 1);
-    
+
     if (seq_str.empty()) {
         throw ParseError("Residue sequence number is empty");
     }
-    
+
     try {
         return std::stoi(seq_str);
     } catch (const std::exception& e) {
@@ -166,11 +175,11 @@ geometry::Vector3D PdbParser::parse_coordinates(const std::string& line) {
     if (line.length() < 54) {
         throw ParseError("Line too short to contain coordinates");
     }
-    
-    std::string x_str = line.substr(30, 8);  // 0-indexed: [30, 38)
-    std::string y_str = line.substr(38, 8);  // 0-indexed: [38, 46)
-    std::string z_str = line.substr(46, 8);  // 0-indexed: [46, 54)
-    
+
+    std::string x_str = line.substr(30, 8); // 0-indexed: [30, 38)
+    std::string y_str = line.substr(38, 8); // 0-indexed: [38, 46)
+    std::string z_str = line.substr(46, 8); // 0-indexed: [46, 54)
+
     // Trim whitespace
     x_str.erase(0, x_str.find_first_not_of(" \t"));
     x_str.erase(x_str.find_last_not_of(" \t") + 1);
@@ -178,7 +187,7 @@ geometry::Vector3D PdbParser::parse_coordinates(const std::string& line) {
     y_str.erase(y_str.find_last_not_of(" \t") + 1);
     z_str.erase(0, z_str.find_first_not_of(" \t"));
     z_str.erase(z_str.find_last_not_of(" \t") + 1);
-    
+
     try {
         double x = std::stod(x_str);
         double y = std::stod(y_str);
@@ -191,6 +200,10 @@ geometry::Vector3D PdbParser::parse_coordinates(const std::string& line) {
 
 core::Atom PdbParser::parse_atom_line(const std::string& line, size_t line_number) {
     try {
+        // Store original names before normalization
+        std::string original_atom_name = line.length() >= 16 ? line.substr(12, 4) : "    ";
+        std::string original_residue_name = line.length() >= 20 ? line.substr(17, 3) : "   ";
+
         std::string atom_name = parse_atom_name(line);
         std::string residue_name = parse_residue_name(line);
         char chain_id = parse_chain_id(line);
@@ -199,11 +212,51 @@ core::Atom PdbParser::parse_atom_line(const std::string& line, size_t line_numbe
         char insertion = parse_insertion(line);
         double occupancy = parse_occupancy(line);
         geometry::Vector3D coords = parse_coordinates(line);
-        
+
+        // Parse atom serial number (columns 7-11)
+        int atom_serial = 0;
+        if (line.length() >= 11) {
+            std::string serial_str = line.substr(6, 5);
+            try {
+                atom_serial = std::stoi(serial_str);
+            } catch (...) {
+                // If parsing fails, use line number as fallback
+                atom_serial = static_cast<int>(line_number);
+            }
+        }
+
+        // Parse B-factor (columns 61-66)
+        double b_factor = 0.0;
+        if (line.length() >= 66) {
+            std::string bfactor_str = line.substr(60, 6);
+            try {
+                b_factor = std::stod(bfactor_str);
+            } catch (...) {
+                b_factor = 0.0;
+            }
+        }
+
+        // Parse element symbol (columns 77-78)
+        std::string element;
+        if (line.length() >= 78) {
+            element = line.substr(76, 2);
+            // Trim whitespace
+            element.erase(0, element.find_first_not_of(" \t"));
+            element.erase(element.find_last_not_of(" \t") + 1);
+        }
+
         core::Atom atom(atom_name, coords, residue_name, chain_id, residue_seq, 'A');
         atom.set_alt_loc(alt_loc);
         atom.set_insertion(insertion);
         atom.set_occupancy(occupancy);
+        atom.set_atom_serial(atom_serial);
+        atom.set_line_number(line_number);
+        atom.set_b_factor(b_factor);
+        if (!element.empty()) {
+            atom.set_element(element);
+        }
+        atom.set_original_atom_name(original_atom_name);
+        atom.set_original_residue_name(original_residue_name);
         return atom;
     } catch (const std::exception& e) {
         throw ParseError("Error parsing ATOM line: " + std::string(e.what()), line_number);
@@ -212,6 +265,10 @@ core::Atom PdbParser::parse_atom_line(const std::string& line, size_t line_numbe
 
 core::Atom PdbParser::parse_hetatm_line(const std::string& line, size_t line_number) {
     try {
+        // Store original names before normalization
+        std::string original_atom_name = line.length() >= 16 ? line.substr(12, 4) : "    ";
+        std::string original_residue_name = line.length() >= 20 ? line.substr(17, 3) : "   ";
+
         std::string atom_name = parse_atom_name(line);
         std::string residue_name = parse_residue_name(line);
         char chain_id = parse_chain_id(line);
@@ -220,11 +277,49 @@ core::Atom PdbParser::parse_hetatm_line(const std::string& line, size_t line_num
         char insertion = parse_insertion(line);
         double occupancy = parse_occupancy(line);
         geometry::Vector3D coords = parse_coordinates(line);
-        
+
+        // Parse atom serial number (columns 7-11)
+        int atom_serial = 0;
+        if (line.length() >= 11) {
+            std::string serial_str = line.substr(6, 5);
+            try {
+                atom_serial = std::stoi(serial_str);
+            } catch (...) {
+                atom_serial = static_cast<int>(line_number);
+            }
+        }
+
+        // Parse B-factor (columns 61-66)
+        double b_factor = 0.0;
+        if (line.length() >= 66) {
+            std::string bfactor_str = line.substr(60, 6);
+            try {
+                b_factor = std::stod(bfactor_str);
+            } catch (...) {
+                b_factor = 0.0;
+            }
+        }
+
+        // Parse element symbol (columns 77-78)
+        std::string element;
+        if (line.length() >= 78) {
+            element = line.substr(76, 2);
+            element.erase(0, element.find_first_not_of(" \t"));
+            element.erase(element.find_last_not_of(" \t") + 1);
+        }
+
         core::Atom atom(atom_name, coords, residue_name, chain_id, residue_seq, 'H');
         atom.set_alt_loc(alt_loc);
         atom.set_insertion(insertion);
         atom.set_occupancy(occupancy);
+        atom.set_atom_serial(atom_serial);
+        atom.set_line_number(line_number);
+        atom.set_b_factor(b_factor);
+        if (!element.empty()) {
+            atom.set_element(element);
+        }
+        atom.set_original_atom_name(original_atom_name);
+        atom.set_original_residue_name(original_residue_name);
         return atom;
     } catch (const std::exception& e) {
         throw ParseError("Error parsing HETATM line: " + std::string(e.what()), line_number);
@@ -234,9 +329,10 @@ core::Atom PdbParser::parse_hetatm_line(const std::string& line, size_t line_num
 bool PdbParser::is_water(const std::string& residue_name) const {
     // Common water residue names
     std::string upper_name = residue_name;
-    std::transform(upper_name.begin(), upper_name.end(), upper_name.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
-    
+    std::transform(upper_name.begin(), upper_name.end(), upper_name.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+
     return (upper_name == "HOH" || upper_name == "WAT" || upper_name == "H2O" ||
             upper_name == "OH2" || upper_name == "SOL");
 }
@@ -245,50 +341,103 @@ std::string PdbParser::normalize_atom_name(const std::string& name) const {
     // PDB atom names are typically 4 characters with leading space if needed
     // Examples: " C1'", " N3 ", " P  ", " O5'"
     if (name.length() == 0) {
-        return "    ";  // 4 spaces
+        return "    "; // 4 spaces
     }
-    
+
+    // Ensure we have exactly 4 characters
     std::string normalized = name;
-    
+    if (normalized.length() < 4) {
+        normalized = std::string(4 - normalized.length(), ' ') + normalized;
+    } else if (normalized.length() > 4) {
+        normalized = normalized.substr(0, 4);
+    }
+
     // Normalize atom names to match legacy format
-    // Legacy code transforms these (see org/src/cmn_fncs.c lines 758-777)
-    // Check exact 4-character matches first (preserving spaces)
-    if (normalized == " OP1") {
+    // Legacy code transforms these (see org/src/cmn_fncs.c lines 747-777)
+    // Order matters: formatting rules first, then character replacement, then exact matches
+
+    // Step 1: Apply formatting rules (lines 747-755) - these reformat the atom name structure
+    // Rule 1: If first char is not space and not digit, and second is space or digit, and 4th is
+    // space
+    //         Move first 3 chars to " X" format
+    if (normalized.length() == 4 && normalized[0] != ' ' &&
+        !std::isdigit(static_cast<unsigned char>(normalized[0])) &&
+        (normalized[1] == ' ' || std::isdigit(static_cast<unsigned char>(normalized[1]))) &&
+        normalized[3] == ' ') {
+        std::string temp = normalized.substr(0, 3);
+        normalized = " " + temp;
+    }
+    // Rule 2: If first two are spaces and 4th is digit, move chars 2-3 to " X " format
+    else if (normalized.length() == 4 && normalized[0] == ' ' && normalized[1] == ' ' &&
+             std::isdigit(static_cast<unsigned char>(normalized[3]))) {
+        std::string temp = normalized.substr(2, 2);
+        normalized = " " + temp + " ";
+    }
+    // Rule 3: Normalize P formatting (line 756-757)
+    else if (normalized == "   P" || normalized == "P   ") {
+        normalized = " P  ";
+    }
+    // Rule 4: Handle "OP1 " and "OP2 " formats (lines 758-761) - these come before exact matches
+    else if (normalized == "OP1 ") {
         normalized = " O1P";
+    } else if (normalized == "OP2 ") {
+        normalized = " O2P";
+    }
+
+    // Step 2: Handle character replacement: '*' in position 3 becomes '\'' (line 762-763)
+    if (normalized.length() == 4 && normalized[3] == '*') {
+        normalized[3] = '\'';
+    }
+
+    // Step 3: Check exact 4-character matches (lines 764-777)
+    if (normalized == " O1'") {
+        normalized = " O4'"; // Legacy transforms O1' to O4'
+    } else if (normalized == " OL ") {
+        normalized = " O1P"; // Legacy transforms OL to O1P
+    } else if (normalized == " OP1") {
+        normalized = " O1P";
+    } else if (normalized == " OR ") {
+        normalized = " O2P"; // Legacy transforms OR to O2P
     } else if (normalized == " OP2") {
         normalized = " O2P";
     } else if (normalized == " OP3") {
         normalized = " O3P";
     } else if (normalized == " C5A") {
-        normalized = " C5M";  // Legacy transforms C5A to C5M
+        normalized = " C5M"; // Legacy transforms C5A to C5M
     } else if (normalized == " O5T") {
         normalized = " O5'";
     } else if (normalized == " O3T") {
         normalized = " O3'";
+    } else if (normalized == "   P" || normalized == "P   ") {
+        normalized = " P  "; // Legacy normalizes P formatting
     } else {
         // Also check trimmed version for phosphate names
         std::string trimmed = normalized;
         trimmed.erase(0, trimmed.find_first_not_of(" \t"));
         trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
-        
+
         if (trimmed == "OP1") {
             normalized = " O1P";
         } else if (trimmed == "OP2") {
             normalized = " O2P";
         } else if (trimmed == "OP3") {
             normalized = " O3P";
+        } else if (trimmed == "OP1 ") {
+            normalized = " O1P"; // Handle "OP1 " format
+        } else if (trimmed == "OP2 ") {
+            normalized = " O2P"; // Handle "OP2 " format
         }
     }
-    
+
     if (normalized.length() == 4) {
-        return normalized;  // Already 4 characters
+        return normalized; // Already 4 characters
     }
-    
+
     if (normalized.length() < 4) {
         // Pad to 4 characters with leading space
         return std::string(4 - normalized.length(), ' ') + normalized;
     }
-    
+
     // If longer than 4, truncate (shouldn't happen in standard PDB)
     return normalized.substr(0, 4);
 }
@@ -297,84 +446,101 @@ std::string PdbParser::normalize_residue_name(const std::string& name) const {
     // PDB residue names are typically 3 characters with leading space if needed
     // Examples: "  A", "  C", "  G", "  T", "  U", "HOH"
     if (name.length() == 0) {
-        return "   ";  // 3 spaces
+        return "   "; // 3 spaces
     }
-    
+
     if (name.length() == 3) {
-        return name;  // Already 3 characters
+        return name; // Already 3 characters
     }
-    
+
     if (name.length() < 3) {
         // Pad to 3 characters with leading space
         return std::string(3 - name.length(), ' ') + name;
     }
-    
+
     // If longer than 3, truncate (shouldn't happen in standard PDB)
     return name.substr(0, 3);
 }
 
 core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& pdb_id) {
     core::Structure structure(pdb_id);
-    
+
     // Map to group atoms by chain and residue
     // Key: (chain_id, residue_seq), Value: vector of atoms
     std::map<std::pair<char, int>, std::vector<core::Atom>> residue_atoms;
-    
+
     // Track atoms by position to filter alternate conformations
     // Key: (chain_id, residue_seq, insertion, atom_name), Value: (atom, occupancy)
     // We'll keep the atom with highest occupancy for each position
-    std::map<std::tuple<char, int, char, std::string>, std::pair<core::Atom, double>> atom_candidates;
-    
+    std::map<std::tuple<char, int, char, std::string>, std::pair<core::Atom, double>>
+        atom_candidates;
+
     size_t line_number = 0;
     std::string line;
-    bool all_models = false;  // Default: only process first MODEL (legacy behavior)
-    
+    bool all_models = false;      // Default: only process first MODEL (legacy behavior)
+    int current_model_number = 0; // Track current model number
+
     while (std::getline(stream, line)) {
         line_number++;
-        
+
         // Skip empty lines
         if (line.empty() || line.find_first_not_of(" \t") == std::string::npos) {
             continue;
         }
-        
+
         // Check for END records (legacy stops at first END unless ALL_MODEL is TRUE)
         // Legacy: is_end_of_structure_to_process returns TRUE for END if ALL_MODEL is FALSE
         if (line.length() >= 3 && line.substr(0, 3) == "END") {
             // If it's ENDMDL and we're processing all models, continue to next model
             if (all_models && line.length() >= 6 && line.substr(0, 6) == "ENDMDL") {
-                continue;  // Continue to next model
+                continue; // Continue to next model
             }
             // Otherwise, stop at first END (including ENDMDL if all_models is false)
             break;
         }
-        
-        // Skip MODEL lines (we process atoms from all models until we hit ENDMDL)
+
+        // Skip MODEL lines but track model number
         if (line.length() >= 6 && line.substr(0, 6) == "MODEL ") {
+            // Extract model number if present
+            if (line.length() > 10) {
+                try {
+                    std::string model_str = line.substr(6, 4);
+                    current_model_number = std::stoi(model_str);
+                } catch (...) {
+                    current_model_number++;
+                }
+            } else {
+                current_model_number++;
+            }
             continue;
         }
-        
+
         // Check for ATOM record
-        if (line.length() >= 4 && line.substr(0, 4) == "ATOM") {
+        // Legacy code requires line length >= 52 (Zcol) before processing
+        // This ensures we have enough characters for coordinates
+        if (line.length() >= 4 && line.substr(0, 4) == "ATOM" && line.length() >= 52) {
             try {
                 core::Atom atom = parse_atom_line(line, line_number);
-                
-                // Use (chain_id, residue_seq, insertion, atom_name) as key to handle insertion codes
-                // For alternate conformations with same key, keep the one with highest occupancy
-                std::tuple<char, int, char, std::string> atom_key = 
-                    std::make_tuple(atom.chain_id(), atom.residue_seq(), atom.insertion(), atom.name());
-                
+                atom.set_model_number(current_model_number);
+
+                // Use (chain_id, residue_seq, insertion, atom_name) as key to handle insertion
+                // codes For alternate conformations with same key, keep the one with highest
+                // occupancy
+                std::tuple<char, int, char, std::string> atom_key = std::make_tuple(
+                    atom.chain_id(), atom.residue_seq(), atom.insertion(), atom.name());
+
                 double occupancy = atom.occupancy();
                 char alt_loc = atom.alt_loc();
-                
+
                 // Filter: legacy code only filters by occupancy if Gvars.OCCUPANCY is TRUE
                 // Default is FALSE, so by default it doesn't filter by occupancy
                 // Also filter by alt_loc: default ALT_LIST is "A1" (keep 'A', '1', or ' ')
                 bool keep_by_occupancy = !filter_by_occupancy_ || occupancy > 0.0;
-                
+
                 if (keep_by_occupancy) {
                     // Check alt_loc: default ALT_LIST "A1" means keep 'A', '1', or ' '
                     bool keep_alt_loc = (alt_loc == ' ' || alt_loc == 'A' || alt_loc == '1');
-                    
+
                     if (keep_alt_loc) {
                         // For alternate conformations, keep the one with highest occupancy
                         if (atom_candidates.find(atom_key) != atom_candidates.end()) {
@@ -396,36 +562,39 @@ core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& p
             }
         }
         // Check for HETATM record
-        else if (line.length() >= 6 && line.substr(0, 6) == "HETATM") {
+        // Legacy code requires line length >= 52 (Zcol) before processing
+        else if (line.length() >= 6 && line.substr(0, 6) == "HETATM" && line.length() >= 52) {
             if (!include_hetatm_) {
-                continue;  // Skip HETATM if not included
+                continue; // Skip HETATM if not included
             }
-            
+
             try {
                 core::Atom atom = parse_hetatm_line(line, line_number);
-                
+                atom.set_model_number(current_model_number);
+
                 // Check if water and should be skipped
                 if (!include_waters_ && is_water(atom.residue_name())) {
                     continue;
                 }
-                
-                // Use (chain_id, residue_seq, insertion, atom_name) as key to handle insertion codes
-                // For alternate conformations with same key, keep the one with highest occupancy
-                std::tuple<char, int, char, std::string> atom_key = 
-                    std::make_tuple(atom.chain_id(), atom.residue_seq(), atom.insertion(), atom.name());
-                
+
+                // Use (chain_id, residue_seq, insertion, atom_name) as key to handle insertion
+                // codes For alternate conformations with same key, keep the one with highest
+                // occupancy
+                std::tuple<char, int, char, std::string> atom_key = std::make_tuple(
+                    atom.chain_id(), atom.residue_seq(), atom.insertion(), atom.name());
+
                 double occupancy = atom.occupancy();
                 char alt_loc = atom.alt_loc();
-                
+
                 // Filter: legacy code only filters by occupancy if Gvars.OCCUPANCY is TRUE
                 // Default is FALSE, so by default it doesn't filter by occupancy
                 // Also filter by alt_loc: default ALT_LIST is "A1" (keep 'A', '1', or ' ')
                 bool keep_by_occupancy = !filter_by_occupancy_ || occupancy > 0.0;
-                
+
                 if (keep_by_occupancy) {
                     // Check alt_loc: default ALT_LIST "A1" means keep 'A', '1', or ' '
                     bool keep_alt_loc = (alt_loc == ' ' || alt_loc == 'A' || alt_loc == '1');
-                    
+
                     if (keep_alt_loc) {
                         // For alternate conformations, keep the one with highest occupancy
                         if (atom_candidates.find(atom_key) != atom_candidates.end()) {
@@ -460,7 +629,7 @@ core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& p
             }
         }
     }
-    
+
     // Process atom candidates: add all candidates to residue_atoms
     // (We've selected highest occupancy for alternate conformations)
     for (const auto& [atom_key, atom_occ_pair] : atom_candidates) {
@@ -469,44 +638,43 @@ core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& p
         int residue_seq = atom.residue_seq();
         residue_atoms[{chain_id, residue_seq}].push_back(atom);
     }
-    
+
     // Create chains and residues from grouped atoms
     std::map<char, core::Chain> chains;
-    
+
     for (const auto& [key, atoms] : residue_atoms) {
         if (atoms.empty()) {
             continue;
         }
-        
+
         char chain_id = key.first;
         int residue_seq = key.second;
-        
+
         // Get residue name from first atom
         std::string residue_name = atoms[0].residue_name();
-        
+
         // Create residue
         core::Residue residue(residue_name, residue_seq, chain_id);
-        
+
         // Add all atoms to residue
         for (const auto& atom : atoms) {
             residue.add_atom(atom);
         }
-        
+
         // Add residue to chain
         if (chains.find(chain_id) == chains.end()) {
             chains[chain_id] = core::Chain(chain_id);
         }
         chains[chain_id].add_residue(residue);
     }
-    
+
     // Add chains to structure
     for (auto& [chain_id, chain] : chains) {
         structure.add_chain(chain);
     }
-    
+
     return structure;
 }
 
 } // namespace io
 } // namespace x3dna
-

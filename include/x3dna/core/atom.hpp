@@ -73,6 +73,27 @@ public:
     double occupancy() const {
         return occupancy_;
     }
+    int atom_serial() const {
+        return atom_serial_;
+    }
+    int model_number() const {
+        return model_number_;
+    }
+    size_t line_number() const {
+        return line_number_;
+    }
+    double b_factor() const {
+        return b_factor_;
+    }
+    const std::string& element() const {
+        return element_;
+    }
+    const std::string& original_atom_name() const {
+        return original_atom_name_;
+    }
+    const std::string& original_residue_name() const {
+        return original_residue_name_;
+    }
 
     // Setters
     void set_name(const std::string& name) {
@@ -101,6 +122,27 @@ public:
     }
     void set_occupancy(double occupancy) {
         occupancy_ = occupancy;
+    }
+    void set_atom_serial(int atom_serial) {
+        atom_serial_ = atom_serial;
+    }
+    void set_model_number(int model_number) {
+        model_number_ = model_number;
+    }
+    void set_line_number(size_t line_number) {
+        line_number_ = line_number;
+    }
+    void set_b_factor(double b_factor) {
+        b_factor_ = b_factor;
+    }
+    void set_element(const std::string& element) {
+        element_ = element;
+    }
+    void set_original_atom_name(const std::string& name) {
+        original_atom_name_ = name;
+    }
+    void set_original_residue_name(const std::string& name) {
+        original_residue_name_ = name;
     }
 
     /**
@@ -163,6 +205,31 @@ public:
         if (insertion_ != ' ' && insertion_ != '\0') {
             j["insertion"] = std::string(1, insertion_);
         }
+        
+        // Add debug information (always include for debugging)
+        j["occupancy"] = occupancy_;
+        if (atom_serial_ > 0) {
+            j["atom_serial"] = atom_serial_;
+        }
+        if (model_number_ > 0) {
+            j["model_number"] = model_number_;
+        }
+        if (line_number_ > 0) {
+            j["line_number"] = line_number_;
+        }
+        if (b_factor_ != 0.0) {  // Include if non-zero
+            j["b_factor"] = b_factor_;
+        }
+        if (!element_.empty()) {
+            j["element"] = element_;
+        }
+        if (!original_atom_name_.empty() && original_atom_name_ != name_) {
+            j["original_atom_name"] = original_atom_name_;
+        }
+        if (!original_residue_name_.empty() && original_residue_name_ != residue_name_) {
+            j["original_residue_name"] = original_residue_name_;
+        }
+        
         return j;
     }
 
@@ -255,6 +322,13 @@ private:
     char alt_loc_ = ' ';           // Alternate location indicator (PDB column 17)
     char insertion_ = ' ';        // Insertion code (PDB column 27)
     double occupancy_ = 1.0;      // Occupancy (PDB columns 55-60, default 1.0)
+    int atom_serial_ = 0;          // Atom serial number (PDB column 7-11)
+    int model_number_ = 0;        // Model number (from MODEL record, 0 if none)
+    size_t line_number_ = 0;       // Line number in PDB file (for debugging)
+    double b_factor_ = 0.0;        // B-factor/temperature factor (PDB column 61-66)
+    std::string element_;          // Element symbol (PDB column 77-78)
+    std::string original_atom_name_;   // Original atom name before normalization
+    std::string original_residue_name_; // Original residue name before normalization
 
     /**
      * @brief Trim whitespace from atom name for comparison
