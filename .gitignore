@@ -1,6 +1,7 @@
 # Build directories
 build/
 cmake-build-*/
+__pycache__
 
 # CMake
 CMakeCache.txt
