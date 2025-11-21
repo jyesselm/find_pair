@@ -64,6 +64,15 @@ public:
     char record_type() const {
         return record_type_;
     }
+    char alt_loc() const {
+        return alt_loc_;
+    }
+    char insertion() const {
+        return insertion_;
+    }
+    double occupancy() const {
+        return occupancy_;
+    }
 
     // Setters
     void set_name(const std::string& name) {
@@ -83,6 +92,15 @@ public:
     }
     void set_record_type(char record_type) {
         record_type_ = record_type;
+    }
+    void set_alt_loc(char alt_loc) {
+        alt_loc_ = alt_loc;
+    }
+    void set_insertion(char insertion) {
+        insertion_ = insertion;
+    }
+    void set_occupancy(double occupancy) {
+        occupancy_ = occupancy;
     }
 
     /**
@@ -132,19 +150,18 @@ public:
      */
     nlohmann::json to_json_legacy() const {
         nlohmann::json j;
+        // Always include all fields to match legacy format exactly
         j["atom_name"] = name_;
         j["xyz"] = {position_.x(), position_.y(), position_.z()};
-        if (!residue_name_.empty()) {
-            j["residue_name"] = residue_name_;
+        j["residue_name"] = residue_name_.empty() ? "" : residue_name_;
+        j["chain_id"] = (chain_id_ == '\0' || chain_id_ == ' ') ? "" : std::string(1, chain_id_);
+        j["residue_seq"] = residue_seq_;
+        j["record_type"] = (record_type_ == '\0') ? "" : std::string(1, record_type_);
+        if (alt_loc_ != ' ' && alt_loc_ != '\0') {
+            j["alt_loc"] = std::string(1, alt_loc_);
         }
-        if (chain_id_ != '\0') {
-            j["chain_id"] = std::string(1, chain_id_);
-        }
-        if (residue_seq_ > 0) {
-            j["residue_seq"] = residue_seq_;
-        }
-        if (record_type_ != '\0') {
-            j["record_type"] = std::string(1, record_type_);
+        if (insertion_ != ' ' && insertion_ != '\0') {
+            j["insertion"] = std::string(1, insertion_);
         }
         return j;
     }
@@ -235,6 +252,9 @@ private:
     char chain_id_ = '\0';        // Chain identifier
     int residue_seq_ = 0;         // Residue sequence number
     char record_type_ = 'A';      // PDB record type ('A' = ATOM, 'H' = HETATM)
+    char alt_loc_ = ' ';           // Alternate location indicator (PDB column 17)
+    char insertion_ = ' ';        // Insertion code (PDB column 27)
+    double occupancy_ = 1.0;      // Occupancy (PDB columns 55-60, default 1.0)
 
     /**
      * @brief Trim whitespace from atom name for comparison

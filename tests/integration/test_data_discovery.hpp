@@ -53,7 +53,12 @@ public:
             std::filesystem::path json_file = json_dir / (pdb_name + ".json");
             std::filesystem::path globals_file = json_dir / (pdb_name + "_globals.json");
 
-            // Check if JSON file exists
+            // Check if JSON file exists and doesn't contain "globals" in the name
+            std::string json_filename = json_file.filename().string();
+            if (json_filename.find("globals") != std::string::npos) {
+                continue;  // Skip files with "globals" in the name
+            }
+
             if (std::filesystem::exists(json_file)) {
                 pairs.push_back({pdb_file.path(), json_file, globals_file, pdb_name});
             }

@@ -1,0 +1,367 @@
+/**
+ * @file base_pair.hpp
+ * @brief BasePair class representing a base pair between two residues
+ */
+
+#pragma once
+
+#include <string>
+#include <vector>
+#include <cmath>
+#include <optional>
+#include <nlohmann/json.hpp>
+#include <x3dna/core/reference_frame.hpp>
+#include <x3dna/geometry/vector3d.hpp>
+#include <x3dna/geometry/matrix3d.hpp>
+
+namespace x3dna {
+namespace core {
+
+using geometry::Vector3D;
+
+/**
+ * @enum BasePairType
+ * @brief Type of base pair
+ */
+enum class BasePairType { WATSON_CRICK, WOBBLE, HOOGSTEEN, UNKNOWN };
+
+/**
+ * @struct hydrogen_bond
+ * @brief Represents a hydrogen bond in a base pair
+ */
+struct hydrogen_bond {
+    std::string donor_atom;
+    std::string acceptor_atom;
+    double distance;
+    char type; // '-' for standard, ' ' for non-standard
+};
+
+/**
+ * @class BasePair
+ * @brief Represents a base pair between two nucleotide residues
+ */
+class BasePair {
+private:
+    // Private member variables (declared first to help IntelliSense)
+    size_t residue_idx1_ = 0;                   // Index of first residue
+    size_t residue_idx2_ = 0;                   // Index of second residue
+    BasePairType type_ = BasePairType::UNKNOWN; // Base pair type
+    std::string bp_type_;                       // Base pair type string (e.g., "CG", "AT")
+    std::optional<ReferenceFrame> frame1_;      // Reference frame for first residue
+    std::optional<ReferenceFrame> frame2_;      // Reference frame for second residue
+    std::vector<hydrogen_bond> hbonds_;         // Hydrogen bonds
+
+    /**
+     * @brief Set base pair type from string and update enum
+     *
+     * Note: This is a simplified classification based on the bp_type string.
+     * The original code (check_wc_wobble_pair) also uses geometric parameters
+     * (shear, stretch, opening) for classification. This function matches
+     * the WC_LIST from the original code: "XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"
+     *
+     * Wobble pairs (GT, TG, GU, UG) are not in WC_LIST and would be classified
+     * as wobble based on geometry in the original code.
+     */
+    void update_type_from_bp_type() {
+        // Watson-Crick pairs from WC_LIST (excluding "XX" placeholder)
+        if (bp_type_ == "AT" || bp_type_ == "TA" || bp_type_ == "AU" || bp_type_ == "UA" ||
+            bp_type_ == "GC" || bp_type_ == "CG" || bp_type_ == "IC" || bp_type_ == "CI") {
+            type_ = BasePairType::WATSON_CRICK;
+        }
+        // Wobble pairs (not in WC_LIST, but commonly occur)
+        // Note: Original code classifies these based on geometry, not just string
+        else if (bp_type_ == "GT" || bp_type_ == "TG" || bp_type_ == "GU" || bp_type_ == "UG") {
+            type_ = BasePairType::WOBBLE;
+        } else {
+            type_ = BasePairType::UNKNOWN;
+        }
+    }
+
+public:
+    /**
+     * @brief Default constructor
+     */
+    BasePair() = default;
+
+    /**
+     * @brief Constructor with residue indices and type
+     * @param idx1 Index of first residue
+     * @param idx2 Index of second residue
+     * @param type Base pair type
+     */
+    BasePair(size_t idx1, size_t idx2, BasePairType type)
+        : residue_idx1_(idx1), residue_idx2_(idx2), type_(type) {}
+
+    // Getters
+    size_t residue_idx1() const {
+        return residue_idx1_;
+    }
+    size_t residue_idx2() const {
+        return residue_idx2_;
+    }
+    BasePairType type() const {
+        return type_;
+    }
+    const std::string& bp_type() const {
+        return bp_type_;
+    }
+    const std::vector<hydrogen_bond>& hydrogen_bonds() const {
+        return hbonds_;
+    }
+
+    /**
+     * @brief Get reference frame for first residue
+     */
+    std::optional<ReferenceFrame> frame1() const {
+        return frame1_;
+    }
+
+    /**
+     * @brief Get reference frame for second residue
+     */
+    std::optional<ReferenceFrame> frame2() const {
+        return frame2_;
+    }
+
+    // Setters
+    void set_residue_idx1(size_t idx) {
+        residue_idx1_ = idx;
+    }
+    void set_residue_idx2(size_t idx) {
+        residue_idx2_ = idx;
+    }
+    void set_type(BasePairType type) {
+        type_ = type;
+    }
+    void set_bp_type(const std::string& bp_type) {
+        bp_type_ = bp_type;
+        update_type_from_bp_type();
+    }
+
+    /**
+     * @brief Set reference frame for first residue
+     */
+    void set_frame1(const ReferenceFrame& frame) {
+        frame1_ = frame;
+    }
+
+    /**
+     * @brief Set reference frame for second residue
+     */
+    void set_frame2(const ReferenceFrame& frame) {
+        frame2_ = frame;
+    }
+
+    /**
+     * @brief Add a hydrogen bond
+     */
+    void add_hydrogen_bond(const hydrogen_bond& hbond) {
+        hbonds_.push_back(hbond);
+    }
+
+    /**
+     * @brief Calculate distance between origins of the two reference frames
+     * @return Distance in Angstroms
+     */
+    double origin_distance() const {
+        if (!frame1_.has_value() || !frame2_.has_value()) {
+            return 0.0;
+        }
+        return frame1_->origin().distance_to(frame2_->origin());
+    }
+
+    /**
+     * @brief Calculate plane angle between the two base planes
+     * @return Angle in radians
+     */
+    double plane_angle() const {
+        if (!frame1_.has_value() || !frame2_.has_value()) {
+            return 0.0;
+        }
+        Vector3D z1 = frame1_->z_axis();
+        Vector3D z2 = frame2_->z_axis();
+        double dot = z1.dot(z2);
+        // Clamp to [-1, 1] for acos
+        if (dot > 1.0)
+            dot = 1.0;
+        if (dot < -1.0)
+            dot = -1.0;
+        return std::acos(dot);
+    }
+
+    /**
+     * @brief Calculate N-N distance (distance between N1/N9 atoms)
+     * Note: This is a placeholder - actual implementation requires atom access
+     * @return Distance in Angstroms
+     */
+    double n_n_distance() const {
+        // Will be implemented when we have residue access
+        return 0.0;
+    }
+
+    /**
+     * @brief Get direction vector (z-axis dot product)
+     * @return Dot product of z-axes (negative for valid base pairs)
+     */
+    double direction_dot_product() const {
+        if (!frame1_.has_value() || !frame2_.has_value()) {
+            return 0.0;
+        }
+        return frame1_->direction_dot_product(frame2_.value());
+    }
+
+    /**
+     * @brief Convert to legacy JSON format (base_pair record)
+     */
+    nlohmann::json to_json_legacy() const {
+        nlohmann::json j;
+        j["type"] = "base_pair";
+        j["base_i"] = static_cast<long>(residue_idx1_);
+        j["base_j"] = static_cast<long>(residue_idx2_);
+        j["bp_type"] = bp_type_;
+
+        if (frame1_.has_value()) {
+            j["orien_i"] = frame1_->rotation().to_json_legacy();
+            j["org_i"] = frame1_->origin().to_json();
+        }
+        if (frame2_.has_value()) {
+            j["orien_j"] = frame2_->rotation().to_json_legacy();
+            j["org_j"] = frame2_->origin().to_json();
+        }
+
+        // Direction vector (z-axis difference)
+        if (frame1_.has_value() && frame2_.has_value()) {
+            geometry::Vector3D dir = frame1_->z_axis() - frame2_->z_axis();
+            j["dir_xyz"] = dir.to_json();
+        }
+
+        // Hydrogen bonds
+        if (!hbonds_.empty()) {
+            j["num_hbonds"] = static_cast<long>(hbonds_.size());
+            j["hbonds"] = nlohmann::json::array();
+            std::string hb_info_string;
+            for (const auto& hbond : hbonds_) {
+                nlohmann::json hb_json;
+                hb_json["donor_atom"] = hbond.donor_atom;
+                hb_json["acceptor_atom"] = hbond.acceptor_atom;
+                hb_json["distance"] = hbond.distance;
+                hb_json["type"] = std::string(1, hbond.type);
+                j["hbonds"].push_back(hb_json);
+
+                // Build info string
+                if (!hb_info_string.empty()) {
+                    hb_info_string += "  ";
+                }
+                hb_info_string += hbond.donor_atom + " - " + hbond.acceptor_atom + " " +
+                                  std::to_string(hbond.distance) + "  " + hbond.type;
+            }
+            j["hb_info_string"] = hb_info_string;
+        }
+
+        return j;
+    }
+
+    /**
+     * @brief Create BasePair from legacy JSON format
+     */
+    static BasePair from_json_legacy(const nlohmann::json& j) {
+        size_t idx1 = j.value("base_i", 0);
+        size_t idx2 = j.value("base_j", 0);
+        std::string bp_type = j.value("bp_type", "");
+
+        BasePair bp(idx1, idx2, BasePairType::UNKNOWN);
+        bp.set_bp_type(bp_type);
+
+        // Parse reference frames
+        if (j.contains("orien_i") && j.contains("org_i")) {
+            nlohmann::json frame1_json;
+            frame1_json["orien"] = j["orien_i"];
+            frame1_json["org"] = j["org_i"];
+            bp.set_frame1(ReferenceFrame::from_json_legacy(frame1_json));
+        }
+
+        if (j.contains("orien_j") && j.contains("org_j")) {
+            nlohmann::json frame2_json;
+            frame2_json["orien"] = j["orien_j"];
+            frame2_json["org"] = j["org_j"];
+            bp.set_frame2(ReferenceFrame::from_json_legacy(frame2_json));
+        }
+
+        // Parse hydrogen bonds
+        if (j.contains("hbonds") && j["hbonds"].is_array()) {
+            for (const auto& hb_json : j["hbonds"]) {
+                hydrogen_bond hbond;
+                hbond.donor_atom = hb_json.value("donor_atom", "");
+                hbond.acceptor_atom = hb_json.value("acceptor_atom", "");
+                hbond.distance = hb_json.value("distance", 0.0);
+                std::string type_str = hb_json.value("type", " ");
+                hbond.type = type_str.empty() ? ' ' : type_str[0];
+                bp.add_hydrogen_bond(hbond);
+            }
+        }
+
+        return bp;
+    }
+
+    /**
+     * @brief Convert to modern JSON format
+     */
+    nlohmann::json to_json() const {
+        nlohmann::json j;
+        j["residue_idx1"] = residue_idx1_;
+        j["residue_idx2"] = residue_idx2_;
+        j["bp_type"] = bp_type_;
+        if (frame1_.has_value()) {
+            j["frame1"] = frame1_->to_json();
+        }
+        if (frame2_.has_value()) {
+            j["frame2"] = frame2_->to_json();
+        }
+        j["hydrogen_bonds"] = nlohmann::json::array();
+        for (const auto& hbond : hbonds_) {
+            nlohmann::json hb_json;
+            hb_json["donor_atom"] = hbond.donor_atom;
+            hb_json["acceptor_atom"] = hbond.acceptor_atom;
+            hb_json["distance"] = hbond.distance;
+            hb_json["type"] = std::string(1, hbond.type);
+            j["hydrogen_bonds"].push_back(hb_json);
+        }
+        return j;
+    }
+
+    /**
+     * @brief Create BasePair from modern JSON format
+     */
+    static BasePair from_json(const nlohmann::json& j) {
+        size_t idx1 = j.value("residue_idx1", 0);
+        size_t idx2 = j.value("residue_idx2", 0);
+        std::string bp_type = j.value("bp_type", "");
+
+        BasePair bp(idx1, idx2, BasePairType::UNKNOWN);
+        bp.set_bp_type(bp_type);
+
+        if (j.contains("frame1")) {
+            bp.set_frame1(ReferenceFrame::from_json(j["frame1"]));
+        }
+        if (j.contains("frame2")) {
+            bp.set_frame2(ReferenceFrame::from_json(j["frame2"]));
+        }
+
+        if (j.contains("hydrogen_bonds") && j["hydrogen_bonds"].is_array()) {
+            for (const auto& hb_json : j["hydrogen_bonds"]) {
+                hydrogen_bond hbond;
+                hbond.donor_atom = hb_json.value("donor_atom", "");
+                hbond.acceptor_atom = hb_json.value("acceptor_atom", "");
+                hbond.distance = hb_json.value("distance", 0.0);
+                std::string type_str = hb_json.value("type", " ");
+                hbond.type = type_str.empty() ? ' ' : type_str[0];
+                bp.add_hydrogen_bond(hbond);
+            }
+        }
+
+        return bp;
+    }
+};
+
+} // namespace core
+} // namespace x3dna

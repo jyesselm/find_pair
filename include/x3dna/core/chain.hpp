@@ -1,0 +1,172 @@
+/**
+ * @file chain.hpp
+ * @brief Chain class representing a chain of residues in a PDB structure
+ */
+
+#pragma once
+
+#include <string>
+#include <vector>
+#include <nlohmann/json.hpp>
+#include <x3dna/core/residue.hpp>
+
+namespace x3dna {
+namespace core {
+
+/**
+ * @class Chain
+ * @brief Represents a chain of residues (typically a single polymer chain)
+ */
+class Chain {
+public:
+    /**
+     * @brief Default constructor
+     */
+    Chain() = default;
+
+    /**
+     * @brief Constructor with chain ID
+     * @param id Chain identifier (e.g., 'A', 'B')
+     */
+    explicit Chain(char id) : chain_id_(id) {}
+
+    // Getters
+    char chain_id() const { return chain_id_; }
+    const std::vector<Residue>& residues() const { return residues_; }
+    size_t num_residues() const { return residues_.size(); }
+    
+    /**
+     * @brief Get total number of atoms in this chain
+     */
+    size_t num_atoms() const {
+        size_t count = 0;
+        for (const auto& residue : residues_) {
+            count += residue.num_atoms();
+        }
+        return count;
+    }
+
+    // Setters
+    void set_chain_id(char id) { chain_id_ = id; }
+
+    /**
+     * @brief Add a residue to this chain
+     */
+    void add_residue(const Residue& residue) {
+        residues_.push_back(residue);
+    }
+
+    /**
+     * @brief Get sequence as one-letter code string
+     * @return Sequence string (e.g., "ACGT")
+     */
+    std::string sequence() const {
+        std::string seq;
+        for (const auto& residue : residues_) {
+            char code = residue.one_letter_code();
+            if (code != '?') {
+                seq += code;
+            }
+        }
+        return seq;
+    }
+
+    /**
+     * @brief Get all nucleotides in this chain
+     * @return Vector of nucleotide residues
+     */
+    std::vector<Residue> nucleotides() const {
+        std::vector<Residue> nts;
+        for (const auto& residue : residues_) {
+            if (residue.is_nucleotide()) {
+                nts.push_back(residue);
+            }
+        }
+        return nts;
+    }
+
+    /**
+     * @brief Get residue by sequence number
+     * @param seq_num Sequence number
+     * @return Optional residue if found
+     */
+    std::optional<Residue> find_residue(int seq_num) const {
+        for (const auto& residue : residues_) {
+            if (residue.seq_num() == seq_num) {
+                return residue;
+            }
+        }
+        return std::nullopt;
+    }
+
+    /**
+     * @brief Convert to legacy JSON format
+     */
+    nlohmann::json to_json_legacy() const {
+        nlohmann::json j;
+        j["chain_id"] = std::string(1, chain_id_);
+        j["num_residues"] = static_cast<long>(residues_.size());
+        j["residues"] = nlohmann::json::array();
+        for (const auto& residue : residues_) {
+            j["residues"].push_back(residue.to_json_legacy());
+        }
+        return j;
+    }
+
+    /**
+     * @brief Create Chain from legacy JSON format
+     */
+    static Chain from_json_legacy(const nlohmann::json& j) {
+        std::string chain_str = j.value("chain_id", "");
+        char chain_id = chain_str.empty() ? '\0' : chain_str[0];
+        
+        Chain chain(chain_id);
+        
+        if (j.contains("residues") && j["residues"].is_array()) {
+            for (const auto& residue_json : j["residues"]) {
+                chain.add_residue(Residue::from_json_legacy(residue_json));
+            }
+        }
+        
+        return chain;
+    }
+
+    /**
+     * @brief Convert to modern JSON format
+     */
+    nlohmann::json to_json() const {
+        nlohmann::json j;
+        j["chain_id"] = std::string(1, chain_id_);
+        j["residues"] = nlohmann::json::array();
+        for (const auto& residue : residues_) {
+            j["residues"].push_back(residue.to_json());
+        }
+        return j;
+    }
+
+    /**
+     * @brief Create Chain from modern JSON format
+     */
+    static Chain from_json(const nlohmann::json& j) {
+        std::string chain_str = j.value("chain_id", "");
+        char chain_id = chain_str.empty() ? '\0' : chain_str[0];
+        
+        Chain chain(chain_id);
+        
+        if (j.contains("residues") && j["residues"].is_array()) {
+            for (const auto& residue_json : j["residues"]) {
+                chain.add_residue(Residue::from_json(residue_json));
+            }
+        }
+        
+        return chain;
+    }
+
+private:
+    char chain_id_ = '\0';          // Chain identifier
+    std::vector<Residue> residues_; // Residues in this chain
+};
+
+} // namespace core
+} // namespace x3dna
+
