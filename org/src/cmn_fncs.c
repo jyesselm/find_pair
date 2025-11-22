@@ -698,6 +698,15 @@ long number_of_atoms(char *pdbfile, long hetatm, char *ALT_LIST)
     return n;
 }
 
+/* Static array to store line numbers for atoms read by read_pdb */
+static long *g_line_numbers = NULL;
+static long g_max_line_numbers = 0;
+
+/* Get line numbers array (call after read_pdb) */
+long *get_pdb_line_numbers(void) {
+    return g_line_numbers;
+}
+
 long read_pdb(char *pdbfile, long *AtomSNum, char **AtomName, char **ResName,
               char *ChainID, long *ResSeq, double **xyz, char **Miscs, long hetatm,
               char *ALT_LIST)
@@ -712,9 +721,30 @@ long read_pdb(char *pdbfile, long *AtomSNum, char **AtomName, char **ResName,
     char chain_id;
     long residue_seq = 0;
     double xyz_temp[3];
+    long line_number = 0;  /* Track line numbers in PDB file */
     FILE *fp;
+    
+    /* Allocate/reset line_numbers array if needed */
+    if (AtomName) {
+        if (g_line_numbers == NULL || g_max_line_numbers == 0) {
+            g_max_line_numbers = 100000;  /* Initial size */
+            g_line_numbers = (long *)calloc(g_max_line_numbers + 1, sizeof(long));
+            if (!g_line_numbers) {
+                fprintf(stderr, "Warning: Could not allocate line_numbers array\n");
+            }
+        }
+        /* Reset line numbers at start of read */
+        if (g_line_numbers) {
+            for (i = 0; i <= g_max_line_numbers; i++) {
+                g_line_numbers[i] = 0;
+            }
+        }
+    }
+    
+    line_number = 0;  /* Reset line counter */
     fp = open_file(pdbfile, "r");
     while ((p0 = my_getline(fp)) != NULL) {
+        line_number++;  /* Increment line counter for each line */
         strcpy(str, p0);
         free(p0);
         strcpy(str0, str);
@@ -819,6 +849,29 @@ long read_pdb(char *pdbfile, long *AtomSNum, char **AtomName, char **ResName,
                 continue;
             }
             n++;
+            
+            /* Store line number for this atom */
+            if (g_line_numbers && n > 0) {
+                /* Reallocate if needed */
+                if (n > g_max_line_numbers) {
+                    long old_max = g_max_line_numbers;
+                    g_max_line_numbers = n * 2;
+                    g_line_numbers = (long *)realloc(g_line_numbers, (g_max_line_numbers + 1) * sizeof(long));
+                    if (!g_line_numbers) {
+                        fprintf(stderr, "Warning: Could not reallocate line_numbers array\n");
+                        g_max_line_numbers = old_max;
+                    } else {
+                        /* Zero out new entries */
+                        for (i = old_max + 1; i <= g_max_line_numbers; i++) {
+                            g_line_numbers[i] = 0;
+                        }
+                    }
+                }
+                if (g_line_numbers && n <= g_max_line_numbers) {
+                    g_line_numbers[n] = line_number;
+                }
+            }
+            
             if (AtomSNum != NULL) {
                 strncpy(temp, str + 6, 5);
                 temp[5] = '\0';

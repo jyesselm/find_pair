@@ -342,7 +342,7 @@ void json_writer_record_bp_sequence(long num_bp, char **bp_seq, long ds) {
 
 void json_writer_record_pdb_atoms(long num, char **AtomName, char **ResName,
                                    char *ChainID, long *ResSeq, double **xyz,
-                                   char **Miscs) {
+                                   char **Miscs, long *line_numbers) {
     char esc_atom[BUF32], esc_res[BUF32];
     long i;
     
@@ -363,6 +363,11 @@ void json_writer_record_pdb_atoms(long num, char **AtomName, char **ResName,
         
         /* Atom index/position in array */
         fprintf(json_file, "          \"atom_idx\": %ld,\n", i);
+        
+        /* Line number in PDB file */
+        if (line_numbers && line_numbers[i] > 0) {
+            fprintf(json_file, "          \"line_number\": %ld,\n", line_numbers[i]);
+        }
         
         /* Atom name */
         json_escape_string(AtomName[i], esc_atom, sizeof(esc_atom));
@@ -806,9 +811,10 @@ void json_writer_record_hbonds(long base_i, long base_j, long num_hbonds,
 void json_writer_record_base_frame_calc(long residue_idx, char base_type,
                                          const char *standard_template,
                                          double rms_fit, long num_matched,
-                                         char **matched_atoms, long num_atoms) {
+                                         char **matched_atoms, long num_atoms,
+                                         const char *residue_name, char chain_id, long residue_seq, char insertion_code) {
     long i;
-    char esc_atom[BUF512], esc_template[BUF512];
+    char esc_atom[BUF512], esc_template[BUF512], esc_resname[BUF512];
     
     if (!json_writer_is_initialized()) return;
     
@@ -819,6 +825,18 @@ void json_writer_record_base_frame_calc(long residue_idx, char base_type,
     fprintf(json_file, "      \"type\": \"base_frame_calc\",\n");
     fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
     fprintf(json_file, "      \"base_type\": \"%c\",\n", base_type);
+    
+    /* Add residue identification information */
+    if (residue_name) {
+        json_escape_string(residue_name, esc_resname, sizeof(esc_resname));
+        fprintf(json_file, "      \"residue_name\": \"%s\",\n", esc_resname);
+    }
+    fprintf(json_file, "      \"chain_id\": \"%c\",\n", chain_id);
+    fprintf(json_file, "      \"residue_seq\": %ld,\n", residue_seq);
+    if (insertion_code != ' ') {
+        fprintf(json_file, "      \"insertion\": \"%c\",\n", insertion_code);
+    }
+    
     json_escape_string(standard_template, esc_template, sizeof(esc_template));
     fprintf(json_file, "      \"standard_template\": \"%s\",\n", esc_template);
     fprintf(json_file, "      \"rms_fit\": %.6f,\n", rms_fit);
@@ -944,9 +962,10 @@ void json_writer_record_frame_calc(long residue_idx, char base_type,
                                     const char *template_file, double rms_fit,
                                     long num_matched_atoms,
                                     double **matched_std_xyz,
-                                    double **matched_exp_xyz) {
+                                    double **matched_exp_xyz,
+                                    const char *residue_name, char chain_id, long residue_seq, char insertion_code) {
     long i;
-    char esc_template[BUF512];
+    char esc_template[BUF512], esc_resname[BUF512];
     
     if (!json_writer_is_initialized()) return;
     
@@ -957,6 +976,18 @@ void json_writer_record_frame_calc(long residue_idx, char base_type,
     fprintf(json_file, "      \"type\": \"frame_calc\",\n");
     fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
     fprintf(json_file, "      \"base_type\": \"%c\",\n", base_type);
+    
+    /* Add residue identification information */
+    if (residue_name) {
+        json_escape_string(residue_name, esc_resname, sizeof(esc_resname));
+        fprintf(json_file, "      \"residue_name\": \"%s\",\n", esc_resname);
+    }
+    fprintf(json_file, "      \"chain_id\": \"%c\",\n", chain_id);
+    fprintf(json_file, "      \"residue_seq\": %ld,\n", residue_seq);
+    if (insertion_code != ' ') {
+        fprintf(json_file, "      \"insertion\": \"%c\",\n", insertion_code);
+    }
+    
     json_escape_string(template_file, esc_template, sizeof(esc_template));
     fprintf(json_file, "      \"template_file\": \"%s\",\n", esc_template);
     fprintf(json_file, "      \"rms_fit\": %.6f,\n", rms_fit);
@@ -1036,8 +1067,10 @@ void json_writer_record_distance_checks(long base_i, long base_j,
 
 void json_writer_record_ls_fitting(long residue_idx, long num_points,
                                     double rms_fit, double **rotation_matrix,
-                                    double *translation) {
+                                    double *translation,
+                                    const char *residue_name, char chain_id, long residue_seq, char insertion_code) {
     long i, j;
+    char esc_resname[BUF512];
     
     if (!json_writer_is_initialized()) return;
     
@@ -1047,6 +1080,18 @@ void json_writer_record_ls_fitting(long residue_idx, long num_points,
     fprintf(json_file, "    {\n");
     fprintf(json_file, "      \"type\": \"ls_fitting\",\n");
     fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
+    
+    /* Add residue identification information */
+    if (residue_name) {
+        json_escape_string(residue_name, esc_resname, sizeof(esc_resname));
+        fprintf(json_file, "      \"residue_name\": \"%s\",\n", esc_resname);
+    }
+    fprintf(json_file, "      \"chain_id\": \"%c\",\n", chain_id);
+    fprintf(json_file, "      \"residue_seq\": %ld,\n", residue_seq);
+    if (insertion_code != ' ') {
+        fprintf(json_file, "      \"insertion\": \"%c\",\n", insertion_code);
+    }
+    
     fprintf(json_file, "      \"num_points\": %ld,\n", num_points);
     fprintf(json_file, "      \"rms_fit\": %.6f,\n", rms_fit);
     

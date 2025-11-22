@@ -329,7 +329,7 @@ void process_str(char *inpfile, struct_args_ana *args)
         json_writer_record_global_variables();
     }
     /* Record PDB atom data */
-    json_writer_record_pdb_atoms(num, AtomName, ResName, ChainID, ResSeq, xyz, Miscs);
+    json_writer_record_pdb_atoms(num, AtomName, ResName, ChainID, ResSeq, xyz, Miscs, get_pdb_line_numbers());
     idx = lvector(1, num);
     atom_idx(num, AtomName, NULL, idx);
     seidx = residue_idx(num, ResSeq, Miscs, ChainID, ResName, &num_residue);

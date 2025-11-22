@@ -89,6 +89,20 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
                 // Record type (A for ATOM, H for HETATM)
                 atom_json["record_type"] = std::string(1, atom.record_type());
                 
+                // Additional metadata
+                if (atom.alt_loc() != ' ' && atom.alt_loc() != '\0') {
+                    atom_json["alt_loc"] = std::string(1, atom.alt_loc());
+                }
+                if (atom.insertion() != ' ' && atom.insertion() != '\0') {
+                    atom_json["insertion"] = std::string(1, atom.insertion());
+                }
+                if (atom.line_number() > 0) {
+                    atom_json["line_number"] = atom.line_number();
+                }
+                if (atom.atom_serial() > 0) {
+                    atom_json["atom_serial"] = atom.atom_serial();
+                }
+                
                 atoms_array.push_back(atom_json);
             }
         }

@@ -1284,10 +1284,13 @@ void ref_frames(long ds, long num_bp, long **pair_num, char **bp_seq, long **sei
             ioffset9 = (j - 1) * 9;
             /* Record frame calculation details in ref_frames */
             json_writer_record_base_frame_calc(rnum, bp_seq[i][j], spdb, rms_fit[i][j], nmatch,
-                                                 irna ? (char**)rRingAtom : (char**)RingAtom, RingAtom_num);
-            json_writer_record_ls_fitting(rnum, nmatch, rms_fit[i][j], R, orgi);
+                                                 irna ? (char**)rRingAtom : (char**)RingAtom, RingAtom_num,
+                                                 ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
+            json_writer_record_ls_fitting(rnum, nmatch, rms_fit[i][j], R, orgi,
+                                          ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
             json_writer_record_frame_calc(rnum, bp_seq[i][j], spdb, rms_fit[i][j], nmatch,
-                                           sRing_xyz, eRing_xyz);
+                                           sRing_xyz, eRing_xyz,
+                                           ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
             if (i == 2) {
                 for (k = 1; k <= 3; k++)
                     vz[k] = R[k][3];

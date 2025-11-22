@@ -426,12 +426,15 @@ void base_frame(long num_residue, char *bseq, long **seidx, long *res_type,
             mst2orien(orien[i], 0, R);
             /* Record base frame calculation details to JSON */
             json_writer_record_base_frame_calc(i, bseq[i], spdb, rms_fit, nmatch, 
-                                                 (char**)RingAtom, RingAtom_num);
+                                                 (char**)RingAtom, RingAtom_num,
+                                                 ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
             /* Record least squares fitting details */
-            json_writer_record_ls_fitting(i, nmatch, rms_fit, R, org[i]);
+            json_writer_record_ls_fitting(i, nmatch, rms_fit, R, org[i],
+                                          ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
             /* Record frame calculation with matched coordinates */
             json_writer_record_frame_calc(i, bseq[i], spdb, rms_fit, nmatch,
-                                           sRing_xyz, eRing_xyz);
+                                           sRing_xyz, eRing_xyz,
+                                           ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
         }
     }
     free_pdb(NUM_RESIDUE_ATOMS, NULL, sAtomName, sResName, sChainID, sResSeq, sxyz, sMiscs);

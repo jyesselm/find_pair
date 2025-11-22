@@ -99,21 +99,69 @@ def main():
         ring_atoms_purine = [" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "]
         ring_atoms_pyrimidine = [" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "]
         
-        print("\nRing atoms present in PDB:")
-        if failure['base_type'] in ['A', 'G']:
-            ring_atoms = ring_atoms_purine
+    print("\nRing atoms present in PDB:")
+    if failure['base_type'] in ['A', 'G']:
+        ring_atoms = ring_atoms_purine
+    else:
+        ring_atoms = ring_atoms_pyrimidine
+    
+    found_ring_atoms = []
+    for ring_atom in ring_atoms:
+        for atom_name, line in atom_lines:
+            if atom_name == ring_atom:
+                found_ring_atoms.append(ring_atom)
+                print(f"  ✓ {ring_atom}")
+                break
         else:
-            ring_atoms = ring_atoms_pyrimidine
-        
-        found_ring_atoms = []
-        for ring_atom in ring_atoms:
-            for atom_name, line in atom_lines:
-                if atom_name == ring_atom:
-                    found_ring_atoms.append(ring_atom)
-                    print(f"  ✓ {ring_atom}")
-                    break
-            else:
-                print(f"  ✗ {ring_atom} (missing)")
+            print(f"  ✗ {ring_atom} (missing)")
+    
+    # Print actual PDB lines for matched atoms
+    print("\n=== PDB Lines for Matched Atoms ===")
+    print("\nOur matched atoms (with PDB lines):")
+    our_atoms = set(failure['our']['matched_atoms'])
+    for atom_name in failure['our']['matched_atoms']:
+        # Find the PDB line for this atom
+        found = False
+        for aname, line in atom_lines:
+            if aname == atom_name:
+                # Get line number
+                line_num = None
+                for i, l in enumerate(lines, 1):
+                    if l.strip() == line:
+                        line_num = i
+                        break
+                if line_num:
+                    print(f"  {atom_name}: Line {line_num}")
+                    print(f"    {line}")
+                else:
+                    print(f"  {atom_name}: {line}")
+                found = True
+                break
+        if not found:
+            print(f"  {atom_name}: NOT FOUND IN PDB")
+    
+    print("\nLegacy matched atoms (with PDB lines):")
+    leg_atoms = set(failure['legacy']['matched_atoms'])
+    for atom_name in failure['legacy']['matched_atoms']:
+        # Find the PDB line for this atom
+        found = False
+        for aname, line in atom_lines:
+            if aname == atom_name:
+                # Get line number
+                line_num = None
+                for i, l in enumerate(lines, 1):
+                    if l.strip() == line:
+                        line_num = i
+                        break
+                if line_num:
+                    print(f"  {atom_name}: Line {line_num}")
+                    print(f"    {line}")
+                else:
+                    print(f"  {atom_name}: {line}")
+                found = True
+                break
+        if not found:
+            print(f"  {atom_name}: NOT FOUND IN PDB")
 
 if __name__ == '__main__':
     main()

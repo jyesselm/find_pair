@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/io/pdb_parser.hpp>
+#include <x3dna/algorithms/base_frame_calculator.hpp>
 #include "integration_test_base.hpp"
 #include "test_data_discovery.hpp"
 #include <filesystem>
@@ -25,6 +26,7 @@ namespace x3dna::test {
 
 using namespace x3dna::core;
 using namespace x3dna::io;
+using namespace x3dna::algorithms;
 
 class JsonGenerationFilteredTest : public integration_test_base {
 protected:
@@ -94,6 +96,75 @@ protected:
             pdb_atoms_record["atoms"] = structure_json["atoms"];
             
             output_json["calculations"].push_back(pdb_atoms_record);
+
+            // Calculate frames and record frame calculations
+            BaseFrameCalculator calculator("data/templates");
+            calculator.calculate_all_frames(structure);
+            
+            // Record frame calculations for each residue
+            size_t residue_idx = 1;
+            for (auto& chain : structure.chains()) {
+                for (auto& residue : chain.residues()) {
+                    if (residue.residue_type() != ResidueType::UNKNOWN &&
+                        residue.residue_type() != ResidueType::AMINO_ACID) {
+                        
+                        // Calculate frame (this modifies the residue to store the frame)
+                        FrameCalculationResult frame_result = calculator.calculate_frame(residue);
+                        
+                        if (frame_result.is_valid) {
+                            // Record base_frame_calc
+                            nlohmann::json base_frame_record;
+                            base_frame_record["type"] = "base_frame_calc";
+                            base_frame_record["residue_idx"] = residue_idx;
+                            base_frame_record["base_type"] = std::string(1, residue.one_letter_code());
+                            base_frame_record["residue_name"] = residue.name();
+                            base_frame_record["chain_id"] = std::string(1, residue.chain_id());
+                            base_frame_record["residue_seq"] = residue.seq_num();
+                            if (residue.insertion() != ' ') {
+                                base_frame_record["insertion"] = std::string(1, residue.insertion());
+                            }
+                            base_frame_record["standard_template"] = frame_result.template_file.string();
+                            base_frame_record["rms_fit"] = frame_result.rms_fit;
+                            base_frame_record["num_matched_atoms"] = frame_result.num_matched;
+                            base_frame_record["matched_atoms"] = frame_result.matched_atoms;
+                            output_json["calculations"].push_back(base_frame_record);
+                            
+                            // Record ls_fitting
+                            nlohmann::json ls_fitting_record;
+                            ls_fitting_record["type"] = "ls_fitting";
+                            ls_fitting_record["residue_idx"] = residue_idx;
+                            ls_fitting_record["residue_name"] = residue.name();
+                            ls_fitting_record["chain_id"] = std::string(1, residue.chain_id());
+                            ls_fitting_record["residue_seq"] = residue.seq_num();
+                            if (residue.insertion() != ' ') {
+                                ls_fitting_record["insertion"] = std::string(1, residue.insertion());
+                            }
+                            ls_fitting_record["num_points"] = frame_result.num_matched;
+                            ls_fitting_record["rms_fit"] = frame_result.rms_fit;
+                            
+                            // Rotation matrix
+                            nlohmann::json rot_array = nlohmann::json::array();
+                            for (int i = 0; i < 3; ++i) {
+                                nlohmann::json row = nlohmann::json::array();
+                                for (int j = 0; j < 3; ++j) {
+                                    row.push_back(frame_result.rotation_matrix.at(i, j));
+                                }
+                                rot_array.push_back(row);
+                            }
+                            ls_fitting_record["rotation_matrix"] = rot_array;
+                            
+                            // Translation
+                            ls_fitting_record["translation"] = nlohmann::json::array({
+                                frame_result.translation.x(),
+                                frame_result.translation.y(),
+                                frame_result.translation.z()
+                            });
+                            output_json["calculations"].push_back(ls_fitting_record);
+                        }
+                        residue_idx++;
+                    }
+                }
+            }
 
             // Write output JSON file
             std::filesystem::path output_file = output_dir_ / (pair.pdb_name + ".json");
