@@ -228,6 +228,33 @@ private:
      * @return Structure object
      */
     core::Structure parse_impl(std::istream& stream, const std::string& pdb_id = "");
+
+    // Helper functions for parsing
+    struct atom_metadata {
+        int atom_serial;
+        double b_factor;
+        std::string element;
+        std::string original_atom_name;
+        std::string original_residue_name;
+    };
+
+    atom_metadata parse_atom_metadata(const std::string& line, size_t line_number);
+    core::Atom build_atom_from_parsed_data(const std::string& line, size_t line_number, char atom_type);
+    bool should_keep_atom(const core::Atom& atom) const;
+    bool check_alt_loc_filter(char alt_loc) const;
+    void process_atom_record(const std::string& line, size_t line_number, int model_number,
+                             std::map<std::pair<char, int>, std::vector<core::Atom>>& residue_atoms);
+    void process_hetatm_record(const std::string& line, size_t line_number, int model_number,
+                               std::map<std::pair<char, int>, std::vector<core::Atom>>& residue_atoms);
+    void handle_model_record(const std::string& line, int& current_model_number, bool& all_models);
+    bool handle_end_record(const std::string& line, bool all_models);
+    core::Structure build_structure_from_residues(const std::string& pdb_id,
+                                                  const std::map<std::pair<char, int>, std::vector<core::Atom>>& residue_atoms) const;
+
+    // Helper functions for atom name normalization
+    std::string apply_atom_name_formatting_rules(const std::string& name) const;
+    std::string apply_atom_name_exact_matches(const std::string& name) const;
+    std::string ensure_atom_name_length(const std::string& name) const;
 };
 
 } // namespace io

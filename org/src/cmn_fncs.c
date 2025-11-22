@@ -706,6 +706,12 @@ long read_pdb(char *pdbfile, long *AtomSNum, char **AtomName, char **ResName,
     char rname[4], str[BUF512], str0[BUF512], temp[BUF512];
     double occupancy;
     long i, n = 0, nlen, k, occ_chk = FALSE, modelNum = 0;
+    long num_removed = 0;
+    long atom_serial = 0;
+    char atom_name[5], residue_name[4];
+    char chain_id;
+    long residue_seq = 0;
+    double xyz_temp[3];
     FILE *fp;
     fp = open_file(pdbfile, "r");
     while ((p0 = my_getline(fp)) != NULL) {
@@ -718,11 +724,93 @@ long read_pdb(char *pdbfile, long *AtomSNum, char **AtomName, char **ResName,
             modelNum = k;
         if (is_end_of_structure_to_process(str))
             break;
-        if (nlen >= Zcol && (!strncmp(str, "ATOM", 4)
-                             || (hetatm && !strncmp(str, "HETATM", 6)))
-            && (strchr(ALT_LIST, '*') || strchr(ALT_LIST, str[16]))) {
+        
+        /* Check if this is an ATOM or HETATM record */
+        if (nlen >= 4 && (!strncmp(str, "ATOM", 4) || !strncmp(str, "HETATM", 6))) {
+            /* Extract basic atom information for potential removal tracking */
+            atom_serial = 0;
+            atom_name[0] = '\0';
+            residue_name[0] = '\0';
+            chain_id = ' ';
+            residue_seq = 0;
+            xyz_temp[0] = xyz_temp[1] = xyz_temp[2] = 0.0;
+            
+            if (nlen >= 11) {
+                strncpy(temp, str + 6, 5);
+                temp[5] = '\0';
+                sscanf(temp, "%5ld", &atom_serial);
+            }
+            if (nlen >= 16) {
+                sprintf(atom_name, "%.4s", str + 12);
+                atom_name[4] = '\0';
+            }
+            if (nlen >= 20) {
+                strncpy(residue_name, str + 17, 3);
+                residue_name[3] = '\0';
+            }
+            if (nlen >= 22) {
+                chain_id = Gvars.CHAIN_CASE ? str0[21] : str[21];
+            }
+            if (nlen >= 26) {
+                strncpy(temp, str + 22, 4);
+                temp[4] = '\0';
+                sscanf(temp, "%4ld", &residue_seq);
+            }
+            if (nlen >= 38) {
+                strncpy(temp, str + 30, 8);
+                temp[8] = '\0';
+                sscanf(temp, "%8lf", &xyz_temp[0]);
+            }
+            if (nlen >= 46) {
+                strncpy(temp, str + 38, 8);
+                temp[8] = '\0';
+                sscanf(temp, "%8lf", &xyz_temp[1]);
+            }
+            if (nlen >= 54) {
+                strncpy(temp, str + 46, 8);
+                temp[8] = '\0';
+                sscanf(temp, "%8lf", &xyz_temp[2]);
+            }
+            
+            /* Check for various removal conditions */
+            if (nlen < Zcol) {
+                num_removed++;
+                if (json_writer_is_initialized()) {
+                    json_writer_record_removed_atom(str, "line_too_short", atom_serial,
+                                                     atom_name, residue_name, chain_id,
+                                                     residue_seq, xyz_temp, modelNum);
+                }
+                continue;
+            }
+            
+            if (!strncmp(str, "HETATM", 6) && !hetatm) {
+                num_removed++;
+                if (json_writer_is_initialized()) {
+                    json_writer_record_removed_atom(str, "hetatm_filtered", atom_serial,
+                                                     atom_name, residue_name, chain_id,
+                                                     residue_seq, xyz_temp, modelNum);
+                }
+                continue;
+            }
+            
+            if (!(strchr(ALT_LIST, '*') || strchr(ALT_LIST, str[16]))) {
+                num_removed++;
+                if (json_writer_is_initialized()) {
+                    json_writer_record_removed_atom(str, "alt_loc_filtered", atom_serial,
+                                                     atom_name, residue_name, chain_id,
+                                                     residue_seq, xyz_temp, modelNum);
+                }
+                continue;
+            }
+            
             occupancy = get_occupancy(nlen, str, pdbfile);
             if (occupancy <= 0) {
+                num_removed++;
+                if (json_writer_is_initialized()) {
+                    json_writer_record_removed_atom(str, "occupancy_zero", atom_serial,
+                                                     atom_name, residue_name, chain_id,
+                                                     residue_seq, xyz_temp, modelNum);
+                }
                 if (!occ_chk) {
                     occ_chk = TRUE;
                     fprintf(stderr, "[i] File '%s' with atom occupancy <= 0 [%s]\n", pdbfile,
@@ -822,6 +910,12 @@ long read_pdb(char *pdbfile, long *AtomSNum, char **AtomName, char **ResName,
     close_file(fp);
     if (!n)
         fprintf(stderr, "PDB file <%s> has NO ATOM/HETATM records\n", pdbfile);
+    
+    /* Record summary of removed atoms if JSON writer is initialized */
+    if (num_removed > 0 && json_writer_is_initialized()) {
+        json_writer_record_removed_atoms_summary(num_removed);
+    }
+    
     return n;
 }
 

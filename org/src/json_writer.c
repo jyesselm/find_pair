@@ -1066,3 +1066,78 @@ void json_writer_record_ls_fitting(long residue_idx, long num_points,
     
     fflush(json_file);
 }
+
+void json_writer_record_removed_atom(const char* pdb_line, const char* reason,
+                                     long atom_serial, const char* atom_name,
+                                     const char* residue_name, char chain_id,
+                                     long residue_seq, double* xyz, long model_num) {
+    char esc_line[BUF1K], esc_reason[BUF512], esc_atom[BUF32], esc_res[BUF32];
+    long has_fields = FALSE;
+    
+    if (!json_writer_is_initialized()) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    json_escape_string(pdb_line ? pdb_line : "", esc_line, sizeof(esc_line));
+    json_escape_string(reason ? reason : "unknown", esc_reason, sizeof(esc_reason));
+    json_escape_string(atom_name ? atom_name : "", esc_atom, sizeof(esc_atom));
+    json_escape_string(residue_name ? residue_name : "", esc_res, sizeof(esc_res));
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"removed_atom\",\n");
+    fprintf(json_file, "      \"reason\": \"%s\"", esc_reason);
+    has_fields = TRUE;
+    
+    if (pdb_line && strlen(pdb_line) > 0) {
+        fprintf(json_file, ",\n      \"pdb_line\": \"%s\"", esc_line);
+        has_fields = TRUE;
+    }
+    
+    if (atom_serial > 0) {
+        fprintf(json_file, ",\n      \"atom_serial\": %ld", atom_serial);
+    }
+    
+    if (atom_name && strlen(atom_name) > 0) {
+        fprintf(json_file, ",\n      \"atom_name\": \"%s\"", esc_atom);
+    }
+    
+    if (residue_name && strlen(residue_name) > 0) {
+        fprintf(json_file, ",\n      \"residue_name\": \"%s\"", esc_res);
+    }
+    
+    if (chain_id != ' ') {
+        fprintf(json_file, ",\n      \"chain_id\": \"%c\"", chain_id);
+    }
+    
+    if (residue_seq > 0) {
+        fprintf(json_file, ",\n      \"residue_seq\": %ld", residue_seq);
+    }
+    
+    if (xyz) {
+        fprintf(json_file, ",\n      \"xyz\": [%.6f, %.6f, %.6f]",
+                xyz[0], xyz[1], xyz[2]);
+    }
+    
+    if (model_num >= 0) {
+        fprintf(json_file, ",\n      \"model_num\": %ld", model_num);
+    }
+    
+    fprintf(json_file, "\n    }");
+    
+    fflush(json_file);
+}
+
+void json_writer_record_removed_atoms_summary(long num_removed) {
+    if (!json_writer_is_initialized()) return;
+    
+    if (!first_entry) fprintf(json_file, ",\n");
+    first_entry = FALSE;
+    
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"type\": \"removed_atoms_summary\",\n");
+    fprintf(json_file, "      \"num_removed\": %ld\n", num_removed);
+    fprintf(json_file, "    }");
+    
+    fflush(json_file);
+}

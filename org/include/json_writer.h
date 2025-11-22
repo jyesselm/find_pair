@@ -108,6 +108,15 @@ void json_writer_record_distance_checks(long base_i, long base_j, double dorg, d
 void json_writer_record_ls_fitting(long residue_idx, long num_points, double rms_fit,
                                    double** rotation_matrix, double* translation);
 
+/* Record removed atoms during PDB parsing */
+void json_writer_record_removed_atom(const char* pdb_line, const char* reason,
+                                     long atom_serial, const char* atom_name,
+                                     const char* residue_name, char chain_id,
+                                     long residue_seq, double* xyz, long model_num);
+
+/* Record all removed atoms (call after parsing) */
+void json_writer_record_removed_atoms_summary(long num_removed);
+
 /* Check if JSON writer is initialized */
 long json_writer_is_initialized(void);
 

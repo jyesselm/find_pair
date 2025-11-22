@@ -97,6 +97,31 @@ endif()
 
 gtest_discover_tests(test_json_generation)
 
+# Filtered JSON generation test (only problematic PDBs)
+add_executable(test_json_generation_filtered
+    test_json_generation_filtered.cpp
+)
+
+target_include_directories(test_json_generation_filtered PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(test_json_generation_filtered
+    PRIVATE
+    x3dna
+    gtest
+    gtest_main
+)
+
+# Link filesystem library if needed (CMake 3.15+)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_json_generation_filtered PRIVATE stdc++fs)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_json_generation_filtered PRIVATE c++fs)
+endif()
+
+gtest_discover_tests(test_json_generation_filtered)
+
 # Single PDB test tool (not a gtest, just a standalone tool)
 add_executable(test_single_pdb
     test_single_pdb.cpp
