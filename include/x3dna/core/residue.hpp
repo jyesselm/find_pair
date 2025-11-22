@@ -42,18 +42,20 @@ public:
     Residue() = default;
 
     /**
-     * @brief Constructor with name, sequence number, and chain ID
+     * @brief Constructor with name, sequence number, chain ID, and insertion code
      * @param name Residue name (e.g., "  C", "  G", "  A", "  T")
      * @param seq_num Sequence number
      * @param chain_id Chain identifier
+     * @param insertion Insertion code (PDB column 27, default ' ')
      */
-    Residue(const std::string& name, int seq_num, char chain_id)
-        : name_(name), seq_num_(seq_num), chain_id_(chain_id) {}
+    Residue(const std::string& name, int seq_num, char chain_id, char insertion = ' ')
+        : name_(name), seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {}
 
     // Getters
     const std::string& name() const { return name_; }
     int seq_num() const { return seq_num_; }
     char chain_id() const { return chain_id_; }
+    char insertion() const { return insertion_; }
     const std::vector<Atom>& atoms() const { return atoms_; }
     size_t num_atoms() const { return atoms_.size(); }
     
@@ -68,6 +70,7 @@ public:
     void set_name(const std::string& name) { name_ = name; }
     void set_seq_num(int seq_num) { seq_num_ = seq_num; }
     void set_chain_id(char chain_id) { chain_id_ = chain_id; }
+    void set_insertion(char insertion) { insertion_ = insertion; }
     
     /**
      * @brief Set reference frame for this residue
@@ -114,14 +117,22 @@ public:
     /**
      * @brief Get one-letter code for this residue
      * @return One-letter code (A, C, G, T, U for nucleotides)
+     * 
+     * Recognizes standard nucleotide names:
+     * - Single letter: A, C, G, T, U
+     * - Three letter: ADE, CYT, GUA, THY, URA
+     * - DNA format: DA, DC, DG, DT (may have leading/trailing spaces)
      */
     char one_letter_code() const {
         std::string trimmed = trim_name();
-        if (trimmed == "ADE" || trimmed == "A") return 'A';
-        if (trimmed == "CYT" || trimmed == "C") return 'C';
-        if (trimmed == "GUA" || trimmed == "G") return 'G';
-        if (trimmed == "THY" || trimmed == "T") return 'T';
-        if (trimmed == "URA" || trimmed == "U") return 'U';
+        
+        // Single letter codes
+        if (trimmed == "A" || trimmed == "ADE" || trimmed == "DA") return 'A';
+        if (trimmed == "C" || trimmed == "CYT" || trimmed == "DC") return 'C';
+        if (trimmed == "G" || trimmed == "GUA" || trimmed == "DG") return 'G';
+        if (trimmed == "T" || trimmed == "THY" || trimmed == "DT") return 'T';
+        if (trimmed == "U" || trimmed == "URA" || trimmed == "DU") return 'U';
+        
         return '?';
     }
 
@@ -256,6 +267,7 @@ private:
     std::string name_;              // Residue name (e.g., "  C", "  G")
     int seq_num_ = 0;               // Sequence number
     char chain_id_ = '\0';          // Chain identifier
+    char insertion_ = ' ';          // Insertion code (PDB column 27)
     std::vector<Atom> atoms_;       // Atoms in this residue
     std::optional<ReferenceFrame> reference_frame_;  // Reference frame (if calculated)
 

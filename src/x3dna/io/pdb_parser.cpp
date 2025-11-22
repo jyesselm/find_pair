@@ -475,13 +475,15 @@ bool PdbParser::should_keep_atom(const core::Atom& atom) const {
 // Record processing helpers
 void PdbParser::process_atom_record(
     const std::string& line, size_t line_number, int model_number,
-    std::map<std::pair<char, int>, std::vector<core::Atom>>& residue_atoms) {
+    std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms) {
     try {
         core::Atom atom = parse_atom_line(line, line_number);
         atom.set_model_number(model_number);
 
         if (should_keep_atom(atom)) {
-            residue_atoms[{atom.chain_id(), atom.residue_seq()}].push_back(atom);
+            // Use (chain_id, residue_seq, insertion_code) as key to match legacy behavior
+            // Legacy uses ResName + ChainID + ResSeq + iCode to identify residues
+            residue_atoms[{atom.chain_id(), atom.residue_seq(), atom.insertion()}].push_back(atom);
         }
     } catch (const ParseError&) {
         // Skip malformed lines
@@ -490,7 +492,7 @@ void PdbParser::process_atom_record(
 
 void PdbParser::process_hetatm_record(
     const std::string& line, size_t line_number, int model_number,
-    std::map<std::pair<char, int>, std::vector<core::Atom>>& residue_atoms) {
+    std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms) {
     if (!include_hetatm_) {
         return;
     }
@@ -505,7 +507,9 @@ void PdbParser::process_hetatm_record(
         }
 
         if (should_keep_atom(atom)) {
-            residue_atoms[{atom.chain_id(), atom.residue_seq()}].push_back(atom);
+            // Use (chain_id, residue_seq, insertion_code) as key to match legacy behavior
+            // Legacy uses ResName + ChainID + ResSeq + iCode to identify residues
+            residue_atoms[{atom.chain_id(), atom.residue_seq(), atom.insertion()}].push_back(atom);
         }
     } catch (const ParseError&) {
         // Skip malformed lines
@@ -542,7 +546,7 @@ bool PdbParser::handle_end_record(const std::string& line, bool all_models) {
 // Structure building - optimized for speed
 core::Structure PdbParser::build_structure_from_residues(
     const std::string& pdb_id,
-    const std::map<std::pair<char, int>, std::vector<core::Atom>>& residue_atoms) const {
+    const std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms) const {
 
     core::Structure structure(pdb_id);
     std::map<char, core::Chain> chains;
@@ -552,11 +556,10 @@ core::Structure PdbParser::build_structure_from_residues(
             continue;
         }
 
-        char chain_id = key.first;
-        int residue_seq = key.second;
+        auto [chain_id, residue_seq, insertion_code] = key;
         std::string residue_name = atoms[0].residue_name();
 
-        core::Residue residue(residue_name, residue_seq, chain_id);
+        core::Residue residue(residue_name, residue_seq, chain_id, insertion_code);
 
         // Add all atoms to residue
         for (const auto& atom : atoms) {
@@ -578,7 +581,8 @@ core::Structure PdbParser::build_structure_from_residues(
 
 // Main parsing implementation - optimized for speed
 core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& pdb_id) {
-    std::map<std::pair<char, int>, std::vector<core::Atom>> residue_atoms;
+    // Key: (chain_id, residue_seq, insertion_code) - matches legacy residue identification
+    std::map<std::tuple<char, int, char>, std::vector<core::Atom>> residue_atoms;
     size_t line_number = 0;
     std::string line;
     bool all_models = false;

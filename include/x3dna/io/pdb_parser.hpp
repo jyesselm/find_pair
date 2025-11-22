@@ -243,13 +243,13 @@ private:
     bool should_keep_atom(const core::Atom& atom) const;
     bool check_alt_loc_filter(char alt_loc) const;
     void process_atom_record(const std::string& line, size_t line_number, int model_number,
-                             std::map<std::pair<char, int>, std::vector<core::Atom>>& residue_atoms);
+                             std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms);
     void process_hetatm_record(const std::string& line, size_t line_number, int model_number,
-                               std::map<std::pair<char, int>, std::vector<core::Atom>>& residue_atoms);
+                               std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms);
     void handle_model_record(const std::string& line, int& current_model_number, bool& all_models);
     bool handle_end_record(const std::string& line, bool all_models);
     core::Structure build_structure_from_residues(const std::string& pdb_id,
-                                                  const std::map<std::pair<char, int>, std::vector<core::Atom>>& residue_atoms) const;
+                                                  const std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms) const;
 
     // Helper functions for atom name normalization
     std::string apply_atom_name_formatting_rules(const std::string& name) const;

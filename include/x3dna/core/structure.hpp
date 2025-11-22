@@ -36,6 +36,7 @@ public:
     // Getters
     const std::string& pdb_id() const { return pdb_id_; }
     const std::vector<Chain>& chains() const { return chains_; }
+    std::vector<Chain>& chains() { return chains_; }
     size_t num_chains() const { return chains_.size(); }
     
     /**

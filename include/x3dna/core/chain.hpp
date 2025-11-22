@@ -33,6 +33,7 @@ public:
     // Getters
     char chain_id() const { return chain_id_; }
     const std::vector<Residue>& residues() const { return residues_; }
+    std::vector<Residue>& residues() { return residues_; }
     size_t num_residues() const { return residues_.size(); }
     
     /**
