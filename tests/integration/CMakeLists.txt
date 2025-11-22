@@ -235,6 +235,52 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VER
     target_link_libraries(check_failing_residues PRIVATE c++fs)
 endif()
 
+# Test specific problematic PDB cases
+add_executable(test_specific_problem_pdbs
+    test_specific_problem_pdbs.cpp
+)
+
+target_include_directories(test_specific_problem_pdbs PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(test_specific_problem_pdbs
+    PRIVATE
+    x3dna
+    gtest
+    gtest_main
+)
+
+# Link filesystem library if needed (CMake 3.15+)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_specific_problem_pdbs PRIVATE stdc++fs)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_specific_problem_pdbs PRIVATE c++fs)
+endif()
+
+# Test problematic PDBs with insertion codes
+add_executable(test_problem_pdbs
+    test_problem_pdbs.cpp
+)
+
+target_include_directories(test_problem_pdbs PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(test_problem_pdbs
+    PRIVATE
+    x3dna
+    gtest
+    gtest_main
+)
+
+# Link filesystem library if needed (CMake 3.15+)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_problem_pdbs PRIVATE stdc++fs)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_problem_pdbs PRIVATE c++fs)
+endif()
+
 # Debug all failures in detail
 add_executable(debug_all_failures
     debug_all_failures.cpp

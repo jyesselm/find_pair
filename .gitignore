@@ -1,4 +1,3 @@
-# Build directories
 build/
 cmake-build-*/
 __pycache__
@@ -7,6 +6,10 @@ __pycache__
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
+compile_commands.json
+# Build directories
+Testing/
+
 *.cmake
 !CMakeLists.txt
 !cmake/*.cmake

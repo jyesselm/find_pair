@@ -1,0 +1,22 @@
+# Clangd configuration for x3dna project
+# This file configures the clangd language server for Cursor/VS Code
+#
+# clangd will automatically look for compile_commands.json in:
+# - The build directory (build/)
+# - The root directory (if symlinked)
+#
+# CMake is configured to generate compile_commands.json automatically
+
+CompileFlags:
+  # Use compile_commands.json from CMake build
+  # clangd will look in build/ directory or use the symlink in root
+  CompilationDatabase: .
+
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
+  # Suppress some warnings that are common in C++ projects
+  Suppress: [unused-using-declaration, unused-includes]
+
+Index:
+  Background: Build
