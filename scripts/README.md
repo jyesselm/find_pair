@@ -4,35 +4,48 @@ Complete reference for all scripts in the `scripts/` directory.
 
 ---
 
-## JSON Comparison
+## Main Scripts
 
 ### `compare_json.py` - Unified JSON Comparison Tool
 
-**Purpose:** Multithreaded tool for comparing JSON files between legacy and modern implementations with detailed human-readable reports.
+**Purpose:** Comprehensive tool for comparing JSON files between legacy and modern implementations with detailed human-readable reports.
 
 **Usage:**
 ```bash
-# Compare all available files
-python3 scripts/compare_json.py
+# Compare all available files (atoms and frames)
+python3 scripts/compare_json.py compare
 
 # Compare specific PDB file(s)
-python3 scripts/compare_json.py 1H4S
-python3 scripts/compare_json.py 1H4S 2BNA 3DNA
+python3 scripts/compare_json.py compare 1H4S
+python3 scripts/compare_json.py compare 1H4S 2BNA 3DNA
+
+# Compare only atoms
+python3 scripts/compare_json.py atoms 1H4S
+
+# Compare only frames
+python3 scripts/compare_json.py frames 1H4S
+
+# Compare ring atoms
+python3 scripts/compare_json.py ring-atoms 1H4S
+python3 scripts/compare_json.py ring-atoms  # All files
 
 # Use legacy mode JSON files
-python3 scripts/compare_json.py --legacy-mode
+python3 scripts/compare_json.py compare --legacy-mode
 
 # Save report to file
-python3 scripts/compare_json.py --output report.md
+python3 scripts/compare_json.py compare --output report.md
 
 # Verbose output with detailed differences
-python3 scripts/compare_json.py --verbose
+python3 scripts/compare_json.py compare --verbose
 
 # Show only files with differences
-python3 scripts/compare_json.py --diff-only
+python3 scripts/compare_json.py compare --diff-only
 
 # Custom thread count
-python3 scripts/compare_json.py --threads 4
+python3 scripts/compare_json.py compare --threads 4
+
+# List available PDB files
+python3 scripts/compare_json.py list
 ```
 
 **Features:**
@@ -43,6 +56,9 @@ python3 scripts/compare_json.py --threads 4
 - ✅ Verbose output option
 - ✅ Save reports to file
 - ✅ Filter to show only differences
+- ✅ Atom comparison
+- ✅ Frame calculation comparison
+- ✅ Ring atom matching comparison
 
 **Report Includes:**
 - Summary: Total files, matches, differences, errors
@@ -55,49 +71,57 @@ python3 scripts/compare_json.py --threads 4
 
 ---
 
-## Maintenance Scripts
+### `rebuild_json.py` - Unified JSON Rebuilding Tool
 
-### `refresh_all_json.py` - Refresh All JSON Files
-
-**Purpose:** Refreshes all JSON files (both legacy and modern) with validation. Automatically removes corrupted or empty JSON files.
+**Purpose:** Comprehensive tool for rebuilding, regenerating, validating, and cleaning JSON files (both legacy and modern).
 
 **Usage:**
 ```bash
-# Refresh all JSON files (legacy and modern)
-python3 scripts/refresh_all_json.py
+# Regenerate all JSON files (legacy and modern)
+python3 scripts/rebuild_json.py regenerate
 
-# Validate existing JSON files only (don't regenerate)
-python3 scripts/refresh_all_json.py --validate-only
+# Regenerate only legacy JSON files
+python3 scripts/rebuild_json.py regenerate --legacy-only
 
-# Refresh only legacy JSON files
-python3 scripts/refresh_all_json.py --legacy-only
+# Regenerate only modern JSON files
+python3 scripts/rebuild_json.py regenerate --modern-only
 
-# Refresh only modern JSON files
-python3 scripts/refresh_all_json.py --modern-only
+# Regenerate specific PDB file(s)
+python3 scripts/rebuild_json.py regenerate 1H4S
+python3 scripts/rebuild_json.py regenerate 1H4S 2BNA 3DNA
+
+# Use legacy mode for modern JSON generation
+python3 scripts/rebuild_json.py regenerate --legacy-mode
+
+# Validate existing JSON files
+python3 scripts/rebuild_json.py validate
+
+# Clean invalid/empty JSON files (dry-run by default)
+python3 scripts/rebuild_json.py clean
+
+# Actually remove invalid files
+python3 scripts/rebuild_json.py clean --execute
+
+# Clean only legacy or modern
+python3 scripts/rebuild_json.py clean --legacy-only --execute
+python3 scripts/rebuild_json.py clean --modern-only --execute
+
+# Reorganize JSON file (array to grouped format)
+python3 scripts/rebuild_json.py reorganize data/json/1H4S.json
+
+# Custom thread count
+python3 scripts/rebuild_json.py regenerate --threads 4
 ```
 
 **Features:**
-- Automatic validation
-- Automatic cleanup of invalid/corrupted/empty JSON files
-- Parallel processing for fast execution
-- Progress reporting and summary statistics
-
----
-
-### `regenerate_legacy_json.py` - Regenerate Legacy JSON Files
-
-**Purpose:** Regenerates legacy JSON files for problematic PDBs using the original C code.
-
-**Usage:**
-```bash
-python3 scripts/regenerate_legacy_json.py
-```
-
-**Features:**
-- Uses original C code for regeneration
-- Automatic validation
-- Automatically removes invalid files
-- Parallel processing
+- ✅ Regenerate legacy JSON files (from org code)
+- ✅ Regenerate modern JSON files (from new code)
+- ✅ Validate existing JSON files
+- ✅ Clean corrupted/empty JSON files
+- ✅ Reorganize JSON structure
+- ✅ Parallel processing for fast execution
+- ✅ Automatic validation
+- ✅ Progress reporting and summary statistics
 
 ---
 
@@ -129,48 +153,6 @@ python3 scripts/verify_all_legacy_mode.py
 
 ---
 
-### `clean_json_legacy.py` - Clean Legacy JSON Files
-
-**Purpose:** Removes corrupted or empty JSON files from json_legacy directory.
-
-**Usage:**
-```bash
-# Dry run (default)
-python3 scripts/clean_json_legacy.py
-
-# Actually remove files
-python3 scripts/clean_json_legacy.py --execute
-```
-
-**Features:**
-- Uses validation for detection
-- Dry-run mode by default
-- Reports summary of files to remove
-
----
-
-### `remove_empty_json.py` - Remove Empty JSON Files
-
-**Purpose:** Removes empty JSON files from a directory.
-
-**Usage:**
-```bash
-# Dry run (default)
-python3 scripts/remove_empty_json.py
-
-# Actually remove files
-python3 scripts/remove_empty_json.py --execute
-
-# Non-recursive search
-python3 scripts/remove_empty_json.py --no-recursive
-```
-
-**Features:**
-- Recursive search by default
-- Dry-run mode by default
-- Uses validation for detection
-
----
 
 ## Analysis Scripts
 
@@ -482,9 +464,9 @@ The scripts use reusable modules from `x3dna_json_compare` package:
 
 ## Best Practices
 
-1. **Always use the unified comparison script**: Use `compare_json.py` for all JSON comparisons
+1. **Use the main scripts**: Use `compare_json.py` for all JSON comparisons and `rebuild_json.py` for all JSON rebuilding operations
 2. **Use validation**: Always validate JSON files before using them
-3. **Dry-run first**: Use dry-run mode for destructive operations
+3. **Dry-run first**: Use dry-run mode for destructive operations (clean command)
 4. **Check return codes**: Scripts return appropriate exit codes
 5. **Progress reporting**: Long-running scripts show progress
 6. **Multithreading**: Use multithreaded scripts for batch operations
@@ -495,14 +477,19 @@ The scripts use reusable modules from `x3dna_json_compare` package:
 
 | Task | Script |
 |------|--------|
-| Compare JSON files | `compare_json.py` |
+| Compare JSON files | `compare_json.py compare` |
+| Compare atoms only | `compare_json.py atoms` |
+| Compare frames only | `compare_json.py frames` |
+| Compare ring atoms | `compare_json.py ring-atoms` |
+| Regenerate all JSON | `rebuild_json.py regenerate` |
+| Regenerate legacy JSON | `rebuild_json.py regenerate --legacy-only` |
+| Regenerate modern JSON | `rebuild_json.py regenerate --modern-only` |
+| Validate JSON files | `rebuild_json.py validate` |
+| Clean invalid JSON | `rebuild_json.py clean --execute` |
+| Reorganize JSON | `rebuild_json.py reorganize <file>` |
 | Analyze base type differences | `analyze_base_type_differences.py` |
 | Analyze case sensitivity | `analyze_case_sensitivity.py` |
 | Analyze high RMS differences | `analyze_high_rms_differences.py` |
-| Refresh all JSON files | `refresh_all_json.py` |
-| Regenerate legacy JSON | `regenerate_legacy_json.py` |
-| Clean corrupted JSON | `clean_json_legacy.py` |
-| Remove empty JSON | `remove_empty_json.py` |
 | Validate removed atoms | `validate_removed_atoms.py` |
 | Debug specific residue | `debug/debug_specific_failure.py` |
 | Analyze frame failures | `debug/analyze_frame_failures.py` |
