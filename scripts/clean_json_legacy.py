@@ -8,35 +8,11 @@ This script:
 3. Removes those files (with optional dry-run mode)
 """
 
-import json
-import os
 import sys
 from pathlib import Path
 
-
-def is_valid_json(file_path):
-    """
-    Check if a file contains valid JSON.
-    
-    Args:
-        file_path: Path to the JSON file
-        
-    Returns:
-        tuple: (is_valid, error_message)
-    """
-    try:
-        # Check if file is empty
-        if os.path.getsize(file_path) == 0:
-            return False, "File is empty"
-        
-        # Try to parse the JSON
-        with open(file_path, 'r', encoding='utf-8') as f:
-            json.load(f)
-        return True, None
-    except json.JSONDecodeError as e:
-        return False, f"Invalid JSON: {str(e)}"
-    except Exception as e:
-        return False, f"Error reading file: {str(e)}"
+# Import reusable validation from lib
+from x3dna_json_compare import JsonValidator
 
 
 def clean_json_legacy(directory, dry_run=True):
@@ -73,7 +49,7 @@ def clean_json_legacy(directory, dry_run=True):
     valid_files = 0
     
     for json_file in json_files:
-        is_valid, error_msg = is_valid_json(json_file)
+        is_valid, error_msg = JsonValidator.validate_file(json_file)
         
         if not is_valid:
             if "empty" in error_msg.lower():

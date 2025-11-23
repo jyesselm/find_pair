@@ -47,20 +47,24 @@ public:
      * @param residue Experimental residue to match
      * @param standard_template Standard template structure
      * @param is_rna Whether this is RNA (includes C1' in matching)
+     * @param exclude_c4 Whether to exclude C4 atom (legacy compatibility mode)
      * @return MatchedAtoms structure with matched atom pairs
      */
     static MatchedAtoms match(const core::Residue& residue,
                               const core::Structure& standard_template,
-                              bool is_rna = false);
+                              bool is_rna = false,
+                              bool exclude_c4 = false);
 
     /**
      * @brief Get list of ring atom names for a residue type
      * @param residue_type Residue type (ADENINE, CYTOSINE, etc.)
      * @param is_rna Whether this is RNA (includes C1' in list)
+     * @param exclude_c4 Whether to exclude C4 atom (legacy compatibility mode)
      * @return Vector of atom names
      */
     static std::vector<std::string> get_ring_atom_names(core::ResidueType residue_type,
-                                                         bool is_rna = false);
+                                                         bool is_rna = false,
+                                                         bool exclude_c4 = false);
 
 private:
     /**

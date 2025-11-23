@@ -5,6 +5,7 @@
 
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
 #include <algorithm>
+#include <iostream>
 
 namespace x3dna {
 namespace algorithms {
@@ -23,17 +24,45 @@ static const std::string C1_PRIME = " C1'";
 
 MatchedAtoms RingAtomMatcher::match(const core::Residue& residue,
                                      const core::Structure& standard_template,
-                                     bool is_rna) {
+                                     bool is_rna,
+                                     bool exclude_c4) {
     MatchedAtoms result;
     
     // Determine residue type and get appropriate ring atom list
     core::ResidueType residue_type = residue.residue_type();
-    std::vector<std::string> ring_atom_names = get_ring_atom_names(residue_type, is_rna);
+    std::vector<std::string> ring_atom_names = get_ring_atom_names(residue_type, is_rna, exclude_c4);
+    
+    #ifdef DEBUG_FRAME_CALC
+    std::cerr << "DEBUG: RingAtomMatcher - residue: " << residue.name()
+              << " type: " << static_cast<int>(residue_type)
+              << " is_rna: " << is_rna << "\n";
+    std::cerr << "DEBUG: Looking for " << ring_atom_names.size() << " ring atoms\n";
+    std::cerr << "DEBUG: Residue has " << residue.num_atoms() << " atoms\n";
+    #endif
     
     // Match atoms by name
     for (const auto& atom_name : ring_atom_names) {
         auto exp_atom = find_atom_by_name(residue, atom_name);
         auto std_atom = find_atom_by_name(standard_template, atom_name);
+        
+        #ifdef DEBUG_FRAME_CALC
+        std::cerr << "DEBUG: Atom " << atom_name << " (repr: " 
+                  << std::hex << std::showbase;
+        for (char c : atom_name) {
+            std::cerr << static_cast<int>(c) << " ";
+        }
+        std::cerr << std::dec << "): "
+                  << (exp_atom.has_value() ? "FOUND" : "NOT FOUND") << " in residue, "
+                  << (std_atom.has_value() ? "FOUND" : "NOT FOUND") << " in template\n";
+        if (!exp_atom.has_value()) {
+            // Show available atoms
+            std::cerr << "DEBUG: Available atoms in residue: ";
+            for (const auto& atom : residue.atoms()) {
+                std::cerr << atom.name() << " ";
+            }
+            std::cerr << "\n";
+        }
+        #endif
         
         if (exp_atom.has_value() && std_atom.has_value()) {
             result.experimental.push_back(exp_atom.value());
@@ -43,11 +72,16 @@ MatchedAtoms RingAtomMatcher::match(const core::Residue& residue,
         }
     }
     
+    #ifdef DEBUG_FRAME_CALC
+    std::cerr << "DEBUG: Total matched: " << result.num_matched << "\n";
+    #endif
+    
     return result;
 }
 
 std::vector<std::string> RingAtomMatcher::get_ring_atom_names(core::ResidueType residue_type,
-                                                               bool is_rna) {
+                                                               bool is_rna,
+                                                               bool exclude_c4) {
     std::vector<std::string> atom_names;
     
     // For RNA, add C1' at the beginning
@@ -56,14 +90,20 @@ std::vector<std::string> RingAtomMatcher::get_ring_atom_names(core::ResidueType 
     }
     
     // Add ring atoms based on purine vs pyrimidine
+    std::vector<std::string> ring_atoms;
     if (is_purine(residue_type)) {
-        atom_names.insert(atom_names.end(),
-                         RING_ATOMS_PURINE.begin(),
-                         RING_ATOMS_PURINE.end());
+        ring_atoms = RING_ATOMS_PURINE;
     } else {
-        atom_names.insert(atom_names.end(),
-                         RING_ATOMS_PYRIMIDINE.begin(),
-                         RING_ATOMS_PYRIMIDINE.end());
+        ring_atoms = RING_ATOMS_PYRIMIDINE;
+    }
+    
+    // Add ring atoms, optionally excluding C4 (legacy compatibility mode)
+    for (const auto& atom_name : ring_atoms) {
+        if (exclude_c4 && atom_name == " C4 ") {
+            // Skip C4 atom in legacy mode
+            continue;
+        }
+        atom_names.push_back(atom_name);
     }
     
     return atom_names;

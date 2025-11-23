@@ -102,14 +102,17 @@ protected:
             calculator.calculate_all_frames(structure);
             
             // Record frame calculations for each residue
+            // Legacy residue_idx is 1-based and counts ALL residues (including amino acids, etc.)
             size_t residue_idx = 1;
             for (auto& chain : structure.chains()) {
                 for (auto& residue : chain.residues()) {
+                    // Only process nucleotide residues
                     if (residue.residue_type() != ResidueType::UNKNOWN &&
                         residue.residue_type() != ResidueType::AMINO_ACID) {
                         
-                        // Calculate frame (this modifies the residue to store the frame)
-                        FrameCalculationResult frame_result = calculator.calculate_frame(residue);
+                        // Calculate frame directly (don't check has_reference_frame)
+                        // Use calculate_frame_const to avoid modifying residue during iteration
+                        FrameCalculationResult frame_result = calculator.calculate_frame_const(residue);
                         
                         if (frame_result.is_valid) {
                             // Record base_frame_calc
@@ -161,8 +164,10 @@ protected:
                             });
                             output_json["calculations"].push_back(ls_fitting_record);
                         }
-                        residue_idx++;
                     }
+                    
+                    // Count all residues (to match legacy residue_idx behavior)
+                    residue_idx++;
                 }
             }
 

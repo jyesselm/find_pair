@@ -115,11 +115,26 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
 void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
                                        const std::filesystem::path& standard_template,
                                        double rms_fit,
-                                       const std::vector<std::string>& matched_atoms) {
+                                       const std::vector<std::string>& matched_atoms,
+                                       const std::string& residue_name,
+                                       char chain_id,
+                                       int residue_seq,
+                                       char insertion) {
     nlohmann::json record;
     record["type"] = "base_frame_calc";
     record["residue_idx"] = residue_idx;
     record["base_type"] = std::string(1, base_type);
+    
+    // Add residue identification information (matching legacy format)
+    if (!residue_name.empty()) {
+        record["residue_name"] = residue_name;
+    }
+    record["chain_id"] = std::string(1, chain_id);
+    record["residue_seq"] = residue_seq;
+    if (insertion != ' ') {
+        record["insertion"] = std::string(1, insertion);
+    }
+    
     record["standard_template"] = standard_template.string();
     record["rms_fit"] = format_double(rms_fit);
     record["num_matched_atoms"] = matched_atoms.size();
@@ -136,10 +151,25 @@ void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
 
 void JsonWriter::record_ls_fitting(size_t residue_idx, size_t num_points, double rms_fit,
                                   const geometry::Matrix3D& rotation_matrix,
-                                  const geometry::Vector3D& translation) {
+                                  const geometry::Vector3D& translation,
+                                  const std::string& residue_name,
+                                  char chain_id,
+                                  int residue_seq,
+                                  char insertion) {
     nlohmann::json record;
     record["type"] = "ls_fitting";
     record["residue_idx"] = residue_idx;
+    
+    // Add residue identification information (matching legacy format)
+    if (!residue_name.empty()) {
+        record["residue_name"] = residue_name;
+    }
+    record["chain_id"] = std::string(1, chain_id);
+    record["residue_seq"] = residue_seq;
+    if (insertion != ' ') {
+        record["insertion"] = std::string(1, insertion);
+    }
+    
     record["num_points"] = num_points;
     record["rms_fit"] = format_double(rms_fit);
     
@@ -168,7 +198,11 @@ void JsonWriter::record_frame_calc(size_t residue_idx, char base_type,
                                    const std::filesystem::path& template_file,
                                    double rms_fit,
                                    const std::vector<geometry::Vector3D>& matched_std_xyz,
-                                   const std::vector<geometry::Vector3D>& matched_exp_xyz) {
+                                   const std::vector<geometry::Vector3D>& matched_exp_xyz,
+                                   const std::string& residue_name,
+                                   char chain_id,
+                                   int residue_seq,
+                                   char insertion) {
     if (matched_std_xyz.size() != matched_exp_xyz.size()) {
         throw std::invalid_argument("Matched coordinate arrays must have same size");
     }
@@ -177,6 +211,17 @@ void JsonWriter::record_frame_calc(size_t residue_idx, char base_type,
     record["type"] = "frame_calc";
     record["residue_idx"] = residue_idx;
     record["base_type"] = std::string(1, base_type);
+    
+    // Add residue identification information (matching legacy format)
+    if (!residue_name.empty()) {
+        record["residue_name"] = residue_name;
+    }
+    record["chain_id"] = std::string(1, chain_id);
+    record["residue_seq"] = residue_seq;
+    if (insertion != ' ') {
+        record["insertion"] = std::string(1, insertion);
+    }
+    
     record["template_file"] = template_file.string();
     record["rms_fit"] = format_double(rms_fit);
     record["num_matched_atoms"] = matched_std_xyz.size();

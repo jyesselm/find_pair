@@ -1,6 +1,32 @@
 build/
 cmake-build-*/
-__pycache__
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Package installation
+*.egg-info
+x3dna_json_compare.egg-info/
 
 # CMake
 CMakeCache.txt
