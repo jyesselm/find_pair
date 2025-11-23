@@ -2,12 +2,34 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+/* Structure to track open type files */
+typedef struct {
+    char calc_type[BUF32];
+    FILE *file;
+    long entry_count;
+} TypeFileHandle;
+
+/* PDB line cache structure */
+typedef struct {
+    char **lines;        /* Array of line strings */
+    long max_lines;      /* Maximum number of lines allocated */
+    long num_lines;      /* Actual number of lines loaded */
+    char file_path[BUF1K]; /* Path to cached file */
+} PdbLineCache;
+
 /* Singleton state */
 static long initialized = FALSE;
 static FILE *json_file = NULL;
+static TypeFileHandle type_files[32] = {{0}}; /* File handles for each calculation type */
+static long num_type_files = 0;
 static char json_filename[BUF1K];
+static char json_base_name[BUF512]; /* Base name without extension */
+static char json_dir_path[BUF1K]; /* Directory path for split files */
 static char globals_filename[BUF1K];
+static char pdb_file_path[BUF1K] = "";
 static long first_entry = TRUE;
+static PdbLineCache pdb_line_cache = {NULL, 0, 0, ""}; /* Cache for PDB lines */
+static long use_split_files = TRUE; /* Write to separate files per type */
 
 /* Helper: Escape string for JSON */
 static void json_escape_string(const char *str, char *out, size_t out_size) {
@@ -109,7 +131,13 @@ long json_writer_init(const char *pdbfile) {
         }
     }
     
-    /* Create JSON filename with corrected path */
+    /* Store base name and directory for split files */
+    strncpy(json_base_name, pdb_name, sizeof(json_base_name) - 1);
+    json_base_name[sizeof(json_base_name) - 1] = '\0';
+    strncpy(json_dir_path, dir_path, sizeof(json_dir_path) - 1);
+    json_dir_path[sizeof(json_dir_path) - 1] = '\0';
+    
+    /* Create JSON filename with corrected path (for metadata file) */
     if (stat("../data", &st) == 0) {
         sprintf(json_filename, "../data/json_legacy/%s.json", pdb_name);
         sprintf(globals_filename, "../data/json_legacy/%s_globals.json", pdb_name);
@@ -118,18 +146,31 @@ long json_writer_init(const char *pdbfile) {
         sprintf(globals_filename, "data/json_legacy/%s_globals.json", pdb_name);
     }
     
-    /* Open file for writing */
+    /* Store PDB file path for later use */
+    strncpy(pdb_file_path, pdbfile, sizeof(pdb_file_path) - 1);
+    pdb_file_path[sizeof(pdb_file_path) - 1] = '\0';
+    
+    /* Open metadata file for writing */
     json_file = fopen(json_filename, "w");
     if (!json_file) {
         fprintf(stderr, "[JSON_WRITER] Error: Could not open %s for writing\n", json_filename);
         return FALSE;
     }
     
-    /* Write JSON header */
+    /* Write JSON header with metadata */
     fprintf(json_file, "{\n");
     fprintf(json_file, "  \"pdb_file\": \"%s\",\n", pdbfile);
     fprintf(json_file, "  \"pdb_name\": \"%s\",\n", pdb_name);
     fprintf(json_file, "  \"calculations\": [\n");
+    fprintf(json_file, "    {\n");
+    fprintf(json_file, "      \"_note\": \"Calculations are split into separate files: %s_*.json\",\n", pdb_name);
+    fprintf(json_file, "      \"_split_files\": true\n");
+    fprintf(json_file, "    }\n");
+    fprintf(json_file, "  ],\n");
+    fprintf(json_file, "  \"metadata\": {\n");
+    fprintf(json_file, "    \"version\": \"%s\"\n", Gvars.X3DNA_VER);
+    fprintf(json_file, "  }\n");
+    fprintf(json_file, "}\n");
     
     first_entry = TRUE;
     initialized = TRUE;
@@ -138,23 +179,77 @@ long json_writer_init(const char *pdbfile) {
     return TRUE;
 }
 
+/* Helper: Get or create file handle for a calculation type */
+static FILE* get_type_file_handle(const char *calc_type, long *is_first_entry) {
+    char type_filename[BUF1K];
+    FILE *fp;
+    struct stat st;
+    long i;
+    
+    if (!json_writer_is_initialized() || !calc_type) return NULL;
+    
+    /* Check if file is already open */
+    for (i = 0; i < num_type_files; i++) {
+        if (strcmp(type_files[i].calc_type, calc_type) == 0 && type_files[i].file != NULL) {
+            *is_first_entry = (type_files[i].entry_count == 0);
+            type_files[i].entry_count++;
+            return type_files[i].file;
+        }
+    }
+    
+    /* Determine file path */
+    if (stat("../data", &st) == 0) {
+        sprintf(type_filename, "../data/json_legacy/%s_%s.json", json_base_name, calc_type);
+    } else {
+        sprintf(type_filename, "data/json_legacy/%s_%s.json", json_base_name, calc_type);
+    }
+    
+    /* Create new file */
+    fp = fopen(type_filename, "w");
+    if (!fp) {
+        fprintf(stderr, "[JSON_WRITER] Warning: Could not create %s\n", type_filename);
+        return NULL;
+    }
+    fprintf(fp, "[\n");
+    
+    /* Store in type_files array */
+    if (num_type_files < 32) {
+        strncpy(type_files[num_type_files].calc_type, calc_type, sizeof(type_files[num_type_files].calc_type) - 1);
+        type_files[num_type_files].calc_type[sizeof(type_files[num_type_files].calc_type) - 1] = '\0';
+        type_files[num_type_files].file = fp;
+        type_files[num_type_files].entry_count = 1;
+        num_type_files++;
+    }
+    
+    *is_first_entry = TRUE;
+    return fp;
+}
+
+
 void json_writer_finalize(void) {
+    long i;
+    
     if (!initialized || !json_file) {
         return;
     }
     
-    /* Close calculations array */
-    fprintf(json_file, "\n  ],\n");
-    fprintf(json_file, "  \"metadata\": {\n");
-    fprintf(json_file, "    \"version\": \"%s\"\n", Gvars.X3DNA_VER);
-    fprintf(json_file, "  }\n");
-    fprintf(json_file, "}\n");
+    /* Close all open type files */
+    for (i = 0; i < num_type_files; i++) {
+        if (type_files[i].file != NULL) {
+            fprintf(type_files[i].file, "\n]");
+            fflush(type_files[i].file);
+            fclose(type_files[i].file);
+            type_files[i].file = NULL;
+        }
+    }
     
+    /* Close and finalize metadata file (already written in init) */
     fclose(json_file);
     json_file = NULL;
     initialized = FALSE;
+    num_type_files = 0;
     
-    fprintf(stderr, "[JSON_WRITER] Finalized: %s\n", json_filename);
+    fprintf(stderr, "[JSON_WRITER] Finalized: %s (split files: %s_*.json)\n", json_filename, json_base_name);
 }
 
 long json_writer_is_initialized(void) {
@@ -340,71 +435,183 @@ void json_writer_record_bp_sequence(long num_bp, char **bp_seq, long ds) {
     fflush(json_file);
 }
 
+/* Helper: Load PDB lines into cache */
+static void load_pdb_lines_cache(const char *pdbfile) {
+    FILE *fp;
+    char *line = NULL;
+    long i;
+    
+    /* Check if already cached for this file */
+    if (pdb_line_cache.lines != NULL && strcmp(pdb_line_cache.file_path, pdbfile) == 0) {
+        return; /* Already cached */
+    }
+    
+    /* Free old cache if different file */
+    if (pdb_line_cache.lines != NULL) {
+        for (i = 1; i <= pdb_line_cache.num_lines; i++) {
+            if (pdb_line_cache.lines[i]) {
+                free(pdb_line_cache.lines[i]);
+            }
+        }
+        free(pdb_line_cache.lines);
+        pdb_line_cache.lines = NULL;
+    }
+    
+    /* Initialize cache */
+    pdb_line_cache.max_lines = 100000; /* Initial size */
+    pdb_line_cache.num_lines = 0;
+    pdb_line_cache.lines = (char **)calloc(pdb_line_cache.max_lines + 1, sizeof(char *));
+    if (!pdb_line_cache.lines) {
+        fprintf(stderr, "[JSON_WRITER] Warning: Could not allocate PDB line cache\n");
+        return;
+    }
+    strncpy(pdb_line_cache.file_path, pdbfile, sizeof(pdb_line_cache.file_path) - 1);
+    pdb_line_cache.file_path[sizeof(pdb_line_cache.file_path) - 1] = '\0';
+    
+    /* Load all lines from file */
+    fp = fopen(pdbfile, "r");
+    if (!fp) {
+        fprintf(stderr, "[JSON_WRITER] Warning: Could not open PDB file for caching: %s\n", pdbfile);
+        return;
+    }
+    
+    while ((line = my_getline(fp)) != NULL) {
+        pdb_line_cache.num_lines++;
+        if (pdb_line_cache.num_lines > pdb_line_cache.max_lines) {
+            /* Reallocate if needed */
+            long new_max = pdb_line_cache.max_lines * 2;
+            char **new_lines = (char **)realloc(pdb_line_cache.lines, (new_max + 1) * sizeof(char *));
+            if (new_lines) {
+                pdb_line_cache.lines = new_lines;
+                pdb_line_cache.max_lines = new_max;
+                /* Initialize new entries */
+                for (i = pdb_line_cache.num_lines + 1; i <= new_max; i++) {
+                    pdb_line_cache.lines[i] = NULL;
+                }
+            }
+        }
+        pdb_line_cache.lines[pdb_line_cache.num_lines] = line;
+    }
+    
+    fclose(fp);
+    fprintf(stderr, "[JSON_WRITER] Cached %ld PDB lines from %s\n", pdb_line_cache.num_lines, pdbfile);
+}
+
+/* Helper: Get PDB line from cache by line number */
+static char* get_pdb_line_by_number(const char *pdbfile, long line_num, char *buffer, size_t buf_size) {
+    size_t len;
+    
+    if (!pdbfile || line_num <= 0 || !buffer || buf_size == 0) {
+        buffer[0] = '\0';
+        return buffer;
+    }
+    
+    /* Load cache if not already loaded or different file */
+    if (pdb_line_cache.lines == NULL || strcmp(pdb_line_cache.file_path, pdbfile) != 0) {
+        load_pdb_lines_cache(pdbfile);
+    }
+    
+    /* Check if line number is valid */
+    if (line_num > pdb_line_cache.num_lines || !pdb_line_cache.lines[line_num]) {
+        buffer[0] = '\0';
+        return buffer;
+    }
+    
+    /* Copy line from cache */
+    strncpy(buffer, pdb_line_cache.lines[line_num], buf_size - 1);
+    buffer[buf_size - 1] = '\0';
+    
+    /* Remove trailing newline if present */
+    len = strlen(buffer);
+    if (len > 0 && buffer[len - 1] == '\n') {
+        buffer[len - 1] = '\0';
+    }
+    
+    return buffer;
+}
+
 void json_writer_record_pdb_atoms(long num, char **AtomName, char **ResName,
                                    char *ChainID, long *ResSeq, double **xyz,
                                    char **Miscs, long *line_numbers) {
-    char esc_atom[BUF32], esc_res[BUF32];
+    char esc_atom[BUF32], esc_res[BUF32], esc_pdb_line[BUF512];
+    char pdb_line_buffer[BUF512];
+    FILE *type_file;
     long i;
+    long is_first = TRUE;
     
     if (!json_writer_is_initialized()) return;
     if (!AtomName || !ResName || !ChainID || !ResSeq || !xyz) return;
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    /* Get file handle for pdb_atoms type */
+    type_file = get_type_file_handle("pdb_atoms", &is_first);
+    if (!type_file) return;
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"pdb_atoms\",\n");
-    fprintf(json_file, "      \"num_atoms\": %ld,\n", num);
-    fprintf(json_file, "      \"atoms\": [\n");
+    /* Write entry to type-specific file */
+    if (!is_first) {
+        fprintf(type_file, ",\n");
+    }
+    fprintf(type_file, "  {\n");
+    fprintf(type_file, "    \"num_atoms\": %ld,\n", num);
+    fprintf(type_file, "    \"atoms\": [\n");
     
     for (i = 1; i <= num; i++) {
-        if (i > 1) fprintf(json_file, ",\n");
-        fprintf(json_file, "        {\n");
+        if (i > 1) fprintf(type_file, ",\n");
+        fprintf(type_file, "      {\n");
         
         /* Atom index/position in array */
-        fprintf(json_file, "          \"atom_idx\": %ld,\n", i);
+        fprintf(type_file, "        \"atom_idx\": %ld,\n", i);
         
         /* Line number in PDB file */
         if (line_numbers && line_numbers[i] > 0) {
-            fprintf(json_file, "          \"line_number\": %ld,\n", line_numbers[i]);
+            fprintf(type_file, "        \"line_number\": %ld,\n", line_numbers[i]);
+            
+            /* Get and include the original PDB line for debugging */
+            if (pdb_file_path[0] != '\0') {
+                get_pdb_line_by_number(pdb_file_path, line_numbers[i], pdb_line_buffer, sizeof(pdb_line_buffer));
+                if (pdb_line_buffer[0] != '\0') {
+                    json_escape_string(pdb_line_buffer, esc_pdb_line, sizeof(esc_pdb_line));
+                    fprintf(type_file, "        \"pdb_line\": \"%s\",\n", esc_pdb_line);
+                }
+            }
         }
         
         /* Atom name */
         json_escape_string(AtomName[i], esc_atom, sizeof(esc_atom));
-        fprintf(json_file, "          \"atom_name\": \"%s\",\n", esc_atom);
+        fprintf(type_file, "        \"atom_name\": \"%s\",\n", esc_atom);
         
         /* Residue name */
         json_escape_string(ResName[i], esc_res, sizeof(esc_res));
-        fprintf(json_file, "          \"residue_name\": \"%s\",\n", esc_res);
+        fprintf(type_file, "        \"residue_name\": \"%s\",\n", esc_res);
         
         /* Chain ID */
-        fprintf(json_file, "          \"chain_id\": \"%c\",\n", ChainID[i]);
+        fprintf(type_file, "        \"chain_id\": \"%c\",\n", ChainID[i]);
         
         /* Residue sequence number */
-        fprintf(json_file, "          \"residue_seq\": %ld,\n", ResSeq[i]);
+        fprintf(type_file, "        \"residue_seq\": %ld,\n", ResSeq[i]);
         
         /* Coordinates */
-        fprintf(json_file, "          \"xyz\": [%.6f, %.6f, %.6f]", 
+        fprintf(type_file, "        \"xyz\": [%.6f, %.6f, %.6f]", 
                 xyz[i][1], xyz[i][2], xyz[i][3]);
         
         /* Miscellaneous info if available */
         if (Miscs && Miscs[i]) {
-            fprintf(json_file, ",\n          \"record_type\": \"%c\"", Miscs[i][0]);
+            fprintf(type_file, ",\n        \"record_type\": \"%c\"", Miscs[i][0]);
             if (Miscs[i][1] != ' ') {
-                fprintf(json_file, ",\n          \"alt_loc\": \"%c\"", Miscs[i][1]);
+                fprintf(type_file, ",\n        \"alt_loc\": \"%c\"", Miscs[i][1]);
             }
             if (Miscs[i][2] != ' ') {
-                fprintf(json_file, ",\n          \"insertion\": \"%c\"", Miscs[i][2]);
+                fprintf(type_file, ",\n        \"insertion\": \"%c\"", Miscs[i][2]);
             }
         }
         
-        fprintf(json_file, "\n        }");
+        fprintf(type_file, "\n      }");
     }
     
-    fprintf(json_file, "\n      ]\n");
-    fprintf(json_file, "    }");
+    fprintf(type_file, "\n    ]\n");
+    fprintf(type_file, "  }");
     
-    fflush(json_file);
+    /* Don't close file - keep it open for more entries of this type */
+    fflush(type_file);
 }
 
 void json_writer_record_residue_indices(long num_residue, long **seidx) {
@@ -815,48 +1022,50 @@ void json_writer_record_base_frame_calc(long residue_idx, char base_type,
                                          const char *residue_name, char chain_id, long residue_seq, char insertion_code) {
     long i;
     char esc_atom[BUF512], esc_template[BUF512], esc_resname[BUF512];
+    FILE *type_file;
+    long is_first = TRUE;
     
     if (!json_writer_is_initialized()) return;
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    type_file = get_type_file_handle("base_frame_calc", &is_first);
+    if (!type_file) return;
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"base_frame_calc\",\n");
-    fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
-    fprintf(json_file, "      \"base_type\": \"%c\",\n", base_type);
+    if (!is_first) fprintf(type_file, ",\n");
+    fprintf(type_file, "  {\n");
+    fprintf(type_file, "    \"residue_idx\": %ld,\n", residue_idx);
+    fprintf(type_file, "    \"base_type\": \"%c\",\n", base_type);
     
     /* Add residue identification information */
     if (residue_name) {
         json_escape_string(residue_name, esc_resname, sizeof(esc_resname));
-        fprintf(json_file, "      \"residue_name\": \"%s\",\n", esc_resname);
+        fprintf(type_file, "    \"residue_name\": \"%s\",\n", esc_resname);
     }
-    fprintf(json_file, "      \"chain_id\": \"%c\",\n", chain_id);
-    fprintf(json_file, "      \"residue_seq\": %ld,\n", residue_seq);
+    fprintf(type_file, "    \"chain_id\": \"%c\",\n", chain_id);
+    fprintf(type_file, "    \"residue_seq\": %ld,\n", residue_seq);
     if (insertion_code != ' ') {
-        fprintf(json_file, "      \"insertion\": \"%c\",\n", insertion_code);
+        fprintf(type_file, "    \"insertion\": \"%c\",\n", insertion_code);
     }
     
     json_escape_string(standard_template, esc_template, sizeof(esc_template));
-    fprintf(json_file, "      \"standard_template\": \"%s\",\n", esc_template);
-    fprintf(json_file, "      \"rms_fit\": %.6f,\n", rms_fit);
-    fprintf(json_file, "      \"num_matched_atoms\": %ld,\n", num_matched);
-    fprintf(json_file, "      \"matched_atoms\": [");
+    fprintf(type_file, "    \"standard_template\": \"%s\",\n", esc_template);
+    fprintf(type_file, "    \"rms_fit\": %.6f,\n", rms_fit);
+    fprintf(type_file, "    \"num_matched_atoms\": %ld,\n", num_matched);
+    fprintf(type_file, "    \"matched_atoms\": [");
     
     for (i = 1; i <= num_matched && i <= num_atoms; i++) {
-        if (i > 1) fprintf(json_file, ", ");
+        if (i > 1) fprintf(type_file, ", ");
         if (matched_atoms && matched_atoms[i]) {
             json_escape_string(matched_atoms[i], esc_atom, sizeof(esc_atom));
-            fprintf(json_file, "\"%s\"", esc_atom);
+            fprintf(type_file, "\"%s\"", esc_atom);
         } else {
-            fprintf(json_file, "\"\"");
+            fprintf(type_file, "\"\"");
         }
     }
     
-    fprintf(json_file, "]\n");
-    fprintf(json_file, "    }");
+    fprintf(type_file, "]\n");
+    fprintf(type_file, "  }");
     
-    fflush(json_file);
+    fflush(type_file);
 }
 
 void json_writer_record_pair_validation(long base_i, long base_j,
@@ -966,51 +1175,53 @@ void json_writer_record_frame_calc(long residue_idx, char base_type,
                                     const char *residue_name, char chain_id, long residue_seq, char insertion_code) {
     long i;
     char esc_template[BUF512], esc_resname[BUF512];
+    FILE *type_file;
+    long is_first = TRUE;
     
     if (!json_writer_is_initialized()) return;
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    type_file = get_type_file_handle("frame_calc", &is_first);
+    if (!type_file) return;
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"frame_calc\",\n");
-    fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
-    fprintf(json_file, "      \"base_type\": \"%c\",\n", base_type);
+    if (!is_first) fprintf(type_file, ",\n");
+    fprintf(type_file, "  {\n");
+    fprintf(type_file, "    \"residue_idx\": %ld,\n", residue_idx);
+    fprintf(type_file, "    \"base_type\": \"%c\",\n", base_type);
     
     /* Add residue identification information */
     if (residue_name) {
         json_escape_string(residue_name, esc_resname, sizeof(esc_resname));
-        fprintf(json_file, "      \"residue_name\": \"%s\",\n", esc_resname);
+        fprintf(type_file, "    \"residue_name\": \"%s\",\n", esc_resname);
     }
-    fprintf(json_file, "      \"chain_id\": \"%c\",\n", chain_id);
-    fprintf(json_file, "      \"residue_seq\": %ld,\n", residue_seq);
+    fprintf(type_file, "    \"chain_id\": \"%c\",\n", chain_id);
+    fprintf(type_file, "    \"residue_seq\": %ld,\n", residue_seq);
     if (insertion_code != ' ') {
-        fprintf(json_file, "      \"insertion\": \"%c\",\n", insertion_code);
+        fprintf(type_file, "    \"insertion\": \"%c\",\n", insertion_code);
     }
     
     json_escape_string(template_file, esc_template, sizeof(esc_template));
-    fprintf(json_file, "      \"template_file\": \"%s\",\n", esc_template);
-    fprintf(json_file, "      \"rms_fit\": %.6f,\n", rms_fit);
-    fprintf(json_file, "      \"num_matched_atoms\": %ld,\n", num_matched_atoms);
+    fprintf(type_file, "    \"template_file\": \"%s\",\n", esc_template);
+    fprintf(type_file, "    \"rms_fit\": %.6f,\n", rms_fit);
+    fprintf(type_file, "    \"num_matched_atoms\": %ld,\n", num_matched_atoms);
     
     if (matched_std_xyz && matched_exp_xyz) {
-        fprintf(json_file, "      \"matched_coordinates\": [\n");
+        fprintf(type_file, "    \"matched_coordinates\": [\n");
         for (i = 1; i <= num_matched_atoms; i++) {
-            if (i > 1) fprintf(json_file, ",\n");
-            fprintf(json_file, "        {\n");
-            fprintf(json_file, "          \"atom_idx\": %ld,\n", i);
-            fprintf(json_file, "          \"std_xyz\": [%.6f, %.6f, %.6f],\n",
+            if (i > 1) fprintf(type_file, ",\n");
+            fprintf(type_file, "      {\n");
+            fprintf(type_file, "        \"atom_idx\": %ld,\n", i);
+            fprintf(type_file, "        \"std_xyz\": [%.6f, %.6f, %.6f],\n",
                     matched_std_xyz[i][1], matched_std_xyz[i][2], matched_std_xyz[i][3]);
-            fprintf(json_file, "          \"exp_xyz\": [%.6f, %.6f, %.6f]\n",
+            fprintf(type_file, "        \"exp_xyz\": [%.6f, %.6f, %.6f]\n",
                     matched_exp_xyz[i][1], matched_exp_xyz[i][2], matched_exp_xyz[i][3]);
-            fprintf(json_file, "        }");
+            fprintf(type_file, "      }");
         }
-        fprintf(json_file, "\n      ]\n");
+        fprintf(type_file, "\n    ]\n");
     }
     
-    fprintf(json_file, "    }");
+    fprintf(type_file, "  }");
     
-    fflush(json_file);
+    fflush(type_file);
 }
 
 void json_writer_record_ring_atoms(long residue_idx, long *ring_atom_indices,
@@ -1071,45 +1282,47 @@ void json_writer_record_ls_fitting(long residue_idx, long num_points,
                                     const char *residue_name, char chain_id, long residue_seq, char insertion_code) {
     long i, j;
     char esc_resname[BUF512];
+    FILE *type_file;
+    long is_first = TRUE;
     
     if (!json_writer_is_initialized()) return;
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    type_file = get_type_file_handle("ls_fitting", &is_first);
+    if (!type_file) return;
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"ls_fitting\",\n");
-    fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
+    if (!is_first) fprintf(type_file, ",\n");
+    fprintf(type_file, "  {\n");
+    fprintf(type_file, "    \"residue_idx\": %ld,\n", residue_idx);
     
     /* Add residue identification information */
     if (residue_name) {
         json_escape_string(residue_name, esc_resname, sizeof(esc_resname));
-        fprintf(json_file, "      \"residue_name\": \"%s\",\n", esc_resname);
+        fprintf(type_file, "    \"residue_name\": \"%s\",\n", esc_resname);
     }
-    fprintf(json_file, "      \"chain_id\": \"%c\",\n", chain_id);
-    fprintf(json_file, "      \"residue_seq\": %ld,\n", residue_seq);
+    fprintf(type_file, "    \"chain_id\": \"%c\",\n", chain_id);
+    fprintf(type_file, "    \"residue_seq\": %ld,\n", residue_seq);
     if (insertion_code != ' ') {
-        fprintf(json_file, "      \"insertion\": \"%c\",\n", insertion_code);
+        fprintf(type_file, "    \"insertion\": \"%c\",\n", insertion_code);
     }
     
-    fprintf(json_file, "      \"num_points\": %ld,\n", num_points);
-    fprintf(json_file, "      \"rms_fit\": %.6f,\n", rms_fit);
+    fprintf(type_file, "    \"num_points\": %ld,\n", num_points);
+    fprintf(type_file, "    \"rms_fit\": %.6f,\n", rms_fit);
     
     if (rotation_matrix) {
-        fprintf(json_file, "      \"rotation_matrix\": ");
-        json_write_matrix(json_file, rotation_matrix);
-        fprintf(json_file, ",\n");
+        fprintf(type_file, "    \"rotation_matrix\": ");
+        json_write_matrix(type_file, rotation_matrix);
+        fprintf(type_file, ",\n");
     }
     
     if (translation) {
-        fprintf(json_file, "      \"translation\": ");
-        json_write_double_array(json_file, &translation[1], 3);
-        fprintf(json_file, "\n");
+        fprintf(type_file, "    \"translation\": ");
+        json_write_double_array(type_file, &translation[1], 3);
+        fprintf(type_file, "\n");
     }
     
-    fprintf(json_file, "    }");
+    fprintf(type_file, "  }");
     
-    fflush(json_file);
+    fflush(type_file);
 }
 
 void json_writer_record_removed_atom(const char* pdb_line, const char* reason,

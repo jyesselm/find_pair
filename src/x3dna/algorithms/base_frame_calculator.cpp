@@ -168,7 +168,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // Match ring atoms
     // Pass detected residue_type to ensure correct atom list is used
     // (residue.residue_type() might still be UNKNOWN for modified nucleotides)
-    MatchedAtoms matched = RingAtomMatcher::match(residue, standard_template, is_rna_, legacy_mode_,
+    MatchedAtoms matched = RingAtomMatcher::match(residue, standard_template,
                                                   std::optional<core::ResidueType>(residue_type));
 
 #ifdef DEBUG_FRAME_CALC

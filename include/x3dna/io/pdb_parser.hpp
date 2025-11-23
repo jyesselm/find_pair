@@ -255,10 +255,14 @@ private:
     bool check_alt_loc_filter(char alt_loc) const;
     void process_atom_record(
         const std::string& line, size_t line_number, int model_number,
-        std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms);
+        std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms,
+        int& legacy_atom_idx, int& legacy_residue_idx,
+        std::map<std::tuple<char, int, char>, int>& legacy_residue_idx_map);
     void process_hetatm_record(
         const std::string& line, size_t line_number, int model_number,
-        std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms);
+        std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms,
+        int& legacy_atom_idx, int& legacy_residue_idx,
+        std::map<std::tuple<char, int, char>, int>& legacy_residue_idx_map);
     void handle_model_record(const std::string& line, int& current_model_number, bool& all_models);
     bool handle_end_record(const std::string& line, bool all_models);
     core::Structure build_structure_from_residues(

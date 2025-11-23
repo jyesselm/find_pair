@@ -29,7 +29,14 @@ from x3dna_json_compare import JsonComparator, ComparisonResult
 from pathlib import Path
 from x3dna_json_compare import JsonComparator
 
+# Default: compare both atoms and frames
 comparator = JsonComparator()
+
+# Or selectively enable/disable comparisons
+comparator = JsonComparator(
+    compare_atoms=True,   # Compare atom records (pdb_atoms)
+    compare_frames=True    # Compare frame calculations (base_frame_calc, frame_calc, ls_fitting)
+)
 
 # Compare single PDB file
 legacy_file = Path("data/json_legacy/1H4S.json")
@@ -41,7 +48,10 @@ result = comparator.compare_files(legacy_file, modern_file, pdb_file, "1H4S")
 if result.status == 'error':
     print(f"Errors: {result.errors}")
 elif result.has_differences():
-    print(f"Found {len(result.frame_comparison.mismatched_calculations)} differences")
+    if result.frame_comparison:
+        print(f"Found {len(result.frame_comparison.mismatched_calculations)} frame differences")
+    if result.atom_comparison:
+        print(f"Found {len(result.atom_comparison.missing_in_modern)} missing atoms")
 else:
     print("No differences found")
 ```

@@ -412,6 +412,8 @@ void base_frame(long num_residue, char *bseq, long **seidx, long *res_type,
             read_pdb(spdb, NULL, sAtomName, sResName, sChainID, sResSeq, sxyz, sMiscs, 1, "*");
         sprintf(sidmsg, "in standard base: %s", spdb);
         nmatch = 0;
+        /* Array to store only the matched atom names */
+        char **matched_atom_names = cmatrix(1, RR9, 0, 4);
         for (j = 0; j < RingAtom_num; j++) {
             exp_katom = find_1st_atom(RingAtom[j], AtomName, ib, ie, idmsg);
             std_katom = find_1st_atom(RingAtom[j], sAtomName, 1, snum, sidmsg);
@@ -419,15 +421,19 @@ void base_frame(long num_residue, char *bseq, long **seidx, long *res_type,
                 ++nmatch;
                 cpxyz(xyz[exp_katom], eRing_xyz[nmatch]);
                 cpxyz(sxyz[std_katom], sRing_xyz[nmatch]);
+                /* Store the matched atom name */
+                strcpy(matched_atom_names[nmatch], RingAtom[j]);
             }
         }
         if (nmatch >= 3) {
             double rms_fit = ls_fitting(sRing_xyz, eRing_xyz, nmatch, fitted_xyz, R, org[i]);
             mst2orien(orien[i], 0, R);
-            /* Record base frame calculation details to JSON */
+            /* Record base frame calculation details to JSON - only matched atoms */
             json_writer_record_base_frame_calc(i, bseq[i], spdb, rms_fit, nmatch, 
-                                                 (char**)RingAtom, RingAtom_num,
+                                                 matched_atom_names, nmatch,
                                                  ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
+            /* Free the matched atom names array */
+            free_cmatrix(matched_atom_names, 1, RR9, 0, 4);
             /* Record least squares fitting details */
             json_writer_record_ls_fitting(i, nmatch, rms_fit, R, org[i],
                                           ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);

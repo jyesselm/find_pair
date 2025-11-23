@@ -20,6 +20,7 @@ class AtomInfo:
     residue_name: str
     line_number: Optional[int] = None
     pdb_line: Optional[str] = None
+    legacy_atom_idx: Optional[int] = None  # Legacy atom index for direct comparison
     atom_data: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -61,6 +62,7 @@ class FrameRecord:
     matched_atoms: List[str] = field(default_factory=list)
     template_file: Optional[str] = None
     residue_idx: Optional[int] = None
+    legacy_residue_idx: Optional[int] = None  # Legacy residue index for direct comparison
     rotation_matrix: Optional[List[List[float]]] = None
     translation: Optional[List[float]] = None
 
@@ -71,6 +73,7 @@ class AtomLineInfo:
     atom_name: str
     line_number: int
     pdb_line: str
+    legacy_atom_idx: Optional[int] = None  # Legacy atom index for direct comparison
 
 
 @dataclass

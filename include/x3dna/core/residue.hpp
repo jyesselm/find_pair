@@ -67,6 +67,9 @@ public:
     const std::vector<Atom>& atoms() const {
         return atoms_;
     }
+    std::vector<Atom>& atoms() {
+        return atoms_;
+    }
     size_t num_atoms() const {
         return atoms_.size();
     }

@@ -8,6 +8,9 @@ version = "1.0.0"
 description = "Comparison utilities for X3DNA legacy and modern JSON outputs"
 readme = "x3dna_json_compare/README.md"
 requires-python = ">=3.8"
+dependencies = [
+    "click>=8.0",
+]
 authors = [
     {name = "X3DNA Project"}
 ]

@@ -475,10 +475,25 @@ bool PdbParser::should_keep_atom(const core::Atom& atom) const {
 // Record processing helpers
 void PdbParser::process_atom_record(
     const std::string& line, size_t line_number, int model_number,
-    std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms) {
+    std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms,
+    int& legacy_atom_idx, int& legacy_residue_idx,
+    std::map<std::tuple<char, int, char>, int>& legacy_residue_idx_map) {
     try {
         core::Atom atom = parse_atom_line(line, line_number);
         atom.set_model_number(model_number);
+
+        // Assign legacy indices sequentially (1-based) as atoms are encountered
+        // This matches the legacy code's behavior of assigning indices in PDB file order
+        atom.set_legacy_atom_idx(legacy_atom_idx++);
+        
+        // Assign legacy residue index (1-based) - assign new index when residue changes
+        auto residue_key = std::make_tuple(atom.chain_id(), atom.residue_seq(), atom.insertion());
+        auto residue_it = legacy_residue_idx_map.find(residue_key);
+        if (residue_it == legacy_residue_idx_map.end()) {
+            // New residue - assign next residue index
+            legacy_residue_idx_map[residue_key] = legacy_residue_idx++;
+        }
+        atom.set_legacy_residue_idx(legacy_residue_idx_map[residue_key]);
 
         if (should_keep_atom(atom)) {
             // Use (chain_id, residue_seq, insertion_code) as key to match legacy behavior
@@ -492,7 +507,9 @@ void PdbParser::process_atom_record(
 
 void PdbParser::process_hetatm_record(
     const std::string& line, size_t line_number, int model_number,
-    std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms) {
+    std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms,
+    int& legacy_atom_idx, int& legacy_residue_idx,
+    std::map<std::tuple<char, int, char>, int>& legacy_residue_idx_map) {
     if (!include_hetatm_) {
         return;
     }
@@ -500,6 +517,19 @@ void PdbParser::process_hetatm_record(
     try {
         core::Atom atom = parse_hetatm_line(line, line_number);
         atom.set_model_number(model_number);
+
+        // Assign legacy indices sequentially (1-based) as atoms are encountered
+        // This matches the legacy code's behavior of assigning indices in PDB file order
+        atom.set_legacy_atom_idx(legacy_atom_idx++);
+        
+        // Assign legacy residue index (1-based) - assign new index when residue changes
+        auto residue_key = std::make_tuple(atom.chain_id(), atom.residue_seq(), atom.insertion());
+        auto residue_it = legacy_residue_idx_map.find(residue_key);
+        if (residue_it == legacy_residue_idx_map.end()) {
+            // New residue - assign next residue index
+            legacy_residue_idx_map[residue_key] = legacy_residue_idx++;
+        }
+        atom.set_legacy_residue_idx(legacy_residue_idx_map[residue_key]);
 
         // Check if water and should be skipped
         if (!include_waters_ && is_water(atom.residue_name())) {
@@ -586,6 +616,11 @@ core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& p
     size_t line_number = 0;
     std::string line;
     bool all_models = false;
+    
+    // Legacy indices: assign sequentially as atoms/residues are encountered (1-based)
+    int legacy_atom_idx = 1;
+    std::map<std::tuple<char, int, char>, int> legacy_residue_idx_map;
+    int legacy_residue_idx = 1;
     int current_model_number = 0;
 
     // Reserve space for line to avoid reallocations
@@ -612,7 +647,8 @@ core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& p
             // ATOM records - most common case first
             if (line[0] == 'A' && line[1] == 'T' && line[2] == 'O' && line[3] == 'M' &&
                 line.length() >= 52) {
-                process_atom_record(line, line_number, current_model_number, residue_atoms);
+                process_atom_record(line, line_number, current_model_number, residue_atoms,
+                                    legacy_atom_idx, legacy_residue_idx, legacy_residue_idx_map);
                 continue;
             }
 
@@ -627,7 +663,8 @@ core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& p
             // HETATM records
             if (line.length() >= 6 && line[0] == 'H' && line[1] == 'E' && line[2] == 'T' &&
                 line[3] == 'A' && line[4] == 'T' && line[5] == 'M' && line.length() >= 52) {
-                process_hetatm_record(line, line_number, current_model_number, residue_atoms);
+                process_hetatm_record(line, line_number, current_model_number, residue_atoms,
+                                      legacy_atom_idx, legacy_residue_idx, legacy_residue_idx_map);
                 continue;
             }
 

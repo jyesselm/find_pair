@@ -94,6 +94,12 @@ public:
     const std::string& original_residue_name() const {
         return original_residue_name_;
     }
+    int legacy_atom_idx() const {
+        return legacy_atom_idx_;
+    }
+    int legacy_residue_idx() const {
+        return legacy_residue_idx_;
+    }
 
     // Setters
     void set_name(const std::string& name) {
@@ -143,6 +149,12 @@ public:
     }
     void set_original_residue_name(const std::string& name) {
         original_residue_name_ = name;
+    }
+    void set_legacy_atom_idx(int legacy_atom_idx) {
+        legacy_atom_idx_ = legacy_atom_idx;
+    }
+    void set_legacy_residue_idx(int legacy_residue_idx) {
+        legacy_residue_idx_ = legacy_residue_idx;
     }
 
     /**
@@ -329,6 +341,8 @@ private:
     std::string element_;               // Element symbol (PDB column 77-78)
     std::string original_atom_name_;    // Original atom name before normalization
     std::string original_residue_name_; // Original residue name before normalization
+    int legacy_atom_idx_ = 0;           // Legacy atom index for direct comparison (0 if not set)
+    int legacy_residue_idx_ = 0;        // Legacy residue index for direct comparison (0 if not set)
 
     /**
      * @brief Trim whitespace from atom name for comparison

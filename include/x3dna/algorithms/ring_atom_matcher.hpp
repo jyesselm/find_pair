@@ -27,10 +27,10 @@ struct MatchedAtoms {
     size_t num_matched = 0;               // Number of matched atom pairs
 
     bool is_valid() const {
-        // In legacy mode, atom_names may include unmatched atoms (e.g., H for purines, N7 for
-        // pyrimidines), so we don't check atom_names.size() here. Only check that we have matching
-        // experimental/standard vectors with at least 3 matched atoms for fitting.
-        return experimental.size() == standard.size() && experimental.size() == num_matched &&
+        // Check that we have matching experimental/standard vectors with at least 3 matched atoms for fitting
+        return experimental.size() == standard.size() && 
+               experimental.size() == atom_names.size() &&
+               experimental.size() == num_matched &&
                num_matched >= 3; // Minimum 3 atoms required for fitting
     }
 };
@@ -40,8 +40,9 @@ struct MatchedAtoms {
  * @brief Matches experimental residue atoms to standard base template atoms
  *
  * Ring atoms are used for least-squares fitting to calculate reference frames.
- * For purines (A, G): 9 ring atoms (or 10 for RNA including C1')
- * For pyrimidines (C, T, U): 6 ring atoms (or 7 for RNA including C1')
+ * For purines (A, G): 9 ring atoms (C4, N3, C2, N1, C6, C5, N7, C8, N9)
+ * For pyrimidines (C, T, U): 6 ring atoms (C4, N3, C2, N1, C6, C5)
+ * Note: C1' is a sugar atom, not a ring atom, so it is never included.
  */
 class RingAtomMatcher {
 public:
@@ -49,26 +50,19 @@ public:
      * @brief Match ring atoms between experimental residue and standard template
      * @param residue Experimental residue to match
      * @param standard_template Standard template structure
-     * @param is_rna Whether this is RNA (includes C1' in matching)
-     * @param exclude_c4 Whether to exclude C4 atom (legacy compatibility mode)
      * @param residue_type Optional residue type (if provided, overrides residue.residue_type())
      * @return MatchedAtoms structure with matched atom pairs
      */
     static MatchedAtoms match(const core::Residue& residue,
-                              const core::Structure& standard_template, bool is_rna = false,
-                              bool exclude_c4 = false,
+                              const core::Structure& standard_template,
                               std::optional<core::ResidueType> residue_type = std::nullopt);
 
     /**
      * @brief Get list of ring atom names for a residue type
      * @param residue_type Residue type (ADENINE, CYTOSINE, etc.)
-     * @param is_rna Whether this is RNA (includes C1' in list)
-     * @param exclude_c4 Whether to exclude C4 atom (legacy compatibility mode)
      * @return Vector of atom names
      */
-    static std::vector<std::string> get_ring_atom_names(core::ResidueType residue_type,
-                                                        bool is_rna = false,
-                                                        bool exclude_c4 = false);
+    static std::vector<std::string> get_ring_atom_names(core::ResidueType residue_type);
 
 private:
     /**
