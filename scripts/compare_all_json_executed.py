@@ -131,7 +131,7 @@ def main():
 
     # Compare using JsonComparator with threading (avoids pickling issues)
     comparator = JsonComparator(enable_cache=False)
-    
+
     # Use maximum threads (threads avoid pickling issues)
     max_workers = multiprocessing.cpu_count()
 
@@ -141,12 +141,14 @@ def main():
 
     # Process in parallel using threads
     results = {}
-    
+
     def compare_pdb(pdb_id):
-        """Compare a single PDB file."""
+        """Compare a single PDB file - skip PDB file to speed up (we don't need atom lines)."""
         legacy_file = project_root / f"data/json_legacy/{pdb_id}.json"
         modern_file = project_root / f"data/json/{pdb_id}.json"
-        pdb_file = project_root / f"data/pdb/{pdb_id}.pdb"
+        # Skip PDB file parsing - we only need JSON comparison, not PDB line lookups
+        # This makes comparison ~10x faster
+        pdb_file = None
 
         try:
             result = comparator.compare_files(
@@ -159,25 +161,27 @@ def main():
                 pdb_id=pdb_id, status="error", errors=[str(e)]
             )
             return (pdb_id, error_result)
-    
+
     # Process with ThreadPoolExecutor
     completed = 0
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Submit all tasks
         future_to_pdb = {
-            executor.submit(compare_pdb, pdb_id): pdb_id
-            for pdb_id in common
+            executor.submit(compare_pdb, pdb_id): pdb_id for pdb_id in common
         }
-        
+
         # Collect results as they complete
         for future in as_completed(future_to_pdb):
             pdb_id, result = future.result()
             results[pdb_id] = result
             completed += 1
-            
+
             # Progress update every 100 files or at completion
             if completed % 100 == 0 or completed == len(common):
-                print(f"  Progress: {completed}/{len(common)} ({completed*100//len(common)}%)", flush=True)
+                print(
+                    f"  Progress: {completed}/{len(common)} ({completed*100//len(common)}%)",
+                    flush=True,
+                )
 
     # Summarize results
     print("\n" + "=" * 80)
@@ -243,6 +247,57 @@ def main():
         file_diffs.sort(key=lambda x: x[1], reverse=True)
         for pdb_id, diff_count in file_diffs[:10]:
             print(f"  {pdb_id}: {diff_count} differences")
+
+    # Save detailed mismatches for analysis
+    if total_mismatches > 0:
+        mismatches_file = project_root / "docs" / "MISMATCHED_RESIDUES.json"
+        mismatches_data = []
+        
+        for pdb_id, result in results.items():
+            if result.status == "error" or not result.frame_comparison:
+                continue
+            
+            fc = result.frame_comparison
+            
+            # Collect missing residues
+            for missing in fc.missing_residues:
+                mismatches_data.append({
+                    'pdb_id': pdb_id,
+                    'type': 'missing',
+                    'residue': f"{missing.chain_id}:{missing.residue_seq}{missing.insertion}",
+                    'residue_name': missing.residue_name,
+                    'base_type': missing.base_type,
+                    'matched_atoms': missing.matched_atoms,
+                })
+            
+            # Collect mismatched calculations
+            for mismatch in fc.mismatched_calculations:
+                leg_atoms = sorted(mismatch.legacy_matched_atoms)
+                mod_atoms = sorted(mismatch.modern_matched_atoms)
+                chain_id, residue_seq, insertion = mismatch.residue_key
+                
+                mismatches_data.append({
+                    'pdb_id': pdb_id,
+                    'type': 'mismatch',
+                    'residue': f"{chain_id}:{residue_seq}{insertion}",
+                    'residue_name': mismatch.legacy_record.get('residue_name', ''),
+                    'base_type': mismatch.legacy_record.get('base_type', '?'),
+                    'legacy_atoms': leg_atoms,
+                    'modern_atoms': mod_atoms,
+                    'only_legacy': sorted(set(leg_atoms) - set(mod_atoms)),
+                    'only_modern': sorted(set(mod_atoms) - set(leg_atoms)),
+                    'rms_legacy': mismatch.legacy_record.get('rms_fit', 0),
+                    'rms_modern': mismatch.modern_record.get('rms_fit', 0),
+                    'rms_diff': abs(mismatch.legacy_record.get('rms_fit', 0) - mismatch.modern_record.get('rms_fit', 0)),
+                })
+        
+        with open(mismatches_file, 'w') as f:
+            json.dump({
+                'total_mismatches': len(mismatches_data),
+                'mismatches': mismatches_data
+            }, f, indent=2)
+        
+        print(f"\n💾 Detailed mismatches saved to: {mismatches_file}")
 
 
 if __name__ == "__main__":

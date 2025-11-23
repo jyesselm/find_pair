@@ -44,8 +44,12 @@ public:
      * @brief Get the JSON object (can be called before finalize)
      * @return Reference to the JSON object
      */
-    nlohmann::json& json() { return json_; }
-    const nlohmann::json& json() const { return json_; }
+    nlohmann::json& json() {
+        return json_;
+    }
+    const nlohmann::json& json() const {
+        return json_;
+    }
 
     /**
      * @brief Get the JSON as a string
@@ -82,13 +86,10 @@ public:
      * @param insertion Insertion code (default ' ')
      */
     void record_base_frame_calc(size_t residue_idx, char base_type,
-                                const std::filesystem::path& standard_template,
-                                double rms_fit,
+                                const std::filesystem::path& standard_template, double rms_fit,
                                 const std::vector<std::string>& matched_atoms,
-                                const std::string& residue_name = "",
-                                char chain_id = ' ',
-                                int residue_seq = 0,
-                                char insertion = ' ');
+                                const std::string& residue_name = "", char chain_id = ' ',
+                                int residue_seq = 0, char insertion = ' ');
 
     /**
      * @brief Record least-squares fitting details
@@ -103,12 +104,10 @@ public:
      * @param insertion Insertion code (default ' ')
      */
     void record_ls_fitting(size_t residue_idx, size_t num_points, double rms_fit,
-                          const geometry::Matrix3D& rotation_matrix,
-                          const geometry::Vector3D& translation,
-                          const std::string& residue_name = "",
-                          char chain_id = ' ',
-                          int residue_seq = 0,
-                          char insertion = ' ');
+                           const geometry::Matrix3D& rotation_matrix,
+                           const geometry::Vector3D& translation,
+                           const std::string& residue_name = "", char chain_id = ' ',
+                           int residue_seq = 0, char insertion = ' ');
 
     /**
      * @brief Record frame calculation with matched coordinates
@@ -124,14 +123,11 @@ public:
      * @param insertion Insertion code (default ' ')
      */
     void record_frame_calc(size_t residue_idx, char base_type,
-                           const std::filesystem::path& template_file,
-                           double rms_fit,
+                           const std::filesystem::path& template_file, double rms_fit,
                            const std::vector<geometry::Vector3D>& matched_std_xyz,
                            const std::vector<geometry::Vector3D>& matched_exp_xyz,
-                           const std::string& residue_name = "",
-                           char chain_id = ' ',
-                           int residue_seq = 0,
-                           char insertion = ' ');
+                           const std::string& residue_name = "", char chain_id = ' ',
+                           int residue_seq = 0, char insertion = ' ');
 
     /**
      * @brief Record base pair information
@@ -155,7 +151,7 @@ public:
      * @param params Helical parameters
      */
     void record_helical_params(size_t bp_idx1, size_t bp_idx2,
-                              const core::HelicalParameters& params);
+                               const core::HelicalParameters& params);
 
     /**
      * @brief Record all reference frames
@@ -177,9 +173,8 @@ public:
      */
     void record_removed_atom(const std::string& pdb_line, const std::string& reason,
                              int atom_serial, const std::string& atom_name,
-                             const std::string& residue_name, char chain_id,
-                             int residue_seq, const geometry::Vector3D* xyz,
-                             int model_num);
+                             const std::string& residue_name, char chain_id, int residue_seq,
+                             const geometry::Vector3D* xyz, int model_num);
 
     /**
      * @brief Record summary of removed atoms
@@ -198,8 +193,8 @@ public:
      * @param dir_z Z component of direction vector
      * @param rtn_val Return values array (5 values)
      */
-    void record_pair_validation(size_t base_i, size_t base_j, bool is_valid,
-                                int bp_type_id, double dir_x, double dir_y, double dir_z,
+    void record_pair_validation(size_t base_i, size_t base_j, bool is_valid, int bp_type_id,
+                                double dir_x, double dir_y, double dir_z,
                                 const std::array<double, 5>& rtn_val);
 
     /**
@@ -209,7 +204,7 @@ public:
      * @param hbonds Vector of hydrogen bond information
      */
     void record_hbond_list(size_t base_i, size_t base_j,
-                     const std::vector<core::hydrogen_bond>& hbonds);
+                           const std::vector<core::hydrogen_bond>& hbonds);
 
 private:
     std::filesystem::path pdb_file_;
@@ -244,4 +239,3 @@ private:
 
 } // namespace io
 } // namespace x3dna
-

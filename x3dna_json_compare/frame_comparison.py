@@ -26,8 +26,8 @@ def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
     """
     result = FrameComparison()
     
-    # Use provided reader or create new one
-    if pdb_reader is None:
+    # Use provided reader or create new one (skip if pdb_file is None)
+    if pdb_reader is None and pdb_file is not None:
         try:
             pdb_reader = PdbFileReader(pdb_file)
         except Exception:

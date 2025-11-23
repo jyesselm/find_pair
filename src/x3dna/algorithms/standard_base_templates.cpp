@@ -35,13 +35,13 @@ std::filesystem::path StandardBaseTemplates::find_template_path() {
             return config_path;
         }
     }
-    
+
     // Check local data/templates directory
     std::filesystem::path local_path = "data/templates";
     if (std::filesystem::exists(local_path)) {
         return local_path;
     }
-    
+
     // Return empty path if not found
     return std::filesystem::path();
 }
@@ -70,7 +70,8 @@ std::filesystem::path StandardBaseTemplates::get_template_path(core::ResidueType
 
 bool StandardBaseTemplates::template_exists(core::ResidueType type) const {
     std::filesystem::path template_file = get_template_path(type);
-    return std::filesystem::exists(template_file) && std::filesystem::is_regular_file(template_file);
+    return std::filesystem::exists(template_file) &&
+           std::filesystem::is_regular_file(template_file);
 }
 
 core::Structure StandardBaseTemplates::load_template(core::ResidueType type) {
@@ -79,21 +80,21 @@ core::Structure StandardBaseTemplates::load_template(core::ResidueType type) {
     if (it != cache_.end() && it->second) {
         return *(it->second);
     }
-    
+
     // Get template file path
     std::filesystem::path template_file = get_template_path(type);
-    
+
     if (!std::filesystem::exists(template_file)) {
         throw std::runtime_error("Template file not found: " + template_file.string());
     }
-    
+
     // Load template using PDB parser
     io::PdbParser parser;
     core::Structure template_structure = parser.parse_file(template_file);
-    
+
     // Cache the template
     cache_[type] = std::make_shared<core::Structure>(template_structure);
-    
+
     return template_structure;
 }
 
@@ -116,4 +117,3 @@ bool StandardBaseTemplates::file_exists(const std::filesystem::path& path) {
 
 } // namespace algorithms
 } // namespace x3dna
-

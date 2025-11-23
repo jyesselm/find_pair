@@ -1,7 +1,7 @@
 /**
  * @file test_json_generation_filtered.cpp
  * @brief Generate JSON files for specific PDBs only (problematic ones)
- * 
+ *
  * This is a simplified version that can be configured to process only
  * PDBs from a list file.
  */
@@ -34,7 +34,7 @@ protected:
         integration_test_base::SetUp();
         output_dir_ = std::filesystem::path("data/json");
         std::filesystem::create_directories(output_dir_);
-        
+
         // Load problematic PDBs from file
         load_problematic_pdbs();
     }
@@ -55,7 +55,7 @@ protected:
             if (line.empty() || line[0] == '#') {
                 continue;
             }
-            
+
             // Extract PDB ID (first word)
             std::istringstream iss(line);
             std::string pdb_id;
@@ -94,13 +94,13 @@ protected:
             pdb_atoms_record["type"] = "pdb_atoms";
             pdb_atoms_record["num_atoms"] = structure_json["num_atoms"];
             pdb_atoms_record["atoms"] = structure_json["atoms"];
-            
+
             output_json["calculations"].push_back(pdb_atoms_record);
 
             // Calculate frames and record frame calculations
             BaseFrameCalculator calculator("data/templates");
             calculator.calculate_all_frames(structure);
-            
+
             // Record frame calculations for each residue
             // Legacy residue_idx is 1-based and counts ALL residues (including amino acids, etc.)
             size_t residue_idx = 1;
@@ -109,29 +109,33 @@ protected:
                     // Only process nucleotide residues
                     if (residue.residue_type() != ResidueType::UNKNOWN &&
                         residue.residue_type() != ResidueType::AMINO_ACID) {
-                        
+
                         // Calculate frame directly (don't check has_reference_frame)
                         // Use calculate_frame_const to avoid modifying residue during iteration
-                        FrameCalculationResult frame_result = calculator.calculate_frame_const(residue);
-                        
+                        FrameCalculationResult frame_result =
+                            calculator.calculate_frame_const(residue);
+
                         if (frame_result.is_valid) {
                             // Record base_frame_calc
                             nlohmann::json base_frame_record;
                             base_frame_record["type"] = "base_frame_calc";
                             base_frame_record["residue_idx"] = residue_idx;
-                            base_frame_record["base_type"] = std::string(1, residue.one_letter_code());
+                            base_frame_record["base_type"] =
+                                std::string(1, residue.one_letter_code());
                             base_frame_record["residue_name"] = residue.name();
                             base_frame_record["chain_id"] = std::string(1, residue.chain_id());
                             base_frame_record["residue_seq"] = residue.seq_num();
                             if (residue.insertion() != ' ') {
-                                base_frame_record["insertion"] = std::string(1, residue.insertion());
+                                base_frame_record["insertion"] =
+                                    std::string(1, residue.insertion());
                             }
-                            base_frame_record["standard_template"] = frame_result.template_file.string();
+                            base_frame_record["standard_template"] =
+                                frame_result.template_file.string();
                             base_frame_record["rms_fit"] = frame_result.rms_fit;
                             base_frame_record["num_matched_atoms"] = frame_result.num_matched;
                             base_frame_record["matched_atoms"] = frame_result.matched_atoms;
                             output_json["calculations"].push_back(base_frame_record);
-                            
+
                             // Record ls_fitting
                             nlohmann::json ls_fitting_record;
                             ls_fitting_record["type"] = "ls_fitting";
@@ -140,11 +144,12 @@ protected:
                             ls_fitting_record["chain_id"] = std::string(1, residue.chain_id());
                             ls_fitting_record["residue_seq"] = residue.seq_num();
                             if (residue.insertion() != ' ') {
-                                ls_fitting_record["insertion"] = std::string(1, residue.insertion());
+                                ls_fitting_record["insertion"] =
+                                    std::string(1, residue.insertion());
                             }
                             ls_fitting_record["num_points"] = frame_result.num_matched;
                             ls_fitting_record["rms_fit"] = frame_result.rms_fit;
-                            
+
                             // Rotation matrix
                             nlohmann::json rot_array = nlohmann::json::array();
                             for (int i = 0; i < 3; ++i) {
@@ -155,17 +160,15 @@ protected:
                                 rot_array.push_back(row);
                             }
                             ls_fitting_record["rotation_matrix"] = rot_array;
-                            
+
                             // Translation
-                            ls_fitting_record["translation"] = nlohmann::json::array({
-                                frame_result.translation.x(),
-                                frame_result.translation.y(),
-                                frame_result.translation.z()
-                            });
+                            ls_fitting_record["translation"] = nlohmann::json::array(
+                                {frame_result.translation.x(), frame_result.translation.y(),
+                                 frame_result.translation.z()});
                             output_json["calculations"].push_back(ls_fitting_record);
                         }
                     }
-                    
+
                     // Count all residues (to match legacy residue_idx behavior)
                     residue_idx++;
                 }
@@ -189,7 +192,7 @@ protected:
 TEST_F(JsonGenerationFilteredTest, GenerateProblematicPdbs) {
     // Get all PDB/JSON pairs
     auto all_pairs = test_data_discovery::discover_pairs();
-    
+
     // Filter to only problematic PDBs
     std::vector<pdb_json_pair> filtered_pairs;
     for (const auto& pair : all_pairs) {
@@ -197,24 +200,24 @@ TEST_F(JsonGenerationFilteredTest, GenerateProblematicPdbs) {
             filtered_pairs.push_back(pair);
         }
     }
-    
-    std::cout << "Processing " << filtered_pairs.size() << " problematic PDBs out of " 
+
+    std::cout << "Processing " << filtered_pairs.size() << " problematic PDBs out of "
               << all_pairs.size() << " total" << std::endl;
-    
+
     size_t success_count = 0;
     size_t failure_count = 0;
-    
+
     // Process in parallel
     std::vector<std::thread> threads;
-    size_t num_threads = std::min(filtered_pairs.size(), 
-                                  static_cast<size_t>(std::thread::hardware_concurrency()));
-    
+    size_t num_threads =
+        std::min(filtered_pairs.size(), static_cast<size_t>(std::thread::hardware_concurrency()));
+
     std::mutex mtx;
     std::atomic<size_t> processed{0};
     std::atomic<size_t> success{0};
     std::atomic<size_t> fail{0};
     std::vector<std::string> failures;
-    
+
     auto process_batch = [&](size_t start_idx, size_t end_idx) {
         for (size_t i = start_idx; i < end_idx && i < filtered_pairs.size(); ++i) {
             try {
@@ -223,7 +226,8 @@ TEST_F(JsonGenerationFilteredTest, GenerateProblematicPdbs) {
                 size_t current = ++processed;
                 if (current % 10 == 0) {
                     std::lock_guard<std::mutex> lock(mtx);
-                    std::cout << "Progress: " << current << "/" << filtered_pairs.size() << std::endl;
+                    std::cout << "Progress: " << current << "/" << filtered_pairs.size()
+                              << std::endl;
                 }
             } catch (const std::exception& e) {
                 fail++;
@@ -235,7 +239,7 @@ TEST_F(JsonGenerationFilteredTest, GenerateProblematicPdbs) {
             }
         }
     };
-    
+
     // Divide work among threads
     size_t batch_size = (filtered_pairs.size() + num_threads - 1) / num_threads;
     for (size_t t = 0; t < num_threads; ++t) {
@@ -243,28 +247,27 @@ TEST_F(JsonGenerationFilteredTest, GenerateProblematicPdbs) {
         size_t end = start + batch_size;
         threads.emplace_back(process_batch, start, end);
     }
-    
+
     // Wait for all threads
     for (auto& thread : threads) {
         thread.join();
     }
-    
+
     success_count = success.load();
     failure_count = fail.load();
-    
+
     std::cout << "\nJSON Generation Summary:" << std::endl;
     std::cout << "  Success: " << success_count << std::endl;
     std::cout << "  Failures: " << failure_count << std::endl;
-    
+
     if (!failures.empty()) {
         std::cout << "\nFailures:" << std::endl;
         for (const auto& failure : failures) {
             std::cout << "  - " << failure << std::endl;
         }
     }
-    
+
     EXPECT_GT(success_count, 0) << "No JSON files were generated successfully";
 }
 
 } // namespace x3dna::test
-

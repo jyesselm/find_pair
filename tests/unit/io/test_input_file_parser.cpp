@@ -31,10 +31,14 @@ protected:
         file << "    2         # duplex\n";
         file << "   10         # number of base-pairs\n";
         file << "    1     1    # explicit bp numbering/hetero atoms\n";
-        file << "    1    20   0 #    1 | ....>A:...1_:[..C]C-----G[..G]:..20_:B<....   0.12   0.04   9.62   9.02  -4.32\n";
-        file << "    2    19   0 #    2 | ....>A:...2_:[.DC]C-----G[.DG]:..19_:B<....   0.18   0.06  10.72   8.93  -4.16\n";
-        file << "    3    18   0 #    3 | ....>A:...3_:[.DG]G-----C[.DC]:..18_:B<....   0.38   0.04  10.91   8.90  -3.99\n";
-        file << "##### Base-pair criteria used:     4.00     0.00    15.00     2.50    65.00     4.50     7.80 [ O N]\n";
+        file << "    1    20   0 #    1 | ....>A:...1_:[..C]C-----G[..G]:..20_:B<....   0.12   "
+                "0.04   9.62   9.02  -4.32\n";
+        file << "    2    19   0 #    2 | ....>A:...2_:[.DC]C-----G[.DG]:..19_:B<....   0.18   "
+                "0.06  10.72   8.93  -4.16\n";
+        file << "    3    18   0 #    3 | ....>A:...3_:[.DG]G-----C[.DC]:..18_:B<....   0.38   "
+                "0.04  10.91   8.90  -3.99\n";
+        file << "##### Base-pair criteria used:     4.00     0.00    15.00     2.50    65.00     "
+                "4.50     7.80 [ O N]\n";
         file << "##### Helix #1 (10): 1 - 10\n";
     }
 
@@ -44,7 +48,7 @@ protected:
 // File parsing tests
 TEST_F(InputFileParserTest, ParseFile) {
     InputData data = InputFileParser::parse(test_input_file_);
-    
+
     EXPECT_EQ(data.pdb_file, std::filesystem::path("data/pdb/test.pdb"));
     EXPECT_EQ(data.output_file, "test.out");
     EXPECT_EQ(data.duplex_number, 2);
@@ -56,14 +60,14 @@ TEST_F(InputFileParserTest, ParseFile) {
 // Base pair parsing tests
 TEST_F(InputFileParserTest, ParseBasePairs) {
     InputData data = InputFileParser::parse(test_input_file_);
-    
+
     // Check first base pair (converted from 1-based to 0-based)
     // Input line: "    1    20   0" means bp_num=1, res1=1, res2=20
     // After 0-based conversion: res1=0, res2=19
     if (!data.base_pairs.empty()) {
         // Verify we got at least one base pair
         EXPECT_GE(data.base_pairs.size(), 1);
-        
+
         // The actual values depend on how the line is parsed
         // Line format: bp_num res1 res2 flag
         // So "    1    20   0" should parse as bp_num=1, res1=1, res2=20
@@ -78,7 +82,7 @@ TEST_F(InputFileParserTest, ParseBasePairs) {
 // Criteria line parsing
 TEST_F(InputFileParserTest, ParseCriteriaLine) {
     InputData data = InputFileParser::parse(test_input_file_);
-    
+
     EXPECT_FALSE(data.criteria_line.empty());
     EXPECT_NE(data.criteria_line.find("Base-pair criteria"), std::string::npos);
 }
@@ -87,8 +91,7 @@ TEST_F(InputFileParserTest, ParseCriteriaLine) {
 TEST_F(InputFileParserTest, ParseStream) {
     std::ifstream file(test_input_file_);
     InputData data = InputFileParser::parse_stream(file);
-    
+
     EXPECT_EQ(data.duplex_number, 2);
     EXPECT_EQ(data.num_base_pairs, 10);
 }
-

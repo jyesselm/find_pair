@@ -41,7 +41,8 @@ ATOM      4  N1    G A   2       2.100   3.100   4.100  1.00 20.00           N
  * @brief Test parsing ATOM records
  */
 TEST(PdbParserTest, ParseAtomRecords) {
-    std::string pdb_content = R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
+    std::string pdb_content =
+        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
 ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N  
 )";
 
@@ -49,17 +50,17 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
     Structure structure = parser.parse_string(pdb_content);
 
     EXPECT_EQ(structure.num_atoms(), 2);
-    
+
     // Check first atom
     auto chain = structure.find_chain('A');
     ASSERT_TRUE(chain.has_value());
-    
+
     auto residues = chain.value().residues();
     ASSERT_EQ(residues.size(), 1);
-    
+
     auto atoms = residues[0].atoms();
     ASSERT_EQ(atoms.size(), 2);
-    
+
     EXPECT_EQ(atoms[0].name(), " C1'");
     EXPECT_EQ(atoms[0].residue_name(), "  C");
     EXPECT_EQ(atoms[0].chain_id(), 'A');
@@ -73,7 +74,8 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
  * @brief Test parsing HETATM records (when enabled)
  */
 TEST(PdbParserTest, ParseHetatmRecords) {
-    std::string pdb_content = R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
+    std::string pdb_content =
+        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
 HETATM    2  N1  SPM A  21      10.683  -8.783  22.839  1.00 40.13           N  
 )";
 
@@ -82,20 +84,21 @@ HETATM    2  N1  SPM A  21      10.683  -8.783  22.839  1.00 40.13           N
     Structure structure = parser.parse_string(pdb_content);
 
     EXPECT_EQ(structure.num_atoms(), 2);
-    
+
     // Check HETATM atom
     auto chain = structure.find_chain('A');
     ASSERT_TRUE(chain.has_value());
-    
+
     // Should have residues 1 and 21
     auto residues = chain.value().residues();
     ASSERT_GE(residues.size(), 2);
-    
+
     // Find residue 21
-    auto it = std::find_if(residues.begin(), residues.end(),
-                          [](const Residue& r) { return r.seq_num() == 21; });
+    auto it = std::find_if(residues.begin(), residues.end(), [](const Residue& r) {
+        return r.seq_num() == 21;
+    });
     ASSERT_NE(it, residues.end());
-    
+
     auto atoms = it->atoms();
     ASSERT_GE(atoms.size(), 1);
     EXPECT_EQ(atoms[0].record_type(), 'H');
@@ -105,7 +108,8 @@ HETATM    2  N1  SPM A  21      10.683  -8.783  22.839  1.00 40.13           N
  * @brief Test HETATM exclusion (default)
  */
 TEST(PdbParserTest, ExcludeHetatmByDefault) {
-    std::string pdb_content = R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
+    std::string pdb_content =
+        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
 HETATM    2  N1  SPM A  21      10.683  -8.783  22.839  1.00 40.13           N  
 )";
 
@@ -113,30 +117,32 @@ HETATM    2  N1  SPM A  21      10.683  -8.783  22.839  1.00 40.13           N
     // Default: include_hetatm = false
     Structure structure = parser.parse_string(pdb_content);
 
-    EXPECT_EQ(structure.num_atoms(), 1);  // Only ATOM, not HETATM
+    EXPECT_EQ(structure.num_atoms(), 1); // Only ATOM, not HETATM
 }
 
 /**
  * @brief Test water exclusion
  */
 TEST(PdbParserTest, ExcludeWaters) {
-    std::string pdb_content = R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
+    std::string pdb_content =
+        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
 HETATM    2  O   HOH A  22       5.000   6.000   7.000  1.00 30.00           O  
 )";
 
     PdbParser parser;
     parser.set_include_hetatm(true);
-    parser.set_include_waters(false);  // Exclude waters
+    parser.set_include_waters(false); // Exclude waters
     Structure structure = parser.parse_string(pdb_content);
 
-    EXPECT_EQ(structure.num_atoms(), 1);  // Only ATOM, not HOH
+    EXPECT_EQ(structure.num_atoms(), 1); // Only ATOM, not HOH
 }
 
 /**
  * @brief Test chain identification
  */
 TEST(PdbParserTest, ParseMultipleChains) {
-    std::string pdb_content = R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
+    std::string pdb_content =
+        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
 ATOM      2  C1'   G B   1       2.000   3.000   4.000  1.00 20.00           C  
 )";
 
@@ -152,7 +158,8 @@ ATOM      2  C1'   G B   1       2.000   3.000   4.000  1.00 20.00           C
  * @brief Test residue numbering
  */
 TEST(PdbParserTest, ParseResidueNumbering) {
-    std::string pdb_content = R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
+    std::string pdb_content =
+        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
 ATOM      2  C1'   G A   2       2.000   3.000   4.000  1.00 20.00           C  
 ATOM      3  C1'   A A   3       3.000   4.000   5.000  1.00 20.00           C  
 )";
@@ -162,7 +169,7 @@ ATOM      3  C1'   A A   3       3.000   4.000   5.000  1.00 20.00           C
 
     auto chain = structure.find_chain('A');
     ASSERT_TRUE(chain.has_value());
-    
+
     auto residues = chain.value().residues();
     EXPECT_EQ(residues.size(), 3);
     EXPECT_EQ(residues[0].seq_num(), 1);
@@ -175,7 +182,7 @@ ATOM      3  C1'   A A   3       3.000   4.000   5.000  1.00 20.00           C
  */
 TEST(PdbParserTest, ParseRealPdbFile) {
     std::filesystem::path pdb_file = "data/pdb/100D.pdb";
-    
+
     if (!std::filesystem::exists(pdb_file)) {
         GTEST_SKIP() << "PDB file not found: " << pdb_file;
     }
@@ -186,14 +193,14 @@ TEST(PdbParserTest, ParseRealPdbFile) {
     EXPECT_GT(structure.num_atoms(), 0);
     EXPECT_GT(structure.num_residues(), 0);
     EXPECT_GT(structure.num_chains(), 0);
-    
+
     // Verify we can find specific atoms
     auto chain = structure.find_chain('A');
     ASSERT_TRUE(chain.has_value());
-    
+
     auto residues = chain.value().residues();
     ASSERT_GT(residues.size(), 0);
-    
+
     // Check first residue has atoms
     auto atoms = residues[0].atoms();
     EXPECT_GT(atoms.size(), 0);
@@ -205,7 +212,7 @@ TEST(PdbParserTest, ParseRealPdbFile) {
 TEST(PdbParserTest, ErrorOnMissingFile) {
     PdbParser parser;
     std::filesystem::path missing_file = "data/pdb/nonexistent.pdb";
-    
+
     EXPECT_THROW(parser.parse_file(missing_file), PdbParser::ParseError);
 }
 
@@ -213,7 +220,8 @@ TEST(PdbParserTest, ErrorOnMissingFile) {
  * @brief Test error handling for malformed coordinates
  */
 TEST(PdbParserTest, ErrorOnMalformedCoordinates) {
-    std::string pdb_content = R"(ATOM      1  C1'   C A   1       invalid   2.000   3.000  1.00 20.00           C  
+    std::string pdb_content =
+        R"(ATOM      1  C1'   C A   1       invalid   2.000   3.000  1.00 20.00           C  
 )";
 
     PdbParser parser;
@@ -226,7 +234,8 @@ TEST(PdbParserTest, ErrorOnMalformedCoordinates) {
  * @brief Test atom name normalization
  */
 TEST(PdbParserTest, AtomNameNormalization) {
-    std::string pdb_content = R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
+    std::string pdb_content =
+        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
 ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N  
 )";
 
@@ -235,13 +244,13 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
 
     auto chain = structure.find_chain('A');
     ASSERT_TRUE(chain.has_value());
-    
+
     auto residues = chain.value().residues();
     ASSERT_EQ(residues.size(), 1);
-    
+
     auto atoms = residues[0].atoms();
     ASSERT_GE(atoms.size(), 2);
-    
+
     // Atom names should be normalized to 4 characters
     EXPECT_EQ(atoms[0].name().length(), 4);
     EXPECT_EQ(atoms[1].name().length(), 4);
@@ -251,7 +260,8 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
  * @brief Test residue name normalization
  */
 TEST(PdbParserTest, ResidueNameNormalization) {
-    std::string pdb_content = R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
+    std::string pdb_content =
+        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
 ATOM      2  C1'   G A   2       2.000   3.000   4.000  1.00 20.00           C  
 )";
 
@@ -260,10 +270,10 @@ ATOM      2  C1'   G A   2       2.000   3.000   4.000  1.00 20.00           C
 
     auto chain = structure.find_chain('A');
     ASSERT_TRUE(chain.has_value());
-    
+
     auto residues = chain.value().residues();
     ASSERT_EQ(residues.size(), 2);
-    
+
     // Residue names should be normalized to 3 characters
     EXPECT_EQ(residues[0].name().length(), 3);
     EXPECT_EQ(residues[1].name().length(), 3);
@@ -273,7 +283,8 @@ ATOM      2  C1'   G A   2       2.000   3.000   4.000  1.00 20.00           C
  * @brief Test parsing from stream
  */
 TEST(PdbParserTest, ParseFromStream) {
-    std::string pdb_content = R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
+    std::string pdb_content =
+        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
 ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N  
 )";
 
@@ -286,4 +297,3 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
 
 } // namespace io
 } // namespace x3dna::test
-

@@ -24,12 +24,12 @@ namespace core {
  * standard 3DNA convention.
  */
 struct BasePairStepParameters {
-    double shift = 0.0;  // x-displacement (Angstroms)
-    double slide = 0.0;  // y-displacement (Angstroms)
-    double rise = 0.0;    // z-displacement (Angstroms)
-    double tilt = 0.0;   // rotation about x-axis (degrees)
-    double roll = 0.0;    // rotation about y-axis (degrees)
-    double twist = 0.0;   // rotation about z-axis (degrees)
+    double shift = 0.0; // x-displacement (Angstroms)
+    double slide = 0.0; // y-displacement (Angstroms)
+    double rise = 0.0;  // z-displacement (Angstroms)
+    double tilt = 0.0;  // rotation about x-axis (degrees)
+    double roll = 0.0;  // rotation about y-axis (degrees)
+    double twist = 0.0; // rotation about z-axis (degrees)
 
     // Midstep reference frame (calculated during parameter computation)
     std::optional<ReferenceFrame> midstep_frame;
@@ -84,10 +84,8 @@ struct BasePairStepParameters {
     bool approximately_equal(const BasePairStepParameters& other, double tolerance = 1e-6) const {
         return std::abs(shift - other.shift) < tolerance &&
                std::abs(slide - other.slide) < tolerance &&
-               std::abs(rise - other.rise) < tolerance &&
-               std::abs(tilt - other.tilt) < tolerance &&
-               std::abs(roll - other.roll) < tolerance &&
-               std::abs(twist - other.twist) < tolerance;
+               std::abs(rise - other.rise) < tolerance && std::abs(tilt - other.tilt) < tolerance &&
+               std::abs(roll - other.roll) < tolerance && std::abs(twist - other.twist) < tolerance;
     }
 
     /**
@@ -126,8 +124,8 @@ struct BasePairStepParameters {
 
     /**
      * @brief Convert to legacy JSON format (bpstep_params record)
-     * Format: {"type": "bpstep_params", "bp_idx1": ..., "bp_idx2": ..., 
-     *          "params": {"Shift": ..., "Slide": ..., ...}, 
+     * Format: {"type": "bpstep_params", "bp_idx1": ..., "bp_idx2": ...,
+     *          "params": {"Shift": ..., "Slide": ..., ...},
      *          "mst_org": [...], "mst_orien": [[...], [...], [...]]}
      */
     nlohmann::json to_json_legacy(size_t bp_idx1 = 0, size_t bp_idx2 = 0) const {
@@ -180,18 +178,19 @@ struct BasePairStepParameters {
 
 /**
  * @struct HelicalParameters
- * @brief Helical parameters (6 parameters: x_displacement, y_displacement, rise, inclination, tip, twist)
+ * @brief Helical parameters (6 parameters: x_displacement, y_displacement, rise, inclination, tip,
+ * twist)
  *
  * These parameters describe the helical geometry of a base pair step in a nucleic
  * acid structure. The parameters are calculated using the standard 3DNA convention.
  */
 struct HelicalParameters {
-    double x_displacement = 0.0;  // x-displacement (Angstroms)
-    double y_displacement = 0.0;  // y-displacement (Angstroms)
-    double rise = 0.0;             // z-displacement (Angstroms)
-    double inclination = 0.0;      // inclination angle (degrees)
-    double tip = 0.0;              // tip angle (degrees)
-    double twist = 0.0;            // twist angle (degrees)
+    double x_displacement = 0.0; // x-displacement (Angstroms)
+    double y_displacement = 0.0; // y-displacement (Angstroms)
+    double rise = 0.0;           // z-displacement (Angstroms)
+    double inclination = 0.0;    // inclination angle (degrees)
+    double tip = 0.0;            // tip angle (degrees)
+    double twist = 0.0;          // twist angle (degrees)
 
     // Helical midstep reference frame (calculated during parameter computation)
     std::optional<ReferenceFrame> midstep_frame;
@@ -209,7 +208,8 @@ struct HelicalParameters {
 
     /**
      * @brief Convert parameters to array format
-     * @return Array of 6 parameters: [x_displacement, y_displacement, rise, inclination, tip, twist]
+     * @return Array of 6 parameters: [x_displacement, y_displacement, rise, inclination, tip,
+     * twist]
      */
     std::array<double, 6> as_array() const {
         return {x_displacement, y_displacement, rise, inclination, tip, twist};
@@ -217,7 +217,8 @@ struct HelicalParameters {
 
     /**
      * @brief Create from array format
-     * @param arr Array of 6 parameters: [x_displacement, y_displacement, rise, inclination, tip, twist]
+     * @param arr Array of 6 parameters: [x_displacement, y_displacement, rise, inclination, tip,
+     * twist]
      */
     static HelicalParameters from_array(const std::array<double, 6>& arr) {
         HelicalParameters params;
@@ -234,9 +235,9 @@ struct HelicalParameters {
      * @brief Equality comparison
      */
     bool operator==(const HelicalParameters& other) const {
-        return x_displacement == other.x_displacement &&
-               y_displacement == other.y_displacement && rise == other.rise &&
-               inclination == other.inclination && tip == other.tip && twist == other.twist;
+        return x_displacement == other.x_displacement && y_displacement == other.y_displacement &&
+               rise == other.rise && inclination == other.inclination && tip == other.tip &&
+               twist == other.twist;
     }
 
     /**
@@ -249,8 +250,7 @@ struct HelicalParameters {
                std::abs(y_displacement - other.y_displacement) < tolerance &&
                std::abs(rise - other.rise) < tolerance &&
                std::abs(inclination - other.inclination) < tolerance &&
-               std::abs(tip - other.tip) < tolerance &&
-               std::abs(twist - other.twist) < tolerance;
+               std::abs(tip - other.tip) < tolerance && std::abs(twist - other.twist) < tolerance;
     }
 
     /**
@@ -289,7 +289,7 @@ struct HelicalParameters {
 
     /**
      * @brief Convert to legacy JSON format (helical_params record)
-     * Format: {"type": "helical_params", "bp_idx1": ..., "bp_idx2": ..., 
+     * Format: {"type": "helical_params", "bp_idx1": ..., "bp_idx2": ...,
      *          "params": [x_displacement, y_displacement, rise, inclination, tip, twist],
      *          "mst_orgH": [...], "mst_orienH": [[...], [...], [...]]}
      */
@@ -338,4 +338,3 @@ struct HelicalParameters {
 
 } // namespace core
 } // namespace x3dna
-

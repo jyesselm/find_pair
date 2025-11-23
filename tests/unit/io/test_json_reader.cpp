@@ -32,13 +32,13 @@ protected:
         json["pdb_file"] = "test.pdb";
         json["pdb_name"] = "TEST";
         json["calculations"] = nlohmann::json::array();
-        
+
         // Add pdb_atoms record
         nlohmann::json atoms_record;
         atoms_record["type"] = "pdb_atoms";
         atoms_record["pdb_id"] = "TEST";
         atoms_record["num_atoms"] = 2;
-        
+
         nlohmann::json atoms_array = nlohmann::json::array();
         nlohmann::json atom1;
         atom1["atom_name"] = " C1'";
@@ -48,7 +48,7 @@ protected:
         atom1["residue_seq"] = 1;
         atom1["record_type"] = "A";
         atoms_array.push_back(atom1);
-        
+
         nlohmann::json atom2;
         atom2["atom_name"] = " N3 ";
         atom2["xyz"] = {4.0, 5.0, 6.0};
@@ -57,10 +57,10 @@ protected:
         atom2["residue_seq"] = 2;
         atom2["record_type"] = "A";
         atoms_array.push_back(atom2);
-        
+
         atoms_record["atoms"] = atoms_array;
         json["calculations"].push_back(atoms_record);
-        
+
         // Write to file
         std::ofstream file(test_json_file_);
         file << json.dump(2);
@@ -82,7 +82,7 @@ TEST_F(JsonReaderTest, FindRecordsByType) {
     std::ifstream file(test_json_file_);
     nlohmann::json json;
     file >> json;
-    
+
     auto records = JsonReader::find_records_by_type(json, "pdb_atoms");
     EXPECT_EQ(records.size(), 1);
     EXPECT_EQ(records[0]["type"], "pdb_atoms");
@@ -92,23 +92,22 @@ TEST_F(JsonReaderTest, FindRecordsByType) {
 TEST_F(JsonReaderTest, FindMultipleRecordTypes) {
     nlohmann::json json;
     json["calculations"] = nlohmann::json::array();
-    
+
     nlohmann::json record1;
     record1["type"] = "base_frame_calc";
     json["calculations"].push_back(record1);
-    
+
     nlohmann::json record2;
     record2["type"] = "ls_fitting";
     json["calculations"].push_back(record2);
-    
+
     nlohmann::json record3;
     record3["type"] = "base_frame_calc";
     json["calculations"].push_back(record3);
-    
+
     auto records = JsonReader::find_records_by_type(json, "base_frame_calc");
     EXPECT_EQ(records.size(), 2);
-    
+
     auto ls_records = JsonReader::find_records_by_type(json, "ls_fitting");
     EXPECT_EQ(ls_records.size(), 1);
 }
-

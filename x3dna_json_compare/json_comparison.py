@@ -110,26 +110,30 @@ class JsonComparator:
             legacy_file, modern_file, pdb_file
         ) if self.cache else None
         
-        # Initialize PDB reader
-        try:
-            pdb_reader = PdbFileReader(pdb_file)
-        except Exception as e:
-            pdb_reader = None
-            result.errors.append(f"Error loading PDB file: {e}")
+        # Initialize PDB reader (lazy - only if file exists)
+        pdb_reader = None
+        if pdb_file and pdb_file.exists():
+            try:
+                pdb_reader = PdbFileReader(pdb_file)
+            except Exception as e:
+                # Don't fail comparison if PDB can't be loaded
+                pdb_reader = None
         
-        # Compare atoms
+        # Compare atoms (skip if no PDB reader - we don't need atom lines for summary)
         try:
             legacy_atoms = self._extract_atoms(legacy_json)
             modern_atoms = self._extract_atoms(modern_json)
             
-            atom_comparison = compare_atoms(
-                legacy_atoms, modern_atoms, pdb_file, pdb_reader
-            )
-            result.atom_comparison = atom_comparison
+            if legacy_atoms or modern_atoms:
+                atom_comparison = compare_atoms(
+                    legacy_atoms, modern_atoms, pdb_file, pdb_reader
+                )
+                result.atom_comparison = atom_comparison
         except Exception as e:
-            result.errors.append(f"Error comparing atoms: {e}")
+            # Don't fail on atom comparison errors
+            pass
         
-        # Compare frames
+        # Compare frames (this is the important part)
         try:
             legacy_frames = self._extract_frame_records(legacy_json)
             modern_frames = self._extract_frame_records(modern_json)

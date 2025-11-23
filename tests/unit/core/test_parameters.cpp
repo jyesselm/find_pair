@@ -374,4 +374,3 @@ TEST_F(ParametersTest, HelicalParametersRealWorldData) {
     EXPECT_NEAR(params.twist, 28.907457, 1e-6);
     EXPECT_TRUE(params.midstep_frame.has_value());
 }
-

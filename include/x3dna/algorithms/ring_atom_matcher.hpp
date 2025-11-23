@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <optional>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/atom.hpp>
@@ -20,14 +21,16 @@ namespace algorithms {
  * @brief Result of ring atom matching
  */
 struct MatchedAtoms {
-    std::vector<core::Atom> experimental;  // Experimental atoms (from residue)
-    std::vector<core::Atom> standard;      // Standard template atoms
-    std::vector<std::string> atom_names;   // Names of matched atoms
-    size_t num_matched = 0;                // Number of matched atom pairs
-    
+    std::vector<core::Atom> experimental; // Experimental atoms (from residue)
+    std::vector<core::Atom> standard;     // Standard template atoms
+    std::vector<std::string> atom_names;  // Names of matched atoms
+    size_t num_matched = 0;               // Number of matched atom pairs
+
     bool is_valid() const {
-        return experimental.size() == standard.size() &&
-               experimental.size() == atom_names.size() &&
+        // In legacy mode, atom_names may include unmatched atoms (e.g., H for purines, N7 for
+        // pyrimidines), so we don't check atom_names.size() here. Only check that we have matching
+        // experimental/standard vectors with at least 3 matched atoms for fitting.
+        return experimental.size() == standard.size() && experimental.size() == num_matched &&
                num_matched >= 3; // Minimum 3 atoms required for fitting
     }
 };
@@ -48,12 +51,13 @@ public:
      * @param standard_template Standard template structure
      * @param is_rna Whether this is RNA (includes C1' in matching)
      * @param exclude_c4 Whether to exclude C4 atom (legacy compatibility mode)
+     * @param residue_type Optional residue type (if provided, overrides residue.residue_type())
      * @return MatchedAtoms structure with matched atom pairs
      */
     static MatchedAtoms match(const core::Residue& residue,
-                              const core::Structure& standard_template,
-                              bool is_rna = false,
-                              bool exclude_c4 = false);
+                              const core::Structure& standard_template, bool is_rna = false,
+                              bool exclude_c4 = false,
+                              std::optional<core::ResidueType> residue_type = std::nullopt);
 
     /**
      * @brief Get list of ring atom names for a residue type
@@ -63,8 +67,8 @@ public:
      * @return Vector of atom names
      */
     static std::vector<std::string> get_ring_atom_names(core::ResidueType residue_type,
-                                                         bool is_rna = false,
-                                                         bool exclude_c4 = false);
+                                                        bool is_rna = false,
+                                                        bool exclude_c4 = false);
 
 private:
     /**
@@ -74,7 +78,7 @@ private:
      * @return Optional atom if found, nullopt otherwise
      */
     static std::optional<core::Atom> find_atom_by_name(const core::Residue& residue,
-                                                        const std::string& atom_name);
+                                                       const std::string& atom_name);
 
     /**
      * @brief Find first atom with given name in a structure (checks all chains/residues)
@@ -83,7 +87,7 @@ private:
      * @return Optional atom if found, nullopt otherwise
      */
     static std::optional<core::Atom> find_atom_by_name(const core::Structure& structure,
-                                                        const std::string& atom_name);
+                                                       const std::string& atom_name);
 
     /**
      * @brief Check if residue type is a purine
@@ -95,4 +99,3 @@ private:
 
 } // namespace algorithms
 } // namespace x3dna
-

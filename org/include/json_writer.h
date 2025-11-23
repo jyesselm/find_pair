@@ -80,7 +80,8 @@ void json_writer_record_hbonds(long base_i, long base_j, long num_hbonds, char**
 void json_writer_record_base_frame_calc(long residue_idx, char base_type,
                                         const char* standard_template, double rms_fit,
                                         long num_matched, char** matched_atoms, long num_atoms,
-                                        const char* residue_name, char chain_id, long residue_seq, char insertion_code);
+                                        const char* residue_name, char chain_id, long residue_seq,
+                                        char insertion_code);
 
 /* Record pair validation results (from check_pair) */
 void json_writer_record_pair_validation(long base_i, long base_j, long is_valid, long bp_type_id,
@@ -96,8 +97,8 @@ void json_writer_record_hbond_list(long base_i, long base_j, long num_hbonds, ch
 /* Record base frame calculation with full details (alternative signature) */
 void json_writer_record_frame_calc(long residue_idx, char base_type, const char* template_file,
                                    double rms_fit, long num_matched_atoms, double** matched_std_xyz,
-                                   double** matched_exp_xyz,
-                                   const char* residue_name, char chain_id, long residue_seq, char insertion_code);
+                                   double** matched_exp_xyz, const char* residue_name,
+                                   char chain_id, long residue_seq, char insertion_code);
 
 /* Record ring atom indices for a residue */
 void json_writer_record_ring_atoms(long residue_idx, long* ring_atom_indices, long num_ring_atoms);
@@ -109,12 +110,12 @@ void json_writer_record_distance_checks(long base_i, long base_j, double dorg, d
 /* Record least squares fitting details */
 void json_writer_record_ls_fitting(long residue_idx, long num_points, double rms_fit,
                                    double** rotation_matrix, double* translation,
-                                   const char* residue_name, char chain_id, long residue_seq, char insertion_code);
+                                   const char* residue_name, char chain_id, long residue_seq,
+                                   char insertion_code);
 
 /* Record removed atoms during PDB parsing */
-void json_writer_record_removed_atom(const char* pdb_line, const char* reason,
-                                     long atom_serial, const char* atom_name,
-                                     const char* residue_name, char chain_id,
+void json_writer_record_removed_atom(const char* pdb_line, const char* reason, long atom_serial,
+                                     const char* atom_name, const char* residue_name, char chain_id,
                                      long residue_seq, double* xyz, long model_num);
 
 /* Record all removed atoms (call after parsing) */

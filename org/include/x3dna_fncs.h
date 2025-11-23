@@ -286,7 +286,7 @@ void print_pdb_title(char* pdbfile, char* chain_list, FILE* fp);
 long number_of_atoms(char* pdbfile, long hetatm, char* ALT_LIST);
 long read_pdb(char* pdbfile, long* AtomSNum, char** AtomName, char** ResName, char* ChainID,
               long* ResSeq, double** xyz, char** Miscs, long hetatm, char* ALT_LIST);
-long* get_pdb_line_numbers(void);  /* Get line numbers array (call after read_pdb) */
+long* get_pdb_line_numbers(void); /* Get line numbers array (call after read_pdb) */
 void free_pdb(long num, long* AtomSNum, char** AtomName, char** ResName, char* ChainID,
               long* ResSeq, double** xyz, char** Miscs);
 void reset_xyz(long num, double** xyz, char* fmt);
