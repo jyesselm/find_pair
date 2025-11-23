@@ -27,7 +27,7 @@ class StandardBaseTemplates {
 public:
     /**
      * @brief Default constructor
-     * 
+     *
      * Uses X3DNA_HOMEDIR environment variable if set, otherwise looks in
      * common installation paths or current directory.
      */
@@ -64,7 +64,9 @@ public:
      * @brief Get current template path
      * @return Current template base path
      */
-    std::filesystem::path template_path() const { return template_path_; }
+    std::filesystem::path template_path() const {
+        return template_path_;
+    }
 
     /**
      * @brief Clear cached templates (force reload on next access)
@@ -106,4 +108,3 @@ private:
 
 } // namespace algorithms
 } // namespace x3dna
-

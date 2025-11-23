@@ -77,25 +77,33 @@ public:
      * @brief Set whether to include HETATM records
      * @param value True to include HETATM, false to skip
      */
-    void set_include_hetatm(bool value) { include_hetatm_ = value; }
+    void set_include_hetatm(bool value) {
+        include_hetatm_ = value;
+    }
 
     /**
      * @brief Get whether HETATM records are included
      * @return True if HETATM records are included
      */
-    bool include_hetatm() const { return include_hetatm_; }
+    bool include_hetatm() const {
+        return include_hetatm_;
+    }
 
     /**
      * @brief Set whether to include water molecules (HOH)
      * @param value True to include waters, false to skip
      */
-    void set_include_waters(bool value) { include_waters_ = value; }
+    void set_include_waters(bool value) {
+        include_waters_ = value;
+    }
 
     /**
      * @brief Get whether water molecules are included
      * @return True if waters are included
      */
-    bool include_waters() const { return include_waters_; }
+    bool include_waters() const {
+        return include_waters_;
+    }
 
     /**
      * @brief Exception class for parsing errors
@@ -113,16 +121,18 @@ public:
          * @brief Get line number where error occurred
          * @return Line number (0 if unknown)
          */
-        size_t line_number() const { return line_number_; }
+        size_t line_number() const {
+            return line_number_;
+        }
 
     private:
         size_t line_number_;
     };
 
 private:
-    bool include_hetatm_ = false;  // Include HETATM records
-    bool include_waters_ = false;  // Include water molecules (HOH)
-    bool filter_by_occupancy_ = false;  // Filter atoms by occupancy (default: false, match legacy)
+    bool include_hetatm_ = false;      // Include HETATM records
+    bool include_waters_ = false;      // Include water molecules (HOH)
+    bool filter_by_occupancy_ = false; // Filter atoms by occupancy (default: false, match legacy)
 
     /**
      * @brief Parse a single ATOM or HETATM line
@@ -239,17 +249,21 @@ private:
     };
 
     atom_metadata parse_atom_metadata(const std::string& line, size_t line_number);
-    core::Atom build_atom_from_parsed_data(const std::string& line, size_t line_number, char atom_type);
+    core::Atom build_atom_from_parsed_data(const std::string& line, size_t line_number,
+                                           char atom_type);
     bool should_keep_atom(const core::Atom& atom) const;
     bool check_alt_loc_filter(char alt_loc) const;
-    void process_atom_record(const std::string& line, size_t line_number, int model_number,
-                             std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms);
-    void process_hetatm_record(const std::string& line, size_t line_number, int model_number,
-                               std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms);
+    void process_atom_record(
+        const std::string& line, size_t line_number, int model_number,
+        std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms);
+    void process_hetatm_record(
+        const std::string& line, size_t line_number, int model_number,
+        std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms);
     void handle_model_record(const std::string& line, int& current_model_number, bool& all_models);
     bool handle_end_record(const std::string& line, bool all_models);
-    core::Structure build_structure_from_residues(const std::string& pdb_id,
-                                                  const std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms) const;
+    core::Structure build_structure_from_residues(
+        const std::string& pdb_id,
+        const std::map<std::tuple<char, int, char>, std::vector<core::Atom>>& residue_atoms) const;
 
     // Helper functions for atom name normalization
     std::string apply_atom_name_formatting_rules(const std::string& name) const;
@@ -259,4 +273,3 @@ private:
 
 } // namespace io
 } // namespace x3dna
-

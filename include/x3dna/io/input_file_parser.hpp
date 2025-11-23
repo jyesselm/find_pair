@@ -18,14 +18,14 @@ namespace io {
  * @brief Data extracted from .inp file
  */
 struct InputData {
-    std::filesystem::path pdb_file;              // Path to PDB file
-    std::string output_file;                     // Output file name
-    int duplex_number = 2;                        // Duplex number (usually 2)
-    size_t num_base_pairs = 0;                   // Number of base pairs
-    int flags = 0;                                // Flags (explicit bp numbering, etc.)
-    std::vector<core::BasePair> base_pairs;      // Base pairs
-    std::string criteria_line;                   // Base-pair criteria line (if present)
-    std::vector<std::string> helix_info;         // Helix information lines
+    std::filesystem::path pdb_file;         // Path to PDB file
+    std::string output_file;                // Output file name
+    int duplex_number = 2;                  // Duplex number (usually 2)
+    size_t num_base_pairs = 0;              // Number of base pairs
+    int flags = 0;                          // Flags (explicit bp numbering, etc.)
+    std::vector<core::BasePair> base_pairs; // Base pairs
+    std::string criteria_line;              // Base-pair criteria line (if present)
+    std::vector<std::string> helix_info;    // Helix information lines
 };
 
 /**
@@ -56,9 +56,9 @@ private:
      * @param line_number Line number (for error reporting)
      * @return Base pair indices (residue_idx1, residue_idx2) - 0-based
      */
-    static std::pair<size_t, size_t> parse_base_pair_line(const std::string& line, size_t line_number);
+    static std::pair<size_t, size_t> parse_base_pair_line(const std::string& line,
+                                                          size_t line_number);
 };
 
 } // namespace io
 } // namespace x3dna
-

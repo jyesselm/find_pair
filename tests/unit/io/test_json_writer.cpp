@@ -56,7 +56,7 @@ TEST_F(JsonWriterTest, RecordPdbAtoms) {
 
     auto& json = writer_->json();
     EXPECT_TRUE(json.contains("calculations"));
-    
+
     // Find pdb_atoms record
     bool found = false;
     for (const auto& record : json["calculations"]) {
@@ -65,7 +65,7 @@ TEST_F(JsonWriterTest, RecordPdbAtoms) {
             EXPECT_EQ(record["num_atoms"], 1);
             EXPECT_TRUE(record.contains("atoms"));
             EXPECT_EQ(record["atoms"].size(), 1);
-            
+
             const auto& atom = record["atoms"][0];
             EXPECT_EQ(atom["atom_name"], " C1'");
             EXPECT_EQ(atom["residue_name"], "  C");
@@ -120,7 +120,7 @@ TEST_F(JsonWriterTest, RecordLsFitting) {
 TEST_F(JsonWriterTest, RecordBasePair) {
     BasePair bp(0, 1, BasePairType::WATSON_CRICK);
     bp.set_bp_type("CG");
-    
+
     Matrix3D rot = Matrix3D::identity();
     Vector3D org1(0, 0, 0);
     Vector3D org2(10, 0, 0);
@@ -148,8 +148,8 @@ TEST_F(JsonWriterTest, RecordBasePair) {
 // Removed atom recording
 TEST_F(JsonWriterTest, RecordRemovedAtom) {
     Vector3D xyz(1.0, 2.0, 3.0);
-    writer_->record_removed_atom("ATOM   1234  C1'  C   A   1 ", "line_too_short",
-                                 1234, " C1'", "  C", 'A', 1, &xyz, 0);
+    writer_->record_removed_atom("ATOM   1234  C1'  C   A   1 ", "line_too_short", 1234, " C1'",
+                                 "  C", 'A', 1, &xyz, 0);
 
     auto& json = writer_->json();
     bool found = false;
@@ -167,18 +167,17 @@ TEST_F(JsonWriterTest, RecordRemovedAtom) {
 // File writing
 TEST_F(JsonWriterTest, WriteToFile) {
     writer_->record_base_frame_calc(0, 'A', "Atomic_A.pdb", 0.001, {" N3 "});
-    
+
     std::filesystem::path output_file = "test_output.json";
     writer_->write_to_file(output_file);
-    
+
     EXPECT_TRUE(std::filesystem::exists(output_file));
-    
+
     // Read back and verify
     std::ifstream file(output_file);
     nlohmann::json read_json;
     file >> read_json;
-    
+
     EXPECT_EQ(read_json["pdb_name"], "test");
     EXPECT_TRUE(read_json.contains("calculations"));
 }
-

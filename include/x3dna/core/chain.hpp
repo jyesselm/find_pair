@@ -31,11 +31,19 @@ public:
     explicit Chain(char id) : chain_id_(id) {}
 
     // Getters
-    char chain_id() const { return chain_id_; }
-    const std::vector<Residue>& residues() const { return residues_; }
-    std::vector<Residue>& residues() { return residues_; }
-    size_t num_residues() const { return residues_.size(); }
-    
+    char chain_id() const {
+        return chain_id_;
+    }
+    const std::vector<Residue>& residues() const {
+        return residues_;
+    }
+    std::vector<Residue>& residues() {
+        return residues_;
+    }
+    size_t num_residues() const {
+        return residues_.size();
+    }
+
     /**
      * @brief Get total number of atoms in this chain
      */
@@ -48,7 +56,9 @@ public:
     }
 
     // Setters
-    void set_chain_id(char id) { chain_id_ = id; }
+    void set_chain_id(char id) {
+        chain_id_ = id;
+    }
 
     /**
      * @brief Add a residue to this chain
@@ -120,15 +130,15 @@ public:
     static Chain from_json_legacy(const nlohmann::json& j) {
         std::string chain_str = j.value("chain_id", "");
         char chain_id = chain_str.empty() ? '\0' : chain_str[0];
-        
+
         Chain chain(chain_id);
-        
+
         if (j.contains("residues") && j["residues"].is_array()) {
             for (const auto& residue_json : j["residues"]) {
                 chain.add_residue(Residue::from_json_legacy(residue_json));
             }
         }
-        
+
         return chain;
     }
 
@@ -151,15 +161,15 @@ public:
     static Chain from_json(const nlohmann::json& j) {
         std::string chain_str = j.value("chain_id", "");
         char chain_id = chain_str.empty() ? '\0' : chain_str[0];
-        
+
         Chain chain(chain_id);
-        
+
         if (j.contains("residues") && j["residues"].is_array()) {
             for (const auto& residue_json : j["residues"]) {
                 chain.add_residue(Residue::from_json(residue_json));
             }
         }
-        
+
         return chain;
     }
 
@@ -170,4 +180,3 @@ private:
 
 } // namespace core
 } // namespace x3dna
-

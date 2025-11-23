@@ -22,15 +22,15 @@ protected:
         structure_ = Structure("TEST");
         Chain chain('A');
         Residue residue("  C", 1, 'A');
-        
+
         Atom atom(" C1'", Vector3D(1.234, 5.678, 9.012), "  C", 'A', 1);
         atom.set_occupancy(1.0);
         atom.set_b_factor(20.5);
         residue.add_atom(atom);
-        
+
         chain.add_residue(residue);
         structure_.add_chain(chain);
-        
+
         output_file_ = "test_output.pdb";
     }
 
@@ -48,14 +48,14 @@ protected:
 TEST_F(PdbWriterTest, WriteFile) {
     PdbWriter writer;
     writer.write_file(structure_, output_file_);
-    
+
     EXPECT_TRUE(std::filesystem::exists(output_file_));
-    
+
     // Read back and verify format
     std::ifstream file(output_file_);
     std::string line;
     bool found_atom = false;
-    
+
     while (std::getline(file, line)) {
         if (line.substr(0, 4) == "ATOM") {
             found_atom = true;
@@ -67,7 +67,7 @@ TEST_F(PdbWriterTest, WriteFile) {
             break;
         }
     }
-    
+
     EXPECT_TRUE(found_atom);
 }
 
@@ -76,7 +76,7 @@ TEST_F(PdbWriterTest, WriteStream) {
     PdbWriter writer;
     std::ostringstream stream;
     writer.write_stream(structure_, stream);
-    
+
     std::string output = stream.str();
     EXPECT_FALSE(output.empty());
     EXPECT_NE(output.find("ATOM"), std::string::npos);
@@ -87,7 +87,7 @@ TEST_F(PdbWriterTest, WriteStream) {
 TEST_F(PdbWriterTest, ToString) {
     PdbWriter writer;
     std::string pdb_string = writer.to_string(structure_);
-    
+
     EXPECT_FALSE(pdb_string.empty());
     EXPECT_NE(pdb_string.find("ATOM"), std::string::npos);
 }
@@ -96,12 +96,11 @@ TEST_F(PdbWriterTest, ToString) {
 TEST_F(PdbWriterTest, RoundTrip) {
     PdbWriter writer;
     writer.write_file(structure_, output_file_);
-    
+
     // Parse back
     PdbParser parser;
     Structure parsed = parser.parse_file(output_file_);
-    
+
     EXPECT_EQ(parsed.num_atoms(), structure_.num_atoms());
     EXPECT_EQ(parsed.num_residues(), structure_.num_residues());
 }
-

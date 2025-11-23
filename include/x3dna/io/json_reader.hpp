@@ -62,7 +62,8 @@ public:
      * @param json JSON object
      * @return Vector of reference frames with residue indices
      */
-    static std::vector<std::pair<size_t, core::ReferenceFrame>> read_ref_frames(const nlohmann::json& json);
+    static std::vector<std::pair<size_t, core::ReferenceFrame>>
+    read_ref_frames(const nlohmann::json& json);
 
     /**
      * @brief Find calculation records by type
@@ -71,7 +72,7 @@ public:
      * @return Vector of matching records
      */
     static std::vector<nlohmann::json> find_records_by_type(const nlohmann::json& json,
-                                                           const std::string& record_type);
+                                                            const std::string& record_type);
 
 private:
     /**
@@ -84,4 +85,3 @@ private:
 
 } // namespace io
 } // namespace x3dna
-

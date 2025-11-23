@@ -52,13 +52,25 @@ public:
         : name_(name), seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {}
 
     // Getters
-    const std::string& name() const { return name_; }
-    int seq_num() const { return seq_num_; }
-    char chain_id() const { return chain_id_; }
-    char insertion() const { return insertion_; }
-    const std::vector<Atom>& atoms() const { return atoms_; }
-    size_t num_atoms() const { return atoms_.size(); }
-    
+    const std::string& name() const {
+        return name_;
+    }
+    int seq_num() const {
+        return seq_num_;
+    }
+    char chain_id() const {
+        return chain_id_;
+    }
+    char insertion() const {
+        return insertion_;
+    }
+    const std::vector<Atom>& atoms() const {
+        return atoms_;
+    }
+    size_t num_atoms() const {
+        return atoms_.size();
+    }
+
     /**
      * @brief Get reference frame (if set)
      */
@@ -67,11 +79,19 @@ public:
     }
 
     // Setters
-    void set_name(const std::string& name) { name_ = name; }
-    void set_seq_num(int seq_num) { seq_num_ = seq_num; }
-    void set_chain_id(char chain_id) { chain_id_ = chain_id; }
-    void set_insertion(char insertion) { insertion_ = insertion; }
-    
+    void set_name(const std::string& name) {
+        name_ = name;
+    }
+    void set_seq_num(int seq_num) {
+        seq_num_ = seq_num;
+    }
+    void set_chain_id(char chain_id) {
+        chain_id_ = chain_id;
+    }
+    void set_insertion(char insertion) {
+        insertion_ = insertion;
+    }
+
     /**
      * @brief Set reference frame for this residue
      */
@@ -117,7 +137,7 @@ public:
     /**
      * @brief Get one-letter code for this residue
      * @return One-letter code (A, C, G, T, U for nucleotides)
-     * 
+     *
      * Recognizes standard nucleotide names:
      * - Single letter: A, C, G, T, U
      * - Three letter: ADE, CYT, GUA, THY, URA
@@ -125,14 +145,19 @@ public:
      */
     char one_letter_code() const {
         std::string trimmed = trim_name();
-        
+
         // Single letter codes
-        if (trimmed == "A" || trimmed == "ADE" || trimmed == "DA") return 'A';
-        if (trimmed == "C" || trimmed == "CYT" || trimmed == "DC") return 'C';
-        if (trimmed == "G" || trimmed == "GUA" || trimmed == "DG") return 'G';
-        if (trimmed == "T" || trimmed == "THY" || trimmed == "DT") return 'T';
-        if (trimmed == "U" || trimmed == "URA" || trimmed == "DU") return 'U';
-        
+        if (trimmed == "A" || trimmed == "ADE" || trimmed == "DA")
+            return 'A';
+        if (trimmed == "C" || trimmed == "CYT" || trimmed == "DC")
+            return 'C';
+        if (trimmed == "G" || trimmed == "GUA" || trimmed == "DG")
+            return 'G';
+        if (trimmed == "T" || trimmed == "THY" || trimmed == "DT")
+            return 'T';
+        if (trimmed == "U" || trimmed == "URA" || trimmed == "DU")
+            return 'U';
+
         return '?';
     }
 
@@ -152,12 +177,12 @@ public:
     int ry_classification() const {
         char code = one_letter_code();
         if (code == 'A' || code == 'G') {
-            return 1;  // Purine
+            return 1; // Purine
         }
         if (code == 'C' || code == 'T' || code == 'U') {
-            return 0;  // Pyrimidine
+            return 0; // Pyrimidine
         }
-        return -1;  // Not a nucleotide
+        return -1; // Not a nucleotide
     }
 
     /**
@@ -165,11 +190,16 @@ public:
      */
     ResidueType residue_type() const {
         char code = one_letter_code();
-        if (code == 'A') return ResidueType::ADENINE;
-        if (code == 'C') return ResidueType::CYTOSINE;
-        if (code == 'G') return ResidueType::GUANINE;
-        if (code == 'T') return ResidueType::THYMINE;
-        if (code == 'U') return ResidueType::URACIL;
+        if (code == 'A')
+            return ResidueType::ADENINE;
+        if (code == 'C')
+            return ResidueType::CYTOSINE;
+        if (code == 'G')
+            return ResidueType::GUANINE;
+        if (code == 'T')
+            return ResidueType::THYMINE;
+        if (code == 'U')
+            return ResidueType::URACIL;
         if (code == '?') {
             // Could be amino acid or unknown
             return ResidueType::UNKNOWN;
@@ -205,19 +235,19 @@ public:
         int seq_num = j.value("residue_seq", 0);
         std::string chain_str = j.value("chain_id", "");
         char chain_id = chain_str.empty() ? '\0' : chain_str[0];
-        
+
         Residue residue(name, seq_num, chain_id);
-        
+
         if (j.contains("atoms") && j["atoms"].is_array()) {
             for (const auto& atom_json : j["atoms"]) {
                 residue.add_atom(Atom::from_json_legacy(atom_json));
             }
         }
-        
+
         if (j.contains("reference_frame")) {
             residue.set_reference_frame(ReferenceFrame::from_json_legacy(j["reference_frame"]));
         }
-        
+
         return residue;
     }
 
@@ -247,29 +277,29 @@ public:
         int seq_num = j.value("seq_num", 0);
         std::string chain_str = j.value("chain_id", "");
         char chain_id = chain_str.empty() ? '\0' : chain_str[0];
-        
+
         Residue residue(name, seq_num, chain_id);
-        
+
         if (j.contains("atoms") && j["atoms"].is_array()) {
             for (const auto& atom_json : j["atoms"]) {
                 residue.add_atom(Atom::from_json(atom_json));
             }
         }
-        
+
         if (j.contains("reference_frame")) {
             residue.set_reference_frame(ReferenceFrame::from_json(j["reference_frame"]));
         }
-        
+
         return residue;
     }
 
 private:
-    std::string name_;              // Residue name (e.g., "  C", "  G")
-    int seq_num_ = 0;               // Sequence number
-    char chain_id_ = '\0';          // Chain identifier
-    char insertion_ = ' ';          // Insertion code (PDB column 27)
-    std::vector<Atom> atoms_;       // Atoms in this residue
-    std::optional<ReferenceFrame> reference_frame_;  // Reference frame (if calculated)
+    std::string name_;                              // Residue name (e.g., "  C", "  G")
+    int seq_num_ = 0;                               // Sequence number
+    char chain_id_ = '\0';                          // Chain identifier
+    char insertion_ = ' ';                          // Insertion code (PDB column 27)
+    std::vector<Atom> atoms_;                       // Atoms in this residue
+    std::optional<ReferenceFrame> reference_frame_; // Reference frame (if calculated)
 
     /**
      * @brief Trim whitespace from residue name
@@ -284,4 +314,3 @@ private:
 
 } // namespace core
 } // namespace x3dna
-

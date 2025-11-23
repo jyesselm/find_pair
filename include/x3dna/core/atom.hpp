@@ -205,7 +205,7 @@ public:
         if (insertion_ != ' ' && insertion_ != '\0') {
             j["insertion"] = std::string(1, insertion_);
         }
-        
+
         // Add debug information (always include for debugging)
         j["occupancy"] = occupancy_;
         if (atom_serial_ > 0) {
@@ -217,7 +217,7 @@ public:
         if (line_number_ > 0) {
             j["line_number"] = line_number_;
         }
-        if (b_factor_ != 0.0) {  // Include if non-zero
+        if (b_factor_ != 0.0) { // Include if non-zero
             j["b_factor"] = b_factor_;
         }
         if (!element_.empty()) {
@@ -229,7 +229,7 @@ public:
         if (!original_residue_name_.empty() && original_residue_name_ != residue_name_) {
             j["original_residue_name"] = original_residue_name_;
         }
-        
+
         return j;
     }
 
@@ -313,21 +313,21 @@ public:
     }
 
 private:
-    std::string name_;            // Atom name (e.g., " C1'", " N3 ")
-    geometry::Vector3D position_; // 3D coordinates
-    std::string residue_name_;    // Residue name (e.g., "  C", "  G")
-    char chain_id_ = '\0';        // Chain identifier
-    int residue_seq_ = 0;         // Residue sequence number
-    char record_type_ = 'A';      // PDB record type ('A' = ATOM, 'H' = HETATM)
-    char alt_loc_ = ' ';           // Alternate location indicator (PDB column 17)
-    char insertion_ = ' ';        // Insertion code (PDB column 27)
-    double occupancy_ = 1.0;      // Occupancy (PDB columns 55-60, default 1.0)
-    int atom_serial_ = 0;          // Atom serial number (PDB column 7-11)
-    int model_number_ = 0;        // Model number (from MODEL record, 0 if none)
-    size_t line_number_ = 0;       // Line number in PDB file (for debugging)
-    double b_factor_ = 0.0;        // B-factor/temperature factor (PDB column 61-66)
-    std::string element_;          // Element symbol (PDB column 77-78)
-    std::string original_atom_name_;   // Original atom name before normalization
+    std::string name_;                  // Atom name (e.g., " C1'", " N3 ")
+    geometry::Vector3D position_;       // 3D coordinates
+    std::string residue_name_;          // Residue name (e.g., "  C", "  G")
+    char chain_id_ = '\0';              // Chain identifier
+    int residue_seq_ = 0;               // Residue sequence number
+    char record_type_ = 'A';            // PDB record type ('A' = ATOM, 'H' = HETATM)
+    char alt_loc_ = ' ';                // Alternate location indicator (PDB column 17)
+    char insertion_ = ' ';              // Insertion code (PDB column 27)
+    double occupancy_ = 1.0;            // Occupancy (PDB columns 55-60, default 1.0)
+    int atom_serial_ = 0;               // Atom serial number (PDB column 7-11)
+    int model_number_ = 0;              // Model number (from MODEL record, 0 if none)
+    size_t line_number_ = 0;            // Line number in PDB file (for debugging)
+    double b_factor_ = 0.0;             // B-factor/temperature factor (PDB column 61-66)
+    std::string element_;               // Element symbol (PDB column 77-78)
+    std::string original_atom_name_;    // Original atom name before normalization
     std::string original_residue_name_; // Original residue name before normalization
 
     /**
