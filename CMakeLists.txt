@@ -63,6 +63,10 @@ if(BUILD_EXAMPLES)
     endif()
 endif()
 
+# Tools
+add_executable(generate_modern_json tools/generate_modern_json.cpp)
+target_link_libraries(generate_modern_json PRIVATE x3dna)
+
 # Documentation
 if(BUILD_DOCS)
     find_package(Doxygen)

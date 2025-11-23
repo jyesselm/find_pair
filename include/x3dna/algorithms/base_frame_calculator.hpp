@@ -94,10 +94,23 @@ public:
      * @return True if processing RNA
      */
     bool is_rna() const { return is_rna_; }
+    
+    /**
+     * @brief Set legacy compatibility mode (excludes C4 atom from matching)
+     * @param legacy_mode True to exclude C4 (matches legacy behavior), false to include C4 (default, correct behavior)
+     */
+    void set_legacy_mode(bool legacy_mode) { legacy_mode_ = legacy_mode; }
+    
+    /**
+     * @brief Get legacy compatibility mode
+     * @return True if legacy mode is enabled (C4 excluded)
+     */
+    bool legacy_mode() const { return legacy_mode_; }
 
 private:
     mutable StandardBaseTemplates templates_;  // Mutable for caching (doesn't affect logical constness)
     bool is_rna_ = false;
+    bool legacy_mode_ = false;  // If true, exclude C4 atom to match legacy behavior
     
     /**
      * @brief Calculate frame for a single residue (implementation)

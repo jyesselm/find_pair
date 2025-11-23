@@ -76,11 +76,19 @@ public:
      * @param standard_template Path to standard template file
      * @param rms_fit RMS fit value
      * @param matched_atoms Vector of matched atom names
+     * @param residue_name Residue name (e.g., "  G")
+     * @param chain_id Chain identifier
+     * @param residue_seq Residue sequence number
+     * @param insertion Insertion code (default ' ')
      */
     void record_base_frame_calc(size_t residue_idx, char base_type,
                                 const std::filesystem::path& standard_template,
                                 double rms_fit,
-                                const std::vector<std::string>& matched_atoms);
+                                const std::vector<std::string>& matched_atoms,
+                                const std::string& residue_name = "",
+                                char chain_id = ' ',
+                                int residue_seq = 0,
+                                char insertion = ' ');
 
     /**
      * @brief Record least-squares fitting details
@@ -88,11 +96,19 @@ public:
      * @param num_points Number of points used in fitting
      * @param rms_fit RMS fit value
      * @param rotation_matrix 3x3 rotation matrix
-     * @param translation 3D translation vector
+     * @param translation Translation vector
+     * @param residue_name Residue name (e.g., "  G")
+     * @param chain_id Chain identifier
+     * @param residue_seq Residue sequence number
+     * @param insertion Insertion code (default ' ')
      */
     void record_ls_fitting(size_t residue_idx, size_t num_points, double rms_fit,
                           const geometry::Matrix3D& rotation_matrix,
-                          const geometry::Vector3D& translation);
+                          const geometry::Vector3D& translation,
+                          const std::string& residue_name = "",
+                          char chain_id = ' ',
+                          int residue_seq = 0,
+                          char insertion = ' ');
 
     /**
      * @brief Record frame calculation with matched coordinates
@@ -102,12 +118,20 @@ public:
      * @param rms_fit RMS fit value
      * @param matched_std_xyz Standard template coordinates (num_matched x 3)
      * @param matched_exp_xyz Experimental coordinates (num_matched x 3)
+     * @param residue_name Residue name (e.g., "  G")
+     * @param chain_id Chain identifier
+     * @param residue_seq Residue sequence number
+     * @param insertion Insertion code (default ' ')
      */
     void record_frame_calc(size_t residue_idx, char base_type,
                            const std::filesystem::path& template_file,
                            double rms_fit,
                            const std::vector<geometry::Vector3D>& matched_std_xyz,
-                           const std::vector<geometry::Vector3D>& matched_exp_xyz);
+                           const std::vector<geometry::Vector3D>& matched_exp_xyz,
+                           const std::string& residue_name = "",
+                           char chain_id = ' ',
+                           int residue_seq = 0,
+                           char insertion = ' ');
 
     /**
      * @brief Record base pair information

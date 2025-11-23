@@ -61,19 +61,32 @@ def regenerate_legacy_json(pdb_id, executable_path, project_root):
         )
         
         # Check if JSON file was created
-        if json_file.exists():
-            return {
-                'pdb_id': pdb_id,
-                'status': 'success',
-                'message': 'JSON regenerated successfully'
-            }
-        else:
+        if not json_file.exists():
             return {
                 'pdb_id': pdb_id,
                 'status': 'error',
                 'message': f'JSON file not created: {json_file}',
                 'stderr': result.stderr[-500:] if result.stderr else ''
             }
+        
+        # Validate the generated JSON using reusable validator
+        from x3dna_json_compare import JsonValidator
+        
+        is_valid, error_msg, was_removed = JsonValidator.validate_and_clean(json_file, remove_invalid=True)
+        
+        if not is_valid:
+            return {
+                'pdb_id': pdb_id,
+                'status': 'error',
+                'message': f'Invalid JSON - removed: {error_msg}',
+                'removed': was_removed
+            }
+        
+        return {
+            'pdb_id': pdb_id,
+            'status': 'success',
+            'message': 'JSON regenerated and validated successfully'
+        }
     
     except subprocess.TimeoutExpired:
         return {

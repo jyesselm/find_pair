@@ -8,9 +8,11 @@ This script:
 3. Removes those files (with optional dry-run mode)
 """
 
-import os
 import sys
 from pathlib import Path
+
+# Import reusable validation from lib
+from x3dna_json_compare import JsonValidator
 
 
 def find_empty_json_files(directory, recursive=True):
@@ -43,11 +45,10 @@ def find_empty_json_files(directory, recursive=True):
     empty_files = []
     
     for json_file in json_files:
-        try:
-            if os.path.getsize(json_file) == 0:
-                empty_files.append(json_file)
-        except OSError as e:
-            print(f"Warning: Could not check size of {json_file}: {e}")
+        # Use JsonValidator to check if file is empty
+        is_valid, error_msg = JsonValidator.validate_file(json_file)
+        if not is_valid and ("empty" in error_msg.lower() or "does not exist" in error_msg.lower()):
+            empty_files.append(json_file)
     
     return empty_files
 

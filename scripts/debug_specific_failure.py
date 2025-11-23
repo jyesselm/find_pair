@@ -6,6 +6,9 @@ Debug a specific failing residue to understand the atom matching difference.
 import json
 import sys
 import os
+from pathlib import Path
+
+from x3dna_json_compare import PdbFileReader
 
 def main():
     if len(sys.argv) < 4:
@@ -68,27 +71,18 @@ def main():
     print(f"Max trans diff: {failure['differences']['max_trans_diff']:.6f}")
     
     # Check if we can find the PDB and inspect the residue
-    pdb_file = f"data/pdb/{pdb_name}.pdb"
-    if os.path.exists(pdb_file):
+    pdb_file = Path(f"data/pdb/{pdb_name}.pdb")
+    if pdb_file.exists():
         print(f"\n=== Inspecting PDB file: {pdb_file} ===")
         print(f"Looking for residue {chain_id}:{seq_num} {failure['residue_name']}\n")
         
-        with open(pdb_file) as f:
-            lines = f.readlines()
+        # Use PdbFileReader from lib
+        reader = PdbFileReader(pdb_file)
+        residue_atoms = reader.get_residue_atoms(chain_id, seq_num, ' ')
         
         atom_lines = []
-        for line in lines:
-            if line.startswith(('ATOM', 'HETATM')):
-                line_chain = line[21] if len(line) > 21 else ' '
-                try:
-                    line_seq = int(line[22:26].strip())
-                except:
-                    continue
-                line_resname = line[17:20].strip()
-                atom_name = line[12:16]
-                
-                if line_chain == chain_id and line_seq == seq_num:
-                    atom_lines.append((atom_name, line.strip()))
+        for atom_name, line_num, line in residue_atoms:
+            atom_lines.append((atom_name, line))
         
         print(f"Found {len(atom_lines)} atoms in residue:")
         # Sort by atom name
@@ -116,52 +110,34 @@ def main():
             print(f"  ✗ {ring_atom} (missing)")
     
     # Print actual PDB lines for matched atoms
-    print("\n=== PDB Lines for Matched Atoms ===")
-    print("\nOur matched atoms (with PDB lines):")
-    our_atoms = set(failure['our']['matched_atoms'])
-    for atom_name in failure['our']['matched_atoms']:
-        # Find the PDB line for this atom
-        found = False
-        for aname, line in atom_lines:
-            if aname == atom_name:
-                # Get line number
-                line_num = None
-                for i, l in enumerate(lines, 1):
-                    if l.strip() == line:
-                        line_num = i
-                        break
-                if line_num:
-                    print(f"  {atom_name}: Line {line_num}")
-                    print(f"    {line}")
-                else:
-                    print(f"  {atom_name}: {line}")
-                found = True
-                break
-        if not found:
-            print(f"  {atom_name}: NOT FOUND IN PDB")
-    
-    print("\nLegacy matched atoms (with PDB lines):")
-    leg_atoms = set(failure['legacy']['matched_atoms'])
-    for atom_name in failure['legacy']['matched_atoms']:
-        # Find the PDB line for this atom
-        found = False
-        for aname, line in atom_lines:
-            if aname == atom_name:
-                # Get line number
-                line_num = None
-                for i, l in enumerate(lines, 1):
-                    if l.strip() == line:
-                        line_num = i
-                        break
-                if line_num:
-                    print(f"  {atom_name}: Line {line_num}")
-                    print(f"    {line}")
-                else:
-                    print(f"  {atom_name}: {line}")
-                found = True
-                break
-        if not found:
-            print(f"  {atom_name}: NOT FOUND IN PDB")
+    if pdb_file.exists():
+        print("\n=== PDB Lines for Matched Atoms ===")
+        print("\nOur matched atoms (with PDB lines):")
+        reader = PdbFileReader(pdb_file)
+        for atom_name in failure['our']['matched_atoms']:
+            # Get PDB line for this atom
+            atom_lines_dict = reader.get_atom_lines_by_names(
+                chain_id, seq_num, ' ', [atom_name]
+            )
+            if atom_name in atom_lines_dict:
+                line_num, line = atom_lines_dict[atom_name]
+                print(f"  {atom_name}: Line {line_num}")
+                print(f"    {line}")
+            else:
+                print(f"  {atom_name}: NOT FOUND IN PDB")
+        
+        print("\nLegacy matched atoms (with PDB lines):")
+        for atom_name in failure['legacy']['matched_atoms']:
+            # Get PDB line for this atom
+            atom_lines_dict = reader.get_atom_lines_by_names(
+                chain_id, seq_num, ' ', [atom_name]
+            )
+            if atom_name in atom_lines_dict:
+                line_num, line = atom_lines_dict[atom_name]
+                print(f"  {atom_name}: Line {line_num}")
+                print(f"    {line}")
+            else:
+                print(f"  {atom_name}: NOT FOUND IN PDB")
 
 if __name__ == '__main__':
     main()
