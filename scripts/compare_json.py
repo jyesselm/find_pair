@@ -39,6 +39,7 @@ import json
 import sys
 import click
 import subprocess
+import random
 from pathlib import Path
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
@@ -47,6 +48,19 @@ import multiprocessing
 from datetime import datetime
 
 from x3dna_json_compare import JsonComparator, ComparisonResult, JsonValidator
+
+
+def get_all_pdb_files(project_root: Path) -> List[str]:
+    """Get all PDB IDs from the data/pdb directory."""
+    pdb_dir = project_root / "data" / "pdb"
+    if not pdb_dir.exists():
+        return []
+
+    pdb_ids = []
+    for pdb_file in pdb_dir.glob("*.pdb"):
+        pdb_ids.append(pdb_file.stem)
+
+    return sorted(pdb_ids)
 
 
 def find_available_pdbs(project_root: Path, use_legacy_mode: bool = False) -> List[str]:
@@ -68,6 +82,61 @@ def find_available_pdbs(project_root: Path, use_legacy_mode: bool = False) -> Li
 
     common = sorted(legacy_files & modern_files)
     return common
+
+
+def get_test_set_path(project_root: Path, size: int) -> Path:
+    """Get the path to a test set file."""
+    test_sets_dir = project_root / "data" / "test_sets"
+    test_sets_dir.mkdir(parents=True, exist_ok=True)
+    return test_sets_dir / f"test_set_{size}.json"
+
+
+def load_test_set(project_root: Path, size: int) -> Optional[List[str]]:
+    """Load a test set of the specified size."""
+    test_set_file = get_test_set_path(project_root, size)
+    if not test_set_file.exists():
+        return None
+    
+    try:
+        with open(test_set_file, 'r') as f:
+            data = json.load(f)
+            return data.get('pdb_ids', [])
+    except Exception:
+        return None
+
+
+def save_test_set(project_root: Path, size: int, pdb_ids: List[str]) -> bool:
+    """Save a test set to disk."""
+    test_set_file = get_test_set_path(project_root, size)
+    try:
+        data = {
+            'size': size,
+            'pdb_ids': pdb_ids,
+            'generated': datetime.now().isoformat()
+        }
+        with open(test_set_file, 'w') as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception:
+        return False
+
+
+def generate_test_set(project_root: Path, size: int, seed: Optional[int] = None) -> List[str]:
+    """Generate a test set by randomly selecting PDB files from available ones."""
+    all_pdbs = get_all_pdb_files(project_root)
+    
+    if not all_pdbs:
+        return []
+    
+    if size > len(all_pdbs):
+        click.echo(f"Warning: Requested size {size} is larger than available PDBs ({len(all_pdbs)}). Using all available.", err=True)
+        size = len(all_pdbs)
+    
+    if seed is not None:
+        random.seed(seed)
+    
+    selected = random.sample(all_pdbs, size)
+    return sorted(selected)
 
 
 def get_modern_file_path(
@@ -731,6 +800,11 @@ def common_options(f):
         is_flag=True,
         help="Regenerate JSON files if missing (legacy from org code, modern from new code)",
     )(f)
+    f = click.option(
+        "--test-set",
+        type=click.Choice(['10', '50', '100', '500', '1000'], case_sensitive=False),
+        help="Use a saved test set of the specified size (10, 50, 100, 500, or 1000 PDBs)",
+    )(f)
     return f
 
 
@@ -806,12 +880,19 @@ def cli():
 @click.option("--diff-only", is_flag=True, help="Show only files with differences")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def compare(verbose, diff_only, legacy_mode, output, threads, regenerate, pdb_ids):
+def compare(verbose, diff_only, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
     """Compare atoms and frames for specified PDB(s) or all available."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
 
-    if not pdb_ids:
+    if test_set:
+        test_pdb_ids = load_test_set(project_root, int(test_set))
+        if test_pdb_ids is None:
+            click.echo(f"Error: Test set of size {test_set} not found. Generate it first with 'generate-test-sets' command.", err=True)
+            return
+        pdb_ids = test_pdb_ids
+        click.echo(f"Using test set of size {test_set}: {len(pdb_ids)} PDB files")
+    elif not pdb_ids:
         click.echo("Finding available PDB files...")
         pdb_ids = find_available_pdbs(project_root, legacy_mode)
         if not pdb_ids:
@@ -856,12 +937,19 @@ def compare(verbose, diff_only, legacy_mode, output, threads, regenerate, pdb_id
 @click.option("--diff-only", is_flag=True, help="Show only files with differences")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def atoms(verbose, diff_only, legacy_mode, output, threads, regenerate, pdb_ids):
+def atoms(verbose, diff_only, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
     """Compare only atom records (skip frame calculations)."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
 
-    if not pdb_ids:
+    if test_set:
+        test_pdb_ids = load_test_set(project_root, int(test_set))
+        if test_pdb_ids is None:
+            click.echo(f"Error: Test set of size {test_set} not found. Generate it first with 'generate-test-sets' command.", err=True)
+            return
+        pdb_ids = test_pdb_ids
+        click.echo(f"Using test set of size {test_set}: {len(pdb_ids)} PDB files")
+    elif not pdb_ids:
         click.echo("Finding available PDB files...")
         pdb_ids = find_available_pdbs(project_root, legacy_mode)
         if not pdb_ids:
@@ -898,12 +986,19 @@ def atoms(verbose, diff_only, legacy_mode, output, threads, regenerate, pdb_ids)
 @click.option("--diff-only", is_flag=True, help="Show only files with differences")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def frames(verbose, diff_only, legacy_mode, output, threads, regenerate, pdb_ids):
+def frames(verbose, diff_only, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
     """Compare only frame calculations (skip atom records)."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
 
-    if not pdb_ids:
+    if test_set:
+        test_pdb_ids = load_test_set(project_root, int(test_set))
+        if test_pdb_ids is None:
+            click.echo(f"Error: Test set of size {test_set} not found. Generate it first with 'generate-test-sets' command.", err=True)
+            return
+        pdb_ids = test_pdb_ids
+        click.echo(f"Using test set of size {test_set}: {len(pdb_ids)} PDB files")
+    elif not pdb_ids:
         click.echo("Finding available PDB files...")
         pdb_ids = find_available_pdbs(project_root, legacy_mode)
         if not pdb_ids:
@@ -949,6 +1044,261 @@ def list(legacy_mode):
     click.echo(f"Found {len(pdb_ids)} PDB files:")
     for pdb_id in pdb_ids:
         click.echo(f"  {pdb_id}")
+
+
+@cli.command("ring-atoms")
+@click.option("--verbose", "-v", is_flag=True, help="Show detailed output")
+@click.option("--diff-only", is_flag=True, help="Show only residues with differences")
+@click.option("--show-pdb-lines", is_flag=True, help="Show PDB lines for atoms that differ")
+@click.option("--output-dir", "-o", type=click.Path(path_type=Path), help="Directory to save output files")
+@common_options
+@click.argument("pdb_ids", nargs=-1)
+def ring_atoms(verbose, diff_only, show_pdb_lines, output_dir, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
+    """Compare ring atom matching between legacy and modern code."""
+    project_root = Path(__file__).parent.parent
+    max_workers = threads or multiprocessing.cpu_count()
+    
+    # Import ring atom comparison functionality
+    import sys
+    sys.path.insert(0, str(project_root))
+    from scripts.compare_ring_atoms import compare_ring_atoms
+    
+    if test_set:
+        test_pdb_ids = load_test_set(project_root, int(test_set))
+        if test_pdb_ids is None:
+            click.echo(f"Error: Test set of size {test_set} not found. Generate it first with 'generate-test-sets' command.", err=True)
+            return
+        pdb_ids = test_pdb_ids
+        click.echo(f"Using test set of size {test_set}: {len(pdb_ids)} PDB files")
+    elif not pdb_ids:
+        click.echo("Finding available PDB files...")
+        pdb_ids = find_available_pdbs(project_root, legacy_mode)
+        if not pdb_ids:
+            click.echo("No common PDB files found!", err=True)
+            return
+        click.echo(f"Found {len(pdb_ids)} PDB files to compare")
+    
+    if len(pdb_ids) == 1:
+        # Single PDB comparison
+        pdb_id = pdb_ids[0]
+        legacy_file = project_root / "data" / "json_legacy" / f"{pdb_id}.json"
+        modern_file = get_modern_file_path(project_root, pdb_id, legacy_mode)
+        pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
+        
+        if not legacy_file.exists() or not modern_file or not modern_file.exists():
+            click.echo(f"Error: Missing JSON files for {pdb_id}", err=True)
+            return
+        
+        results = compare_ring_atoms(legacy_file, modern_file, pdb_file if show_pdb_lines else None)
+        
+        # Generate report
+        lines = []
+        lines.append("=" * 80)
+        lines.append("RING ATOM MATCHING COMPARISON")
+        lines.append("=" * 80)
+        lines.append(f"PDB ID: {pdb_id}")
+        lines.append("")
+        
+        matches = sum(1 for r in results if r.is_match)
+        mismatches = len(results) - matches
+        
+        lines.append("SUMMARY")
+        lines.append(f"  Total residues: {len(results)}")
+        lines.append(f"  Matches: {matches}")
+        lines.append(f"  Mismatches: {mismatches}")
+        lines.append("")
+        
+        if mismatches > 0 or not diff_only:
+            lines.append("=" * 80)
+            lines.append("DETAILED RESULTS")
+            lines.append("=" * 80)
+            lines.append("")
+            
+            for result in results:
+                if diff_only and result.is_match:
+                    continue
+                
+                chain_id, residue_seq, insertion = result.residue_key
+                status = "✓" if result.is_match else "✗"
+                
+                lines.append(f"{status} {result.residue_name} {chain_id}:{residue_seq}{insertion} ({result.base_type})")
+                lines.append(f"  Legacy: {result.num_matched_legacy} atoms - {result.legacy_matched_atoms}")
+                lines.append(f"  Modern: {result.num_matched_modern} atoms - {result.modern_matched_atoms}")
+                
+                if result.legacy_atom_indices or result.modern_atom_indices:
+                    lines.append(f"  Legacy indices: {result.legacy_atom_indices}")
+                    lines.append(f"  Modern indices: {result.modern_atom_indices}")
+                
+                if result.differences:
+                    lines.append(f"  Differences:")
+                    for diff in result.differences:
+                        lines.append(f"    - {diff}")
+                
+                if show_pdb_lines and (result.legacy_atom_details or result.modern_atom_details):
+                    leg_set = set(result.legacy_atom_indices)
+                    mod_set = set(result.modern_atom_indices)
+                    only_legacy = leg_set - mod_set
+                    only_modern = mod_set - leg_set
+                    
+                    if only_legacy or only_modern:
+                        lines.append(f"  PDB Lines for differing atoms:")
+                        if only_legacy:
+                            lines.append(f"    Only in Legacy:")
+                            for idx in sorted(only_legacy):
+                                if idx in result.legacy_atom_details:
+                                    details = result.legacy_atom_details[idx]
+                                    atom_name = details.get('atom_name', '?')
+                                    line_num = details.get('line_number', 0)
+                                    pdb_line = details.get('pdb_line', '')
+                                    if pdb_line:
+                                        lines.append(f"      legacy_atom_idx {idx} ({atom_name}) line {line_num}: {pdb_line[:80]}")
+                                    else:
+                                        lines.append(f"      legacy_atom_idx {idx} ({atom_name}) line {line_num}: (PDB line not available)")
+                        if only_modern:
+                            lines.append(f"    Only in Modern:")
+                            for idx in sorted(only_modern):
+                                if idx in result.modern_atom_details:
+                                    details = result.modern_atom_details[idx]
+                                    atom_name = details.get('atom_name', '?')
+                                    line_num = details.get('line_number', 0)
+                                    pdb_line = details.get('pdb_line', '')
+                                    if pdb_line:
+                                        lines.append(f"      legacy_atom_idx {idx} ({atom_name}) line {line_num}: {pdb_line[:80]}")
+                                    else:
+                                        lines.append(f"      legacy_atom_idx {idx} ({atom_name}) line {line_num}: (PDB line not available)")
+                lines.append("")
+        
+        report = "\n".join(lines)
+        
+        if output:
+            output.write_text(report)
+            click.echo(f"Report saved to: {output}")
+        else:
+            click.echo(report)
+    else:
+        # Batch comparison
+        if output_dir is None:
+            output_dir = project_root / "ring_atom_comparisons"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        click.echo(f"Comparing ring atoms for {len(pdb_ids)} file(s) using {max_workers} thread(s)...")
+        click.echo(f"Output directory: {output_dir}")
+        
+        def compare_single_ring(pdb_id: str):
+            legacy_file = project_root / "data" / "json_legacy" / f"{pdb_id}.json"
+            modern_file = get_modern_file_path(project_root, pdb_id, legacy_mode)
+            pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
+            
+            if not legacy_file.exists() or not modern_file or not modern_file.exists():
+                return (pdb_id, None, "Missing JSON files")
+            
+            try:
+                results = compare_ring_atoms(legacy_file, modern_file, None)
+                return (pdb_id, results, None)
+            except Exception as e:
+                return (pdb_id, None, str(e))
+        
+        completed = 0
+        successful = 0
+        failed = 0
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_pdb = {
+                executor.submit(compare_single_ring, pdb_id): pdb_id
+                for pdb_id in pdb_ids
+            }
+            
+            for future in as_completed(future_to_pdb):
+                pdb_id = future_to_pdb[future]
+                try:
+                    pdb_id_result, results, error = future.result()
+                    completed += 1
+                    
+                    if error:
+                        failed += 1
+                        click.echo(f"✗ {pdb_id_result}: {error}", err=True)
+                    else:
+                        successful += 1
+                        # Write output to file
+                        output_file = output_dir / f"{pdb_id_result}_ring_atoms.txt"
+                        matches = sum(1 for r in results if r.is_match) if results else 0
+                        mismatches = len(results) - matches if results else 0
+                        
+                        with open(output_file, 'w') as f:
+                            f.write(f"RING ATOM COMPARISON: {pdb_id_result}\n")
+                            f.write(f"Total residues: {len(results)}\n")
+                            f.write(f"Matches: {matches}\n")
+                            f.write(f"Mismatches: {mismatches}\n\n")
+                            
+                            for result in results:
+                                if diff_only and result.is_match:
+                                    continue
+                                chain_id, residue_seq, insertion = result.residue_key
+                                status = "✓" if result.is_match else "✗"
+                                f.write(f"{status} {result.residue_name} {chain_id}:{residue_seq}{insertion} ({result.base_type})\n")
+                                f.write(f"  Legacy: {result.legacy_matched_atoms}\n")
+                                f.write(f"  Modern: {result.modern_matched_atoms}\n")
+                                if result.differences:
+                                    for diff in result.differences:
+                                        f.write(f"  - {diff}\n")
+                                f.write("\n")
+                        
+                        if completed % 100 == 0 or completed == len(pdb_ids):
+                            click.echo(f"  Progress: {completed}/{len(pdb_ids)} ({completed*100//len(pdb_ids)}%)", err=True)
+                except Exception as e:
+                    failed += 1
+                    completed += 1
+                    click.echo(f"✗ {pdb_id}: Exception: {e}", err=True)
+        
+        click.echo("\n" + "=" * 80)
+        click.echo("SUMMARY")
+        click.echo("=" * 80)
+        click.echo(f"Total PDBs: {len(pdb_ids)}")
+        click.echo(f"Successful: {successful}")
+        click.echo(f"Failed: {failed}")
+        click.echo(f"Output directory: {output_dir}")
+
+
+@cli.command("generate-test-sets")
+@click.option("--seed", type=int, default=42, help="Random seed for reproducibility (default: 42)")
+@click.option("--force", is_flag=True, help="Regenerate test sets even if they already exist")
+def generate_test_sets(seed, force):
+    """Generate test sets of 10, 50, 100, 500, and 1000 PDBs from available PDB files."""
+    project_root = Path(__file__).parent.parent
+    
+    all_pdbs = get_all_pdb_files(project_root)
+    if not all_pdbs:
+        click.echo("Error: No PDB files found in data/pdb/", err=True)
+        return
+    
+    click.echo(f"Found {len(all_pdbs)} total PDB files")
+    click.echo(f"Using random seed: {seed}")
+    click.echo()
+    
+    test_sizes = [10, 50, 100, 500, 1000]
+    
+    for size in test_sizes:
+        test_set_file = get_test_set_path(project_root, size)
+        
+        if test_set_file.exists() and not force:
+            click.echo(f"Test set of size {size} already exists. Use --force to regenerate.")
+            continue
+        
+        if size > len(all_pdbs):
+            click.echo(f"Skipping size {size}: Only {len(all_pdbs)} PDB files available")
+            continue
+        
+        click.echo(f"Generating test set of size {size}...")
+        pdb_ids = generate_test_set(project_root, size, seed)
+        
+        if save_test_set(project_root, size, pdb_ids):
+            click.echo(f"✓ Saved test set of size {size} to {test_set_file}")
+        else:
+            click.echo(f"✗ Failed to save test set of size {size}", err=True)
+        click.echo()
+    
+    click.echo("Test set generation complete!")
+    click.echo(f"Test sets saved in: {project_root / 'data' / 'test_sets'}")
 
 
 def main():
