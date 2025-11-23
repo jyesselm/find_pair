@@ -8,10 +8,11 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <map>
+#include <tuple>
 #include <nlohmann/json.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/residue.hpp>
-#include <map>
 
 namespace x3dna {
 namespace core {
@@ -79,6 +80,40 @@ public:
      */
     void add_chain(const Chain& chain) {
         chains_.push_back(chain);
+    }
+
+    /**
+     * @brief Set legacy indices on all atoms in this structure
+     * @param atom_idx_map Map from (chain_id, residue_seq, insertion, atom_name) -> legacy_atom_idx
+     * @param residue_idx_map Map from (chain_id, residue_seq, insertion) -> legacy_residue_idx
+     */
+    void set_legacy_indices(
+        const std::map<std::tuple<char, int, char, std::string>, int>& atom_idx_map,
+        const std::map<std::tuple<char, int, char>, int>& residue_idx_map) {
+        for (auto& chain : chains_) {
+            for (auto& residue : chain.residues()) {
+                char chain_id = residue.chain_id();
+                int residue_seq = residue.seq_num();
+                char insertion = residue.insertion();
+                
+                // Get legacy residue index for this residue
+                auto residue_key = std::make_tuple(chain_id, residue_seq, insertion);
+                auto residue_it = residue_idx_map.find(residue_key);
+                int legacy_residue_idx = (residue_it != residue_idx_map.end()) ? residue_it->second : 0;
+                
+                // Set legacy indices on all atoms in this residue
+                for (auto& atom : residue.atoms()) {
+                    auto atom_key = std::make_tuple(chain_id, residue_seq, insertion, atom.name());
+                    auto atom_it = atom_idx_map.find(atom_key);
+                    if (atom_it != atom_idx_map.end()) {
+                        atom.set_legacy_atom_idx(atom_it->second);
+                    }
+                    if (legacy_residue_idx > 0) {
+                        atom.set_legacy_residue_idx(legacy_residue_idx);
+                    }
+                }
+            }
+        }
     }
 
     /**

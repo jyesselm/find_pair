@@ -60,7 +60,7 @@ protected:
 
 // Test matching for purine (adenine)
 TEST_F(RingAtomMatcherTest, MatchPurineAtoms) {
-    MatchedAtoms matched = RingAtomMatcher::match(experimental_residue_, standard_template_, false);
+    MatchedAtoms matched = RingAtomMatcher::match(experimental_residue_, standard_template_);
 
     EXPECT_GE(matched.num_matched, 9); // Should match all 9 purine ring atoms
     EXPECT_TRUE(matched.is_valid());
@@ -92,7 +92,7 @@ TEST_F(RingAtomMatcherTest, MatchPyrimidineAtoms) {
     chain.add_residue(template_residue);
     template_c.add_chain(chain);
 
-    MatchedAtoms matched = RingAtomMatcher::match(cytosine, template_c, false);
+    MatchedAtoms matched = RingAtomMatcher::match(cytosine, template_c);
 
     EXPECT_GE(matched.num_matched, 6); // Should match all 6 pyrimidine ring atoms
     EXPECT_TRUE(matched.is_valid());
@@ -114,10 +114,12 @@ TEST_F(RingAtomMatcherTest, MatchRNAAtoms) {
     chain.add_residue(template_residue);
     template_rna.add_chain(chain);
 
-    MatchedAtoms matched = RingAtomMatcher::match(rna_residue, template_rna, true);
+    MatchedAtoms matched = RingAtomMatcher::match(rna_residue, template_rna);
 
-    // Should include C1' in the match
-    EXPECT_GE(matched.num_matched, 3);
+    // Should NOT include C1' (it's a sugar atom, not a ring atom)
+    // Should only match ring atoms
+    EXPECT_GE(matched.num_matched, 2); // At least C4 and N3
+    // Verify C1' is NOT in matched atoms
     bool has_c1_prime = false;
     for (const auto& name : matched.atom_names) {
         if (name == " C1'") {
@@ -125,7 +127,7 @@ TEST_F(RingAtomMatcherTest, MatchRNAAtoms) {
             break;
         }
     }
-    EXPECT_TRUE(has_c1_prime);
+    EXPECT_FALSE(has_c1_prime) << "C1' should not be in matched atoms (it's a sugar atom, not a ring atom)";
 }
 
 // Test with missing atoms
@@ -138,7 +140,7 @@ TEST_F(RingAtomMatcherTest, MatchWithMissingAtoms) {
     incomplete_residue.add_atom(Atom(" N1 ", Vector3D(3.0, 0.0, 0.0), "  A", 'A', 1));
     incomplete_residue.add_atom(Atom(" C6 ", Vector3D(4.0, 0.0, 0.0), "  A", 'A', 1));
 
-    MatchedAtoms matched = RingAtomMatcher::match(incomplete_residue, standard_template_, false);
+    MatchedAtoms matched = RingAtomMatcher::match(incomplete_residue, standard_template_);
 
     // Should still match what's available (at least 5)
     EXPECT_GE(matched.num_matched, 5);
@@ -148,15 +150,28 @@ TEST_F(RingAtomMatcherTest, MatchWithMissingAtoms) {
 // Test ring atom names retrieval
 TEST_F(RingAtomMatcherTest, GetRingAtomNames) {
     // Purine
-    auto purine_names = RingAtomMatcher::get_ring_atom_names(ResidueType::ADENINE, false);
+    auto purine_names = RingAtomMatcher::get_ring_atom_names(ResidueType::ADENINE);
     EXPECT_EQ(purine_names.size(), 9);
+    // Verify C1' is NOT included
+    bool has_c1_prime = false;
+    for (const auto& name : purine_names) {
+        if (name == " C1'") {
+            has_c1_prime = true;
+            break;
+        }
+    }
+    EXPECT_FALSE(has_c1_prime) << "C1' should not be in ring atom names (it's a sugar atom, not a ring atom)";
 
     // Pyrimidine
-    auto pyrimidine_names = RingAtomMatcher::get_ring_atom_names(ResidueType::CYTOSINE, false);
+    auto pyrimidine_names = RingAtomMatcher::get_ring_atom_names(ResidueType::CYTOSINE);
     EXPECT_EQ(pyrimidine_names.size(), 6);
-
-    // RNA purine (includes C1')
-    auto rna_purine_names = RingAtomMatcher::get_ring_atom_names(ResidueType::ADENINE, true);
-    EXPECT_EQ(rna_purine_names.size(), 10); // 9 ring atoms + C1'
-    EXPECT_EQ(rna_purine_names[0], " C1'");
+    // Verify C1' is NOT included
+    has_c1_prime = false;
+    for (const auto& name : pyrimidine_names) {
+        if (name == " C1'") {
+            has_c1_prime = true;
+            break;
+        }
+    }
+    EXPECT_FALSE(has_c1_prime) << "C1' should not be in ring atom names (it's a sugar atom, not a ring atom)";
 }
