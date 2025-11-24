@@ -83,11 +83,11 @@ def load_test_set(project_root: Path, size: int) -> Optional[List[str]]:
     test_set_file = get_test_set_path(project_root, size)
     if not test_set_file.exists():
         return None
-    
+
     try:
-        with open(test_set_file, 'r') as f:
+        with open(test_set_file, "r") as f:
             data = json.load(f)
-            return data.get('pdb_ids', [])
+            return data.get("pdb_ids", [])
     except Exception:
         return None
 
@@ -97,32 +97,124 @@ def save_test_set(project_root: Path, size: int, pdb_ids: List[str]) -> bool:
     test_set_file = get_test_set_path(project_root, size)
     try:
         data = {
-            'size': size,
-            'pdb_ids': pdb_ids,
-            'generated': datetime.now().isoformat()
+            "size": size,
+            "pdb_ids": pdb_ids,
+            "generated": datetime.now().isoformat(),
         }
-        with open(test_set_file, 'w') as f:
+        with open(test_set_file, "w") as f:
             json.dump(data, f, indent=2)
         return True
     except Exception:
         return False
 
 
-def generate_test_set(project_root: Path, size: int, seed: Optional[int] = None) -> List[str]:
-    """Generate a test set by randomly selecting PDB files from available ones."""
-    all_pdbs = get_all_pdb_ids(project_root)
-    
-    if not all_pdbs:
+def get_valid_pdbs_with_atoms(project_root: Path) -> List[str]:
+    """Get list of PDBs that have both atom data AND frame calculation data in legacy JSON."""
+    valid_file = project_root / "data" / "valid_pdbs.json"
+    if valid_file.exists():
+        try:
+            with open(valid_file) as f:
+                data = json.load(f)
+                # Prefer PDBs with both atoms and frames
+                both = data.get("valid_pdbs_with_atoms_and_frames", [])
+                if both:
+                    return both
+                # Fallback to atoms only if no both list exists
+                return data.get("valid_pdbs_with_atoms", [])
+        except Exception:
+            pass
+
+    # Fallback: check existing JSON files
+    legacy_json_dir = project_root / "data" / "json_legacy"
+    valid_pdbs = []
+
+    for json_file in legacy_json_dir.glob("*.json"):
+        if "_" in json_file.stem:
+            continue
+
+        pdb_id = json_file.stem
+        has_atoms = False
+
+        # Check split file
+        atoms_file = legacy_json_dir / f"{pdb_id}_pdb_atoms.json"
+        if atoms_file.exists():
+            try:
+                with open(atoms_file) as af:
+                    atoms_data = json.load(af)
+                    if isinstance(atoms_data, list) and len(atoms_data) > 0:
+                        atoms = atoms_data[0].get("atoms", [])
+                        if atoms:
+                            has_atoms = True
+            except Exception:
+                pass
+
+        # Check main file
+        if not has_atoms:
+            try:
+                with open(json_file) as f:
+                    data = json.load(f)
+                    calc = data.get("calculations", [])
+                    if isinstance(calc, list):
+                        for c in calc:
+                            if c.get("type") == "pdb_atoms" and "atoms" in c:
+                                atoms = c.get("atoms", [])
+                                if atoms:
+                                    has_atoms = True
+                                    break
+            except Exception:
+                pass
+
+        # Also check for frame calculations (base_frame_calc, frame_calc, ls_fitting)
+        has_frames = False
+        base_frame_file = legacy_json_dir / f"{pdb_id}_base_frame_calc.json"
+        frame_calc_file = legacy_json_dir / f"{pdb_id}_frame_calc.json"
+        ls_fitting_file = legacy_json_dir / f"{pdb_id}_ls_fitting.json"
+
+        for frame_file in [base_frame_file, frame_calc_file, ls_fitting_file]:
+            if frame_file.exists():
+                try:
+                    with open(frame_file) as f:
+                        frame_data = json.load(f)
+                        if isinstance(frame_data, list) and len(frame_data) > 0:
+                            has_frames = True
+                            break
+                except Exception:
+                    pass
+
+        # Only include if has both atoms AND frames
+        if has_atoms and has_frames:
+            valid_pdbs.append(pdb_id)
+
+    return sorted(valid_pdbs)
+
+
+def generate_test_set(
+    project_root: Path, size: int, seed: Optional[int] = None
+) -> List[str]:
+    """Generate a test set by randomly selecting PDB files that have atom data."""
+    valid_pdbs = get_valid_pdbs_with_atoms(project_root)
+
+    if not valid_pdbs:
+        click.echo(
+            "Warning: No valid PDBs with atom data found. Falling back to all PDB files.",
+            err=True,
+        )
+        valid_pdbs = get_all_pdb_ids(project_root)
+
+    if not valid_pdbs:
         return []
-    
-    if size > len(all_pdbs):
-        click.echo(f"Warning: Requested size {size} is larger than available PDBs ({len(all_pdbs)}). Using all available.", err=True)
-        size = len(all_pdbs)
-    
+
+    if size > len(valid_pdbs):
+        click.echo(
+            f"Warning: Requested size {size} is larger than available valid PDBs ({len(valid_pdbs)}). Using all available.",
+            err=True,
+        )
+        size = len(valid_pdbs)
+
     if seed is not None:
         random.seed(seed)
-    
-    selected = random.sample(all_pdbs, size)
+
+    selected = random.sample(valid_pdbs, size)
     return sorted(selected)
 
 
@@ -356,7 +448,7 @@ def cli():
 )
 @click.option(
     "--test-set",
-    type=click.Choice(['10', '50', '100', '500', '1000'], case_sensitive=False),
+    type=click.Choice(["10", "50", "100", "500", "1000"], case_sensitive=False),
     help="Use a saved test set of the specified size (10, 50, 100, 500, or 1000 PDBs)",
 )
 @click.argument("pdb_ids", nargs=-1)
@@ -368,7 +460,10 @@ def regenerate(legacy_only, modern_only, legacy_mode, threads, test_set, pdb_ids
     if test_set:
         test_pdb_ids = load_test_set(project_root, int(test_set))
         if test_pdb_ids is None:
-            click.echo(f"Error: Test set of size {test_set} not found. Generate it first with 'generate-test-sets' command.", err=True)
+            click.echo(
+                f"Error: Test set of size {test_set} not found. Generate it first with 'generate-test-sets' command.",
+                err=True,
+            )
             return
         pdb_ids = test_pdb_ids
         click.echo(f"Using test set of size {test_set}: {len(pdb_ids)} PDB files")
@@ -440,7 +535,10 @@ def regenerate(legacy_only, modern_only, legacy_mode, threads, test_set, pdb_ids
         click.echo(f"Time elapsed: {elapsed:.2f} seconds ({elapsed/60:.2f} minutes)")
         click.echo()
     elif not modern_only:
-        click.echo("Warning: Legacy executable not found, skipping legacy regeneration", err=True)
+        click.echo(
+            "Warning: Legacy executable not found, skipping legacy regeneration",
+            err=True,
+        )
 
     # Regenerate modern JSON
     if not legacy_only and modern_exe:
@@ -456,7 +554,11 @@ def regenerate(legacy_only, modern_only, legacy_mode, threads, test_set, pdb_ids
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_pdb = {
                 executor.submit(
-                    regenerate_modern_json, pdb_id, modern_exe, project_root, legacy_mode
+                    regenerate_modern_json,
+                    pdb_id,
+                    modern_exe,
+                    project_root,
+                    legacy_mode,
                 ): pdb_id
                 for pdb_id in pdb_ids
             }
@@ -502,7 +604,10 @@ def regenerate(legacy_only, modern_only, legacy_mode, threads, test_set, pdb_ids
         click.echo(f"Time elapsed: {elapsed:.2f} seconds ({elapsed/60:.2f} minutes)")
         click.echo()
     elif not legacy_only:
-        click.echo("Warning: Modern executable not found, skipping modern regeneration", err=True)
+        click.echo(
+            "Warning: Modern executable not found, skipping modern regeneration",
+            err=True,
+        )
 
 
 @cli.command()
@@ -692,7 +797,9 @@ def clean(directory, legacy_only, modern_only, execute, threads):
                         click.echo(f"  Error removing {pdb_id}: {e}", err=True)
             click.echo(f"\nSuccessfully removed {removed} files")
         elif not execute and (empty_files or corrupted_files):
-            click.echo(f"\n[DRY RUN] Would remove {len(empty_files) + len(corrupted_files)} files")
+            click.echo(
+                f"\n[DRY RUN] Would remove {len(empty_files) + len(corrupted_files)} files"
+            )
             click.echo("Run with --execute to actually remove files")
 
 
@@ -708,43 +815,51 @@ def reorganize(json_file):
 
 
 @cli.command("generate-test-sets")
-@click.option("--seed", type=int, default=42, help="Random seed for reproducibility (default: 42)")
-@click.option("--force", is_flag=True, help="Regenerate test sets even if they already exist")
+@click.option(
+    "--seed", type=int, default=42, help="Random seed for reproducibility (default: 42)"
+)
+@click.option(
+    "--force", is_flag=True, help="Regenerate test sets even if they already exist"
+)
 def generate_test_sets(seed, force):
     """Generate test sets of 10, 50, 100, 500, and 1000 PDBs from available PDB files."""
     project_root = Path(__file__).parent.parent
-    
+
     all_pdbs = get_all_pdb_ids(project_root)
     if not all_pdbs:
         click.echo("Error: No PDB files found in data/pdb/", err=True)
         return
-    
+
     click.echo(f"Found {len(all_pdbs)} total PDB files")
     click.echo(f"Using random seed: {seed}")
     click.echo()
-    
+
     test_sizes = [10, 50, 100, 500, 1000]
-    
+
     for size in test_sizes:
         test_set_file = get_test_set_path(project_root, size)
-        
+
         if test_set_file.exists() and not force:
-            click.echo(f"Test set of size {size} already exists. Use --force to regenerate.")
+            click.echo(
+                f"Test set of size {size} already exists. Use --force to regenerate."
+            )
             continue
-        
+
         if size > len(all_pdbs):
-            click.echo(f"Skipping size {size}: Only {len(all_pdbs)} PDB files available")
+            click.echo(
+                f"Skipping size {size}: Only {len(all_pdbs)} PDB files available"
+            )
             continue
-        
+
         click.echo(f"Generating test set of size {size}...")
         pdb_ids = generate_test_set(project_root, size, seed)
-        
+
         if save_test_set(project_root, size, pdb_ids):
             click.echo(f"✓ Saved test set of size {size} to {test_set_file}")
         else:
             click.echo(f"✗ Failed to save test set of size {size}", err=True)
         click.echo()
-    
+
     click.echo("Test set generation complete!")
     click.echo(f"Test sets saved in: {project_root / 'data' / 'test_sets'}")
 
@@ -756,4 +871,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -43,7 +43,7 @@ import random
 from pathlib import Path
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import multiprocessing
 from datetime import datetime
 
@@ -121,21 +121,105 @@ def save_test_set(project_root: Path, size: int, pdb_ids: List[str]) -> bool:
         return False
 
 
-def generate_test_set(project_root: Path, size: int, seed: Optional[int] = None) -> List[str]:
-    """Generate a test set by randomly selecting PDB files from available ones."""
-    all_pdbs = get_all_pdb_files(project_root)
+def get_valid_pdbs_with_atoms(project_root: Path) -> List[str]:
+    """Get list of PDBs that have both atom data AND frame calculation data in legacy JSON."""
+    valid_file = project_root / "data" / "valid_pdbs.json"
+    if valid_file.exists():
+        try:
+            with open(valid_file) as f:
+                data = json.load(f)
+                # Prefer PDBs with both atoms and frames
+                both = data.get("valid_pdbs_with_atoms_and_frames", [])
+                if both:
+                    return both
+                # Fallback to atoms only if no both list exists
+                return data.get("valid_pdbs_with_atoms", [])
+        except Exception:
+            pass
     
-    if not all_pdbs:
+    # Fallback: check existing JSON files
+    legacy_json_dir = project_root / "data" / "json_legacy"
+    valid_pdbs = []
+    
+    for json_file in legacy_json_dir.glob("*.json"):
+        if "_" in json_file.stem:
+            continue
+        
+        pdb_id = json_file.stem
+        has_atoms = False
+        
+        # Check split file
+        atoms_file = legacy_json_dir / f"{pdb_id}_pdb_atoms.json"
+        if atoms_file.exists():
+            try:
+                with open(atoms_file) as af:
+                    atoms_data = json.load(af)
+                    if isinstance(atoms_data, list) and len(atoms_data) > 0:
+                        atoms = atoms_data[0].get("atoms", [])
+                        if atoms:
+                            has_atoms = True
+            except Exception:
+                pass
+        
+        # Check main file
+        if not has_atoms:
+            try:
+                with open(json_file) as f:
+                    data = json.load(f)
+                    calc = data.get("calculations", [])
+                    if isinstance(calc, list):
+                        for c in calc:
+                            if c.get("type") == "pdb_atoms" and "atoms" in c:
+                                atoms = c.get("atoms", [])
+                                if atoms:
+                                    has_atoms = True
+                                    break
+            except Exception:
+                pass
+        
+        # Also check for frame calculations (base_frame_calc, frame_calc, ls_fitting)
+        has_frames = False
+        base_frame_file = legacy_json_dir / f"{pdb_id}_base_frame_calc.json"
+        frame_calc_file = legacy_json_dir / f"{pdb_id}_frame_calc.json"
+        ls_fitting_file = legacy_json_dir / f"{pdb_id}_ls_fitting.json"
+        
+        for frame_file in [base_frame_file, frame_calc_file, ls_fitting_file]:
+            if frame_file.exists():
+                try:
+                    with open(frame_file) as f:
+                        frame_data = json.load(f)
+                        if isinstance(frame_data, list) and len(frame_data) > 0:
+                            has_frames = True
+                            break
+                except Exception:
+                    pass
+        
+        # Only include if has both atoms AND frames
+        if has_atoms and has_frames:
+            valid_pdbs.append(pdb_id)
+    
+    return sorted(valid_pdbs)
+
+
+def generate_test_set(project_root: Path, size: int, seed: Optional[int] = None) -> List[str]:
+    """Generate a test set by randomly selecting PDB files that have atom data."""
+    valid_pdbs = get_valid_pdbs_with_atoms(project_root)
+    
+    if not valid_pdbs:
+        click.echo("Warning: No valid PDBs with atom data found. Falling back to all PDB files.", err=True)
+        valid_pdbs = get_all_pdb_files(project_root)
+    
+    if not valid_pdbs:
         return []
     
-    if size > len(all_pdbs):
-        click.echo(f"Warning: Requested size {size} is larger than available PDBs ({len(all_pdbs)}). Using all available.", err=True)
-        size = len(all_pdbs)
+    if size > len(valid_pdbs):
+        click.echo(f"Warning: Requested size {size} is larger than available valid PDBs ({len(valid_pdbs)}). Using all available.", err=True)
+        size = len(valid_pdbs)
     
     if seed is not None:
         random.seed(seed)
     
-    selected = random.sample(all_pdbs, size)
+    selected = random.sample(valid_pdbs, size)
     return sorted(selected)
 
 
@@ -261,64 +345,97 @@ def compare_single_pdb(
 ) -> ComparisonResult:
     """Compare a single PDB file."""
     if comparator is None:
-        comparator = JsonComparator(enable_cache=False)
+        comparator = JsonComparator(enable_cache=True)  # Enable caching by default
 
     legacy_file = project_root / "data" / "json_legacy" / f"{pdb_id}.json"
     modern_file = get_modern_file_path(project_root, pdb_id, use_legacy_mode)
     pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
 
-    # Regenerate files if missing (always try to regenerate missing files)
-    if not legacy_file.exists():
-        click.echo(
-            f"  Regenerating legacy JSON for {pdb_id} (from org code)...", err=True
-        )
-        if regenerate_legacy_json(pdb_id, project_root):
-            click.echo(f"  ✓ Legacy JSON regenerated", err=True)
-        else:
-            return ComparisonResult(
-                pdb_id=pdb_id,
-                status="error",
-                errors=[
-                    f"Legacy file not found and could not be regenerated: {legacy_file}"
-                ],
+    # Only regenerate if --regenerate flag is set
+    if regenerate:
+        if not legacy_file.exists():
+            click.echo(
+                f"  Regenerating legacy JSON for {pdb_id} (from org code)...", err=True
             )
-    elif regenerate:
-        # Force regeneration if --regenerate flag is set
-        click.echo(
-            f"  Regenerating legacy JSON for {pdb_id} (--regenerate flag)...", err=True
-        )
-        if regenerate_legacy_json(pdb_id, project_root):
-            click.echo(f"  ✓ Legacy JSON regenerated", err=True)
+            if regenerate_legacy_json(pdb_id, project_root):
+                click.echo(f"  ✓ Legacy JSON regenerated", err=True)
+            else:
+                return ComparisonResult(
+                    pdb_id=pdb_id,
+                    status="error",
+                    errors=[
+                        f"Legacy file not found and could not be regenerated: {legacy_file}"
+                    ],
+                )
+        else:
+            # Force regeneration if --regenerate flag is set
+            click.echo(
+                f"  Regenerating legacy JSON for {pdb_id} (--regenerate flag)...", err=True
+            )
+            if regenerate_legacy_json(pdb_id, project_root):
+                click.echo(f"  ✓ Legacy JSON regenerated", err=True)
 
-    if not modern_file or not modern_file.exists():
-        click.echo(
-            f"  Regenerating modern JSON for {pdb_id} (from new code)...", err=True
-        )
-        if regenerate_modern_json(
-            pdb_id, project_root, use_legacy_mode=use_legacy_mode
-        ):
-            click.echo(f"  ✓ Modern JSON regenerated", err=True)
-            # Re-get the file path after regeneration
-            modern_file = get_modern_file_path(project_root, pdb_id, use_legacy_mode)
-        else:
-            return ComparisonResult(
-                pdb_id=pdb_id,
-                status="error",
-                errors=[
-                    f"Modern file not found and could not be regenerated for {pdb_id}"
-                ],
+        if not modern_file or not modern_file.exists():
+            click.echo(
+                f"  Regenerating modern JSON for {pdb_id} (from new code)...", err=True
             )
-    elif regenerate:
-        # Force regeneration if --regenerate flag is set
-        click.echo(
-            f"  Regenerating modern JSON for {pdb_id} (--regenerate flag)...", err=True
+            if regenerate_modern_json(
+                pdb_id, project_root, use_legacy_mode=use_legacy_mode
+            ):
+                click.echo(f"  ✓ Modern JSON regenerated", err=True)
+                # Re-get the file path after regeneration
+                modern_file = get_modern_file_path(project_root, pdb_id, use_legacy_mode)
+            else:
+                return ComparisonResult(
+                    pdb_id=pdb_id,
+                    status="error",
+                    errors=[
+                        f"Modern file not found and could not be regenerated for {pdb_id}"
+                    ],
+                )
+        else:
+            # Force regeneration if --regenerate flag is set
+            click.echo(
+                f"  Regenerating modern JSON for {pdb_id} (--regenerate flag)...", err=True
+            )
+            if regenerate_modern_json(
+                pdb_id, project_root, use_legacy_mode=use_legacy_mode
+            ):
+                click.echo(f"  ✓ Modern JSON regenerated", err=True)
+                # Re-get the file path after regeneration
+                modern_file = get_modern_file_path(project_root, pdb_id, use_legacy_mode)
+    
+    # Check if files exist (but don't regenerate unless flag is set)
+    # Allow split file format - check if main file or any split files exist
+    legacy_dir = legacy_file.parent
+    has_legacy_data = legacy_file.exists()
+    if not has_legacy_data:
+        # Check if split files exist (legacy code sometimes outputs split files)
+        split_files = [
+            legacy_dir / f"{pdb_id}_pdb_atoms.json",
+            legacy_dir / f"{pdb_id}_base_frame_calc.json",
+            legacy_dir / f"{pdb_id}_frame_calc.json",
+            legacy_dir / f"{pdb_id}_ls_fitting.json",
+        ]
+        has_legacy_data = any(f.exists() for f in split_files)
+    
+    if not has_legacy_data:
+        return ComparisonResult(
+            pdb_id=pdb_id,
+            status="error",
+            errors=[
+                f"Legacy file not found: {legacy_file} (and no split files found). Use --regenerate to create it."
+            ],
         )
-        if regenerate_modern_json(
-            pdb_id, project_root, use_legacy_mode=use_legacy_mode
-        ):
-            click.echo(f"  ✓ Modern JSON regenerated", err=True)
-            # Re-get the file path after regeneration
-            modern_file = get_modern_file_path(project_root, pdb_id, use_legacy_mode)
+    
+    if not modern_file or not modern_file.exists():
+        return ComparisonResult(
+            pdb_id=pdb_id,
+            status="error",
+            errors=[
+                f"Modern file not found: {modern_file}. Use --regenerate to create it."
+            ],
+        )
 
     result = comparator.compare_files(legacy_file, modern_file, pdb_file, pdb_id)
     return result
@@ -356,6 +473,11 @@ def analyze_results(results: Dict[str, ComparisonResult]) -> Dict:
         "atom_extra_in_modern": 0,
         "atom_mismatched_fields": 0,
         "atom_count_difference": False,
+        # Step parameter comparison stats
+        "step_total_legacy": 0,
+        "step_total_modern": 0,
+        "step_missing_steps": 0,
+        "step_mismatched_steps": 0,
     }
 
     for pdb_id, result in results.items():
@@ -403,10 +525,25 @@ def analyze_results(results: Dict[str, ComparisonResult]) -> Dict:
                 else:
                     stats["real_atom_differences"] += 1
 
-                leg_rms = mismatch.legacy_record.get("rms_fit", 0.0)
-                mod_rms = mismatch.modern_record.get("rms_fit", 0.0)
-                if abs(leg_rms - mod_rms) > 0.001:
-                    stats["rms_differences"].append(abs(leg_rms - mod_rms))
+                # Handle nested mismatches structure (base_frame_calc, ls_fitting, or frame_calc)
+                mismatches_dict = mismatch.mismatches
+                if 'base_frame_calc' in mismatches_dict:
+                    mismatches_dict = mismatches_dict['base_frame_calc']
+                elif 'ls_fitting' in mismatches_dict:
+                    mismatches_dict = mismatches_dict['ls_fitting']
+                elif 'frame_calc' in mismatches_dict:
+                    mismatches_dict = mismatches_dict['frame_calc']
+                
+                # Check RMS from mismatches dict if available, otherwise from records
+                if 'rms' in mismatches_dict:
+                    rms_diff = mismatches_dict['rms'].get('diff', 0.0)
+                    if rms_diff > 0.001:
+                        stats["rms_differences"].append(rms_diff)
+                else:
+                    leg_rms = mismatch.legacy_record.get("rms_fit", 0.0)
+                    mod_rms = mismatch.modern_record.get("rms_fit", 0.0)
+                    if abs(leg_rms - mod_rms) > 0.001:
+                        stats["rms_differences"].append(abs(leg_rms - mod_rms))
 
                 base_type = mismatch.legacy_record.get("base_type", "?")
                 base_stats = stats["base_type_stats"][base_type]
@@ -423,6 +560,14 @@ def analyze_results(results: Dict[str, ComparisonResult]) -> Dict:
             for missing in fc.missing_residues:
                 base_type = missing.base_type
                 stats["base_type_stats"][base_type]["missing"] += 1
+        
+        # Process step comparison
+        if result.step_comparison:
+            sc = result.step_comparison
+            stats["step_total_legacy"] += sc.total_legacy
+            stats["step_total_modern"] += sc.total_modern
+            stats["step_missing_steps"] += len(sc.missing_steps)
+            stats["step_mismatched_steps"] += len(sc.mismatched_steps)
 
     return stats
 
@@ -485,6 +630,16 @@ def generate_report(
         lines.append(f"Total residues: {stats['total_residues']}")
         lines.append(f"Missing residues: {stats['missing_residues']}")
         lines.append(f"Mismatched calculations: {stats['mismatched_calculations']}")
+        lines.append("")
+    
+    # Step parameter comparison statistics
+    if stats["step_total_legacy"] > 0 or stats["step_total_modern"] > 0:
+        lines.append("STEP PARAMETER STATISTICS")
+        lines.append("-" * 80)
+        lines.append(f"Total legacy steps: {stats['step_total_legacy']}")
+        lines.append(f"Total modern steps: {stats['step_total_modern']}")
+        lines.append(f"Missing steps: {stats['step_missing_steps']}")
+        lines.append(f"Mismatched steps: {stats['step_mismatched_steps']}")
         lines.append("")
     elif any(
         result.frame_comparison is None
@@ -621,21 +776,84 @@ def generate_report(
                     legacy_residue_idx = mismatch.modern_record.get('legacy_residue_idx')
                     idx_str = f" [legacy_residue_idx={legacy_residue_idx}]" if legacy_residue_idx else ""
 
+                    # Handle nested structure for record type (base_frame_calc, ls_fitting, or frame_calc)
+                    mismatches_dict = mismatch.mismatches
+                    record_type = None
+                    if 'base_frame_calc' in mismatches_dict:
+                        record_type = 'base_frame_calc'
+                        mismatches_dict = mismatches_dict['base_frame_calc']
+                    elif 'ls_fitting' in mismatches_dict:
+                        record_type = 'ls_fitting'
+                        mismatches_dict = mismatches_dict['ls_fitting']
+                    elif 'frame_calc' in mismatches_dict:
+                        record_type = 'frame_calc'
+                        mismatches_dict = mismatches_dict['frame_calc']
+                    
+                    type_str = f" [{record_type}]" if record_type else ""
                     lines.append(
-                        f"\n  {base_type} {chain_id}:{residue_seq}{insertion}:{idx_str}"
+                        f"\n  {base_type} {chain_id}:{residue_seq}{insertion}:{idx_str}{type_str}"
                     )
-                    if "rms" in mismatch.mismatches:
+                    if "rms" in mismatches_dict:
                         lines.append(
-                            f"    RMS: legacy={mismatch.mismatches['rms']['legacy']:.6f}, "
-                            f"modern={mismatch.mismatches['rms']['modern']:.6f}"
+                            f"    RMS: legacy={mismatches_dict['rms']['legacy']:.6f}, "
+                            f"modern={mismatches_dict['rms']['modern']:.6f}"
                         )
-                    if "matched_atoms" in mismatch.mismatches:
+                    if "matched_atoms" in mismatches_dict:
                         lines.append(
-                            f"    Legacy only: {mismatch.mismatches['matched_atoms']['only_legacy']}"
+                            f"    Legacy only: {mismatches_dict['matched_atoms']['only_legacy']}"
                         )
                         lines.append(
-                            f"    Modern only: {mismatch.mismatches['matched_atoms']['only_modern']}"
+                            f"    Modern only: {mismatches_dict['matched_atoms']['only_modern']}"
                         )
+                    if "num_points" in mismatches_dict:
+                        lines.append(
+                            f"    num_points: legacy={mismatches_dict['num_points']['legacy']}, "
+                            f"modern={mismatches_dict['num_points']['modern']}"
+                        )
+                    if "num_matched_atoms" in mismatches_dict:
+                        lines.append(
+                            f"    num_matched_atoms: legacy={mismatches_dict['num_matched_atoms']['legacy']}, "
+                            f"modern={mismatches_dict['num_matched_atoms']['modern']}"
+                        )
+                    if "rotation_matrix" in mismatches_dict:
+                        rot_info = mismatches_dict['rotation_matrix']
+                        if 'max_diff' in rot_info:
+                            lines.append(
+                                f"    rotation_matrix: max_diff={rot_info['max_diff']:.6e}"
+                            )
+                        else:
+                            lines.append("    rotation_matrix: dimension mismatch")
+                    if "translation" in mismatches_dict:
+                        trans_info = mismatches_dict['translation']
+                        if 'max_diff' in trans_info:
+                            lines.append(
+                                f"    translation: max_diff={trans_info['max_diff']:.6e}"
+                            )
+                        else:
+                            lines.append("    translation: dimension mismatch")
+                    if "template_file" in mismatches_dict:
+                        lines.append(
+                            f"    template_file: legacy={mismatches_dict['template_file']['legacy']}, "
+                            f"modern={mismatches_dict['template_file']['modern']}"
+                        )
+                    if "matched_coordinates" in mismatches_dict:
+                        coord_info = mismatches_dict['matched_coordinates']
+                        if 'note' in coord_info:
+                            lines.append(
+                                f"    matched_coordinates: {coord_info['note']} "
+                                f"(legacy={coord_info['legacy_count']}, modern={coord_info['modern_count']})"
+                            )
+                        elif 'mismatched_pairs' in coord_info:
+                            lines.append(
+                                f"    matched_coordinates: {coord_info['mismatched_pairs']}/{coord_info['total_pairs']} pairs differ"
+                            )
+                            if coord_info['differences']:
+                                for diff in coord_info['differences'][:3]:  # Show first 3
+                                    lines.append(
+                                        f"      Pair {diff['index']} (atom_idx={diff['atom_idx']}): {list(diff['mismatches'].keys())}"
+                                    )
+                                if len(coord_info['differences']) > 3:
+                                    lines.append(f"      ... and {len(coord_info['differences']) - 3} more")
                     elif set(leg_atoms) != set(mod_atoms):
                         leg_only = sorted(set(leg_atoms) - set(mod_atoms))
                         mod_only = sorted(set(mod_atoms) - set(leg_atoms))
@@ -805,7 +1023,30 @@ def common_options(f):
         type=click.Choice(['10', '50', '100', '500', '1000'], case_sensitive=False),
         help="Use a saved test set of the specified size (10, 50, 100, 500, or 1000 PDBs)",
     )(f)
+    f = click.option(
+        "--no-cache",
+        is_flag=True,
+        help="Disable result caching (caching is enabled by default for better performance)",
+    )(f)
     return f
+
+
+def _compare_pdb_worker(args):
+    """Worker function for parallel processing (needs to be picklable)."""
+    pdb_id, project_root_str, use_legacy_mode, enable_cache, compare_atoms, compare_frames, regenerate = args
+    project_root = Path(project_root_str)
+    
+    # Create new comparator for this process
+    comparator = JsonComparator(
+        enable_cache=enable_cache,
+        compare_atoms=compare_atoms,
+        compare_frames=compare_frames,
+        force_recompute=False,
+    )
+    
+    return compare_single_pdb(
+        pdb_id, project_root, use_legacy_mode, comparator, regenerate
+    )
 
 
 def run_comparison(
@@ -826,17 +1067,26 @@ def run_comparison(
         results[pdb_ids[0]] = result
     else:
         completed = 0
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Use ProcessPoolExecutor for CPU-bound work (better than threads due to GIL)
+        # Processes allow true parallelism for CPU-bound JSON parsing/comparison
+        # Prepare arguments for worker function (must be picklable)
+        worker_args = [
+            (
+                pdb_id,
+                str(project_root),  # Convert Path to string for pickling
+                use_legacy_mode,
+                comparator.enable_cache,
+                comparator.compare_atoms,
+                comparator.compare_frames,
+                regenerate,
+            )
+            for pdb_id in pdb_ids
+        ]
+        
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
             future_to_pdb = {
-                executor.submit(
-                    compare_single_pdb,
-                    pdb_id,
-                    project_root,
-                    use_legacy_mode,
-                    comparator,
-                    regenerate,
-                ): pdb_id
-                for pdb_id in pdb_ids
+                executor.submit(_compare_pdb_worker, args): args[0]
+                for args in worker_args
             }
 
             for future in as_completed(future_to_pdb):
@@ -867,9 +1117,10 @@ def cli():
     """Compare JSON files between legacy and modern X3DNA implementations.
 
     Use subcommands to specify what to compare:
-    - compare: Compare both atoms and frames (default)
+    - compare: Compare atoms, frames, and step parameters (default)
     - atoms: Compare only atom records
     - frames: Compare only frame calculations
+    - steps: Compare only step parameters (bpstep_params, helical_params)
     - list: List available PDB files
     """
     pass
@@ -877,13 +1128,18 @@ def cli():
 
 @cli.command()
 @click.option("--verbose", "-v", is_flag=True, help="Show detailed output")
-@click.option("--diff-only", is_flag=True, help="Show only files with differences")
+@click.option("--diff-only", is_flag=True, help="Show only files with differences (default: True)")
+@click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def compare(verbose, diff_only, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
+def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, pdb_ids):
     """Compare atoms and frames for specified PDB(s) or all available."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
+    
+    # Default to diff_only=True unless --show-all is set
+    if not show_all:
+        diff_only = True
 
     if test_set:
         test_pdb_ids = load_test_set(project_root, int(test_set))
@@ -905,9 +1161,11 @@ def compare(verbose, diff_only, legacy_mode, output, threads, regenerate, test_s
         click.echo(
             "  (Will regenerate JSON files if missing or with --regenerate flag)"
         )
+    if not no_cache:
+        click.echo("  (Caching enabled - use --no-cache to disable)")
 
     comparator = JsonComparator(
-        enable_cache=False, compare_atoms=True, compare_frames=True
+        enable_cache=not no_cache, compare_atoms=True, compare_frames=True, compare_steps=True
     )
     results = run_comparison(
         pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate
@@ -934,13 +1192,18 @@ def compare(verbose, diff_only, legacy_mode, output, threads, regenerate, test_s
 
 @cli.command()
 @click.option("--verbose", "-v", is_flag=True, help="Show detailed output")
-@click.option("--diff-only", is_flag=True, help="Show only files with differences")
+@click.option("--diff-only", is_flag=True, help="Show only files with differences (default: True)")
+@click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def atoms(verbose, diff_only, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
+def atoms(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, pdb_ids):
     """Compare only atom records (skip frame calculations)."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
+    
+    # Default to diff_only=True unless --show-all is set
+    if not show_all:
+        diff_only = True
 
     if test_set:
         test_pdb_ids = load_test_set(project_root, int(test_set))
@@ -963,9 +1226,11 @@ def atoms(verbose, diff_only, legacy_mode, output, threads, regenerate, test_set
     click.echo(
         f"Comparing atoms for {len(pdb_ids)} file(s) using {max_workers} thread(s)..."
     )
+    if not no_cache:
+        click.echo("  (Caching enabled - use --no-cache to disable)")
 
     comparator = JsonComparator(
-        enable_cache=False, compare_atoms=True, compare_frames=False
+        enable_cache=not no_cache, compare_atoms=True, compare_frames=False, compare_steps=False
     )
     results = run_comparison(
         pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate
@@ -983,13 +1248,18 @@ def atoms(verbose, diff_only, legacy_mode, output, threads, regenerate, test_set
 
 @cli.command()
 @click.option("--verbose", "-v", is_flag=True, help="Show detailed output")
-@click.option("--diff-only", is_flag=True, help="Show only files with differences")
+@click.option("--diff-only", is_flag=True, help="Show only files with differences (default: True)")
+@click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def frames(verbose, diff_only, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
+def frames(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, pdb_ids):
     """Compare only frame calculations (skip atom records)."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
+    
+    # Default to diff_only=True unless --show-all is set
+    if not show_all:
+        diff_only = True
 
     if test_set:
         test_pdb_ids = load_test_set(project_root, int(test_set))
@@ -1012,9 +1282,67 @@ def frames(verbose, diff_only, legacy_mode, output, threads, regenerate, test_se
     click.echo(
         f"Comparing frames for {len(pdb_ids)} file(s) using {max_workers} thread(s)..."
     )
+    if not no_cache:
+        click.echo("  (Caching enabled - use --no-cache to disable)")
 
     comparator = JsonComparator(
-        enable_cache=False, compare_atoms=False, compare_frames=True
+        enable_cache=not no_cache, compare_atoms=False, compare_frames=True, compare_steps=False
+    )
+    results = run_comparison(
+        pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate
+    )
+
+    stats = analyze_results(results)
+    report = generate_report(stats, results, verbose, diff_only)
+
+    if output:
+        output.write_text(report)
+        click.echo(f"Report saved to: {output}")
+    else:
+        click.echo(report)
+
+
+@cli.command()
+@click.option("--verbose", "-v", is_flag=True, help="Show detailed output")
+@click.option("--diff-only", is_flag=True, help="Show only files with differences (default: True)")
+@click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
+@common_options
+@click.argument("pdb_ids", nargs=-1)
+def steps(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, pdb_ids):
+    """Compare only step parameters (bpstep_params, helical_params) - skip atoms and frames."""
+    project_root = Path(__file__).parent.parent
+    max_workers = threads or multiprocessing.cpu_count()
+    
+    # Default to diff_only=True unless --show-all is set
+    if not show_all:
+        diff_only = True
+
+    if test_set:
+        test_pdb_ids = load_test_set(project_root, int(test_set))
+        if test_pdb_ids is None:
+            click.echo(f"Error: Test set of size {test_set} not found. Generate it first with 'generate-test-sets' command.", err=True)
+            return
+        pdb_ids = test_pdb_ids
+        click.echo(f"Using test set of size {test_set}: {len(pdb_ids)} PDB files")
+    elif not pdb_ids:
+        click.echo("Finding available PDB files...")
+        pdb_ids = find_available_pdbs(project_root, legacy_mode)
+        if not pdb_ids:
+            click.echo("No common PDB files found!", err=True)
+            return
+        click.echo(f"Found {len(pdb_ids)} PDB files to compare")
+
+    if regenerate:
+        click.echo("Regenerating JSON files if missing...")
+
+    click.echo(
+        f"Comparing step parameters for {len(pdb_ids)} file(s) using {max_workers} thread(s)..."
+    )
+    if not no_cache:
+        click.echo("  (Caching enabled - use --no-cache to disable)")
+
+    comparator = JsonComparator(
+        enable_cache=not no_cache, compare_atoms=False, compare_frames=False, compare_steps=True
     )
     results = run_comparison(
         pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate
@@ -1048,15 +1376,20 @@ def list(legacy_mode):
 
 @cli.command("ring-atoms")
 @click.option("--verbose", "-v", is_flag=True, help="Show detailed output")
-@click.option("--diff-only", is_flag=True, help="Show only residues with differences")
+@click.option("--diff-only", is_flag=True, help="Show only residues with differences (default: True)")
+@click.option("--show-all", is_flag=True, help="Show all residues, including perfect matches")
 @click.option("--show-pdb-lines", is_flag=True, help="Show PDB lines for atoms that differ")
 @click.option("--output-dir", "-o", type=click.Path(path_type=Path), help="Directory to save output files")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def ring_atoms(verbose, diff_only, show_pdb_lines, output_dir, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
+def ring_atoms(verbose, diff_only, show_all, show_pdb_lines, output_dir, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
     """Compare ring atom matching between legacy and modern code."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
+    
+    # Default to diff_only=True unless --show-all is set
+    if not show_all:
+        diff_only = True
     
     # Import ring atom comparison functionality
     import sys
@@ -1180,6 +1513,10 @@ def ring_atoms(verbose, diff_only, show_pdb_lines, output_dir, legacy_mode, outp
         if output_dir is None:
             output_dir = project_root / "ring_atom_comparisons"
         output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # If --show-all is set, override diff_only
+        if show_all:
+            diff_only = False
         
         click.echo(f"Comparing ring atoms for {len(pdb_ids)} file(s) using {max_workers} thread(s)...")
         click.echo(f"Output directory: {output_dir}")
@@ -1308,3 +1645,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

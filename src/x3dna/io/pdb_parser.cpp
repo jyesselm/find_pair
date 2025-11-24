@@ -482,20 +482,23 @@ void PdbParser::process_atom_record(
         core::Atom atom = parse_atom_line(line, line_number);
         atom.set_model_number(model_number);
 
-        // Assign legacy indices sequentially (1-based) as atoms are encountered
-        // This matches the legacy code's behavior of assigning indices in PDB file order
-        atom.set_legacy_atom_idx(legacy_atom_idx++);
-        
-        // Assign legacy residue index (1-based) - assign new index when residue changes
-        auto residue_key = std::make_tuple(atom.chain_id(), atom.residue_seq(), atom.insertion());
-        auto residue_it = legacy_residue_idx_map.find(residue_key);
-        if (residue_it == legacy_residue_idx_map.end()) {
-            // New residue - assign next residue index
-            legacy_residue_idx_map[residue_key] = legacy_residue_idx++;
-        }
-        atom.set_legacy_residue_idx(legacy_residue_idx_map[residue_key]);
-
+        // Only assign legacy indices to atoms that pass filtering
+        // This matches the legacy code's behavior: atom_idx is only assigned to kept atoms
         if (should_keep_atom(atom)) {
+            // Assign legacy atom index sequentially (1-based) as kept atoms are encountered
+            // This matches the legacy code's behavior of assigning indices in PDB file order
+            atom.set_legacy_atom_idx(legacy_atom_idx++);
+
+            // Assign legacy residue index (1-based) - assign new index when residue changes
+            auto residue_key =
+                std::make_tuple(atom.chain_id(), atom.residue_seq(), atom.insertion());
+            auto residue_it = legacy_residue_idx_map.find(residue_key);
+            if (residue_it == legacy_residue_idx_map.end()) {
+                // New residue - assign next residue index
+                legacy_residue_idx_map[residue_key] = legacy_residue_idx++;
+            }
+            atom.set_legacy_residue_idx(legacy_residue_idx_map[residue_key]);
+
             // Use (chain_id, residue_seq, insertion_code) as key to match legacy behavior
             // Legacy uses ResName + ChainID + ResSeq + iCode to identify residues
             residue_atoms[{atom.chain_id(), atom.residue_seq(), atom.insertion()}].push_back(atom);
@@ -518,25 +521,28 @@ void PdbParser::process_hetatm_record(
         core::Atom atom = parse_hetatm_line(line, line_number);
         atom.set_model_number(model_number);
 
-        // Assign legacy indices sequentially (1-based) as atoms are encountered
-        // This matches the legacy code's behavior of assigning indices in PDB file order
-        atom.set_legacy_atom_idx(legacy_atom_idx++);
-        
-        // Assign legacy residue index (1-based) - assign new index when residue changes
-        auto residue_key = std::make_tuple(atom.chain_id(), atom.residue_seq(), atom.insertion());
-        auto residue_it = legacy_residue_idx_map.find(residue_key);
-        if (residue_it == legacy_residue_idx_map.end()) {
-            // New residue - assign next residue index
-            legacy_residue_idx_map[residue_key] = legacy_residue_idx++;
-        }
-        atom.set_legacy_residue_idx(legacy_residue_idx_map[residue_key]);
-
         // Check if water and should be skipped
         if (!include_waters_ && is_water(atom.residue_name())) {
             return;
         }
 
+        // Only assign legacy indices to atoms that pass filtering
+        // This matches the legacy code's behavior: atom_idx is only assigned to kept atoms
         if (should_keep_atom(atom)) {
+            // Assign legacy atom index sequentially (1-based) as kept atoms are encountered
+            // This matches the legacy code's behavior of assigning indices in PDB file order
+            atom.set_legacy_atom_idx(legacy_atom_idx++);
+
+            // Assign legacy residue index (1-based) - assign new index when residue changes
+            auto residue_key =
+                std::make_tuple(atom.chain_id(), atom.residue_seq(), atom.insertion());
+            auto residue_it = legacy_residue_idx_map.find(residue_key);
+            if (residue_it == legacy_residue_idx_map.end()) {
+                // New residue - assign next residue index
+                legacy_residue_idx_map[residue_key] = legacy_residue_idx++;
+            }
+            atom.set_legacy_residue_idx(legacy_residue_idx_map[residue_key]);
+
             // Use (chain_id, residue_seq, insertion_code) as key to match legacy behavior
             // Legacy uses ResName + ChainID + ResSeq + iCode to identify residues
             residue_atoms[{atom.chain_id(), atom.residue_seq(), atom.insertion()}].push_back(atom);
@@ -616,7 +622,7 @@ core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& p
     size_t line_number = 0;
     std::string line;
     bool all_models = false;
-    
+
     // Legacy indices: assign sequentially as atoms/residues are encountered (1-based)
     int legacy_atom_idx = 1;
     std::map<std::tuple<char, int, char>, int> legacy_residue_idx_map;

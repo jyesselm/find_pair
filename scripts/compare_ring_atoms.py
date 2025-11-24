@@ -44,46 +44,58 @@ def load_json_file(json_file: Path) -> Optional[Dict]:
         return None
     
     try:
+        # Try fast path: just parse the whole file
         with open(json_file, 'r') as f:
-            content = f.read()
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                # If that fails, read content and find first complete JSON
+                f.seek(0)
+                content = f.read()
         
-        # Attempt to find the end of the first complete JSON object or array
-        brace_count = 0
-        bracket_count = 0
-        in_string = False
-        escape_next = False
-        end_pos = -1
-        
-        for i, char in enumerate(content):
-            if escape_next:
-                escape_next = False
-                continue
-            if char == '\\':
-                escape_next = True
-                continue
-            if char == '"' and not escape_next:
-                in_string = not in_string
-                continue
-            if not in_string:
-                if char == '{':
-                    brace_count += 1
-                elif char == '}':
-                    brace_count -= 1
-                    if brace_count == 0 and bracket_count == 0:
-                        end_pos = i + 1
-                        break
-                elif char == '[':
-                    bracket_count += 1
-                elif char == ']':
-                    bracket_count -= 1
-                    if bracket_count == 0 and brace_count == 0:
-                        end_pos = i + 1
-                        break
-        
-        if end_pos > 0:
-            return json.loads(content[:end_pos])
-        else:
-            return json.loads(content)
+        # Fast method: use JSONDecoder to parse incrementally
+        decoder = json.JSONDecoder()
+        try:
+            obj, idx = decoder.raw_decode(content)
+            return obj
+        except (json.JSONDecodeError, ValueError):
+            # Fallback to character-by-character (slower but more robust)
+            brace_count = 0
+            bracket_count = 0
+            in_string = False
+            escape_next = False
+            end_pos = -1
+            
+            for i, char in enumerate(content):
+                if escape_next:
+                    escape_next = False
+                    continue
+                if char == '\\':
+                    escape_next = True
+                    continue
+                if char == '"' and not escape_next:
+                    in_string = not in_string
+                    continue
+                if not in_string:
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0 and bracket_count == 0:
+                            end_pos = i + 1
+                            break
+                    elif char == '[':
+                        bracket_count += 1
+                    elif char == ']':
+                        bracket_count -= 1
+                        if bracket_count == 0 and brace_count == 0:
+                            end_pos = i + 1
+                            break
+            
+            if end_pos > 0:
+                return json.loads(content[:end_pos])
+            else:
+                return json.loads(content)
     except Exception as e:
         print(f"Error loading JSON file {json_file}: {e}", file=sys.stderr)
         return None
