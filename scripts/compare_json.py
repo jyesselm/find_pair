@@ -805,6 +805,28 @@ def generate_report(
                         lines.append(
                             f"    Modern only: {mismatches_dict['matched_atoms']['only_modern']}"
                         )
+                    if "residue_idx" in mismatches_dict:
+                        lines.append(
+                            f"    residue_idx: legacy={mismatches_dict['residue_idx']['legacy']}, "
+                            f"modern={mismatches_dict['residue_idx']['modern']}"
+                        )
+                    if "legacy_residue_idx_mismatch" in mismatches_dict:
+                        mismatch_info = mismatches_dict['legacy_residue_idx_mismatch']
+                        lines.append(
+                            f"    legacy_residue_idx mismatch: {mismatch_info.get('note', '')} "
+                            f"(legacy={mismatch_info.get('legacy_residue_idx')}, "
+                            f"modern={mismatch_info.get('modern_legacy_residue_idx')})"
+                        )
+                    if "base_type" in mismatches_dict:
+                        lines.append(
+                            f"    base_type: legacy='{mismatches_dict['base_type']['legacy']}', "
+                            f"modern='{mismatches_dict['base_type']['modern']}'"
+                        )
+                    if "residue_name" in mismatches_dict:
+                        lines.append(
+                            f"    residue_name: legacy='{mismatches_dict['residue_name']['legacy']}', "
+                            f"modern='{mismatches_dict['residue_name']['modern']}'"
+                        )
                     if "num_points" in mismatches_dict:
                         lines.append(
                             f"    num_points: legacy={mismatches_dict['num_points']['legacy']}, "

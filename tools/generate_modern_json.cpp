@@ -183,11 +183,6 @@ int main(int argc, char* argv[]) {
                     // If has >= 3 ring atoms, treat as nucleotide (like legacy)
                     if (ring_atom_count >= 3) {
                         is_nucleotide = true;
-#ifdef DEBUG_FRAME_CALC
-                        std::cerr << "DEBUG: Modified nucleotide detected: " << residue.name()
-                                  << " " << residue.chain_id() << ":" << residue.seq_num()
-                                  << " (has " << ring_atom_count << " ring atoms)\n";
-#endif
                     }
                 }
 
@@ -199,18 +194,6 @@ int main(int argc, char* argv[]) {
 
                     if (frame_result.is_valid) {
                         char base_type = residue.one_letter_code();
-
-#ifdef DEBUG_FRAME_CALC
-                        std::cerr << "DEBUG: Recording base_frame_calc for " << residue.name()
-                                  << " " << residue.chain_id() << ":" << residue.seq_num()
-                                  << " with " << frame_result.matched_atoms.size()
-                                  << " matched atoms\n";
-                        std::cerr << "DEBUG: Matched atoms in result: ";
-                        for (const auto& atom : frame_result.matched_atoms) {
-                            std::cerr << atom << " ";
-                        }
-                        std::cerr << "\n";
-#endif
 
                         // Record base_frame_calc
                         // JsonWriter expects 0-based index, but legacy uses 1-based

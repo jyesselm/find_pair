@@ -230,6 +230,24 @@ def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
         
         mismatches = {}
         
+        # Compare residue identification fields (should match but verify)
+        leg_residue_idx = leg_rec.get('residue_idx')
+        mod_residue_idx = mod_rec.get('residue_idx')
+        if leg_residue_idx is not None and mod_residue_idx is not None and leg_residue_idx != mod_residue_idx:
+            mismatches['residue_idx'] = {'legacy': leg_residue_idx, 'modern': mod_residue_idx}
+        
+        # Compare base_type
+        leg_base_type = leg_rec.get('base_type', '')
+        mod_base_type = mod_rec.get('base_type', '')
+        if leg_base_type != mod_base_type:
+            mismatches['base_type'] = {'legacy': leg_base_type, 'modern': mod_base_type}
+        
+        # Compare residue_name
+        leg_resname = leg_rec.get('residue_name', '')
+        mod_resname = mod_rec.get('residue_name', '')
+        if leg_resname != mod_resname:
+            mismatches['residue_name'] = {'legacy': leg_resname, 'modern': mod_resname}
+        
         # Compare RMS
         leg_rms = leg_rec.get('rms_fit', 0.0)
         mod_rms = mod_rec.get('rms_fit', 0.0)
@@ -298,6 +316,28 @@ def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
             continue
         
         mismatches = {}
+        
+        # Compare residue identification fields (should match but verify)
+        leg_residue_idx = leg_rec.get('residue_idx')
+        mod_residue_idx = mod_rec.get('residue_idx')
+        if leg_residue_idx is not None and mod_residue_idx is not None and leg_residue_idx != mod_residue_idx:
+            mismatches['residue_idx'] = {'legacy': leg_residue_idx, 'modern': mod_residue_idx}
+        
+        # Verify legacy_residue_idx in modern matches legacy residue_idx (important cross-check)
+        mod_legacy_residue_idx = mod_rec.get('legacy_residue_idx')
+        if mod_legacy_residue_idx is not None and leg_residue_idx is not None:
+            if mod_legacy_residue_idx != leg_residue_idx:
+                mismatches['legacy_residue_idx_mismatch'] = {
+                    'legacy_residue_idx': leg_residue_idx,
+                    'modern_legacy_residue_idx': mod_legacy_residue_idx,
+                    'note': 'modern legacy_residue_idx does not match legacy residue_idx'
+                }
+        
+        # Compare residue_name
+        leg_resname = leg_rec.get('residue_name', '')
+        mod_resname = mod_rec.get('residue_name', '')
+        if leg_resname != mod_resname:
+            mismatches['residue_name'] = {'legacy': leg_resname, 'modern': mod_resname}
         
         # Compare RMS
         leg_rms = leg_rec.get('rms_fit', 0.0)
@@ -398,6 +438,34 @@ def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
         
         mismatches = {}
         tolerance = 1e-6  # Tolerance for coordinate comparisons
+        
+        # Compare residue identification fields (should match but verify)
+        leg_residue_idx = leg_rec.get('residue_idx')
+        mod_residue_idx = mod_rec.get('residue_idx')
+        if leg_residue_idx is not None and mod_residue_idx is not None and leg_residue_idx != mod_residue_idx:
+            mismatches['residue_idx'] = {'legacy': leg_residue_idx, 'modern': mod_residue_idx}
+        
+        # Verify legacy_residue_idx in modern matches legacy residue_idx (important cross-check)
+        mod_legacy_residue_idx = mod_rec.get('legacy_residue_idx')
+        if mod_legacy_residue_idx is not None and leg_residue_idx is not None:
+            if mod_legacy_residue_idx != leg_residue_idx:
+                mismatches['legacy_residue_idx_mismatch'] = {
+                    'legacy_residue_idx': leg_residue_idx,
+                    'modern_legacy_residue_idx': mod_legacy_residue_idx,
+                    'note': 'modern legacy_residue_idx does not match legacy residue_idx'
+                }
+        
+        # Compare base_type
+        leg_base_type = leg_rec.get('base_type', '')
+        mod_base_type = mod_rec.get('base_type', '')
+        if leg_base_type != mod_base_type:
+            mismatches['base_type'] = {'legacy': leg_base_type, 'modern': mod_base_type}
+        
+        # Compare residue_name
+        leg_resname = leg_rec.get('residue_name', '')
+        mod_resname = mod_rec.get('residue_name', '')
+        if leg_resname != mod_resname:
+            mismatches['residue_name'] = {'legacy': leg_resname, 'modern': mod_resname}
         
         # Compare RMS
         leg_rms = leg_rec.get('rms_fit', 0.0)
