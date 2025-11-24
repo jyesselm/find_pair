@@ -168,5 +168,30 @@ endif()
 
 gtest_discover_tests(test_frame_calculation_legacy)
 
+# Core objects integration test (Stage 2 Task 2.8)
+add_executable(test_core_objects_integration
+    test_core_objects_integration.cpp
+)
+
+target_include_directories(test_core_objects_integration PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(test_core_objects_integration
+    PRIVATE
+    x3dna
+    gtest
+    gtest_main
+)
+
+# Link filesystem library if needed (CMake 3.15+)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_core_objects_integration PRIVATE stdc++fs)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_core_objects_integration PRIVATE c++fs)
+endif()
+
+gtest_discover_tests(test_core_objects_integration)
+
 # Note: More integration tests will be added as we implement each stage
 

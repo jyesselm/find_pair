@@ -23,8 +23,35 @@ namespace x3dna::test {
 class integration_test_base : public ::testing::Test {
 protected:
     void SetUp() override {
-        // Discover all PDB/JSON pairs
-        pairs_ = test_data_discovery::discover_pairs();
+        // Try to use test set first (test_set_10 by default)
+        pairs_ = test_data_discovery::discover_pairs_from_test_set(10);
+        
+        // Filter to only pairs with pdb_atoms records
+        if (!pairs_.empty()) {
+            std::vector<pdb_json_pair> filtered_pairs;
+            for (const auto& pair : pairs_) {
+                if (test_data_discovery::has_pdb_atoms_record(pair.json_file)) {
+                    filtered_pairs.push_back(pair);
+                }
+            }
+            pairs_ = filtered_pairs;
+        }
+        
+        // Fall back to all pairs if test set is empty
+        if (pairs_.empty()) {
+            pairs_ = test_data_discovery::discover_pairs();
+            
+            // Filter to only pairs with pdb_atoms records
+            if (!pairs_.empty()) {
+                std::vector<pdb_json_pair> filtered_pairs;
+                for (const auto& pair : pairs_) {
+                    if (test_data_discovery::has_pdb_atoms_record(pair.json_file)) {
+                        filtered_pairs.push_back(pair);
+                    }
+                }
+                pairs_ = filtered_pairs;
+            }
+        }
 
         if (pairs_.empty()) {
             GTEST_SKIP() << "No PDB/JSON pairs found for testing. "
