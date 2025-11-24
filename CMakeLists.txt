@@ -38,6 +38,8 @@ add_library(x3dna
     src/x3dna/algorithms/standard_base_templates.cpp
     src/x3dna/algorithms/ring_atom_matcher.cpp
     src/x3dna/algorithms/base_frame_calculator.cpp
+    src/x3dna/algorithms/base_pair_validator.cpp
+    src/x3dna/algorithms/base_pair_finder.cpp
 )
 target_include_directories(x3dna PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -66,6 +68,9 @@ endif()
 # Tools
 add_executable(generate_modern_json tools/generate_modern_json.cpp)
 target_link_libraries(generate_modern_json PRIVATE x3dna)
+
+add_executable(test_overlap_calculation tools/test_overlap_calculation.cpp)
+target_link_libraries(test_overlap_calculation PRIVATE x3dna)
 
 # Documentation
 if(BUILD_DOCS)

@@ -13,6 +13,9 @@ from .models import ComparisonResult, AtomComparison, FrameComparison
 from .atom_comparison import compare_atoms
 from .frame_comparison import compare_frames
 from .step_comparison import compare_step_parameters
+from .pair_comparison import compare_pair_validations, compare_distance_checks
+from .base_pair_comparison import compare_base_pairs
+from .find_bestpair_comparison import compare_find_bestpair_selections
 from .pdb_utils import PdbFileReader
 from .result_cache import ComparisonCache
 from .parallel_executor import ParallelExecutor, print_progress
@@ -26,7 +29,8 @@ class JsonComparator:
                  force_recompute: bool = False,
                  compare_atoms: bool = True,
                  compare_frames: bool = True,
-                 compare_steps: bool = True):
+                 compare_steps: bool = True,
+                 compare_pairs: bool = True):
         """
         Initialize comparator with caching support.
         
@@ -38,6 +42,7 @@ class JsonComparator:
             compare_atoms: If True, compare atom records (pdb_atoms)
             compare_frames: If True, compare frame calculations (base_frame_calc, frame_calc, ls_fitting)
             compare_steps: If True, compare step parameters (bpstep_params, helical_params)
+            compare_pairs: If True, compare pair validation and distance checks
         """
         self.cache_dir = Path(cache_dir)
         self.tolerance = tolerance
@@ -46,6 +51,7 @@ class JsonComparator:
         self.compare_atoms = compare_atoms
         self.compare_frames = compare_frames
         self.compare_steps = compare_steps
+        self.compare_pairs = compare_pairs
         self.cache = ComparisonCache(self.cache_dir) if enable_cache else None
     
     def _load_json(self, json_file: Path) -> Optional[Dict]:
@@ -229,6 +235,161 @@ class JsonComparator:
         
         return records
     
+    def _extract_find_bestpair_selection_records(self, json_data: Dict, json_file: Optional[Path] = None) -> List[Dict]:
+        """Extract find_bestpair_selection records from JSON (actual selected pairs from find_bestpair)."""
+        records = []
+        
+        # If json_file is a split file (ends with _find_bestpair_selection.json), load it directly
+        if json_file and json_file.name.endswith('_find_bestpair_selection.json'):
+            try:
+                split_data = self._load_json(json_file)
+                if isinstance(split_data, list):
+                    records.extend(split_data)
+                    return records
+            except Exception:
+                pass
+        
+        # Handle split file format (array of records) - this is the primary format
+        if json_file:
+            # Extract base name from file (e.g., "1Q96_find_bestpair_selection.json" -> "1Q96")
+            # or from main file path (e.g., "1Q96.json" -> "1Q96")
+            if json_file.name.endswith('_find_bestpair_selection.json'):
+                base_name = json_file.name.replace('_find_bestpair_selection.json', '')
+            else:
+                base_name = json_file.stem
+            split_file = json_file.parent / f"{base_name}_find_bestpair_selection.json"
+            if split_file.exists() and split_file != json_file:
+                try:
+                    split_data = self._load_json(split_file)
+                    if isinstance(split_data, list):
+                        records.extend(split_data)
+                        return records
+                except Exception:
+                    pass
+        
+        # Handle main JSON file format
+        if isinstance(json_data, dict):
+            calculations = json_data.get('calculations', {})
+            
+            # Handle grouped format: calculations is a dict with type keys
+            if isinstance(calculations, dict):
+                calc_group = calculations.get('find_bestpair_selection', [])
+                if isinstance(calc_group, list):
+                    records.extend(calc_group)
+            # Handle array format: calculations is a list
+            elif isinstance(calculations, list):
+                for calc in calculations:
+                    if isinstance(calc, dict) and calc.get('type') == 'find_bestpair_selection':
+                        records.append(calc)
+        elif isinstance(json_data, list):
+            # Direct array format (split file loaded directly)
+            records.extend(json_data)
+        
+        return records
+    
+    def _extract_base_pair_records(self, json_data: Dict, json_file: Optional[Path] = None) -> List[Dict]:
+        """Extract base_pair records from JSON (original identification from find_pair phase).
+        
+        Legacy writes base_pair records to the main JSON file (not split files).
+        Modern writes base_pair records to split files.
+        """
+        records = []
+        calculations = json_data.get('calculations', {})
+        
+        # Handle grouped format: calculations is a dict with type keys
+        if isinstance(calculations, dict):
+            calc_group = calculations.get('base_pair', [])
+            if isinstance(calc_group, list):
+                records.extend(calc_group)
+        # Handle array format: calculations is a list
+        elif isinstance(calculations, list):
+            for calc in calculations:
+                if isinstance(calc, dict) and calc.get('type') == 'base_pair':
+                    records.append(calc)
+        
+        # If no records found in main file and we have a file path, try split file format
+        # (Modern code writes to split files, legacy writes to main file)
+        if not records and json_file:
+            split_file = json_file.parent / f"{json_file.stem}_base_pair.json"
+            if split_file.exists():
+                try:
+                    split_data = self._load_json(split_file)
+                    if isinstance(split_data, list):
+                        # Split files now contain the 'type' field in each record
+                        records.extend(split_data)
+                except Exception:
+                    pass
+        
+        return records
+    
+    def _extract_pair_validation_records(self, json_data: Dict, json_file: Optional[Path] = None) -> List[Dict]:
+        """Extract pair_validation records from JSON (supports array, grouped, and split file formats)."""
+        records = []
+        calculations = json_data.get('calculations', {})
+        
+        # Handle grouped format: calculations is a dict with type keys
+        if isinstance(calculations, dict):
+            calc_group = calculations.get('pair_validation', [])
+            if isinstance(calc_group, list):
+                records.extend(calc_group)
+        # Handle array format: calculations is a list
+        elif isinstance(calculations, list):
+            for calc in calculations:
+                if calc.get('type') == 'pair_validation':
+                    records.append(calc)
+        
+        # If no records found and we have a file path, try split file format
+        if not records and json_file:
+            split_file = json_file.parent / f"{json_file.stem}_pair_validation.json"
+            if split_file.exists():
+                try:
+                    split_data = self._load_json(split_file)
+                    if isinstance(split_data, list):
+                        # Split files don't have type field - add it for consistency
+                        for record in split_data:
+                            if isinstance(record, dict):
+                                record_with_type = record.copy()
+                                record_with_type['type'] = 'pair_validation'
+                                records.append(record_with_type)
+                except Exception:
+                    pass
+        
+        return records
+    
+    def _extract_distance_checks_records(self, json_data: Dict, json_file: Optional[Path] = None) -> List[Dict]:
+        """Extract distance_checks records from JSON (supports array, grouped, and split file formats)."""
+        records = []
+        calculations = json_data.get('calculations', {})
+        
+        # Handle grouped format: calculations is a dict with type keys
+        if isinstance(calculations, dict):
+            calc_group = calculations.get('distance_checks', [])
+            if isinstance(calc_group, list):
+                records.extend(calc_group)
+        # Handle array format: calculations is a list
+        elif isinstance(calculations, list):
+            for calc in calculations:
+                if calc.get('type') == 'distance_checks':
+                    records.append(calc)
+        
+        # If no records found and we have a file path, try split file format
+        if not records and json_file:
+            split_file = json_file.parent / f"{json_file.stem}_distance_checks.json"
+            if split_file.exists():
+                try:
+                    split_data = self._load_json(split_file)
+                    if isinstance(split_data, list):
+                        # Split files don't have type field - add it for consistency
+                        for record in split_data:
+                            if isinstance(record, dict):
+                                record_with_type = record.copy()
+                                record_with_type['type'] = 'distance_checks'
+                                records.append(record_with_type)
+                except Exception:
+                    pass
+        
+        return records
+    
     def compare_files(self, legacy_file: Path, modern_file: Path,
                      pdb_file: Path, pdb_id: str) -> ComparisonResult:
         """
@@ -373,6 +534,58 @@ class JsonComparator:
             except Exception as e:
                 # Don't fail comparison on step parameter errors (they may not be generated yet)
                 pass
+        
+        # Compare find_bestpair_selection records (PRIMARY - actual selected pairs from find_bestpair)
+        if self.compare_pairs:
+            try:
+                legacy_selection = self._extract_find_bestpair_selection_records(legacy_json, legacy_file)
+                modern_selection = self._extract_find_bestpair_selection_records(modern_json, modern_file)
+                
+                if legacy_selection or modern_selection:
+                    find_bestpair_comparison = compare_find_bestpair_selections(
+                        legacy_selection, modern_selection
+                    )
+                    result.find_bestpair_comparison = find_bestpair_comparison
+            except Exception as e:
+                result.errors.append(f"Error comparing find_bestpair_selection records: {e}")
+
+        # Compare base_pair records (from calculate_more_bppars - pairs that pass all checks)
+        if self.compare_pairs:
+            try:
+                legacy_base_pairs = self._extract_base_pair_records(legacy_json, legacy_file)
+                modern_base_pairs = self._extract_base_pair_records(modern_json, modern_file)
+                
+                if legacy_base_pairs or modern_base_pairs:
+                    base_pair_comparison = compare_base_pairs(
+                        legacy_base_pairs, modern_base_pairs, self.tolerance
+                    )
+                    result.base_pair_comparison = base_pair_comparison
+            except Exception as e:
+                result.errors.append(f"Error comparing base_pair records: {e}")
+
+        # Compare pair validations and distance checks (SECONDARY - for debugging)
+        if self.compare_pairs:
+            try:
+                legacy_pair_validations = self._extract_pair_validation_records(legacy_json, legacy_file)
+                modern_pair_validations = self._extract_pair_validation_records(modern_json, modern_file)
+                
+                if legacy_pair_validations or modern_pair_validations:
+                    pair_validation_comparison = compare_pair_validations(
+                        legacy_pair_validations, modern_pair_validations, self.tolerance
+                    )
+                    result.pair_validation_comparison = pair_validation_comparison
+                
+                legacy_distance_checks = self._extract_distance_checks_records(legacy_json, legacy_file)
+                modern_distance_checks = self._extract_distance_checks_records(modern_json, modern_file)
+                
+                if legacy_distance_checks or modern_distance_checks:
+                    distance_checks_comparison = compare_distance_checks(
+                        legacy_distance_checks, modern_distance_checks, self.tolerance
+                    )
+                    result.distance_checks_comparison = distance_checks_comparison
+            except Exception as e:
+                # Don't fail comparison on pair validation errors
+                result.errors.append(f"Error comparing pair validations: {e}")
         
         # Determine status
         if result.errors:

@@ -478,6 +478,25 @@ def analyze_results(results: Dict[str, ComparisonResult]) -> Dict:
         "step_total_modern": 0,
         "step_missing_steps": 0,
         "step_mismatched_steps": 0,
+        "find_bestpair_total_legacy": 0,
+        "find_bestpair_total_modern": 0,
+        "find_bestpair_missing_in_modern": 0,
+        "find_bestpair_extra_in_modern": 0,
+        "base_pair_total_legacy": 0,
+        "base_pair_total_modern": 0,
+        "base_pair_missing_in_modern": 0,
+        "base_pair_extra_in_modern": 0,
+        "base_pair_mismatched": 0,
+        "pair_validation_total_legacy": 0,
+        "pair_validation_total_modern": 0,
+        "pair_validation_missing_in_modern": 0,
+        "pair_validation_extra_in_modern": 0,
+        "pair_validation_mismatched": 0,
+        "distance_checks_total_legacy": 0,
+        "distance_checks_total_modern": 0,
+        "distance_checks_missing_in_modern": 0,
+        "distance_checks_extra_in_modern": 0,
+        "distance_checks_mismatched": 0,
     }
 
     for pdb_id, result in results.items():
@@ -568,6 +587,41 @@ def analyze_results(results: Dict[str, ComparisonResult]) -> Dict:
             stats["step_total_modern"] += sc.total_modern
             stats["step_missing_steps"] += len(sc.missing_steps)
             stats["step_mismatched_steps"] += len(sc.mismatched_steps)
+        
+        # Find bestpair selection comparison statistics (PRIMARY - actual selected pairs)
+        if hasattr(result, 'find_bestpair_comparison') and result.find_bestpair_comparison:
+            fbc = result.find_bestpair_comparison
+            stats["find_bestpair_total_legacy"] += fbc.total_legacy
+            stats["find_bestpair_total_modern"] += fbc.total_modern
+            stats["find_bestpair_missing_in_modern"] += len(fbc.missing_in_modern)
+            stats["find_bestpair_extra_in_modern"] += len(fbc.extra_in_modern)
+        
+        # Base pair comparison statistics (pairs that pass all checks from calculate_more_bppars)
+        if hasattr(result, 'base_pair_comparison') and result.base_pair_comparison:
+            bpc = result.base_pair_comparison
+            stats["base_pair_total_legacy"] += bpc.total_legacy
+            stats["base_pair_total_modern"] += bpc.total_modern
+            stats["base_pair_missing_in_modern"] += len(bpc.missing_in_modern)
+            stats["base_pair_extra_in_modern"] += len(bpc.extra_in_modern)
+            stats["base_pair_mismatched"] += len(bpc.mismatched_pairs)
+        
+        # Pair validation comparison statistics (SECONDARY - for debugging)
+        if hasattr(result, 'pair_validation_comparison') and result.pair_validation_comparison:
+            pvc = result.pair_validation_comparison
+            stats["pair_validation_total_legacy"] += pvc.total_legacy
+            stats["pair_validation_total_modern"] += pvc.total_modern
+            stats["pair_validation_missing_in_modern"] += len(pvc.missing_in_modern)
+            stats["pair_validation_extra_in_modern"] += len(pvc.extra_in_modern)
+            stats["pair_validation_mismatched"] += len(pvc.mismatched_validations)
+        
+        # Distance checks comparison statistics
+        if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
+            dcc = result.distance_checks_comparison
+            stats["distance_checks_total_legacy"] += dcc.total_legacy
+            stats["distance_checks_total_modern"] += dcc.total_modern
+            stats["distance_checks_missing_in_modern"] += len(dcc.missing_in_modern)
+            stats["distance_checks_extra_in_modern"] += len(dcc.extra_in_modern)
+            stats["distance_checks_mismatched"] += len(dcc.mismatched_checks)
 
     return stats
 
@@ -640,6 +694,51 @@ def generate_report(
         lines.append(f"Total modern steps: {stats['step_total_modern']}")
         lines.append(f"Missing steps: {stats['step_missing_steps']}")
         lines.append(f"Mismatched steps: {stats['step_mismatched_steps']}")
+        lines.append("")
+    
+    # Find bestpair selection statistics (PRIMARY - actual selected pairs)
+    if stats["find_bestpair_total_legacy"] > 0 or stats["find_bestpair_total_modern"] > 0:
+        lines.append("FIND_BESTPAIR SELECTION STATISTICS (Actual Selected Pairs)")
+        lines.append("-" * 80)
+        lines.append(f"Total legacy selected pairs: {stats['find_bestpair_total_legacy']}")
+        lines.append(f"Total modern selected pairs: {stats['find_bestpair_total_modern']}")
+        lines.append(f"Common pairs: {stats['find_bestpair_total_legacy'] - stats['find_bestpair_missing_in_modern']}")
+        lines.append(f"Missing in modern: {stats['find_bestpair_missing_in_modern']}")
+        lines.append(f"Extra in modern: {stats['find_bestpair_extra_in_modern']}")
+        lines.append("")
+    
+    # Base pair comparison statistics (pairs that pass all checks from calculate_more_bppars)
+    if stats["base_pair_total_legacy"] > 0 or stats["base_pair_total_modern"] > 0:
+        lines.append("BASE PAIR STATISTICS (Pairs Passing All Checks)")
+        lines.append("-" * 80)
+        lines.append(f"Total legacy base pairs: {stats['base_pair_total_legacy']}")
+        lines.append(f"Total modern base pairs: {stats['base_pair_total_modern']}")
+        lines.append(f"Common pairs: {stats['base_pair_total_legacy'] - stats['base_pair_missing_in_modern']}")
+        lines.append(f"Missing in modern: {stats['base_pair_missing_in_modern']}")
+        lines.append(f"Extra in modern: {stats['base_pair_extra_in_modern']}")
+        lines.append(f"Mismatched pairs: {stats['base_pair_mismatched']}")
+        lines.append("")
+    
+    # Pair validation comparison statistics (SECONDARY - for debugging)
+    if stats["pair_validation_total_legacy"] > 0 or stats["pair_validation_total_modern"] > 0:
+        lines.append("PAIR VALIDATION STATISTICS (All Validated Pairs)")
+        lines.append("-" * 80)
+        lines.append(f"Total legacy validations: {stats['pair_validation_total_legacy']}")
+        lines.append(f"Total modern validations: {stats['pair_validation_total_modern']}")
+        lines.append(f"Missing in modern: {stats['pair_validation_missing_in_modern']}")
+        lines.append(f"Extra in modern: {stats['pair_validation_extra_in_modern']}")
+        lines.append(f"Mismatched validations: {stats['pair_validation_mismatched']}")
+        lines.append("")
+    
+    # Distance checks comparison statistics
+    if stats["distance_checks_total_legacy"] > 0 or stats["distance_checks_total_modern"] > 0:
+        lines.append("DISTANCE CHECKS STATISTICS")
+        lines.append("-" * 80)
+        lines.append(f"Total legacy checks: {stats['distance_checks_total_legacy']}")
+        lines.append(f"Total modern checks: {stats['distance_checks_total_modern']}")
+        lines.append(f"Missing in modern: {stats['distance_checks_missing_in_modern']}")
+        lines.append(f"Extra in modern: {stats['distance_checks_extra_in_modern']}")
+        lines.append(f"Mismatched checks: {stats['distance_checks_mismatched']}")
         lines.append("")
     elif any(
         result.frame_comparison is None
@@ -1187,7 +1286,7 @@ def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenera
         click.echo("  (Caching enabled - use --no-cache to disable)")
 
     comparator = JsonComparator(
-        enable_cache=not no_cache, compare_atoms=True, compare_frames=True, compare_steps=True
+        enable_cache=not no_cache, compare_atoms=True, compare_frames=True, compare_steps=True, compare_pairs=True
     )
     results = run_comparison(
         pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate

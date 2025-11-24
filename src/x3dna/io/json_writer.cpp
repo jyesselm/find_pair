@@ -4,6 +4,7 @@
  */
 
 #include <x3dna/io/json_writer.hpp>
+#include <x3dna/algorithms/base_pair_validator.hpp>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -83,14 +84,14 @@ void JsonWriter::add_calculation_record(const nlohmann::json& record) {
     // Also store in split_records_ for split file output
     if (record.contains("type") && record["type"].is_string()) {
         std::string calc_type = record["type"];
-        // Remove type field from record for split file (type becomes filename)
-        nlohmann::json split_record = record;
-        split_record.erase("type");
+        // Do NOT remove type field from record for split file (comparison script expects it)
+        // nlohmann::json split_record = record;
+        // split_record.erase("type"); // Removed - keep type field for comparison
         
         if (split_records_.find(calc_type) == split_records_.end()) {
             split_records_[calc_type] = nlohmann::json::array();
         }
-        split_records_[calc_type].push_back(split_record);
+        split_records_[calc_type].push_back(record); // Push original record with "type"
     }
 }
 
@@ -516,53 +517,46 @@ void JsonWriter::record_frame_calc(size_t residue_idx, char base_type,
 }
 
 void JsonWriter::record_base_pair(const core::BasePair& pair) {
-    nlohmann::json record;
-    record["type"] = "base_pair";
-    record["residue_idx1"] = pair.residue_idx1();
-    record["residue_idx2"] = pair.residue_idx2();
-    record["bp_type"] = pair.bp_type();
-
-    // Base pair type enum
-    std::string type_str;
-    switch (pair.type()) {
-        case core::BasePairType::WATSON_CRICK:
-            type_str = "WATSON_CRICK";
-            break;
-        case core::BasePairType::WOBBLE:
-            type_str = "WOBBLE";
-            break;
-        case core::BasePairType::HOOGSTEEN:
-            type_str = "HOOGSTEEN";
-            break;
-        default:
-            type_str = "UNKNOWN";
-            break;
+    // Convert residue indices to legacy format (1-based, counting all residues)
+    // BasePair stores 0-based indices, but legacy uses 1-based
+    size_t base_i = pair.residue_idx1() + 1; // Convert to 1-based
+    size_t base_j = pair.residue_idx2() + 1; // Convert to 1-based
+    
+    // Normalize pair key to avoid duplicates (always use (min, max) order)
+    std::pair<size_t, size_t> pair_key = (base_i < base_j) ? 
+        std::make_pair(base_i, base_j) : std::make_pair(base_j, base_i);
+    
+    // Check if this pair has already been recorded
+    if (recorded_base_pairs_.find(pair_key) != recorded_base_pairs_.end()) {
+        // Skip duplicate - already recorded this pair
+        return;
     }
-    record["pair_type"] = type_str;
-
-    // Reference frames if available
-    if (pair.frame1().has_value()) {
-        record["frame1"] = pair.frame1()->to_json_legacy();
+    
+    // Mark as recorded
+    recorded_base_pairs_.insert(pair_key);
+    
+    // Create a mutable copy to assign index
+    core::BasePair pair_with_idx = pair;
+    pair_with_idx.set_basepair_idx(basepair_idx_counter_++);
+    
+    // Assign hbond indices
+    std::vector<core::hydrogen_bond> hbonds = pair_with_idx.hydrogen_bonds();
+    for (size_t i = 0; i < hbonds.size(); ++i) {
+        hbonds[i].hbond_idx = hbond_idx_counter_++;
     }
-    if (pair.frame2().has_value()) {
-        record["frame2"] = pair.frame2()->to_json_legacy();
-    }
-
-    // Hydrogen bonds
-    const auto& hbonds = pair.hydrogen_bonds();
-    if (!hbonds.empty()) {
-        nlohmann::json hbonds_array = nlohmann::json::array();
-        for (const auto& hbond : hbonds) {
-            nlohmann::json hbond_json;
-            hbond_json["donor_atom"] = hbond.donor_atom;
-            hbond_json["acceptor_atom"] = hbond.acceptor_atom;
-            hbond_json["distance"] = format_double(hbond.distance);
-            hbond_json["type"] = std::string(1, hbond.type);
-            hbonds_array.push_back(hbond_json);
-        }
-        record["hydrogen_bonds"] = hbonds_array;
-    }
-
+    pair_with_idx.set_hydrogen_bonds(hbonds);
+    
+    // Use BasePair's to_json_legacy() to ensure exact format match with legacy JSON
+    // This ensures base_i, base_j, orien_i, orien_j, org_i, org_j, dir_xyz format
+    nlohmann::json record = pair_with_idx.to_json_legacy();
+    
+    // Note: to_json_legacy() already sets "type" = "base_pair", "base_i", "base_j", "bp_type",
+    // "orien_i", "orien_j", "org_i", "org_j", "dir_xyz", "basepair_idx", and "hbonds" if present
+    
+    // Set the indices (already converted above)
+    record["base_i"] = static_cast<long>(base_i);
+    record["base_j"] = static_cast<long>(base_j);
+    
     add_calculation_record(record);
 }
 
@@ -685,23 +679,71 @@ void JsonWriter::record_removed_atoms_summary(size_t num_removed) {
 
 void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_valid, int bp_type_id,
                                         double dir_x, double dir_y, double dir_z,
-                                        const std::array<double, 5>& rtn_val) {
+                                        const std::array<double, 5>& rtn_val,
+                                        const algorithms::ValidationParameters& params) {
     nlohmann::json record;
     record["type"] = "pair_validation";
-    record["base_i"] = base_i;
-    record["base_j"] = base_j;
-    record["is_valid"] = is_valid;
-    record["bp_type_id"] = bp_type_id;
-    record["dir_x"] = format_double(dir_x);
-    record["dir_y"] = format_double(dir_y);
-    record["dir_z"] = format_double(dir_z);
+    record["base_i"] = static_cast<long>(base_i);  // Legacy uses long
+    record["base_j"] = static_cast<long>(base_j);
+    record["is_valid"] = static_cast<long>(is_valid ? 1 : 0);  // Legacy uses long
+    record["bp_type_id"] = static_cast<long>(bp_type_id);
 
-    // Return values array
-    nlohmann::json rtn_array = nlohmann::json::array();
-    for (double val : rtn_val) {
-        rtn_array.push_back(format_double(val));
-    }
-    record["rtn_val"] = rtn_array;
+    // Direction vectors (nested object, matches legacy format)
+    nlohmann::json dir_vectors;
+    dir_vectors["dir_x"] = format_double(dir_x);
+    dir_vectors["dir_y"] = format_double(dir_y);
+    dir_vectors["dir_z"] = format_double(dir_z);
+    record["direction_vectors"] = dir_vectors;
+
+    // Calculated values (nested object, matches legacy format)
+    // rtn_val[0] = dorg, [1] = d_v, [2] = plane_angle, [3] = dNN, [4] = quality_score
+    nlohmann::json calc_values;
+    calc_values["dorg"] = format_double(rtn_val[0]);
+    calc_values["d_v"] = format_double(rtn_val[1]);
+    calc_values["plane_angle"] = format_double(rtn_val[2]);
+    calc_values["dNN"] = format_double(rtn_val[3]);
+    calc_values["quality_score"] = format_double(rtn_val[4]);
+    record["calculated_values"] = calc_values;
+
+    // Validation checks (nested object, matches legacy format)
+    nlohmann::json validation_checks;
+    validation_checks["distance_check"] = (rtn_val[0] >= params.min_dorg && rtn_val[0] <= params.max_dorg);
+    validation_checks["d_v_check"] = (rtn_val[1] >= params.min_dv && rtn_val[1] <= params.max_dv);
+    validation_checks["plane_angle_check"] = (rtn_val[2] >= params.min_plane_angle && rtn_val[2] <= params.max_plane_angle);
+    validation_checks["dNN_check"] = (rtn_val[3] >= params.min_dNN && rtn_val[3] <= params.max_dNN);
+    record["validation_checks"] = validation_checks;
+
+    // Thresholds (nested object, matches legacy format)
+    nlohmann::json thresholds;
+    thresholds["min_dorg"] = format_double(params.min_dorg);
+    thresholds["max_dorg"] = format_double(params.max_dorg);
+    thresholds["min_dv"] = format_double(params.min_dv);
+    thresholds["max_dv"] = format_double(params.max_dv);
+    thresholds["min_plane_angle"] = format_double(params.min_plane_angle);
+    thresholds["max_plane_angle"] = format_double(params.max_plane_angle);
+    thresholds["min_dNN"] = format_double(params.min_dNN);
+    thresholds["max_dNN"] = format_double(params.max_dNN);
+    record["thresholds"] = thresholds;
+
+    add_calculation_record(record);
+}
+
+void JsonWriter::record_distance_checks(size_t base_i, size_t base_j,
+                                        double dorg, double dNN, double plane_angle, double d_v,
+                                        double overlap_area) {
+    nlohmann::json record;
+    record["type"] = "distance_checks";
+    record["base_i"] = static_cast<long>(base_i);  // Legacy uses long
+    record["base_j"] = static_cast<long>(base_j);
+
+    // Values (nested object, matches legacy format)
+    nlohmann::json values;
+    values["dorg"] = format_double(dorg);
+    values["dNN"] = format_double(dNN);
+    values["plane_angle"] = format_double(plane_angle);
+    values["d_v"] = format_double(d_v);
+    values["overlap_area"] = format_double(overlap_area);
+    record["values"] = values;
 
     add_calculation_record(record);
 }
@@ -715,12 +757,19 @@ void JsonWriter::record_hbond_list(size_t base_i, size_t base_j,
     record["num_hbonds"] = hbonds.size();
 
     nlohmann::json hbonds_array = nlohmann::json::array();
-    for (const auto& hbond : hbonds) {
+    for (size_t i = 0; i < hbonds.size(); ++i) {
+        const auto& hbond = hbonds[i];
         nlohmann::json hbond_json;
         hbond_json["donor_atom"] = hbond.donor_atom;
         hbond_json["acceptor_atom"] = hbond.acceptor_atom;
         hbond_json["distance"] = format_double(hbond.distance);
         hbond_json["type"] = std::string(1, hbond.type);
+        // Assign hbond_idx if not already set, otherwise use existing or position
+        if (hbond.hbond_idx.has_value()) {
+            hbond_json["hbond_idx"] = static_cast<long>(hbond.hbond_idx.value());
+        } else {
+            hbond_json["hbond_idx"] = static_cast<long>(hbond_idx_counter_++);
+        }
         hbonds_array.push_back(hbond_json);
     }
     record["hbonds"] = hbonds_array;
@@ -743,12 +792,30 @@ std::string JsonWriter::escape_string(const std::string& str) {
 }
 
 nlohmann::json JsonWriter::format_double(double value) {
+    // Check for NaN or Inf first
+    if (std::isnan(value) || std::isinf(value)) {
+        return nlohmann::json(nullptr);
+    }
     // Return null if value is effectively zero (matches legacy behavior)
     if (std::abs(value) < EMPTY_CRITERION) {
         return nlohmann::json(nullptr);
     }
     // Format with 6 decimal places (matches legacy format)
     return nlohmann::json(std::round(value * 1000000.0) / 1000000.0);
+}
+
+void JsonWriter::record_find_bestpair_selection(const std::vector<std::pair<size_t, size_t>>& selected_pairs) {
+    nlohmann::json record;
+    record["type"] = "find_bestpair_selection";
+    record["num_bp"] = selected_pairs.size();
+    
+    nlohmann::json pairs_array = nlohmann::json::array();
+    for (const auto& pair : selected_pairs) {
+        pairs_array.push_back(nlohmann::json::array({pair.first, pair.second}));
+    }
+    record["pairs"] = pairs_array;
+    
+    add_calculation_record(record);
 }
 
 } // namespace io

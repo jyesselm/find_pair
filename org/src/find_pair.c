@@ -1,4 +1,5 @@
 #include "x3dna.h"
+#include "json_writer.h"
 typedef struct {
     char pdbfile[BUF512];
     char outfile[BUF512];
@@ -1860,6 +1861,10 @@ static void duplex(long num, long num_residue, char *bseq, long **seidx, long *R
     base_pairs = lmatrix(1, num_residue, 1, nout_p1);
     num_bp = find_bestpair(nout, base_pairs, num_residue, bseq, seidx, RY, AtomName,
                            xyz, idx, orien, org, NC1xyz, ring_atom, misc_pars);
+    /* Record original base pair selection from find_bestpair (before reordering) */
+    if (num_bp > 0) {
+        json_writer_record_find_bestpair_selection(num_bp, base_pairs);
+    }
     if (!num_bp) {
         no_basepairs(args->pdbfile, args->outfile, parfile);
         goto NO_BASE_PAIR;

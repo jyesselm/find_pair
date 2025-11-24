@@ -11,6 +11,7 @@
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/io/json_writer.hpp>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
+#include <x3dna/algorithms/base_pair_finder.hpp>
 
 using namespace x3dna::core;
 using namespace x3dna::io;
@@ -72,6 +73,8 @@ int main(int argc, char* argv[]) {
         JsonWriter writer(pdb_file, legacy_json_file);
 
         // Record PDB atoms
+        // Note: Legacy indices are already set on atoms during PDB parsing
+        // We do NOT load legacy indices from legacy JSON files - they are generated fresh
         writer.record_pdb_atoms(structure);
 
         // Calculate frames and record frame calculations
@@ -144,8 +147,8 @@ int main(int argc, char* argv[]) {
         size_t atom_match_failures = 0;
         size_t unknown_residue_types = 0;
 
-        for (const auto& chain : structure.chains()) {
-            for (const auto& residue : chain.residues()) {
+        for (auto& chain : structure.chains()) {
+            for (auto& residue : chain.residues()) {
                 // Check residue type
                 ResidueType res_type = residue.residue_type();
                 char one_letter = residue.one_letter_code();
@@ -189,8 +192,8 @@ int main(int argc, char* argv[]) {
                 if (is_nucleotide) {
                     nucleotides_found++;
 
-                    // Calculate frame directly (don't check has_reference_frame)
-                    FrameCalculationResult frame_result = calculator.calculate_frame_const(residue);
+                    // Calculate frame and set it on the residue (needed for find_pairs)
+                    FrameCalculationResult frame_result = calculator.calculate_frame(residue);
 
                     if (frame_result.is_valid) {
                         char base_type = residue.one_letter_code();
@@ -245,6 +248,17 @@ int main(int argc, char* argv[]) {
                 residue_idx++;
             }
         }
+
+        // Find and record base pairs (with validation recording)
+        // Note: Legacy residue indices are already set on atoms during PDB parsing
+        BasePairFinder finder;
+        auto base_pairs = finder.find_pairs_with_recording(structure, &writer);
+        // Base pairs are already recorded via find_pairs_with_recording
+        // But we also record the final base_pair records
+        for (const auto& pair : base_pairs) {
+            writer.record_base_pair(pair);
+        }
+        std::cout << "  Base pairs found: " << base_pairs.size() << "\n";
 
         // Write JSON to file
         writer.write_to_file(json_file);

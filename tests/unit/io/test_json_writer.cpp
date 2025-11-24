@@ -116,7 +116,7 @@ TEST_F(JsonWriterTest, RecordLsFitting) {
     EXPECT_TRUE(found);
 }
 
-// Base pair recording
+// Base pair recording (legacy format: base_i, base_j)
 TEST_F(JsonWriterTest, RecordBasePair) {
     BasePair bp(0, 1, BasePairType::WATSON_CRICK);
     bp.set_bp_type("CG");
@@ -136,9 +136,15 @@ TEST_F(JsonWriterTest, RecordBasePair) {
     for (const auto& record : json["calculations"]) {
         if (record.contains("type") && record["type"] == "base_pair") {
             found = true;
-            EXPECT_EQ(record["residue_idx1"], 0);
-            EXPECT_EQ(record["residue_idx2"], 1);
+            // Legacy format uses base_i and base_j (1-based indices)
+            EXPECT_EQ(record["base_i"], 1);  // 0-based + 1 = 1-based
+            EXPECT_EQ(record["base_j"], 2);  // 1-based + 1 = 2-based
             EXPECT_EQ(record["bp_type"], "CG");
+            EXPECT_TRUE(record.contains("orien_i"));
+            EXPECT_TRUE(record.contains("orien_j"));
+            EXPECT_TRUE(record.contains("org_i"));
+            EXPECT_TRUE(record.contains("org_j"));
+            EXPECT_TRUE(record.contains("dir_xyz"));
             break;
         }
     }

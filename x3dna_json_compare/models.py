@@ -6,8 +6,13 @@ between legacy and modern JSON outputs.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any, TYPE_CHECKING
 from pathlib import Path
+
+if TYPE_CHECKING:
+    from .pair_comparison import PairValidationComparison, DistanceChecksComparison
+    from .base_pair_comparison import BasePairComparison
+    from .find_bestpair_comparison import FindBestpairComparison
 
 
 @dataclass
@@ -105,6 +110,10 @@ class ComparisonResult:
     atom_comparison: Optional[AtomComparison] = None
     frame_comparison: Optional[FrameComparison] = None
     step_comparison: Optional['StepComparison'] = None  # Forward reference - defined in step_comparison.py
+    find_bestpair_comparison: Optional[Any] = None  # FindBestpairComparison (actual selected pairs)
+    base_pair_comparison: Optional[Any] = None  # BasePairComparison from base_pair_comparison (pairs that pass all checks)
+    pair_validation_comparison: Optional[Any] = None  # PairValidationComparison from pair_comparison
+    distance_checks_comparison: Optional[Any] = None  # DistanceChecksComparison from pair_comparison
     errors: List[str] = field(default_factory=list)
     cache_key: Optional[str] = None
     timestamp: float = 0.0
@@ -130,6 +139,28 @@ class ComparisonResult:
         if self.step_comparison:
             if (self.step_comparison.missing_steps or
                 self.step_comparison.mismatched_steps):
+                return True
+        
+        if self.find_bestpair_comparison:
+            if (self.find_bestpair_comparison.missing_in_modern or
+                self.find_bestpair_comparison.extra_in_modern):
+                return True
+        if self.base_pair_comparison:
+            if (self.base_pair_comparison.missing_in_modern or
+                self.base_pair_comparison.extra_in_modern or
+                self.base_pair_comparison.mismatched_pairs):
+                return True
+        
+        if self.pair_validation_comparison:
+            if (self.pair_validation_comparison.missing_in_modern or
+                self.pair_validation_comparison.extra_in_modern or
+                self.pair_validation_comparison.mismatched_validations):
+                return True
+        
+        if self.distance_checks_comparison:
+            if (self.distance_checks_comparison.missing_in_modern or
+                self.distance_checks_comparison.extra_in_modern or
+                self.distance_checks_comparison.mismatched_checks):
                 return True
         
         return False
@@ -174,6 +205,45 @@ class ComparisonResult:
                 'mismatched_steps': len(self.step_comparison.mismatched_steps),
                 'total_legacy': self.step_comparison.total_legacy,
                 'total_modern': self.step_comparison.total_modern,
+            }
+        
+        if self.find_bestpair_comparison:
+            result['find_bestpair_differences'] = {
+                'missing_in_modern': len(self.find_bestpair_comparison.missing_in_modern),
+                'extra_in_modern': len(self.find_bestpair_comparison.extra_in_modern),
+                'total_legacy': self.find_bestpair_comparison.total_legacy,
+                'total_modern': self.find_bestpair_comparison.total_modern,
+                'common_count': self.find_bestpair_comparison.common_count,
+            }
+        
+        if self.base_pair_comparison:
+            result['base_pair_differences'] = {
+                'missing_in_modern': len(self.base_pair_comparison.missing_in_modern),
+                'extra_in_modern': len(self.base_pair_comparison.extra_in_modern),
+                'mismatched_pairs': len(self.base_pair_comparison.mismatched_pairs),
+                'total_legacy': self.base_pair_comparison.total_legacy,
+                'total_modern': self.base_pair_comparison.total_modern,
+                'common_count': self.base_pair_comparison.common_count,
+            }
+        
+        if self.pair_validation_comparison:
+            result['pair_validation_differences'] = {
+                'missing_in_modern': len(self.pair_validation_comparison.missing_in_modern),
+                'extra_in_modern': len(self.pair_validation_comparison.extra_in_modern),
+                'mismatched_validations': len(self.pair_validation_comparison.mismatched_validations),
+                'total_legacy': self.pair_validation_comparison.total_legacy,
+                'total_modern': self.pair_validation_comparison.total_modern,
+                'common_count': self.pair_validation_comparison.common_count,
+            }
+        
+        if self.distance_checks_comparison:
+            result['distance_checks_differences'] = {
+                'missing_in_modern': len(self.distance_checks_comparison.missing_in_modern),
+                'extra_in_modern': len(self.distance_checks_comparison.extra_in_modern),
+                'mismatched_checks': len(self.distance_checks_comparison.mismatched_checks),
+                'total_legacy': self.distance_checks_comparison.total_legacy,
+                'total_modern': self.distance_checks_comparison.total_modern,
+                'common_count': self.distance_checks_comparison.common_count,
             }
         
         return result

@@ -8,11 +8,14 @@
 #include <string>
 #include <filesystem>
 #include <vector>
+#include <array>
+#include <set>
 #include <nlohmann/json.hpp>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/base_pair.hpp>
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/core/parameters.hpp>
+#include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
 
@@ -35,7 +38,7 @@ public:
      * @param legacy_json_file Optional path to legacy JSON file for index mapping
      */
     explicit JsonWriter(const std::filesystem::path& pdb_file,
-                       const std::filesystem::path& legacy_json_file = std::filesystem::path());
+                        const std::filesystem::path& legacy_json_file = std::filesystem::path());
 
     /**
      * @brief Destructor - automatically finalizes if not already done
@@ -74,6 +77,12 @@ public:
      * @param structure Structure to update (non-const to allow modification)
      */
     void set_legacy_indices_on_structure(core::Structure& structure);
+
+    /**
+     * @brief Load legacy JSON and create index mappings
+     * @param legacy_json_file Path to legacy JSON file
+     */
+    void load_legacy_mappings(const std::filesystem::path& legacy_json_file);
 
     /**
      * @brief Record PDB atom data
@@ -191,19 +200,35 @@ public:
     void record_removed_atoms_summary(size_t num_removed);
 
     /**
-     * @brief Record pair validation results
-     * @param base_i First base index (0-based)
-     * @param base_j Second base index (0-based)
+     * @brief Record pair validation results (matches legacy format)
+     * @param base_i First base index (1-based for legacy format)
+     * @param base_j Second base index (1-based for legacy format)
      * @param is_valid Whether pair is valid
      * @param bp_type_id Base pair type ID
      * @param dir_x X component of direction vector
      * @param dir_y Y component of direction vector
      * @param dir_z Z component of direction vector
-     * @param rtn_val Return values array (5 values)
+     * @param rtn_val Return values array (5 values: [0]=dorg, [1]=d_v, [2]=plane_angle, [3]=dNN,
+     * [4]=quality_score)
+     * @param params Validation parameters (for thresholds)
      */
     void record_pair_validation(size_t base_i, size_t base_j, bool is_valid, int bp_type_id,
                                 double dir_x, double dir_y, double dir_z,
-                                const std::array<double, 5>& rtn_val);
+                                const std::array<double, 5>& rtn_val,
+                                const algorithms::ValidationParameters& params);
+
+    /**
+     * @brief Record distance checks (matches legacy format)
+     * @param base_i First base index (1-based for legacy format)
+     * @param base_j Second base index (1-based for legacy format)
+     * @param dorg Distance between origins
+     * @param dNN Distance between N1/N9 atoms
+     * @param plane_angle Angle between z-axes
+     * @param d_v Vertical distance
+     * @param overlap_area Overlap area
+     */
+    void record_distance_checks(size_t base_i, size_t base_j, double dorg, double dNN,
+                                double plane_angle, double d_v, double overlap_area);
 
     /**
      * @brief Record hydrogen bond list
@@ -214,24 +239,41 @@ public:
     void record_hbond_list(size_t base_i, size_t base_j,
                            const std::vector<core::hydrogen_bond>& hbonds);
 
+    /**
+     * @brief Record the original base pair selection from find_bestpair
+     * @param selected_pairs Vector of (base_i, base_j) pairs (1-based legacy indices)
+     *
+     * This records the pairs actually selected by find_bestpair (mutual best matches),
+     * which is the original base pair identification before any reordering.
+     */
+    void
+    record_find_bestpair_selection(const std::vector<std::pair<size_t, size_t>>& selected_pairs);
+
 private:
     std::filesystem::path pdb_file_;
     std::string pdb_name_;
     nlohmann::json json_;
-    
+
     // Split file storage: map from calculation type to array of records
     std::map<std::string, nlohmann::json> split_records_;
-    
+
     // PDB line cache for fast lookup
     mutable std::vector<std::string> pdb_lines_;
     mutable bool pdb_lines_loaded_ = false;
-    
+
     // Legacy index mappings for direct comparison
     // Key: (chain_id, residue_seq, insertion, atom_name) -> legacy_atom_idx
     std::map<std::tuple<char, int, char, std::string>, int> legacy_atom_idx_map_;
     // Key: (chain_id, residue_seq, insertion) -> legacy_residue_idx
     std::map<std::tuple<char, int, char>, int> legacy_residue_idx_map_;
     bool legacy_mappings_loaded_ = false;
+
+    // Index counters for tracking basepairs and hbonds
+    size_t basepair_idx_counter_ = 0;
+    size_t hbond_idx_counter_ = 0;
+    
+    // Track recorded base pairs to avoid duplicates (normalized by (min, max))
+    std::set<std::pair<size_t, size_t>> recorded_base_pairs_;
 
     /**
      * @brief Initialize JSON structure
@@ -243,32 +285,26 @@ private:
      * @param record Record to add
      */
     void add_calculation_record(const nlohmann::json& record);
-    
+
     /**
      * @brief Write split files for each calculation type
      * @param output_dir Directory to write split files
      * @param pretty_print Whether to format with indentation
      */
     void write_split_files(const std::filesystem::path& output_dir, bool pretty_print) const;
-    
+
     /**
      * @brief Load PDB lines into cache (lazy loading)
      */
     void load_pdb_lines() const;
-    
+
     /**
      * @brief Get PDB line by line number (from cache)
      * @param line_number 1-based line number
      * @return PDB line or empty string if not found
      */
     std::string get_pdb_line(size_t line_number) const;
-    
-    /**
-     * @brief Load legacy JSON and create index mappings
-     * @param legacy_json_file Path to legacy JSON file
-     */
-    void load_legacy_mappings(const std::filesystem::path& legacy_json_file);
-    
+
     /**
      * @brief Get legacy atom index for an atom
      * @param chain_id Chain identifier
@@ -277,8 +313,9 @@ private:
      * @param atom_name Atom name
      * @return Legacy atom index or 0 if not found
      */
-    int get_legacy_atom_idx(char chain_id, int residue_seq, char insertion, const std::string& atom_name) const;
-    
+    int get_legacy_atom_idx(char chain_id, int residue_seq, char insertion,
+                            const std::string& atom_name) const;
+
     /**
      * @brief Get legacy residue index for a residue
      * @param chain_id Chain identifier
