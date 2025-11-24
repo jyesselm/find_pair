@@ -193,5 +193,55 @@ endif()
 
 gtest_discover_tests(test_core_objects_integration)
 
+# I/O integration test (Stage 3 Task 3.6)
+add_executable(test_io_integration
+    test_io_integration.cpp
+)
+
+target_include_directories(test_io_integration PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(test_io_integration
+    PRIVATE
+    x3dna
+    gtest
+    gtest_main
+)
+
+# Link filesystem library if needed (CMake 3.15+)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_io_integration PRIVATE stdc++fs)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_io_integration PRIVATE c++fs)
+endif()
+
+gtest_discover_tests(test_io_integration)
+
+# Base pair integration tests
+add_executable(test_base_pair_integration
+    test_base_pair_integration.cpp
+)
+
+target_include_directories(test_base_pair_integration PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(test_base_pair_integration
+    PRIVATE
+    x3dna
+    gtest
+    gtest_main
+)
+
+# Link filesystem library if needed
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_base_pair_integration PRIVATE stdc++fs)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_base_pair_integration PRIVATE c++fs)
+endif()
+
+gtest_discover_tests(test_base_pair_integration)
+
 # Note: More integration tests will be added as we implement each stage
 

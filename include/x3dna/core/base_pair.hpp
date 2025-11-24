@@ -34,6 +34,7 @@ struct hydrogen_bond {
     std::string acceptor_atom;
     double distance;
     char type; // '-' for standard, ' ' for non-standard
+    std::optional<size_t> hbond_idx; // Optional index for tracking (assigned when recording)
 };
 
 /**
@@ -50,6 +51,7 @@ private:
     std::optional<ReferenceFrame> frame1_;      // Reference frame for first residue
     std::optional<ReferenceFrame> frame2_;      // Reference frame for second residue
     std::vector<hydrogen_bond> hbonds_;         // Hydrogen bonds
+    std::optional<size_t> basepair_idx_;       // Optional index for tracking (assigned when recording)
 
     /**
      * @brief Set base pair type from string and update enum
@@ -108,6 +110,9 @@ public:
     const std::vector<hydrogen_bond>& hydrogen_bonds() const {
         return hbonds_;
     }
+    std::optional<size_t> basepair_idx() const {
+        return basepair_idx_;
+    }
 
     /**
      * @brief Get reference frame for first residue
@@ -137,6 +142,9 @@ public:
         bp_type_ = bp_type;
         update_type_from_bp_type();
     }
+    void set_basepair_idx(size_t idx) {
+        basepair_idx_ = idx;
+    }
 
     /**
      * @brief Set reference frame for first residue
@@ -157,6 +165,13 @@ public:
      */
     void add_hydrogen_bond(const hydrogen_bond& hbond) {
         hbonds_.push_back(hbond);
+    }
+
+    /**
+     * @brief Set all hydrogen bonds at once
+     */
+    void set_hydrogen_bonds(const std::vector<hydrogen_bond>& hbonds) {
+        hbonds_ = hbonds;
     }
 
     /**
@@ -229,34 +244,40 @@ public:
             j["org_j"] = frame2_->origin().to_json();
         }
 
-        // Direction vector (z-axis difference)
+        // Direction vector (dot products of corresponding frame axes)
+        // Legacy: dir_x = dot(&orien[i][0], &orien[j][0])
+        //         dir_y = dot(&orien[i][3], &orien[j][3])
+        //         dir_z = dot(&orien[i][6], &orien[j][6])
+        // 
+        // NOTE: Legacy has a bug in json_writer_record_base_pair:
+        //   It declares: double dir_xyz_arr[4] = {dir_x, dir_y, dir_z};
+        //   But uses: dir_xyz[1], dir_xyz[2], dir_xyz[3] (1-based indexing)
+        //   So it actually stores: [dir_y, dir_z, 0.0] (skipping dir_x!)
+        // 
+        // To match legacy exactly, we need to replicate this bug:
         if (frame1_.has_value() && frame2_.has_value()) {
-            geometry::Vector3D dir = frame1_->z_axis() - frame2_->z_axis();
-            j["dir_xyz"] = dir.to_json();
+            // Calculate all three direction components (even though we only use y and z)
+            double dir_y = frame1_->y_axis().dot(frame2_->y_axis());
+            double dir_z = frame1_->z_axis().dot(frame2_->z_axis());
+            // Match legacy bug: store [dir_y, dir_z, 0.0] instead of [dir_x, dir_y, dir_z]
+            j["dir_xyz"] = nlohmann::json::array({dir_y, dir_z, 0.0});
+        }
+
+        // Base pair index (if set)
+        if (basepair_idx_.has_value()) {
+            j["basepair_idx"] = static_cast<long>(basepair_idx_.value());
         }
 
         // Hydrogen bonds
-        if (!hbonds_.empty()) {
-            j["num_hbonds"] = static_cast<long>(hbonds_.size());
-            j["hbonds"] = nlohmann::json::array();
-            std::string hb_info_string;
-            for (const auto& hbond : hbonds_) {
-                nlohmann::json hb_json;
-                hb_json["donor_atom"] = hbond.donor_atom;
-                hb_json["acceptor_atom"] = hbond.acceptor_atom;
-                hb_json["distance"] = hbond.distance;
-                hb_json["type"] = std::string(1, hbond.type);
-                j["hbonds"].push_back(hb_json);
-
-                // Build info string
-                if (!hb_info_string.empty()) {
-                    hb_info_string += "  ";
-                }
-                hb_info_string += hbond.donor_atom + " - " + hbond.acceptor_atom + " " +
-                                  std::to_string(hbond.distance) + "  " + hbond.type;
-            }
-            j["hb_info_string"] = hb_info_string;
-        }
+        // NOTE: Legacy does NOT store hbonds in base_pair records - they are in separate hbond_list records
+        // For exact legacy match, we should not include them in base_pair
+        // (Legacy stores hbonds separately in hbond_list records)
+        // Commented out to match legacy exactly:
+        // if (!hbonds_.empty()) {
+        //     j["num_hbonds"] = static_cast<long>(hbonds_.size());
+        //     j["hbonds"] = nlohmann::json::array();
+        //     ...
+        // }
 
         return j;
     }
@@ -287,6 +308,11 @@ public:
             bp.set_frame2(ReferenceFrame::from_json_legacy(frame2_json));
         }
 
+        // Parse base pair index (if present)
+        if (j.contains("basepair_idx")) {
+            bp.set_basepair_idx(j.value("basepair_idx", 0));
+        }
+
         // Parse hydrogen bonds
         if (j.contains("hbonds") && j["hbonds"].is_array()) {
             for (const auto& hb_json : j["hbonds"]) {
@@ -296,6 +322,9 @@ public:
                 hbond.distance = hb_json.value("distance", 0.0);
                 std::string type_str = hb_json.value("type", " ");
                 hbond.type = type_str.empty() ? ' ' : type_str[0];
+                if (hb_json.contains("hbond_idx")) {
+                    hbond.hbond_idx = hb_json.value("hbond_idx", 0);
+                }
                 bp.add_hydrogen_bond(hbond);
             }
         }
@@ -311,6 +340,9 @@ public:
         j["residue_idx1"] = residue_idx1_;
         j["residue_idx2"] = residue_idx2_;
         j["bp_type"] = bp_type_;
+        if (basepair_idx_.has_value()) {
+            j["basepair_idx"] = basepair_idx_.value();
+        }
         if (frame1_.has_value()) {
             j["frame1"] = frame1_->to_json();
         }
@@ -318,12 +350,18 @@ public:
             j["frame2"] = frame2_->to_json();
         }
         j["hydrogen_bonds"] = nlohmann::json::array();
-        for (const auto& hbond : hbonds_) {
+        for (size_t i = 0; i < hbonds_.size(); ++i) {
+            const auto& hbond = hbonds_[i];
             nlohmann::json hb_json;
             hb_json["donor_atom"] = hbond.donor_atom;
             hb_json["acceptor_atom"] = hbond.acceptor_atom;
             hb_json["distance"] = hbond.distance;
             hb_json["type"] = std::string(1, hbond.type);
+            if (hbond.hbond_idx.has_value()) {
+                hb_json["hbond_idx"] = hbond.hbond_idx.value();
+            } else {
+                hb_json["hbond_idx"] = i;
+            }
             j["hydrogen_bonds"].push_back(hb_json);
         }
         return j;
@@ -347,6 +385,10 @@ public:
             bp.set_frame2(ReferenceFrame::from_json(j["frame2"]));
         }
 
+        if (j.contains("basepair_idx")) {
+            bp.set_basepair_idx(j.value("basepair_idx", 0));
+        }
+
         if (j.contains("hydrogen_bonds") && j["hydrogen_bonds"].is_array()) {
             for (const auto& hb_json : j["hydrogen_bonds"]) {
                 hydrogen_bond hbond;
@@ -355,6 +397,9 @@ public:
                 hbond.distance = hb_json.value("distance", 0.0);
                 std::string type_str = hb_json.value("type", " ");
                 hbond.type = type_str.empty() ? ' ' : type_str[0];
+                if (hb_json.contains("hbond_idx")) {
+                    hbond.hbond_idx = hb_json.value("hbond_idx", 0);
+                }
                 bp.add_hydrogen_bond(hbond);
             }
         }

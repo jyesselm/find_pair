@@ -121,6 +121,9 @@ void json_writer_record_removed_atom(const char* pdb_line, const char* reason, l
 /* Record all removed atoms (call after parsing) */
 void json_writer_record_removed_atoms_summary(long num_removed);
 
+/* Record original base pair selection from find_bestpair (before reordering) */
+void json_writer_record_find_bestpair_selection(long num_bp, long **base_pairs);
+
 /* Check if JSON writer is initialized */
 long json_writer_is_initialized(void);
 

@@ -321,41 +321,46 @@ void json_writer_record_base_pair(long i, long j, char *bp_type,
                                   double **orien_j,
                                   double *org_i,
                                   double *org_j) {
+    FILE *type_file;
+    long is_first;
     char esc_bp_type[BUF32];
     
     if (!json_writer_is_initialized()) return;
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    /* Write to separate file for easier comparison (original identification from find_pair) */
+    type_file = get_type_file_handle("base_pair", &is_first);
+    if (!type_file) return;
+    
+    if (!is_first) fprintf(type_file, ",\n");
     
     json_escape_string(bp_type, esc_bp_type, sizeof(esc_bp_type));
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"base_pair\",\n");
-    fprintf(json_file, "      \"base_i\": %ld,\n", i);
-    fprintf(json_file, "      \"base_j\": %ld,\n", j);
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"base_pair\",\n");
+    fprintf(type_file, "      \"base_i\": %ld,\n", i);
+    fprintf(type_file, "      \"base_j\": %ld,\n", j);
     if (bp_type) {
-        fprintf(json_file, "      \"bp_type\": \"%s\",\n", esc_bp_type);
+        fprintf(type_file, "      \"bp_type\": \"%s\",\n", esc_bp_type);
     }
     if (dir_xyz) {
-        fprintf(json_file, "      \"dir_xyz\": [%.6f, %.6f, %.6f],\n",
+        fprintf(type_file, "      \"dir_xyz\": [%.6f, %.6f, %.6f],\n",
                 dir_xyz[1], dir_xyz[2], dir_xyz[3]);
     }
-    fprintf(json_file, "      \"orien_i\": ");
-    json_write_matrix(json_file, orien_i);
-    fprintf(json_file, ",\n");
-    fprintf(json_file, "      \"orien_j\": ");
-    json_write_matrix(json_file, orien_j);
-    fprintf(json_file, ",\n");
-    fprintf(json_file, "      \"org_i\": ");
-    json_write_double_array(json_file, &org_i[1], 3);
-    fprintf(json_file, ",\n");
-    fprintf(json_file, "      \"org_j\": ");
-    json_write_double_array(json_file, &org_j[1], 3);
-    fprintf(json_file, "\n");
-    fprintf(json_file, "    }");
+    fprintf(type_file, "      \"orien_i\": ");
+    json_write_matrix(type_file, orien_i);
+    fprintf(type_file, ",\n");
+    fprintf(type_file, "      \"orien_j\": ");
+    json_write_matrix(type_file, orien_j);
+    fprintf(type_file, ",\n");
+    fprintf(type_file, "      \"org_i\": ");
+    json_write_double_array(type_file, &org_i[1], 3);
+    fprintf(type_file, ",\n");
+    fprintf(type_file, "      \"org_j\": ");
+    json_write_double_array(type_file, &org_j[1], 3);
+    fprintf(type_file, "\n");
+    fprintf(type_file, "    }");
     
-    fflush(json_file);
+    fflush(type_file);
 }
 
 void json_writer_record_ref_frame(long residue_idx, double **orien, double *org) {
@@ -1072,53 +1077,59 @@ void json_writer_record_pair_validation(long base_i, long base_j,
                                          long is_valid, long bp_type_id,
                                          double dir_x, double dir_y, double dir_z,
                                          double *rtn_val, miscPars *misc_pars) {
+    FILE *type_file;
+    long is_first;
+    
     if (!json_writer_is_initialized()) return;
     if (!rtn_val || !misc_pars) return;
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    /* Write to separate file for easier comparison */
+    type_file = get_type_file_handle("pair_validation", &is_first);
+    if (!type_file) return;
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"pair_validation\",\n");
-    fprintf(json_file, "      \"base_i\": %ld,\n", base_i);
-    fprintf(json_file, "      \"base_j\": %ld,\n", base_j);
-    fprintf(json_file, "      \"is_valid\": %ld,\n", is_valid);
-    fprintf(json_file, "      \"bp_type_id\": %ld,\n", bp_type_id);
-    fprintf(json_file, "      \"direction_vectors\": {\n");
-    fprintf(json_file, "        \"dir_x\": %.6f,\n", dir_x);
-    fprintf(json_file, "        \"dir_y\": %.6f,\n", dir_y);
-    fprintf(json_file, "        \"dir_z\": %.6f\n", dir_z);
-    fprintf(json_file, "      },\n");
-    fprintf(json_file, "      \"calculated_values\": {\n");
-    fprintf(json_file, "        \"dorg\": %.6f,\n", rtn_val[1]);
-    fprintf(json_file, "        \"d_v\": %.6f,\n", rtn_val[2]);
-    fprintf(json_file, "        \"plane_angle\": %.6f,\n", rtn_val[3]);
-    fprintf(json_file, "        \"dNN\": %.6f,\n", rtn_val[4]);
-    fprintf(json_file, "        \"quality_score\": %.6f\n", rtn_val[5]);
-    fprintf(json_file, "      },\n");
-    fprintf(json_file, "      \"validation_checks\": {\n");
-    fprintf(json_file, "        \"distance_check\": %s,\n",
+    if (!is_first) fprintf(type_file, ",\n");
+    
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"pair_validation\",\n");
+    fprintf(type_file, "      \"base_i\": %ld,\n", base_i);
+    fprintf(type_file, "      \"base_j\": %ld,\n", base_j);
+    fprintf(type_file, "      \"is_valid\": %ld,\n", is_valid);
+    fprintf(type_file, "      \"bp_type_id\": %ld,\n", bp_type_id);
+    fprintf(type_file, "      \"direction_vectors\": {\n");
+    fprintf(type_file, "        \"dir_x\": %.6f,\n", dir_x);
+    fprintf(type_file, "        \"dir_y\": %.6f,\n", dir_y);
+    fprintf(type_file, "        \"dir_z\": %.6f\n", dir_z);
+    fprintf(type_file, "      },\n");
+    fprintf(type_file, "      \"calculated_values\": {\n");
+    fprintf(type_file, "        \"dorg\": %.6f,\n", rtn_val[1]);
+    fprintf(type_file, "        \"d_v\": %.6f,\n", rtn_val[2]);
+    fprintf(type_file, "        \"plane_angle\": %.6f,\n", rtn_val[3]);
+    fprintf(type_file, "        \"dNN\": %.6f,\n", rtn_val[4]);
+    fprintf(type_file, "        \"quality_score\": %.6f\n", rtn_val[5]);
+    fprintf(type_file, "      },\n");
+    fprintf(type_file, "      \"validation_checks\": {\n");
+    fprintf(type_file, "        \"distance_check\": %s,\n",
             (dval_in_range(rtn_val[1], misc_pars->min_dorg, misc_pars->max_dorg)) ? "true" : "false");
-    fprintf(json_file, "        \"d_v_check\": %s,\n",
+    fprintf(type_file, "        \"d_v_check\": %s,\n",
             (dval_in_range(rtn_val[2], misc_pars->min_dv, misc_pars->max_dv)) ? "true" : "false");
-    fprintf(json_file, "        \"plane_angle_check\": %s,\n",
+    fprintf(type_file, "        \"plane_angle_check\": %s,\n",
             (dval_in_range(rtn_val[3], misc_pars->min_plane_angle, misc_pars->max_plane_angle)) ? "true" : "false");
-    fprintf(json_file, "        \"dNN_check\": %s\n",
+    fprintf(type_file, "        \"dNN_check\": %s\n",
             (dval_in_range(rtn_val[4], misc_pars->min_dNN, misc_pars->max_dNN)) ? "true" : "false");
-    fprintf(json_file, "      },\n");
-    fprintf(json_file, "      \"thresholds\": {\n");
-    fprintf(json_file, "        \"min_dorg\": %.6f,\n", misc_pars->min_dorg);
-    fprintf(json_file, "        \"max_dorg\": %.6f,\n", misc_pars->max_dorg);
-    fprintf(json_file, "        \"min_dv\": %.6f,\n", misc_pars->min_dv);
-    fprintf(json_file, "        \"max_dv\": %.6f,\n", misc_pars->max_dv);
-    fprintf(json_file, "        \"min_plane_angle\": %.6f,\n", misc_pars->min_plane_angle);
-    fprintf(json_file, "        \"max_plane_angle\": %.6f,\n", misc_pars->max_plane_angle);
-    fprintf(json_file, "        \"min_dNN\": %.6f,\n", misc_pars->min_dNN);
-    fprintf(json_file, "        \"max_dNN\": %.6f\n", misc_pars->max_dNN);
-    fprintf(json_file, "      }\n");
-    fprintf(json_file, "    }");
+    fprintf(type_file, "      },\n");
+    fprintf(type_file, "      \"thresholds\": {\n");
+    fprintf(type_file, "        \"min_dorg\": %.6f,\n", misc_pars->min_dorg);
+    fprintf(type_file, "        \"max_dorg\": %.6f,\n", misc_pars->max_dorg);
+    fprintf(type_file, "        \"min_dv\": %.6f,\n", misc_pars->min_dv);
+    fprintf(type_file, "        \"max_dv\": %.6f,\n", misc_pars->max_dv);
+    fprintf(type_file, "        \"min_plane_angle\": %.6f,\n", misc_pars->min_plane_angle);
+    fprintf(type_file, "        \"max_plane_angle\": %.6f,\n", misc_pars->max_plane_angle);
+    fprintf(type_file, "        \"min_dNN\": %.6f,\n", misc_pars->min_dNN);
+    fprintf(type_file, "        \"max_dNN\": %.6f\n", misc_pars->max_dNN);
+    fprintf(type_file, "      }\n");
+    fprintf(type_file, "    }");
     
-    fflush(json_file);
+    fflush(type_file);
 }
 
 void json_writer_record_hbond_list(long base_i, long base_j, long num_hbonds,
@@ -1255,25 +1266,31 @@ void json_writer_record_distance_checks(long base_i, long base_j,
                                          double dorg, double dNN,
                                          double plane_angle, double d_v,
                                          double overlap_area) {
+    FILE *type_file;
+    long is_first;
+    
     if (!json_writer_is_initialized()) return;
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    /* Write to separate file for easier comparison */
+    type_file = get_type_file_handle("distance_checks", &is_first);
+    if (!type_file) return;
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"distance_checks\",\n");
-    fprintf(json_file, "      \"base_i\": %ld,\n", base_i);
-    fprintf(json_file, "      \"base_j\": %ld,\n", base_j);
-    fprintf(json_file, "      \"values\": {\n");
-    fprintf(json_file, "        \"dorg\": %.6f,\n", dorg);
-    fprintf(json_file, "        \"dNN\": %.6f,\n", dNN);
-    fprintf(json_file, "        \"plane_angle\": %.6f,\n", plane_angle);
-    fprintf(json_file, "        \"d_v\": %.6f,\n", d_v);
-    fprintf(json_file, "        \"overlap_area\": %.6f\n", overlap_area);
-    fprintf(json_file, "      }\n");
-    fprintf(json_file, "    }");
+    if (!is_first) fprintf(type_file, ",\n");
     
-    fflush(json_file);
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"distance_checks\",\n");
+    fprintf(type_file, "      \"base_i\": %ld,\n", base_i);
+    fprintf(type_file, "      \"base_j\": %ld,\n", base_j);
+    fprintf(type_file, "      \"values\": {\n");
+    fprintf(type_file, "        \"dorg\": %.6f,\n", dorg);
+    fprintf(type_file, "        \"dNN\": %.6f,\n", dNN);
+    fprintf(type_file, "        \"plane_angle\": %.6f,\n", plane_angle);
+    fprintf(type_file, "        \"d_v\": %.6f,\n", d_v);
+    fprintf(type_file, "        \"overlap_area\": %.6f\n", overlap_area);
+    fprintf(type_file, "      }\n");
+    fprintf(type_file, "    }");
+    
+    fflush(type_file);
 }
 
 void json_writer_record_ls_fitting(long residue_idx, long num_points,
@@ -1398,4 +1415,34 @@ void json_writer_record_removed_atoms_summary(long num_removed) {
     fprintf(json_file, "    }");
     
     fflush(json_file);
+}
+
+void json_writer_record_find_bestpair_selection(long num_bp, long **base_pairs) {
+    FILE *type_file;
+    long is_first;
+    long i;
+    
+    if (!json_writer_is_initialized()) return;
+    if (!base_pairs) return;
+    
+    /* Write to separate file for easier comparison (original selection from find_bestpair) */
+    type_file = get_type_file_handle("find_bestpair_selection", &is_first);
+    if (!type_file) return;
+    
+    if (!is_first) fprintf(type_file, ",\n");
+    
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"find_bestpair_selection\",\n");
+    fprintf(type_file, "      \"num_bp\": %ld,\n", num_bp);
+    fprintf(type_file, "      \"pairs\": [\n");
+    
+    for (i = 1; i <= num_bp; i++) {
+        if (i > 1) fprintf(type_file, ",\n");
+        fprintf(type_file, "        [%ld, %ld]", base_pairs[i][1], base_pairs[i][2]);
+    }
+    
+    fprintf(type_file, "\n      ]\n");
+    fprintf(type_file, "    }");
+    
+    fflush(type_file);
 }

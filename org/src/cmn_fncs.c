@@ -4630,6 +4630,10 @@ void check_pair(long i, long j, char *bseq, long **seidx, double **xyz,
             /* Record validation even for rejected pairs */
             json_writer_record_pair_validation(i, j, 0, 0, dir_x, dir_y, dir_z, rtn_val, misc_pars);
         }
+    } else {
+        /* Record validation for pairs that fail cdns or overlap check (for debugging) */
+        /* This helps understand why legacy might select pairs that modern rejects */
+        json_writer_record_pair_validation(i, j, 0, 0, dir_x, dir_y, dir_z, rtn_val, misc_pars);
     }
 }
 
