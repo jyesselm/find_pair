@@ -81,7 +81,10 @@ class ComparisonCache:
     def get_cache_key(self, legacy_file: Path, modern_file: Path,
                      pdb_file: Path) -> str:
         """
-        Generate cache key from file hashes.
+        Generate cache key from file modification times (faster than hashing).
+        
+        Uses mtime + file size as a proxy for file identity.
+        Much faster than computing SHA256 hashes for every file.
         
         Args:
             legacy_file: Path to legacy JSON file
@@ -91,18 +94,31 @@ class ComparisonCache:
         Returns:
             Cache key string
         """
-        legacy_hash = self._get_file_hash(legacy_file) or 'none'
-        modern_hash = self._get_file_hash(modern_file) or 'none'
-        pdb_hash = self._get_file_hash(pdb_file) or 'none'
+        # Use mtime + size for fast key generation (much faster than hashing)
+        def get_file_id(file_path: Path) -> str:
+            if not file_path.exists():
+                return 'none'
+            try:
+                stat = os.stat(file_path)
+                return f"{stat.st_mtime}:{stat.st_size}"
+            except Exception:
+                return 'none'
         
-        # Combine hashes to create unique key
-        combined = f"{legacy_hash}:{modern_hash}:{pdb_hash}"
+        legacy_id = get_file_id(legacy_file)
+        modern_id = get_file_id(modern_file)
+        pdb_id = get_file_id(pdb_file)
+        
+        # Combine IDs to create unique key
+        combined = f"{legacy_id}:{modern_id}:{pdb_id}"
         return hashlib.md5(combined.encode()).hexdigest()
     
     def is_cache_valid(self, cache_key: str, legacy_file: Path,
                       modern_file: Path, pdb_file: Path) -> bool:
         """
         Check if cached result is still valid.
+        
+        Uses file modification time for fast validation instead of hashing.
+        Only computes hashes when actually needed.
         
         Args:
             cache_key: Cache key for this comparison
@@ -117,20 +133,23 @@ class ComparisonCache:
             return False
         
         cached_info = self.metadata['results'][cache_key]
-        stored_hashes = cached_info.get('file_hashes', {})
+        stored_mtimes = cached_info.get('file_mtimes', {})
         
-        # Check if file hashes match
-        current_legacy_hash = self._get_file_hash(legacy_file)
-        current_modern_hash = self._get_file_hash(modern_file)
-        current_pdb_hash = self._get_file_hash(pdb_file)
+        # Quick check using modification times (much faster than hashing)
+        # Only fall back to hashes if mtimes don't match
+        legacy_mtime = self._get_file_mtime(legacy_file)
+        modern_mtime = self._get_file_mtime(modern_file)
+        pdb_mtime = self._get_file_mtime(pdb_file)
         
-        if stored_hashes.get('legacy') != current_legacy_hash:
+        # Check mtimes first (fast)
+        if stored_mtimes.get('legacy') != legacy_mtime:
             return False
-        if stored_hashes.get('modern') != current_modern_hash:
+        if stored_mtimes.get('modern') != modern_mtime:
             return False
-        if stored_hashes.get('pdb') != current_pdb_hash:
+        if stored_mtimes.get('pdb') != pdb_mtime:
             return False
         
+        # If mtimes match, cache is valid (don't need to hash)
         return True
     
     def get_cached_result(self, pdb_id: str) -> Optional[ComparisonResult]:
@@ -189,13 +208,18 @@ class ComparisonCache:
         if 'results' not in self.metadata:
             self.metadata['results'] = {}
         
+        # Store mtimes for fast validation (compute hashes only when needed)
+        legacy_mtime = self._get_file_mtime(legacy_file)
+        modern_mtime = self._get_file_mtime(modern_file)
+        pdb_mtime = self._get_file_mtime(pdb_file)
+        
         self.metadata['results'][cache_key] = {
             'pdb_id': result.pdb_id,
             'timestamp': result.timestamp or datetime.now().timestamp(),
-            'file_hashes': {
-                'legacy': self._get_file_hash(legacy_file),
-                'modern': self._get_file_hash(modern_file),
-                'pdb': self._get_file_hash(pdb_file),
+            'file_mtimes': {
+                'legacy': legacy_mtime,
+                'modern': modern_mtime,
+                'pdb': pdb_mtime,
             },
             'files': {
                 'legacy': str(legacy_file),

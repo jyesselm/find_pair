@@ -104,6 +104,7 @@ class ComparisonResult:
     status: str  # 'match', 'diff', 'error'
     atom_comparison: Optional[AtomComparison] = None
     frame_comparison: Optional[FrameComparison] = None
+    step_comparison: Optional['StepComparison'] = None  # Forward reference - defined in step_comparison.py
     errors: List[str] = field(default_factory=list)
     cache_key: Optional[str] = None
     timestamp: float = 0.0
@@ -124,6 +125,11 @@ class ComparisonResult:
         if self.frame_comparison:
             if (self.frame_comparison.missing_residues or
                 self.frame_comparison.mismatched_calculations):
+                return True
+        
+        if self.step_comparison:
+            if (self.step_comparison.missing_steps or
+                self.step_comparison.mismatched_steps):
                 return True
         
         return False
@@ -162,18 +168,118 @@ class ComparisonResult:
                 'total_modern': self.frame_comparison.total_modern,
             }
         
+        if self.step_comparison:
+            result['step_differences'] = {
+                'missing_steps': len(self.step_comparison.missing_steps),
+                'mismatched_steps': len(self.step_comparison.mismatched_steps),
+                'total_legacy': self.step_comparison.total_legacy,
+                'total_modern': self.step_comparison.total_modern,
+            }
+        
         return result
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ComparisonResult':
         """Create from dictionary (for cache deserialization)."""
-        # This is a simplified version - full deserialization would restore all fields
+        # Reconstruct minimal comparison objects from summary data
+        # so has_differences() works correctly
+        atom_comparison = None
+        if 'atom_differences' in data:
+            atom_diff = data['atom_differences']
+            atom_comparison = AtomComparison(
+                missing_in_modern=[],  # Empty list but count preserved
+                extra_in_modern=[],    # Empty list but count preserved
+                mismatched_fields=[],  # Empty list but count preserved
+                count_difference=atom_diff.get('count_difference', False),
+                total_legacy=atom_diff.get('total_legacy', 0),
+                total_modern=atom_diff.get('total_modern', 0),
+                common_count=atom_diff.get('common_count', 0),
+            )
+            # Set lists to non-empty if there were differences
+            # This ensures has_differences() returns True when needed
+            # We only need one placeholder per type since has_differences() just checks if list is non-empty
+            if atom_diff.get('missing_in_modern', 0) > 0:
+                atom_comparison.missing_in_modern = [
+                    AtomInfo('?', '', 0, ' ', '?')  # Minimal placeholder
+                ]
+            if atom_diff.get('extra_in_modern', 0) > 0:
+                atom_comparison.extra_in_modern = [
+                    AtomInfo('?', '', 0, ' ', '?')  # Minimal placeholder
+                ]
+            if atom_diff.get('mismatched_fields', 0) > 0:
+                atom_comparison.mismatched_fields = [
+                    FieldMismatch('?', None, None, ('', 0, ' ', '?'))  # Minimal placeholder
+                ]
+        
+        frame_comparison = None
+        if 'frame_differences' in data:
+            frame_diff = data['frame_differences']
+            frame_comparison = FrameComparison(
+                missing_residues=[],  # Empty list but count preserved
+                mismatched_calculations=[],  # Empty list but count preserved
+                total_legacy=frame_diff.get('total_legacy', 0),
+                total_modern=frame_diff.get('total_modern', 0),
+            )
+            # Set lists to non-empty if there were differences
+            # This ensures has_differences() returns True when needed
+            # We only need one placeholder per type since has_differences() just checks if list is non-empty
+            if frame_diff.get('missing_residues', 0) > 0:
+                frame_comparison.missing_residues = [
+                    FrameRecord('?', '', 0, ' ', '?', 0.0, 0)  # Minimal placeholder
+                ]
+            if frame_diff.get('mismatched_calculations', 0) > 0:
+                frame_comparison.mismatched_calculations = [
+                    FrameMismatch(('', 0, ' '), {}, {}, {})  # Minimal placeholder
+                ]
+        
+        step_comparison = None
+        if 'step_differences' in data:
+            step_diff = data['step_differences']
+            # Import StepComparison here to avoid circular dependency
+            from .step_comparison import StepComparison
+            step_comparison = StepComparison(
+                missing_steps=[],  # Empty list but count preserved
+                mismatched_steps=[],  # Empty list but count preserved
+                total_legacy=step_diff.get('total_legacy', 0),
+                total_modern=step_diff.get('total_modern', 0),
+            )
+            # Set lists to non-empty if there were differences
+            if step_diff.get('missing_steps', 0) > 0:
+                step_comparison.missing_steps = [{}]  # Minimal placeholder
+            if step_diff.get('mismatched_steps', 0) > 0:
+                step_comparison.mismatched_steps = [{}]  # Minimal placeholder
+        
+        # Determine correct status from differences (recalculate from summary data)
+        # This fixes cases where cached status might be incorrect
+        status = data.get('status', 'error')
+        if data.get('errors'):
+            status = 'error'
+        else:
+            # Check if there are any differences based on summary data
+            has_diffs = False
+            if atom_comparison:
+                has_diffs = (atom_comparison.missing_in_modern or
+                           atom_comparison.extra_in_modern or
+                           atom_comparison.mismatched_fields or
+                           atom_comparison.count_difference)
+            if not has_diffs and frame_comparison:
+                has_diffs = (frame_comparison.missing_residues or
+                           frame_comparison.mismatched_calculations)
+            
+            if has_diffs:
+                status = 'diff'
+            else:
+                status = 'match'
+        
         return cls(
             pdb_id=data['pdb_id'],
-            status=data['status'],
+            status=status,  # Use recalculated status
             timestamp=data.get('timestamp', 0.0),
             errors=data.get('errors', []),
             cache_key=data.get('cache_key'),
             pdb_file_path=data.get('pdb_file_path'),
+            atom_comparison=atom_comparison,
+            frame_comparison=frame_comparison,
+            step_comparison=step_comparison,
         )
 

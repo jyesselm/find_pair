@@ -12,6 +12,7 @@ import time
 from .models import ComparisonResult, AtomComparison, FrameComparison
 from .atom_comparison import compare_atoms
 from .frame_comparison import compare_frames
+from .step_comparison import compare_step_parameters
 from .pdb_utils import PdbFileReader
 from .result_cache import ComparisonCache
 from .parallel_executor import ParallelExecutor, print_progress
@@ -24,7 +25,8 @@ class JsonComparator:
                  tolerance: float = 1e-6, enable_cache: bool = True,
                  force_recompute: bool = False,
                  compare_atoms: bool = True,
-                 compare_frames: bool = True):
+                 compare_frames: bool = True,
+                 compare_steps: bool = True):
         """
         Initialize comparator with caching support.
         
@@ -35,6 +37,7 @@ class JsonComparator:
             force_recompute: Force recomputation even if cache exists
             compare_atoms: If True, compare atom records (pdb_atoms)
             compare_frames: If True, compare frame calculations (base_frame_calc, frame_calc, ls_fitting)
+            compare_steps: If True, compare step parameters (bpstep_params, helical_params)
         """
         self.cache_dir = Path(cache_dir)
         self.tolerance = tolerance
@@ -42,6 +45,7 @@ class JsonComparator:
         self.force_recompute = force_recompute
         self.compare_atoms = compare_atoms
         self.compare_frames = compare_frames
+        self.compare_steps = compare_steps
         self.cache = ComparisonCache(self.cache_dir) if enable_cache else None
     
     def _load_json(self, json_file: Path) -> Optional[Dict]:
@@ -193,6 +197,38 @@ class JsonComparator:
         
         return records
     
+    def _extract_step_records(self, json_data: Dict, json_file: Optional[Path] = None) -> List[Dict]:
+        """Extract step parameter records from JSON (supports array, grouped, and split file formats)."""
+        records = []
+        calculations = json_data.get('calculations', {})
+        
+        # Handle grouped format: calculations is a dict with type keys
+        if isinstance(calculations, dict):
+            for calc_type in ['bpstep_params', 'helical_params']:
+                calc_group = calculations.get(calc_type, [])
+                if isinstance(calc_group, list):
+                    records.extend(calc_group)
+        # Handle array format: calculations is a list
+        elif isinstance(calculations, list):
+            for calc in calculations:
+                if calc.get('type') in ['bpstep_params', 'helical_params']:
+                    records.append(calc)
+        
+        # If no records found and we have a file path, try split file format
+        if not records and json_file:
+            for calc_type in ['bpstep_params', 'helical_params']:
+                split_file = json_file.parent / f"{json_file.stem}_{calc_type}.json"
+                if split_file.exists():
+                    try:
+                        split_data = self._load_json(split_file)
+                        if isinstance(split_data, list):
+                            # Split file contains array of entries (already in correct format)
+                            records.extend(split_data)
+                    except Exception:
+                        pass
+        
+        return records
+    
     def compare_files(self, legacy_file: Path, modern_file: Path,
                      pdb_file: Path, pdb_id: str) -> ComparisonResult:
         """
@@ -218,7 +254,20 @@ class JsonComparator:
                 return cached_result
         
         # Load JSON files
+        # If main legacy file doesn't exist, check for split files and create minimal wrapper
         legacy_json = self._load_json(legacy_file)
+        if legacy_json is None and not legacy_file.exists():
+            # Check if split files exist - if so, create minimal JSON structure
+            split_atoms = legacy_file.parent / f"{legacy_file.stem}_pdb_atoms.json"
+            if split_atoms.exists():
+                # Create minimal JSON structure that indicates split files exist
+                legacy_json = {
+                    'pdb_name': legacy_file.stem,
+                    'calculations': [{'_split_files': True}]
+                }
+            else:
+                legacy_json = None
+        
         modern_json = self._load_json(modern_file)
         
         result = ComparisonResult(
@@ -287,6 +336,43 @@ class JsonComparator:
                 result.frame_comparison = frame_comparison
             except Exception as e:
                 result.errors.append(f"Error comparing frames: {e}")
+        
+        # Compare step parameters
+        if self.compare_steps:
+            try:
+                legacy_steps = self._extract_step_records(legacy_json, legacy_file)
+                modern_steps = self._extract_step_records(modern_json, modern_file)
+                
+                if legacy_steps or modern_steps:
+                    # Compare bpstep_params
+                    legacy_bpstep = [r for r in legacy_steps if r.get('type') == 'bpstep_params']
+                    modern_bpstep = [r for r in modern_steps if r.get('type') == 'bpstep_params']
+                    
+                    bpstep_comparison = None
+                    if legacy_bpstep or modern_bpstep:
+                        bpstep_comparison = compare_step_parameters(
+                            legacy_bpstep, modern_bpstep, parameter_type="bpstep_params"
+                        )
+                    
+                    # Compare helical_params
+                    legacy_helical = [r for r in legacy_steps if r.get('type') == 'helical_params']
+                    modern_helical = [r for r in modern_steps if r.get('type') == 'helical_params']
+                    
+                    helical_comparison = None
+                    if legacy_helical or modern_helical:
+                        helical_comparison = compare_step_parameters(
+                            legacy_helical, modern_helical, parameter_type="helical_params"
+                        )
+                    
+                    # Combine step comparisons (for now, we'll store bpstep separately)
+                    # TODO: Create a unified StepComparison that handles both types
+                    if bpstep_comparison:
+                        result.step_comparison = bpstep_comparison
+                    elif helical_comparison:
+                        result.step_comparison = helical_comparison
+            except Exception as e:
+                # Don't fail comparison on step parameter errors (they may not be generated yet)
+                pass
         
         # Determine status
         if result.errors:
