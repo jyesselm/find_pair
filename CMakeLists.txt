@@ -35,6 +35,8 @@ add_library(x3dna
     src/x3dna/io/json_reader.cpp
     src/x3dna/io/pdb_writer.cpp
     src/x3dna/io/input_file_parser.cpp
+    src/x3dna/core/structure_legacy_order.cpp
+    src/x3dna/core/structure_legacy_order_impl.cpp
     src/x3dna/algorithms/standard_base_templates.cpp
     src/x3dna/algorithms/ring_atom_matcher.cpp
     src/x3dna/algorithms/base_frame_calculator.cpp
@@ -86,6 +88,27 @@ target_link_libraries(debug_frame_calculation PRIVATE x3dna)
 
 add_executable(compare_quality_scores tools/compare_quality_scores.cpp)
 target_link_libraries(compare_quality_scores PRIVATE x3dna)
+
+add_executable(compare_initial_hbonds tools/compare_initial_hbonds.cpp)
+target_link_libraries(compare_initial_hbonds PRIVATE x3dna)
+
+add_executable(compare_hbond_stages tools/compare_hbond_stages.cpp)
+target_link_libraries(compare_hbond_stages PRIVATE x3dna)
+
+add_executable(compare_atom_selection tools/compare_atom_selection.cpp)
+target_link_libraries(compare_atom_selection PRIVATE x3dna)
+
+add_executable(find_residue_mapping tools/find_residue_mapping.cpp)
+target_link_libraries(find_residue_mapping PRIVATE x3dna)
+
+add_executable(test_legacy_order tools/test_legacy_order.cpp)
+target_link_libraries(test_legacy_order PRIVATE x3dna)
+
+add_executable(generate_residue_ordering_json tools/generate_residue_ordering_json.cpp)
+target_link_libraries(generate_residue_ordering_json PRIVATE x3dna)
+
+add_executable(compare_residue_ordering tools/compare_residue_ordering.cpp)
+target_link_libraries(compare_residue_ordering PRIVATE x3dna)
 
 add_executable(compare_hbond_detection tools/compare_hbond_detection.cpp)
 target_link_libraries(compare_hbond_detection PRIVATE x3dna)

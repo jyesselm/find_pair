@@ -13,6 +13,7 @@
 #include <nlohmann/json.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/structure_legacy_order.hpp>
 
 namespace x3dna {
 namespace core {
@@ -145,6 +146,42 @@ public:
         }
         return nts;
     }
+
+    /**
+     * @brief Get all residues in legacy order (PDB file order)
+     * 
+     * Returns residues in the same order as legacy's residue_idx() function:
+     * - Processes atoms in PDB file order (by line_number)
+     * - Groups by (ResName, ChainID, ResSeq, insertion)
+     * - Returns unique residues in order they first appear
+     * 
+     * This matches the legacy residue indexing used throughout the codebase.
+     * 
+     * @return Vector of residue pointers in legacy order (non-owning)
+     */
+    std::vector<const Residue*> residues_in_legacy_order() const;
+
+    /**
+     * @brief Get residue by legacy index (1-based)
+     * 
+     * Finds the residue that would be at the given legacy index when counting
+     * in legacy order (PDB file order).
+     * 
+     * @param legacy_idx Legacy residue index (1-based)
+     * @return Pointer to residue, or nullptr if not found
+     */
+    const Residue* get_residue_by_legacy_idx(int legacy_idx) const;
+
+    /**
+     * @brief Get legacy index for a residue
+     * 
+     * Returns the legacy index (1-based) for the given residue when counting
+     * in legacy order (PDB file order).
+     * 
+     * @param residue The residue to find the index for
+     * @return Legacy residue index (1-based), or 0 if not found
+     */
+    int get_legacy_idx_for_residue(const Residue* residue) const;
 
     /**
      * @brief Find chain by ID
