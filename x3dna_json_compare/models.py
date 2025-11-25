@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .pair_comparison import PairValidationComparison, DistanceChecksComparison
     from .base_pair_comparison import BasePairComparison
     from .find_bestpair_comparison import FindBestpairComparison
+    from .hbond_comparison import HBondListComparison
 
 
 @dataclass
@@ -114,6 +115,7 @@ class ComparisonResult:
     base_pair_comparison: Optional[Any] = None  # BasePairComparison from base_pair_comparison (pairs that pass all checks)
     pair_validation_comparison: Optional[Any] = None  # PairValidationComparison from pair_comparison
     distance_checks_comparison: Optional[Any] = None  # DistanceChecksComparison from pair_comparison
+    hbond_list_comparison: Optional[Any] = None  # HBondListComparison from hbond_comparison
     errors: List[str] = field(default_factory=list)
     cache_key: Optional[str] = None
     timestamp: float = 0.0
@@ -161,6 +163,12 @@ class ComparisonResult:
             if (self.distance_checks_comparison.missing_in_modern or
                 self.distance_checks_comparison.extra_in_modern or
                 self.distance_checks_comparison.mismatched_checks):
+                return True
+        
+        if self.hbond_list_comparison:
+            if (self.hbond_list_comparison.missing_in_modern or
+                self.hbond_list_comparison.extra_in_modern or
+                self.hbond_list_comparison.mismatched_pairs):
                 return True
         
         return False
@@ -244,6 +252,16 @@ class ComparisonResult:
                 'total_legacy': self.distance_checks_comparison.total_legacy,
                 'total_modern': self.distance_checks_comparison.total_modern,
                 'common_count': self.distance_checks_comparison.common_count,
+            }
+        
+        if self.hbond_list_comparison:
+            result['hbond_list_differences'] = {
+                'missing_in_modern': len(self.hbond_list_comparison.missing_in_modern),
+                'extra_in_modern': len(self.hbond_list_comparison.extra_in_modern),
+                'mismatched_pairs': len(self.hbond_list_comparison.mismatched_pairs),
+                'total_legacy': self.hbond_list_comparison.total_legacy,
+                'total_modern': self.hbond_list_comparison.total_modern,
+                'common_count': self.hbond_list_comparison.common_count,
             }
         
         return result

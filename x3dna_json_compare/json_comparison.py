@@ -16,6 +16,7 @@ from .step_comparison import compare_step_parameters
 from .pair_comparison import compare_pair_validations, compare_distance_checks
 from .base_pair_comparison import compare_base_pairs
 from .find_bestpair_comparison import compare_find_bestpair_selections
+from .hbond_comparison import compare_hbond_lists
 from .pdb_utils import PdbFileReader
 from .result_cache import ComparisonCache
 from .parallel_executor import ParallelExecutor, print_progress
@@ -390,6 +391,74 @@ class JsonComparator:
         
         return records
     
+    def _extract_hbond_list_records(self, json_data: Dict, json_file: Optional[Path] = None) -> List[Dict]:
+        """Extract hbond_list records from JSON (supports array, grouped, and split file formats)."""
+        records = []
+        calculations = json_data.get('calculations', {})
+        
+        # Handle grouped format: calculations is a dict with type keys
+        if isinstance(calculations, dict):
+            calc_group = calculations.get('hbond_list', [])
+            if isinstance(calc_group, list):
+                records.extend(calc_group)
+        # Handle array format: calculations is a list
+        elif isinstance(calculations, list):
+            for calc in calculations:
+                if isinstance(calc, dict) and calc.get('type') == 'hbond_list':
+                    records.append(calc)
+        
+        # If no records found and we have a file path, try split file format
+        if not records and json_file:
+            split_file = json_file.parent / f"{json_file.stem}_hbond_list.json"
+            if split_file.exists():
+                try:
+                    split_data = self._load_json(split_file)
+                    if isinstance(split_data, list):
+                        # Split file contains array of entries (already in correct format)
+                        records.extend(split_data)
+                except Exception:
+                    pass
+        
+        # If still no records and file has split files indicator, try loading from main file directly
+        # (legacy may have records embedded in main file even if split_files is true)
+        if not records and json_file and json_file.exists():
+            # Check if calculations indicates split files but we didn't find records
+            split_indicator = False
+            if isinstance(calculations, list):
+                split_indicator = any(isinstance(c, dict) and c.get('_split_files') for c in calculations)
+            
+            # If split file doesn't exist, parse all JSON objects from main file
+            if split_indicator:
+                split_file = json_file.parent / f"{json_file.stem}_hbond_list.json"
+                if not split_file.exists():
+                    # Parse all JSON objects from main file
+                    try:
+                        with open(json_file, 'r') as f:
+                            content = f.read()
+                        decoder = json.JSONDecoder()
+                        idx = 0
+                        while idx < len(content):
+                            # Skip whitespace
+                            while idx < len(content) and content[idx].isspace():
+                                idx += 1
+                            if idx >= len(content):
+                                break
+                            try:
+                                obj, new_idx = decoder.raw_decode(content, idx)
+                                if isinstance(obj, dict) and obj.get('type') == 'hbond_list':
+                                    records.append(obj)
+                                idx = new_idx
+                            except json.JSONDecodeError:
+                                # Try to find next object start
+                                next_brace = content.find('{', idx + 1)
+                                if next_brace == -1:
+                                    break
+                                idx = next_brace
+                    except Exception:
+                        pass
+        
+        return records
+    
     def compare_files(self, legacy_file: Path, modern_file: Path,
                      pdb_file: Path, pdb_id: str) -> ComparisonResult:
         """
@@ -586,6 +655,20 @@ class JsonComparator:
             except Exception as e:
                 # Don't fail comparison on pair validation errors
                 result.errors.append(f"Error comparing pair validations: {e}")
+        
+        # Compare hbond_list records
+        if self.compare_pairs:
+            try:
+                legacy_hbond_lists = self._extract_hbond_list_records(legacy_json, legacy_file)
+                modern_hbond_lists = self._extract_hbond_list_records(modern_json, modern_file)
+                
+                if legacy_hbond_lists or modern_hbond_lists:
+                    hbond_list_comparison = compare_hbond_lists(
+                        legacy_hbond_lists, modern_hbond_lists, self.tolerance
+                    )
+                    result.hbond_list_comparison = hbond_list_comparison
+            except Exception as e:
+                result.errors.append(f"Error comparing hbond_list records: {e}")
         
         # Determine status
         if result.errors:

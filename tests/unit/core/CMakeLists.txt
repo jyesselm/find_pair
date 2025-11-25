@@ -7,7 +7,6 @@ add_executable(test_atom
 target_link_libraries(test_atom
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -20,7 +19,6 @@ add_executable(test_reference_frame
 target_link_libraries(test_reference_frame
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -33,7 +31,6 @@ add_executable(test_residue
 target_link_libraries(test_residue
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -46,7 +43,6 @@ add_executable(test_chain
 target_link_libraries(test_chain
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -59,7 +55,6 @@ add_executable(test_structure
 target_link_libraries(test_structure
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -72,7 +67,6 @@ add_executable(test_base_pair
 target_link_libraries(test_base_pair
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -85,7 +79,6 @@ add_executable(test_parameters
 target_link_libraries(test_parameters
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 

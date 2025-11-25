@@ -16,7 +16,6 @@ if(TARGET gtest AND TARGET gtest_main)
     
     target_link_libraries(test_basic
         x3dna
-        gtest
         gtest_main
     )
     

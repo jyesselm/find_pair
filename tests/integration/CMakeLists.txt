@@ -35,7 +35,6 @@ endif()
 target_link_libraries(test_least_squares_regression
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -59,7 +58,6 @@ target_include_directories(test_pdb_atom_validation PRIVATE
 target_link_libraries(test_pdb_atom_validation
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -84,7 +82,6 @@ target_include_directories(test_json_generation PRIVATE
 target_link_libraries(test_json_generation
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -109,7 +106,6 @@ target_include_directories(test_json_generation_filtered PRIVATE
 target_link_libraries(test_json_generation_filtered
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -155,7 +151,6 @@ target_include_directories(test_frame_calculation_legacy PRIVATE
 target_link_libraries(test_frame_calculation_legacy
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -180,7 +175,6 @@ target_include_directories(test_core_objects_integration PRIVATE
 target_link_libraries(test_core_objects_integration
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -205,7 +199,6 @@ target_include_directories(test_io_integration PRIVATE
 target_link_libraries(test_io_integration
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -230,7 +223,6 @@ target_include_directories(test_base_pair_integration PRIVATE
 target_link_libraries(test_base_pair_integration
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 

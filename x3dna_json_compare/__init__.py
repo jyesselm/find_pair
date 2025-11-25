@@ -28,6 +28,7 @@ from .result_cache import ComparisonCache
 from .json_comparison import JsonComparator
 from .json_validator import JsonValidator
 from .parallel_executor import ParallelExecutor, print_progress
+from .hbond_comparison import compare_hbond_lists, HBondListComparison
 
 __all__ = [
     # Models
@@ -45,6 +46,9 @@ __all__ = [
     # Comparison functions
     'compare_atoms',
     'compare_frames',
+    'compare_hbond_lists',
+    # Comparison result models
+    'HBondListComparison',
     # Main classes
     'ComparisonCache',
     'JsonComparator',

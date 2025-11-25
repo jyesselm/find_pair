@@ -7,7 +7,6 @@ add_executable(test_standard_base_templates
 target_link_libraries(test_standard_base_templates
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -20,7 +19,6 @@ add_executable(test_ring_atom_matcher
 target_link_libraries(test_ring_atom_matcher
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -33,7 +31,6 @@ add_executable(test_base_frame_calculator
 target_link_libraries(test_base_frame_calculator
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -51,7 +48,6 @@ target_include_directories(test_base_pair_validator PRIVATE
 target_link_libraries(test_base_pair_validator
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -69,7 +65,6 @@ target_include_directories(test_base_pair_finder PRIVATE
 target_link_libraries(test_base_pair_finder
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
