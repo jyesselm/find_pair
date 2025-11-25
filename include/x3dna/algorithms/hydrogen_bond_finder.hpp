@@ -106,6 +106,13 @@ private:
     static void validate_hbonds(std::vector<HydrogenBondResult>& hbonds, char base1, char base2);
 
     /**
+     * @brief Get base type for H-bond detection (handles modified nucleotides)
+     * Matches legacy behavior: uses one_letter_code() if available, otherwise uses residue_type()
+     * For modified nucleotides, returns appropriate base type (A, C, G, T, U)
+     */
+    static char get_base_type_for_hbond(const core::Residue& residue);
+
+    /**
      * @brief Determine H-bond type using donor-acceptor
      * Matches legacy donor_acceptor function
      */
