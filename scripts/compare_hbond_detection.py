@@ -58,16 +58,18 @@ def load_json_file(filepath):
         # Multiple JSON objects - return all
         return records
 
-def extract_hbonds_from_json(json_data, record_type='hydrogen_bonds'):
+def extract_hbonds_from_json(json_data, record_type='hbond_list'):
     """Extract H-bond records from JSON data"""
     hbonds_by_pair = {}
     
     for record in json_data:
+        # Check for hbond_list records (both legacy and modern format)
         if record.get('type') == record_type:
             base_i = record.get('base_i')
             base_j = record.get('base_j')
             if base_i is not None and base_j is not None:
-                pair_key = (base_i, base_j)
+                # Normalize pair order to (min, max) for consistent comparison
+                pair_key = (min(base_i, base_j), max(base_i, base_j))
                 hbonds = record.get('hbonds', [])
                 hbonds_by_pair[pair_key] = hbonds
     
@@ -124,34 +126,34 @@ def main():
     legacy_dir = Path(sys.argv[2])
     modern_dir = Path(sys.argv[3])
     
-    # Find legacy H-bond file
-    legacy_file = legacy_dir / f"{pdb_id}_hydrogen_bonds.json"
+    # Find legacy H-bond file (try split file first, then main file)
+    legacy_file = legacy_dir / f"{pdb_id}_hbond_list.json"
     if not legacy_file.exists():
-        # Try alternative location or check main JSON file
+        # Try main JSON file
         legacy_main = legacy_dir / f"{pdb_id}.json"
         if legacy_main.exists():
             legacy_data = load_json_file(legacy_main)
         else:
-            print(f"ERROR: Legacy H-bond file not found: {legacy_file}")
+            print(f"ERROR: Legacy H-bond file not found: {legacy_file} or {legacy_main}")
             sys.exit(1)
     else:
         legacy_data = load_json_file(legacy_file)
     
-    # Find modern H-bond file
-    modern_file = modern_dir / f"{pdb_id}_hydrogen_bonds.json"
+    # Find modern H-bond file (try split file first, then main file)
+    modern_file = modern_dir / f"{pdb_id}_hbond_list.json"
     if not modern_file.exists():
         modern_main = modern_dir / f"{pdb_id}.json"
         if modern_main.exists():
             modern_data = load_json_file(modern_main)
         else:
-            print(f"ERROR: Modern H-bond file not found: {modern_file}")
+            print(f"ERROR: Modern H-bond file not found: {modern_file} or {modern_main}")
             sys.exit(1)
     else:
         modern_data = load_json_file(modern_file)
     
-    # Extract H-bonds
-    legacy_hbonds = extract_hbonds_from_json(legacy_data, 'hydrogen_bonds')
-    modern_hbonds = extract_hbonds_from_json(modern_data, 'hydrogen_bonds')
+    # Extract H-bonds from hbond_list records
+    legacy_hbonds = extract_hbonds_from_json(legacy_data, 'hbond_list')
+    modern_hbonds = extract_hbonds_from_json(modern_data, 'hbond_list')
     
     print(f"\n=== H-bond Comparison for {pdb_id} ===\n")
     print(f"Legacy pairs with H-bonds: {len(legacy_hbonds)}")

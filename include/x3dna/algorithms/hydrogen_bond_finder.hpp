@@ -38,8 +38,8 @@ struct HydrogenBondResult {
 struct DetailedHBondResult {
     std::vector<HydrogenBondResult> initial_hbonds; // Before conflict resolution
     std::vector<HydrogenBondResult> after_conflict_resolution;
-    std::vector<HydrogenBondResult> after_validation;
-    std::vector<HydrogenBondResult> final_hbonds; // After all filtering
+    std::vector<HydrogenBondResult> after_validation; // ALL H-bonds after validation (including type=' ') - matches legacy JSON recording
+    std::vector<HydrogenBondResult> final_hbonds; // Only H-bonds with type != ' ' (for quality adjustment counting)
     int num_good_hb; // Count of H-bonds with type='-' and distance in [2.5, 3.5]
 };
 
@@ -80,7 +80,7 @@ public:
      */
     static DetailedHBondResult find_hydrogen_bonds_detailed(const core::Residue& res1,
                                                              const core::Residue& res2,
-                                                             double hb_lower, double hb_dist1);
+                                                             double hb_lower, double hb_dist1, double hb_dist2 = 4.5);
 
 private:
     /**
@@ -91,13 +91,17 @@ private:
 
     /**
      * @brief Resolve conflicts when same atom has multiple H-bonds
-     * Matches legacy hb_atompair logic
+     * Matches legacy hb_atompair logic with full iterative algorithm and linkage type calculation
+     * @param hbonds H-bonds to resolve (distances may be negated to mark conflicts)
+     * @param hb_lower Lower distance limit
+     * @param hb_dist2 Upper distance limit for linkage type checking
      */
-    static void resolve_conflicts(std::vector<HydrogenBondResult>& hbonds);
+    static void resolve_conflicts(std::vector<HydrogenBondResult>& hbonds, double hb_lower, double hb_dist2);
 
     /**
      * @brief Validate H-bonds based on donor-acceptor relationship
      * Matches legacy validate_hbonds logic
+     * Only processes H-bonds with positive distance (conflicts marked by negative distance)
      */
     static void validate_hbonds(std::vector<HydrogenBondResult>& hbonds, char base1, char base2);
 

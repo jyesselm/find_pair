@@ -11,7 +11,6 @@ target_include_directories(test_pdb_parser PRIVATE
 target_link_libraries(test_pdb_parser
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -24,7 +23,6 @@ add_executable(test_json_writer
 target_link_libraries(test_json_writer
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -37,7 +35,6 @@ add_executable(test_json_reader
 target_link_libraries(test_json_reader
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -50,7 +47,6 @@ add_executable(test_pdb_writer
 target_link_libraries(test_pdb_writer
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 
@@ -63,7 +59,6 @@ add_executable(test_input_file_parser
 target_link_libraries(test_input_file_parser
     PRIVATE
     x3dna
-    gtest
     gtest_main
 )
 

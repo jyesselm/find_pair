@@ -6,7 +6,6 @@ add_executable(test_vector3d
 
 target_link_libraries(test_vector3d
     x3dna
-    gtest
     gtest_main
 )
 
@@ -18,7 +17,6 @@ add_executable(test_matrix3d
 
 target_link_libraries(test_matrix3d
     x3dna
-    gtest
     gtest_main
 )
 
@@ -30,7 +28,6 @@ add_executable(test_least_squares_fitter
 
 target_link_libraries(test_least_squares_fitter
     x3dna
-    gtest
     gtest_main
 )
 
