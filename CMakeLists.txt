@@ -84,6 +84,21 @@ target_link_libraries(compare_residue_identification PRIVATE x3dna)
 add_executable(debug_frame_calculation tools/debug_frame_calculation.cpp)
 target_link_libraries(debug_frame_calculation PRIVATE x3dna)
 
+add_executable(compare_quality_scores tools/compare_quality_scores.cpp)
+target_link_libraries(compare_quality_scores PRIVATE x3dna)
+
+add_executable(compare_hbond_detection tools/compare_hbond_detection.cpp)
+target_link_libraries(compare_hbond_detection PRIVATE x3dna)
+
+add_executable(list_all_hbonds tools/list_all_hbonds.cpp)
+target_link_libraries(list_all_hbonds PRIVATE x3dna)
+
+add_executable(detect_hbonds_standalone tools/detect_hbonds_standalone.cpp)
+target_link_libraries(detect_hbonds_standalone PRIVATE x3dna)
+
+add_executable(debug_donor_acceptor tools/debug_donor_acceptor.cpp)
+target_link_libraries(debug_donor_acceptor PRIVATE x3dna)
+
 # Documentation
 if(BUILD_DOCS)
     find_package(Doxygen)
