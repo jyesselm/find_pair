@@ -7,6 +7,8 @@
 #include <x3dna/core/atom.hpp>
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
 #include <x3dna/algorithms/hydrogen_bond_finder.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.hpp>
 #include <cmath>
 #include <algorithm>
 #include <cstring>
@@ -29,10 +31,10 @@ struct Point2D {
 // Helper struct for vertex (matches legacy vertex struct)
 // Used in pia_inter for integer arithmetic polygon intersection
 struct Vertex {
-    Point2D ip;      // Integer point (after scaling)
-    Point2D rx;      // X range for this edge
-    Point2D ry;      // Y range for this edge
-    long inside;     // Inside count
+    Point2D ip;  // Integer point (after scaling)
+    Point2D rx;  // X range for this edge
+    Point2D ry;  // Y range for this edge
+    long inside; // Inside count
 };
 
 // Constants matching legacy
@@ -49,18 +51,6 @@ using namespace x3dna::geometry;
 // Static members for atom list
 std::map<std::string, std::string> BasePairValidator::atom_list_;
 bool BasePairValidator::atom_list_loaded_ = false;
-
-// Debug flag - set via environment variable DEBUG_GOOD_HB_ATOMS=1
-static bool should_debug_good_hb_atoms() {
-    static bool checked = false;
-    static bool enabled = false;
-    if (!checked) {
-        const char* env = std::getenv("DEBUG_GOOD_HB_ATOMS");
-        enabled = (env && std::string(env) == "1");
-        checked = true;
-    }
-    return enabled;
-}
 
 // Debug flag for specific pairs - can be added later if needed
 // Set via DEBUG_PAIRS="1VBY:20,21;3AVY:1204,1223"
@@ -134,7 +124,9 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
     if (cdns) {
         // Count H-bonds simply (BEFORE validation) - matches legacy check_pair behavior
         // This is the key fix: legacy counts H-bonds before validation for pair validation
-        count_hydrogen_bonds_simple(res1, res2, result.num_base_hb, result.num_o2_hb);
+        using namespace x3dna::algorithms::hydrogen_bond;
+        HydrogenBondCounter::count_simple(res1, res2, params_.hb_lower, params_.hb_dist1,
+                                          params_.hb_atoms, result.num_base_hb, result.num_o2_hb);
 
         // Check H-bond requirement (matches legacy lines 4616-4617)
         if (params_.min_base_hb > 0) {
@@ -262,8 +254,7 @@ static double calculate_polygon_intersection_area(const std::vector<Point2D>& po
                                                   const std::vector<Point2D>& poly2);
 
 double BasePairValidator::calculate_overlap_area(const Residue& res1, const Residue& res2,
-                                                 const Vector3D& oave,
-                                                 const Vector3D& zave) const {
+                                                 const Vector3D& oave, const Vector3D& zave) const {
     // Match legacy get_oarea() logic (org/src/ana_fncs.c lines 3327-3358)
     // Steps:
     // 1. Get ring atoms for both residues
@@ -275,31 +266,32 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
     // Legacy: ratom_xyz(ring_atom[r1], only_ring, xyz, oave, oxyz1)
     // We need to identify ring atoms from residues
     std::vector<Vector3D> ring_coords1, ring_coords2;
-    
+
     // Get ring atoms using is_base_atom check (matches legacy is_baseatom)
+    using namespace x3dna::algorithms::hydrogen_bond;
     for (const auto& atom : res1.atoms()) {
         if (is_base_atom(atom.name())) {
             // Translate relative to oave (matches legacy ddxyz(oave, xyz[k], oxyz[i]))
             ring_coords1.push_back(atom.position() - oave);
         }
     }
-    
+
     for (const auto& atom : res2.atoms()) {
         if (is_base_atom(atom.name())) {
             ring_coords2.push_back(atom.position() - oave);
         }
     }
-    
+
     // Need at least 3 points to form a polygon
     if (ring_coords1.size() < 3 || ring_coords2.size() < 3) {
         return 0.0;
     }
-    
+
     // Step 2: Align to z-axis (project to plane perpendicular to zave)
     // Legacy: align2zaxis(n1, zave, rotmat, oxyz1, oxyz1Z)
     // This rotates coordinates so zave becomes z-axis, then we use x,y as 2D coordinates
     std::vector<Point2D> poly1, poly2;
-    
+
     // Build rotation matrix to align zave with z-axis
     // zave should become (0, 0, 1) after rotation
     Vector3D z_target(0.0, 0.0, 1.0);
@@ -309,11 +301,11 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
         return 0.0; // Invalid z-axis
     }
     z_normalized = z_normalized / z_len;
-    
+
     // Find rotation axis (cross product of zave and z_target)
     Vector3D rot_axis = z_normalized.cross(z_target);
     double rot_angle = std::acos(std::max(-1.0, std::min(1.0, z_normalized.dot(z_target))));
-    
+
     // If zave is already aligned with z-axis, no rotation needed
     if (rot_angle < 1e-6 || rot_axis.length() < 1e-6) {
         // Already aligned - just use x,y coordinates
@@ -327,17 +319,17 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
         // Apply rotation using Rodrigues' rotation formula
         // For now, use a simpler approach: project onto plane perpendicular to zave
         // The plane is defined by x and y axes after rotating zave to z-axis
-        
+
         // Build orthonormal basis: zave is z-axis, find x and y axes
         Vector3D x_axis, y_axis;
-        
+
         // Choose a vector not parallel to zave for x-axis
         if (std::abs(z_normalized.x()) < 0.9) {
             x_axis = Vector3D(1.0, 0.0, 0.0);
         } else {
             x_axis = Vector3D(0.0, 1.0, 0.0);
         }
-        
+
         // Make x_axis orthogonal to zave
         x_axis = x_axis - z_normalized * x_axis.dot(z_normalized);
         double x_len = x_axis.length();
@@ -346,28 +338,28 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
         } else {
             x_axis = Vector3D(1.0, 0.0, 0.0);
         }
-        
+
         // y_axis = zave × x_axis
         y_axis = z_normalized.cross(x_axis);
         double y_len = y_axis.length();
         if (y_len > 1e-10) {
             y_axis = y_axis / y_len;
         }
-        
+
         // Project coordinates onto x,y plane
         for (const auto& coord : ring_coords1) {
             double x_proj = coord.dot(x_axis);
             double y_proj = coord.dot(y_axis);
             poly1.push_back({x_proj, y_proj});
         }
-        
+
         for (const auto& coord : ring_coords2) {
             double x_proj = coord.dot(x_axis);
             double y_proj = coord.dot(y_axis);
             poly2.push_back({x_proj, y_proj});
         }
     }
-    
+
     // Step 3: Calculate polygon intersection area
     // Legacy: pia_inter(a, n1, b, n2)
     return calculate_polygon_intersection_area(poly1, poly2);
@@ -391,8 +383,8 @@ static bool pia_ovl(const Point2D& p, const Point2D& q) {
     return p.x < q.y && q.x < p.y;
 }
 
-static void pia_cross(double* out_s, Vertex* a, Vertex* b, Vertex* c, Vertex* d,
-                      double a1, double a2, double a3, double a4) {
+static void pia_cross(double* out_s, Vertex* a, Vertex* b, Vertex* c, Vertex* d, double a1,
+                      double a2, double a3, double a4) {
     // Matches legacy pia_cross (line 3233-3248)
     double r1, r2;
     Point2D dp;
@@ -464,58 +456,66 @@ static double calculate_polygon_intersection_area(const std::vector<Point2D>& po
     if (poly1.size() < 3 || poly2.size() < 3) {
         return 0.0;
     }
-    
+
     long na = static_cast<long>(poly1.size());
     long nb = static_cast<long>(poly2.size());
-    
+
     // Find bounding box
     double minx = XBIG, miny = XBIG;
     double maxx = -XBIG, maxy = -XBIG;
-    
+
     for (long j = 0; j < na; j++) {
-        if (minx > poly1[j].x) minx = poly1[j].x;
-        if (miny > poly1[j].y) miny = poly1[j].y;
-        if (maxx < poly1[j].x) maxx = poly1[j].x;
-        if (maxy < poly1[j].y) maxy = poly1[j].y;
+        if (minx > poly1[j].x)
+            minx = poly1[j].x;
+        if (miny > poly1[j].y)
+            miny = poly1[j].y;
+        if (maxx < poly1[j].x)
+            maxx = poly1[j].x;
+        if (maxy < poly1[j].y)
+            maxy = poly1[j].y;
     }
-    
+
     for (long j = 0; j < nb; j++) {
-        if (minx > poly2[j].x) minx = poly2[j].x;
-        if (miny > poly2[j].y) miny = poly2[j].y;
-        if (maxx < poly2[j].x) maxx = poly2[j].x;
-        if (maxy < poly2[j].y) maxy = poly2[j].y;
+        if (minx > poly2[j].x)
+            minx = poly2[j].x;
+        if (miny > poly2[j].y)
+            miny = poly2[j].y;
+        if (maxx < poly2[j].x)
+            maxx = poly2[j].x;
+        if (maxy < poly2[j].y)
+            maxy = poly2[j].y;
     }
-    
+
     // Check for degenerate case (zero area bounding box)
     if (maxx <= minx || maxy <= miny) {
         return 0.0;
     }
-    
+
     // Scale to integer coordinates
     const double mid = 0.5 * GAMUT;
     double sclx = GAMUT / (maxx - minx);
     double scly = GAMUT / (maxy - miny);
     double ascale = sclx * scly;
-    
+
     // Allocate vertex arrays (with +1 for wraparound)
     if (na > MNPOLY || nb > MNPOLY) {
         // Too many vertices - fallback to bounding box approximation
         // This shouldn't happen for base pairs (typically < 10 vertices)
         return 0.0;
     }
-    
+
     std::vector<Vertex> ipa(na + 1);
     std::vector<Vertex> ipb(nb + 1);
-    
+
     // Convert to integer coordinates
     pia_fit(minx, miny, mid, sclx, scly, poly1.data(), na, ipa.data(), 0);
     pia_fit(minx, miny, mid, sclx, scly, poly2.data(), nb, ipb.data(), 2);
-    
+
     // Calculate intersection area
     double out_s = 0.0;
     double a1, a2, a3, a4;
     bool o;
-    
+
     for (long j = 0; j < na; ++j) {
         for (long k = 0; k < nb; ++k) {
             if (pia_ovl(ipa[j].rx, ipb[k].rx) && pia_ovl(ipa[j].ry, ipb[k].ry)) {
@@ -527,93 +527,34 @@ static double calculate_polygon_intersection_area(const std::vector<Point2D>& po
                     a4 = -pia_area(ipb[k + 1].ip, ipa[j].ip, ipa[j + 1].ip);
                     if ((a3 < 0) == (a4 < 0)) {
                         if (o) {
-                            pia_cross(&out_s, &ipa[j], &ipa[j + 1], &ipb[k], &ipb[k + 1], a1, a2, a3, a4);
+                            pia_cross(&out_s, &ipa[j], &ipa[j + 1], &ipb[k], &ipb[k + 1], a1, a2,
+                                      a3, a4);
                         } else {
-                            pia_cross(&out_s, &ipb[k], &ipb[k + 1], &ipa[j], &ipa[j + 1], a3, a4, a1, a2);
+                            pia_cross(&out_s, &ipb[k], &ipb[k + 1], &ipa[j], &ipa[j + 1], a3, a4,
+                                      a1, a2);
                         }
                     }
                 }
             }
         }
     }
-    
+
     pia_inness(&out_s, ipa.data(), na, ipb.data(), nb);
     pia_inness(&out_s, ipb.data(), nb, ipa.data(), na);
-    
+
     // Check for invalid ascale (division by zero protection)
     if (std::isnan(ascale) || std::isinf(ascale) || ascale == 0.0) {
         return 0.0;
     }
-    
+
     double result = std::fabs(out_s) / ascale;
-    
+
     // Ensure result is valid (not NaN or Inf)
     if (std::isnan(result) || std::isinf(result)) {
         return 0.0;
     }
-    
+
     return result;
-}
-
-void BasePairValidator::count_hydrogen_bonds_simple(const Residue& res1, const Residue& res2,
-                                                    int& num_base_hb, int& num_o2_hb) const {
-    // Matches legacy check_pair H-bond counting (lines 4605-4614 in cmn_fncs.c)
-    // Counts H-bonds BEFORE validation - this is the key difference
-
-    num_base_hb = 0;
-    num_o2_hb = 0;
-    bool debug_enabled = should_debug_good_hb_atoms();
-
-    // Loop through all atom pairs (matches legacy nested loops)
-    for (const auto& atom1 : res1.atoms()) {
-        for (const auto& atom2 : res2.atoms()) {
-            // Check distance using within_limits equivalent
-            Vector3D diff = atom1.position() - atom2.position();
-            double dist = diff.length();
-
-            // Check if distance is in range [hb_lower, hb_dist1]
-            if (dist < params_.hb_lower || dist > params_.hb_dist1) {
-                continue;
-            }
-
-            // Check if both are base atoms and can form H-bond
-            // Legacy: O2' is counted separately as num_o2_hb, not num_base_hb
-            // So exclude O2' from base H-bond counting
-            bool atom1_is_base = is_base_atom(atom1.name());
-            bool atom2_is_base = is_base_atom(atom2.name());
-            bool both_base = atom1_is_base && atom2_is_base;
-            bool not_o2prime = (atom1.name() != " O2'" && atom2.name() != " O2'");
-            bool good_hb = false;
-
-            if (both_base && not_o2prime) {
-                good_hb = good_hb_atoms(atom1.name(), atom2.name());
-                if (good_hb) {
-                    num_base_hb++;
-                }
-            }
-
-            // Debug output for H-bond counting
-            if (debug_enabled && both_base && dist <= params_.hb_dist1 &&
-                dist >= params_.hb_lower) {
-                std::cerr << "[DEBUG count_hb] " << atom1.name() << " - " << atom2.name()
-                          << " (dist=" << std::fixed << std::setprecision(3) << dist << "): "
-                          << "atom1_is_base=" << atom1_is_base
-                          << ", atom2_is_base=" << atom2_is_base << ", not_o2prime=" << not_o2prime
-                          << ", good_hb_atoms=" << good_hb << ", num_base_hb=" << num_base_hb
-                          << std::endl;
-            }
-
-            // Check if either atom is O2'
-            if (atom1.name() == " O2'" || atom2.name() == " O2'") {
-                num_o2_hb++;
-            }
-        }
-    }
-
-    if (debug_enabled) {
-        std::cerr << "[DEBUG count_hb] Final counts: num_base_hb=" << num_base_hb
-                  << ", num_o2_hb=" << num_o2_hb << std::endl;
-    }
 }
 
 std::vector<core::hydrogen_bond> BasePairValidator::find_hydrogen_bonds(const Residue& res1,
@@ -622,14 +563,14 @@ std::vector<core::hydrogen_bond> BasePairValidator::find_hydrogen_bonds(const Re
     // This matches legacy behavior where ALL H-bonds are recorded to JSON
     // Legacy records ALL H-bonds in get_hbond_ij (including type=' ')
     using namespace x3dna::algorithms;
-    
+
     double hb_lower = params_.hb_lower;
     double hb_dist1 = params_.hb_dist1;
     double hb_dist2 = 4.5; // Default value (matches legacy)
-    
-    DetailedHBondResult detailed = HydrogenBondFinder::find_hydrogen_bonds_detailed(
-        res1, res2, hb_lower, hb_dist1, hb_dist2);
-    
+
+    DetailedHBondResult detailed =
+        HydrogenBondFinder::find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1, hb_dist2);
+
     // Return after_validation which includes ALL H-bonds (including type=' ')
     // This matches legacy behavior where all H-bonds are recorded to JSON
     // Note: Legacy records ALL H-bonds to JSON, not just validated ones
@@ -644,253 +585,8 @@ std::vector<core::hydrogen_bond> BasePairValidator::find_hydrogen_bonds(const Re
         hbond.type = hbond_result.type;
         all_hbonds.push_back(hbond);
     }
-    
+
     return all_hbonds;
-}
-
-bool BasePairValidator::is_base_atom(const std::string& atom_name) {
-    // Matches legacy is_baseatom (line 4652 in cmn_fncs.c)
-    // Base atoms: C5M or atoms matching pattern " HP" where H is not H or P
-    if (atom_name == " C5M") {
-        return true;
-    }
-
-    // Pattern: space, character (not H or P), digit, space
-    // Legacy: atomname[0] == ' ' && strchr("HP", atomname[1]) == NULL
-    //         && isdigit(atomname[2]) && atomname[3] == ' '
-    if (atom_name.length() >= 4 && atom_name[0] == ' ' && atom_name[1] != 'H' &&
-        atom_name[1] != 'P' && std::isdigit(static_cast<unsigned char>(atom_name[2])) &&
-        atom_name[3] == ' ') {
-        return true;
-    }
-
-    return false;
-}
-
-bool BasePairValidator::good_hb_atoms(const std::string& atom1, const std::string& atom2) const {
-    // Match legacy good_hbatoms() logic EXACTLY (lines 3864-3877 in cmn_fncs.c)
-    // Legacy signature: long good_hbatoms(miscPars *misc_pars, char *atom1, char *atom2, long idx1,
-    // long idx2)
-
-    bool debug_enabled = should_debug_good_hb_atoms();
-
-    if (debug_enabled) {
-        std::cerr << "\n[DEBUG good_hb_atoms] Checking: " << atom1 << " - " << atom2 << std::endl;
-    }
-
-    // Step 1: PO list check (matches legacy lines 3866-3870)
-    // PO list: atoms that should be rejected if BOTH are in this list
-    // Legacy: static char *PO[] = { " O1P", " O2P", " O3'", " O4'", " O5'", " N7 " };
-    // Legacy: static long numPO = sizeof PO / sizeof PO[0] - 1;  // = 5 (6 elements - 1)
-    static const std::vector<std::string> PO = {" O1P", " O2P", " O3'", " O4'", " O5'", " N7 "};
-
-    // Check if both atoms match PO list using exact string comparison (matches num_strmatch)
-    // Legacy: if (num_strmatch(atom1, PO, 0, numPO) && num_strmatch(atom2, PO, 0, numPO)) return
-    // FALSE; num_strmatch does exact strcmp comparison, std::find does exact string comparison
-    bool atom1_in_po = std::find(PO.begin(), PO.end(), atom1) != PO.end();
-    bool atom2_in_po = std::find(PO.begin(), PO.end(), atom2) != PO.end();
-    if (debug_enabled) {
-        std::cerr << "  PO check: atom1_in_po=" << atom1_in_po << ", atom2_in_po=" << atom2_in_po
-                  << std::endl;
-    }
-    if (atom1_in_po && atom2_in_po) {
-        if (debug_enabled) {
-            std::cerr << "  -> REJECTED (both in PO list)" << std::endl;
-        }
-        return false; // Matches legacy: return FALSE
-    }
-
-    // Step 2: idx-based check (matches legacy lines 3871-3874)
-    // Legacy: if ((idx1 == 2 || idx1 == 4 || idx2 == 2 || idx2 == 4) &&
-    //             (lval_in_set(idx1, 1, natom, misc_pars->hb_idx) &&
-    //              lval_in_set(idx2, 1, natom, misc_pars->hb_idx)))
-    //             return TRUE;
-    // NOTE: idx1 and idx2 are atom type indices from atom_idx() function
-    //       Based on atoms_list: idx 0=UNK, 1=C, 2=O, 3=H, 4=N, 5=S, 6=P, ...
-    //       hb_idx array is built from hb_atoms string (default ".O.N") via
-    //       reset_alist_symbol_idx()
-
-    // Build hb_idx array from hb_atoms string (matches reset_alist_symbol_idx)
-    // For default ".O.N": hb_idx = [2, 4] (O and N)
-    std::vector<int> hb_idx;
-    std::string hb_atoms_upper = params_.hb_atoms;
-    std::transform(hb_atoms_upper.begin(), hb_atoms_upper.end(), hb_atoms_upper.begin(), ::toupper);
-
-    // Replace '.' with ' ' (matches legacy reset_alist_symbol_idx)
-    std::replace(hb_atoms_upper.begin(), hb_atoms_upper.end(), '.', ' ');
-
-    // Parse pairs of characters as atomic symbols
-    // atoms_list mapping: " C"=1, " O"=2, " H"=3, " N"=4, " S"=5, " P"=6, ...
-    // Use function-local static to avoid capture issues
-    static const std::map<std::string, int> atoms_list_idx = {{" C", 1}, {" O", 2}, {" H", 3},
-                                                              {" N", 4}, {" S", 5}, {" P", 6}};
-
-    for (size_t i = 0; i + 1 < hb_atoms_upper.length(); i += 2) {
-        std::string sym = hb_atoms_upper.substr(i, 2);
-        auto it = atoms_list_idx.find(sym);
-        if (it != atoms_list_idx.end()) {
-            hb_idx.push_back(it->second);
-        }
-    }
-
-    // Extract atomic symbol from atom name and map to idx (matches aname2asym + asym_idx)
-    // Legacy aname2asym: replaces non-alphabetic with '.', matches against atomlist, extracts
-    // symbol Load atomlist if not already loaded
-    if (!atom_list_loaded_) {
-        load_atom_list();
-    }
-
-    auto get_atom_idx = [debug_enabled](const std::string& atom_name) -> int {
-        if (atom_name.length() < 4) {
-            return 0; // UNK - need at least 4 chars for PDB format
-        }
-
-        // Match legacy aname2asym logic EXACTLY (lines 4160-4193 in cmn_fncs.c)
-        // Step 1: Create pattern by replacing non-alphabetic with '.'
-        std::string aname_pattern = atom_name;
-        for (size_t i = 0; i < 4 && i < aname_pattern.length(); i++) {
-            if (!std::isalpha(static_cast<unsigned char>(aname_pattern[i]))) {
-                aname_pattern[i] = '.';
-            }
-        }
-
-        if (debug_enabled) {
-            std::cerr << "    Pattern for '" << atom_name << "': '" << aname_pattern << "'"
-                      << std::endl;
-        }
-
-        // Step 2: Try to match against atomlist (matches legacy lines 4168-4170)
-        // Legacy uses str_pmatch(atomlist[i], aname) which does:
-        // strncmp(atomlist[i], aname, strlen(aname))
-        // This checks if atomlist[i] (like ".O4. O") starts with aname (like ".O4.")
-        // So we check if pattern starts with aname_pattern
-        std::string my_asym;
-        bool found_match = false;
-        std::string matched_pattern;
-        for (const auto& [pattern, sym] : atom_list_) {
-            // str_pmatch(atomlist[i], aname) checks if atomlist[i] starts with aname
-            // So check if pattern starts with aname_pattern
-            if (pattern.length() >= aname_pattern.length() &&
-                pattern.substr(0, aname_pattern.length()) == aname_pattern) {
-                my_asym = sym;
-                matched_pattern = pattern;
-                found_match = true;
-                if (debug_enabled) {
-                    std::cerr << "    Atomlist match: pattern='" << pattern << "' -> sym='" << sym
-                              << "'" << std::endl;
-                }
-                break;
-            }
-        }
-
-        // Step 3: If no match, use fallback logic (matches legacy lines 4171-4184)
-        if (!found_match) {
-            bool unknown = (aname_pattern == ".UNK");
-
-            if (debug_enabled) {
-                std::cerr << "    No atomlist match, using fallback (unknown=" << unknown << ")"
-                          << std::endl;
-            }
-
-            // Fallback case 1: aname[0]!='.' && aname[1]!='.' && aname[2]=='.' && aname[3]=='.'
-            // Extract aname[0] + aname[1] as atomic symbol
-            if (aname_pattern.length() >= 4 && aname_pattern[0] != '.' && aname_pattern[1] != '.' &&
-                aname_pattern[2] == '.' && aname_pattern[3] == '.') {
-                my_asym = std::string(" ") + aname_pattern[1]; // Space + second char
-                if (debug_enabled) {
-                    std::cerr << "    Fallback case 1: sym='" << my_asym << "'" << std::endl;
-                }
-            }
-            // Fallback case 2: aname[0]=='.' && aname[1]!='.' && !unknown
-            // Extract " " + aname[1] as atomic symbol (matches legacy line 4178-4180)
-            else if (aname_pattern.length() >= 2 && aname_pattern[0] == '.' &&
-                     aname_pattern[1] != '.' && !unknown) {
-                my_asym = std::string(" ") + aname_pattern[1];
-                if (debug_enabled) {
-                    std::cerr << "    Fallback case 2: sym='" << my_asym << "'" << std::endl;
-                }
-            }
-            // Fallback case 3: aname[0]=='H' -> " H" (matches legacy line 4181-4182)
-            else if (aname_pattern.length() >= 1 && aname_pattern[0] == 'H') {
-                my_asym = " H";
-                if (debug_enabled) {
-                    std::cerr << "    Fallback case 3: sym='" << my_asym << "'" << std::endl;
-                }
-            }
-            // No match - use UNK
-            else {
-                my_asym = "XX"; // UNKATM
-                if (debug_enabled) {
-                    std::cerr << "    Fallback: no match, using UNK" << std::endl;
-                }
-            }
-        }
-
-        // Step 4: Map atomic symbol to idx (matches legacy asym_idx)
-        auto it = atoms_list_idx.find(my_asym);
-        int idx = 0;
-        if (it != atoms_list_idx.end()) {
-            idx = it->second;
-        }
-
-        if (debug_enabled) {
-            std::cerr << "    Final: sym='" << my_asym << "' -> idx=" << idx << std::endl;
-        }
-
-        return idx;
-    };
-
-    if (debug_enabled) {
-        std::cerr << "  hb_atoms string: '" << params_.hb_atoms << "'" << std::endl;
-        std::cerr << "  hb_idx array: [";
-        for (size_t i = 0; i < hb_idx.size(); i++) {
-            if (i > 0)
-                std::cerr << ", ";
-            std::cerr << hb_idx[i];
-        }
-        std::cerr << "]" << std::endl;
-    }
-
-    int idx1 = get_atom_idx(atom1);
-    int idx2 = get_atom_idx(atom2);
-
-    if (debug_enabled) {
-        std::cerr << "  idx1=" << idx1 << ", idx2=" << idx2 << std::endl;
-    }
-
-    // Legacy check: (idx1 == 2 || idx1 == 4 || idx2 == 2 || idx2 == 4)
-    //               AND both in hb_idx
-    bool at_least_one_on = (idx1 == 2 || idx1 == 4 || idx2 == 2 || idx2 == 4);
-    if (debug_enabled) {
-        std::cerr << "  at_least_one_on (idx==2||idx==4): " << at_least_one_on << std::endl;
-    }
-
-    if (at_least_one_on) {
-        // Check if both idx are in hb_idx (matches lval_in_set)
-        bool idx1_in_hb = std::find(hb_idx.begin(), hb_idx.end(), idx1) != hb_idx.end();
-        bool idx2_in_hb = std::find(hb_idx.begin(), hb_idx.end(), idx2) != hb_idx.end();
-        if (debug_enabled) {
-            std::cerr << "  idx1_in_hb: " << idx1_in_hb << ", idx2_in_hb: " << idx2_in_hb
-                      << std::endl;
-        }
-        if (idx1_in_hb && idx2_in_hb) {
-            if (debug_enabled) {
-                std::cerr << "  -> ACCEPTED (both idx in hb_idx)" << std::endl;
-            }
-            return true; // Matches legacy: return TRUE
-        } else {
-            if (debug_enabled) {
-                std::cerr << "  -> REJECTED (not both idx in hb_idx)" << std::endl;
-            }
-        }
-    } else {
-        if (debug_enabled) {
-            std::cerr << "  -> REJECTED (no idx==2||idx==4)" << std::endl;
-        }
-    }
-
-    // Legacy: else return FALSE;
-    return false;
 }
 
 char BasePairValidator::donor_acceptor(char base1, char base2, const std::string& atom1,

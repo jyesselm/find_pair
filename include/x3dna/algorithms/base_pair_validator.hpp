@@ -10,6 +10,8 @@
 #include <x3dna/core/base_pair.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.hpp>
+#include <x3dna/algorithms/hydrogen_bond_finder.hpp>
 #include <vector>
 #include <optional>
 
@@ -141,11 +143,6 @@ public:
                                   const geometry::Vector3D& zave) const;
 
     /**
-     * @brief Check if two atoms can form a hydrogen bond
-     */
-    bool good_hb_atoms(const std::string& atom1, const std::string& atom2) const;
-
-    /**
      * @brief Determine H-bond type based on donor-acceptor relationship (matches legacy
      * donor_acceptor)
      * @param base1 First base (A, C, G, I, T, U)
@@ -214,18 +211,6 @@ private:
      */
     std::vector<core::hydrogen_bond> find_hydrogen_bonds(const core::Residue& res1,
                                                          const core::Residue& res2) const;
-
-    /**
-     * @brief Count hydrogen bonds simply (without validation) - matches legacy check_pair counting
-     * This counts H-bonds before validation, matching legacy behavior for pair validation
-     */
-    void count_hydrogen_bonds_simple(const core::Residue& res1, const core::Residue& res2,
-                                     int& num_base_hb, int& num_o2_hb) const;
-
-    /**
-     * @brief Check if atom is a base atom (matches legacy is_baseatom)
-     */
-    static bool is_base_atom(const std::string& atom_name);
 };
 
 } // namespace algorithms

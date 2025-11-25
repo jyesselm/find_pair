@@ -221,15 +221,19 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
 
 void BaseFrameCalculator::calculate_all_frames(core::Structure& structure) {
     // Iterate through chains and residues, calculating frames
+    // Note: We don't skip UNKNOWN residues here because calculate_frame_impl
+    // has logic to detect modified nucleotides by ring atoms (like XGR, XCR, etc.)
+    // Only skip amino acids explicitly
     for (auto& chain : structure.chains()) {
         for (auto& residue : chain.residues()) {
-            // Skip non-nucleotides
-            if (residue.residue_type() == core::ResidueType::UNKNOWN ||
-                residue.residue_type() == core::ResidueType::AMINO_ACID) {
+            // Skip only amino acids - let calculate_frame handle UNKNOWN residues
+            // (it will check for ring atoms to detect modified nucleotides)
+            if (residue.residue_type() == core::ResidueType::AMINO_ACID) {
                 continue;
             }
 
             // Calculate frame (modifies residue to store frame)
+            // calculate_frame_impl will check for ring atoms if residue_type is UNKNOWN
             calculate_frame(residue);
         }
     }
