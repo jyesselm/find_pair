@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstring>
 #include <cctype>
+#include <iostream>
 
 namespace x3dna {
 namespace algorithms {
@@ -72,8 +73,15 @@ DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(
     // Step 3: Validate H-bonds (matches legacy validate_hbonds)
     // Only processes H-bonds with positive distance (conflicts marked by negative distance)
     result.after_validation = result.after_conflict_resolution;
-    char base1 = res1.one_letter_code();
-    char base2 = res2.one_letter_code();
+    
+    // Get base types for H-bond validation
+    // For modified nucleotides, one_letter_code() returns '?' but we need the actual base type
+    // Legacy uses lowercase letters (a, c, g, t, u) for modified nucleotides, which get
+    // converted to uppercase in donor_acceptor via toupper()
+    // Use get_base_type_for_hbond() to handle modified nucleotides correctly
+    char base1 = get_base_type_for_hbond(res1);
+    char base2 = get_base_type_for_hbond(res2);
+    
     validate_hbonds(result.after_validation, base1, base2);
 
     // Step 4: Filter to only H-bonds with type != ' ' for final_hbonds (used for counting)
@@ -289,6 +297,81 @@ void HydrogenBondFinder::validate_hbonds(std::vector<HydrogenBondResult>& hbonds
                 continue;
             }
         }
+    }
+}
+
+char HydrogenBondFinder::get_base_type_for_hbond(const core::Residue& residue) {
+    // Get base type for H-bond detection
+    // Matches legacy behavior: uses one_letter_code() if available, otherwise uses residue_type()
+    // Legacy assigns lowercase letters (a, c, g, t, u) to modified nucleotides, which get
+    // converted to uppercase in donor_acceptor via toupper()
+    
+    char code = residue.one_letter_code();
+    if (code != '?') {
+        return code; // Standard nucleotide or already determined
+    }
+    
+    // For modified nucleotides, use residue_type() to determine base type
+    // This matches legacy's get_seq() behavior for modified nucleotides
+    core::ResidueType res_type = residue.residue_type();
+    switch (res_type) {
+        case core::ResidueType::ADENINE:
+            return 'A';
+        case core::ResidueType::CYTOSINE:
+            return 'C';
+        case core::ResidueType::GUANINE:
+            return 'G';
+        case core::ResidueType::THYMINE:
+            return 'T';
+        case core::ResidueType::URACIL:
+            return 'U';
+        default:
+            // For unknown/modified nucleotides, try to determine from atoms
+            // Legacy uses lowercase letters for modified nucleotides
+            // Check if it has purine or pyrimidine ring atoms
+            bool has_purine = false, has_pyrimidine = false;
+            for (const auto& atom : residue.atoms()) {
+                std::string name = atom.name();
+                if (name == " N9 ") {
+                    has_purine = true;
+                } else if (name == " N1 ") {
+                    // Could be purine or pyrimidine, check for other atoms
+                    bool has_c6 = false;
+                    for (const auto& a2 : residue.atoms()) {
+                        if (a2.name() == " C6 ") {
+                            has_c6 = true;
+                            break;
+                        }
+                    }
+                    if (has_c6) {
+                        has_purine = true;
+                    } else {
+                        has_pyrimidine = true;
+                    }
+                }
+            }
+            
+            if (has_purine) {
+                // Check for G vs A
+                bool has_o6 = false, has_n6 = false;
+                for (const auto& atom : residue.atoms()) {
+                    if (atom.name() == " O6 ") has_o6 = true;
+                    if (atom.name() == " N6 ") has_n6 = true;
+                }
+                return (has_o6 || (!has_n6)) ? 'G' : 'A';
+            } else if (has_pyrimidine) {
+                // Check for C vs T vs U
+                bool has_n4 = false, has_c5m = false;
+                for (const auto& atom : residue.atoms()) {
+                    if (atom.name() == " N4 ") has_n4 = true;
+                    if (atom.name() == " C5M" || atom.name() == " C7 ") has_c5m = true;
+                }
+                if (has_n4) return 'C';
+                if (has_c5m) return 'T';
+                return 'U'; // Default for pyrimidines
+            }
+            
+            return '?'; // Cannot determine
     }
 }
 

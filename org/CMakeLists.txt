@@ -86,8 +86,20 @@ set(TEST_DONOR_ACCEPTOR_SOURCES
 )
 add_executable(test_donor_acceptor ${TEST_DONOR_ACCEPTOR_SOURCES})
 
+# Test N3->N2 debug executable (detailed debugging for specific H-bond issue)
+set(TEST_N3_N2_DEBUG_SOURCES
+    src/test_n3_n2_debug.c
+    src/cmn_fncs.c
+    src/ana_fncs.c
+    src/app_fncs.c
+    src/nrutil.c
+    src/fncs_slre.c
+    src/json_writer.c
+)
+add_executable(test_n3_n2_debug ${TEST_N3_N2_DEBUG_SOURCES})
+
 # Output directory
-set_target_properties(find_pair_original analyze_original find_pair_analyze test_hbond_detection test_donor_acceptor
+set_target_properties(find_pair_original analyze_original find_pair_analyze test_hbond_detection test_donor_acceptor test_n3_n2_debug
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
