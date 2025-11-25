@@ -98,8 +98,56 @@ set(TEST_N3_N2_DEBUG_SOURCES
 )
 add_executable(test_n3_n2_debug ${TEST_N3_N2_DEBUG_SOURCES})
 
+# Test initial H-bond detection (isolated - no conflict resolution or validation)
+set(TEST_HBOND_INITIAL_SOURCES
+    src/test_hbond_initial.c
+    src/cmn_fncs.c
+    src/ana_fncs.c
+    src/app_fncs.c
+    src/nrutil.c
+    src/fncs_slre.c
+    src/json_writer.c
+)
+add_executable(test_hbond_initial ${TEST_HBOND_INITIAL_SOURCES})
+
+# Test conflict resolution (isolated - takes initial H-bonds, applies hb_atompair)
+set(TEST_HBOND_CONFLICT_SOURCES
+    src/test_hbond_conflict.c
+    src/cmn_fncs.c
+    src/ana_fncs.c
+    src/app_fncs.c
+    src/nrutil.c
+    src/fncs_slre.c
+    src/json_writer.c
+)
+add_executable(test_hbond_conflict ${TEST_HBOND_CONFLICT_SOURCES})
+
+# Test validation (isolated - takes H-bonds after conflict, applies validate_hbonds)
+set(TEST_HBOND_VALIDATION_SOURCES
+    src/test_hbond_validation.c
+    src/cmn_fncs.c
+    src/ana_fncs.c
+    src/app_fncs.c
+    src/nrutil.c
+    src/fncs_slre.c
+    src/json_writer.c
+)
+add_executable(test_hbond_validation ${TEST_HBOND_VALIDATION_SOURCES})
+
+# Generate residue ordering JSON (legacy)
+set(GENERATE_RESIDUE_ORDERING_SOURCES
+    src/generate_residue_ordering_json.c
+    src/cmn_fncs.c
+    src/ana_fncs.c
+    src/app_fncs.c
+    src/nrutil.c
+    src/fncs_slre.c
+    src/json_writer.c
+)
+add_executable(generate_residue_ordering_json ${GENERATE_RESIDUE_ORDERING_SOURCES})
+
 # Output directory
-set_target_properties(find_pair_original analyze_original find_pair_analyze test_hbond_detection test_donor_acceptor test_n3_n2_debug
+set_target_properties(find_pair_original analyze_original find_pair_analyze test_hbond_detection test_donor_acceptor test_n3_n2_debug test_hbond_initial test_hbond_conflict test_hbond_validation generate_residue_ordering_json
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )

@@ -235,5 +235,53 @@ endif()
 
 gtest_discover_tests(test_base_pair_integration)
 
+# Residue ordering test for multiple PDBs
+add_executable(test_residue_ordering_multiple_pdbs
+    test_residue_ordering_multiple_pdbs.cpp
+)
+
+target_include_directories(test_residue_ordering_multiple_pdbs PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(test_residue_ordering_multiple_pdbs
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+# Link filesystem library if needed
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_residue_ordering_multiple_pdbs PRIVATE stdc++fs)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_residue_ordering_multiple_pdbs PRIVATE c++fs)
+endif()
+
+gtest_discover_tests(test_residue_ordering_multiple_pdbs)
+
+# Residue ordering JSON comparison test
+add_executable(test_residue_ordering_json_comparison
+    test_residue_ordering_json_comparison.cpp
+)
+
+target_include_directories(test_residue_ordering_json_comparison PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(test_residue_ordering_json_comparison
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+# Link filesystem library if needed
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_residue_ordering_json_comparison PRIVATE stdc++fs)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_residue_ordering_json_comparison PRIVATE c++fs)
+endif()
+
+gtest_discover_tests(test_residue_ordering_json_comparison)
+
 # Note: More integration tests will be added as we implement each stage
 

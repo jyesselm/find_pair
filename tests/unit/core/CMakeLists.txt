@@ -84,3 +84,15 @@ target_link_libraries(test_parameters
 
 gtest_discover_tests(test_parameters)
 
+add_executable(test_structure_legacy_order
+    test_structure_legacy_order.cpp
+)
+
+target_link_libraries(test_structure_legacy_order
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_structure_legacy_order)
+
