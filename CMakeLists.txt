@@ -41,6 +41,8 @@ add_library(x3dna
     src/x3dna/algorithms/base_pair_validator.cpp
     src/x3dna/algorithms/base_pair_finder.cpp
     src/x3dna/algorithms/hydrogen_bond_finder.cpp
+    src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.cpp
+    src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.cpp
 )
 target_include_directories(x3dna PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -72,6 +74,15 @@ target_link_libraries(generate_modern_json PRIVATE x3dna)
 
 add_executable(test_overlap_calculation tools/test_overlap_calculation.cpp)
 target_link_libraries(test_overlap_calculation PRIVATE x3dna)
+
+add_executable(compare_pdb_parsing tools/compare_pdb_parsing.cpp)
+target_link_libraries(compare_pdb_parsing PRIVATE x3dna)
+
+add_executable(compare_residue_identification tools/compare_residue_identification.cpp)
+target_link_libraries(compare_residue_identification PRIVATE x3dna)
+
+add_executable(debug_frame_calculation tools/debug_frame_calculation.cpp)
+target_link_libraries(debug_frame_calculation PRIVATE x3dna)
 
 # Documentation
 if(BUILD_DOCS)

@@ -4,6 +4,7 @@
  */
 
 #include <x3dna/algorithms/hydrogen_bond_finder.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.hpp>
 #include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/geometry/vector3d.hpp>
@@ -94,13 +95,9 @@ DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(
 }
 
 bool HydrogenBondFinder::good_hb_atoms(const std::string& atom1, const std::string& atom2) {
-    // Reuse BasePairValidator's logic by creating a temporary validator
-    // Note: good_hb_atoms is a member function, so we need to create an instance
-    ValidationParameters params;
-    params.hb_atoms = ".O.N"; // Default
-    BasePairValidator validator(params);
-    // Access via public interface - good_hb_atoms is public
-    return validator.good_hb_atoms(atom1, atom2);
+    // Use hydrogen_bond utils version
+    // Default hb_atoms is ".O.N"
+    return x3dna::algorithms::hydrogen_bond::good_hb_atoms(atom1, atom2, ".O.N");
 }
 
 void HydrogenBondFinder::resolve_conflicts(std::vector<HydrogenBondResult>& hbonds, double hb_lower,
