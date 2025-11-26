@@ -127,6 +127,9 @@ target_link_libraries(debug_donor_acceptor PRIVATE x3dna)
 add_executable(debug_hbond_conflict_resolution tools/debug_hbond_conflict_resolution.cpp)
 target_link_libraries(debug_hbond_conflict_resolution PRIVATE x3dna)
 
+add_executable(debug_dorg_discrepancy tools/debug_dorg_discrepancy.cpp)
+target_link_libraries(debug_dorg_discrepancy PRIVATE x3dna)
+
 # Documentation
 if(BUILD_DOCS)
     find_package(Doxygen)

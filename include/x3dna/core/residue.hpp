@@ -34,7 +34,9 @@ enum class ResidueType {
     NONCANONICAL_RNA = 6,  // Modified nucleotides with ring atoms
     WATER = 7,             // Water molecules (HOH, WAT)
     ION = 8,               // Ions (MG, NA, CL, etc.)
-    LIGAND = 9             // Other small molecules/ligands
+    LIGAND = 9,            // Other small molecules/ligands
+    PSEUDOURIDINE = 10,    // Pseudouridine (PSU) - C1' bonded to C5 instead of N1
+    INOSINE = 11           // Inosine (I)
 };
 
 /**

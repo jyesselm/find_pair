@@ -58,6 +58,10 @@ std::string StandardBaseTemplates::type_to_filename(core::ResidueType type) {
             return "Atomic_T.pdb";
         case core::ResidueType::URACIL:
             return "Atomic_U.pdb";
+        case core::ResidueType::PSEUDOURIDINE:
+            return "Atomic_P.pdb";
+        case core::ResidueType::INOSINE:
+            return "Atomic_I.pdb";
         default:
             throw std::invalid_argument("Invalid residue type for template loading");
     }
