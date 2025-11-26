@@ -54,7 +54,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     bool has_purine_atoms = false;
 
     if (residue_type == core::ResidueType::UNKNOWN ||
-        residue_type == core::ResidueType::AMINO_ACID) {
+        residue_type == core::ResidueType::AMINO_ACID ||
+        residue_type == core::ResidueType::NONCANONICAL_RNA) {
         // Check for ring atoms (C4, N3, C2, N1, C6, C5 are common to all)
         static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
                                                                    " N1 ", " C6 ", " C5 "};
@@ -117,23 +118,46 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                 residue_type = (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE
                                                                : core::ResidueType::ADENINE;
             } else {
-                // Determine pyrimidine type (C vs T vs U) by checking for characteristic atoms
+                // Determine pyrimidine type (C vs T vs U vs P) by checking for characteristic atoms
                 bool has_n4 = false, has_c5m = false;
+                bool is_pseudouridine = false;
+                
+                // Check for characteristic atoms
                 for (const auto& atom : residue.atoms()) {
                     if (atom.name() == " N4 ")
                         has_n4 = true;
                     if (atom.name() == " C5M" || atom.name() == " C7 ")
                         has_c5m = true;
                 }
-                // C has N4, T has C5M/C7, otherwise U (U has O4 but we default to U if no N4 or
-                // C5M)
-                if (has_n4) {
+                
+                // Check for pseudouridine (PSU): C1' bonded to C5 instead of N1
+                // Legacy: p1p2_dist(xyz[c1p], xyz[c5]) <= 2.0 && p1p2_dist(xyz[c1p], xyz[n1]) > 2.0
+                auto c1p_opt = residue.find_atom(" C1'");
+                auto n1_opt = residue.find_atom(" N1 ");
+                auto c5_opt = residue.find_atom(" C5 ");
+                
+                if (c1p_opt.has_value() && n1_opt.has_value() && c5_opt.has_value()) {
+                    double dist_c1p_n1 = (c1p_opt->position() - n1_opt->position()).length();
+                    double dist_c1p_c5 = (c1p_opt->position() - c5_opt->position()).length();
+                    // Pseudouridine: C1'-C5 bond (~1.5 Å) instead of C1'-N1 bond
+                    if (dist_c1p_c5 <= 2.0 && dist_c1p_n1 > 2.0) {
+                        is_pseudouridine = true;
+#ifdef DEBUG_FRAME_CALC
+                        std::cerr << "DEBUG: Detected pseudouridine: C1'-C5=" << dist_c1p_c5
+                                  << ", C1'-N1=" << dist_c1p_n1 << "\n";
+#endif
+                    }
+                }
+                
+                // Assign type based on detection
+                if (is_pseudouridine) {
+                    residue_type = core::ResidueType::PSEUDOURIDINE;
+                } else if (has_n4) {
                     residue_type = core::ResidueType::CYTOSINE;
                 } else if (has_c5m) {
                     residue_type = core::ResidueType::THYMINE;
                 } else {
-                    residue_type =
-                        core::ResidueType::URACIL; // Default for pyrimidines (includes 5MU, PSU)
+                    residue_type = core::ResidueType::URACIL; // Default for pyrimidines
                 }
             }
         } else {

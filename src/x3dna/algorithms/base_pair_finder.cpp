@@ -386,13 +386,15 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
     // Record pair validation for ALL pairs (matches legacy - records even for failed pairs)
     // Legacy: records validation in both cdns block (with is_valid) and else block (with
     // is_valid=0)
-    size_t base_i = static_cast<size_t>(legacy_idx1);
-    size_t base_j = static_cast<size_t>(legacy_idx2);
+    // CRITICAL: Convert from 1-based legacy indices to 0-based for JSON consistency
+    // This matches how base_frame_calc records indices (legacy_residue_idx - 1)
+    size_t base_i = static_cast<size_t>(legacy_idx1 - 1);  // Convert to 0-based
+    size_t base_j = static_cast<size_t>(legacy_idx2 - 1);  // Convert to 0-based
 
     if (passes_cdns) {
-        // Use legacy residue indices directly (already 1-based from atoms)
-        size_t base_i = static_cast<size_t>(legacy_idx1);
-        size_t base_j = static_cast<size_t>(legacy_idx2);
+        // Use 0-based indices for consistency with base_frame_calc
+        size_t base_i = static_cast<size_t>(legacy_idx1 - 1);  // Convert to 0-based
+        size_t base_j = static_cast<size_t>(legacy_idx2 - 1);  // Convert to 0-based
 
         // Adjust quality_score using adjust_pairQuality (matches legacy)
         double quality_adjustment = adjust_pair_quality(result.hbonds);
@@ -456,16 +458,18 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
     // Record distance checks only if also passes hydrogen bond check
     // (legacy only records distance_checks for pairs that pass hbond check)
     if (result.hbond_check) {
-        size_t base_i = static_cast<size_t>(legacy_idx1);
-        size_t base_j = static_cast<size_t>(legacy_idx2);
+        // Use 0-based indices for consistency with base_frame_calc
+        size_t base_i = static_cast<size_t>(legacy_idx1 - 1);
+        size_t base_j = static_cast<size_t>(legacy_idx2 - 1);
         writer->record_distance_checks(base_i, base_j, result.dorg, result.dNN, result.plane_angle,
                                        result.d_v, result.overlap_area);
     }
 
     // Record hydrogen bonds if present
     if (!result.hbonds.empty()) {
-        size_t base_i = static_cast<size_t>(legacy_idx1);
-        size_t base_j = static_cast<size_t>(legacy_idx2);
+        // Use 0-based indices for consistency with base_frame_calc
+        size_t base_i = static_cast<size_t>(legacy_idx1 - 1);
+        size_t base_j = static_cast<size_t>(legacy_idx2 - 1);
         writer->record_hbond_list(base_i, base_j, result.hbonds);
     }
 }
