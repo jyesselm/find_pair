@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
             std::tuple<std::string, char, int, char> key = std::make_tuple(
-                residue.name(), residue.chain_id(), residue.seq_num(), residue.insertion_code()
+                residue.name(), residue.chain_id(), residue.seq_num(), residue.insertion()
             );
             modern_residue_map[key] = modern_idx;
             
@@ -58,8 +58,8 @@ int main(int argc, char* argv[]) {
                       << std::setw(3) << residue.name()
                       << " (chain " << residue.chain_id()
                       << ", seq " << std::setw(4) << residue.seq_num();
-            if (residue.insertion_code() != ' ') {
-                std::cout << ", ins='" << residue.insertion_code() << "'";
+            if (residue.insertion() != ' ') {
+                std::cout << ", ins='" << residue.insertion() << "'";
             }
             std::cout << ")\n";
             modern_idx++;

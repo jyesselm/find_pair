@@ -486,7 +486,15 @@ void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
     record["residue_idx"] = residue_idx;
     
     // Add legacy residue index if available
+    // First try to get from map (for backward compatibility)
     int legacy_residue_idx = get_legacy_residue_idx(chain_id, residue_seq, insertion);
+    // If not found in map and residue_idx is in reasonable range, assume it's already legacy_residue_idx (0-based)
+    // Legacy residue indices are typically 1-based, so if residue_idx < 1000, it might be legacy_residue_idx - 1
+    if (legacy_residue_idx <= 0 && residue_idx > 0 && residue_idx < 10000) {
+        // The residue_idx passed might already be legacy_residue_idx (0-based)
+        // Convert back to 1-based for legacy_residue_idx field
+        legacy_residue_idx = static_cast<int>(residue_idx + 1);
+    }
     if (legacy_residue_idx > 0) {
         record["legacy_residue_idx"] = legacy_residue_idx;
     }

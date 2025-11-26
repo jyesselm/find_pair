@@ -204,6 +204,13 @@ int main(int argc, char* argv[]) {
                 if (is_nucleotide) {
                     nucleotides_found++;
 
+                    // Get legacy_residue_idx from atoms (set during PDB parsing)
+                    // This matches what base_pair_finder uses
+                    int legacy_residue_idx = 0;
+                    if (!residue.atoms().empty()) {
+                        legacy_residue_idx = residue.atoms()[0].legacy_residue_idx();
+                    }
+
                     // Calculate frame and set it on the residue (needed for find_pairs)
                     FrameCalculationResult frame_result = calculator.calculate_frame(residue);
 
@@ -211,16 +218,20 @@ int main(int argc, char* argv[]) {
                         char base_type = residue.one_letter_code();
 
                         // Record base_frame_calc
+                        // Use legacy_residue_idx if available, otherwise use the counter
                         // JsonWriter expects 0-based index, but legacy uses 1-based
+                        size_t record_idx = (legacy_residue_idx > 0) ? 
+                            static_cast<size_t>(legacy_residue_idx - 1) : 
+                            (residue_idx - 1);
                         writer.record_base_frame_calc(
-                            residue_idx - 1, // Convert 1-based to 0-based
+                            record_idx, // Convert 1-based to 0-based
                             base_type, frame_result.template_file, frame_result.rms_fit,
                             frame_result.matched_atoms, residue.name(), residue.chain_id(),
                             residue.seq_num(), residue.insertion());
 
                         // Record ls_fitting
                         writer.record_ls_fitting(
-                            residue_idx - 1, // Convert 1-based to 0-based
+                            record_idx, // Use same index as base_frame_calc
                             frame_result.num_matched, frame_result.rms_fit,
                             frame_result.rotation_matrix, frame_result.translation, residue.name(),
                             residue.chain_id(), residue.seq_num(), residue.insertion());
@@ -234,7 +245,7 @@ int main(int argc, char* argv[]) {
                         // TODO: Extract coordinates from matched atoms if needed
 
                         writer.record_frame_calc(
-                            residue_idx - 1, // Convert 1-based to 0-based
+                            record_idx, // Use same index as base_frame_calc
                             base_type, frame_result.template_file, frame_result.rms_fit,
                             standard_coords, experimental_coords, residue.name(),
                             residue.chain_id(), residue.seq_num(), residue.insertion());
