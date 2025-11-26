@@ -637,7 +637,7 @@ std::vector<core::hydrogen_bond> BasePairValidator::find_hydrogen_bonds(const Re
 
     double hb_lower = params_.hb_lower;
     double hb_dist1 = params_.hb_dist1;
-    double hb_dist2 = 4.5; // Default value (matches legacy)
+    double hb_dist2 = 0.0; // Matches legacy OVERLAP behavior (Phase 3 conflict marking always false)
 
     DetailedHBondResult detailed =
         HydrogenBondFinder::find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1, hb_dist2);

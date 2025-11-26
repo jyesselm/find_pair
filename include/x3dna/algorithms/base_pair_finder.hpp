@@ -8,6 +8,7 @@
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/base_pair.hpp>
 #include <x3dna/algorithms/base_pair_validator.hpp>
+#include <x3dna/algorithms/parameter_calculator.hpp>
 #include <x3dna/io/json_writer.hpp>
 #include <vector>
 #include <memory>
@@ -94,6 +95,7 @@ public:
 
 private:
     BasePairValidator validator_;
+    ParameterCalculator param_calculator_;
     PairFindingStrategy strategy_;
 
     /**

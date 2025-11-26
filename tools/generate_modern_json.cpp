@@ -157,7 +157,12 @@ int main(int argc, char* argv[]) {
         size_t nucleotides_found = 0;
         size_t template_load_failures = 0;
         size_t atom_match_failures = 0;
-        size_t unknown_residue_types = 0;
+        // Track different residue type counts
+        size_t water_count = 0;
+        size_t ion_count = 0;
+        size_t noncanonical_rna_count = 0;
+        size_t ligand_count = 0;
+        size_t unknown_count = 0;
 
         for (auto& chain : structure.chains()) {
             for (auto& residue : chain.residues()) {
@@ -165,23 +170,40 @@ int main(int argc, char* argv[]) {
                 ResidueType res_type = residue.residue_type();
                 char one_letter = residue.one_letter_code();
 
-                if (res_type == ResidueType::UNKNOWN) {
-                    unknown_residue_types++;
-                    // DEBUG: Log unknown residues that look like nucleotides
-                    if (one_letter == 'A' || one_letter == 'C' || one_letter == 'G' ||
-                        one_letter == 'T' || one_letter == 'U') {
-                        std::cerr << "WARNING: Residue " << residue.name()
-                                  << " has one_letter_code=" << one_letter
-                                  << " but residue_type=UNKNOWN\n";
-                    }
+                // Count by type
+                switch (res_type) {
+                    case ResidueType::WATER:
+                        water_count++;
+                        break;
+                    case ResidueType::ION:
+                        ion_count++;
+                        break;
+                    case ResidueType::NONCANONICAL_RNA:
+                        noncanonical_rna_count++;
+                        break;
+                    case ResidueType::UNKNOWN:
+                        unknown_count++;
+                        // DEBUG: Log unknown residues that look like nucleotides
+                        if (one_letter == 'A' || one_letter == 'C' || one_letter == 'G' ||
+                            one_letter == 'T' || one_letter == 'U') {
+                            std::cerr << "WARNING: Residue " << residue.name()
+                                      << " has one_letter_code=" << one_letter
+                                      << " but residue_type=UNKNOWN\n";
+                        }
+                        break;
+                    default:
+                        break;
                 }
 
                 // Only process nucleotide residues
-                // Include standard nucleotides and modified nucleotides (detected by ring atoms)
+                // Include standard nucleotides, modified nucleotides, and noncanonical RNA
                 bool is_nucleotide =
-                    (res_type != ResidueType::UNKNOWN && res_type != ResidueType::AMINO_ACID);
+                    (res_type != ResidueType::UNKNOWN && res_type != ResidueType::AMINO_ACID &&
+                     res_type != ResidueType::WATER && res_type != ResidueType::ION &&
+                     res_type != ResidueType::LIGAND);
 
                 // Check for modified nucleotides that have ring atoms but aren't in standard list
+                // (This is now handled by residue_type() returning NONCANONICAL_RNA, but keep for compatibility)
                 if (!is_nucleotide && res_type == ResidueType::UNKNOWN) {
                     // Check for ring atoms (similar to legacy residue_ident)
                     static const std::vector<std::string> common_ring_atoms = {
@@ -291,7 +313,17 @@ int main(int argc, char* argv[]) {
         std::cout << "  Total residues: " << residue_idx - 1 << "\n";
         std::cout << "  Nucleotides found: " << nucleotides_found << "\n";
         std::cout << "  Frames calculated: " << frames_recorded << "\n";
-        std::cout << "  Unknown residue types: " << unknown_residue_types << "\n";
+        // Report residue type breakdown
+        size_t total_non_nucleotide = water_count + ion_count + noncanonical_rna_count + ligand_count + unknown_count;
+        if (total_non_nucleotide > 0) {
+            std::cout << "  Non-nucleotide residues: " << total_non_nucleotide;
+            if (water_count > 0) std::cout << " (water: " << water_count;
+            if (ion_count > 0) std::cout << (water_count > 0 ? ", ions: " : " (ions: ") << ion_count;
+            if (noncanonical_rna_count > 0) std::cout << (water_count > 0 || ion_count > 0 ? ", noncanonical RNA: " : " (noncanonical RNA: ") << noncanonical_rna_count;
+            if (ligand_count > 0) std::cout << (water_count > 0 || ion_count > 0 || noncanonical_rna_count > 0 ? ", ligands: " : " (ligands: ") << ligand_count;
+            if (unknown_count > 0) std::cout << (water_count > 0 || ion_count > 0 || noncanonical_rna_count > 0 || ligand_count > 0 ? ", other: " : " (other: ") << unknown_count;
+            std::cout << ")\n";
+        }
         if (template_load_failures > 0) {
             std::cout << "  Template load failures: " << template_load_failures << "\n";
         }
