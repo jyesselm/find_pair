@@ -241,10 +241,60 @@ void print_hbond_comparison(const HBondComparison& comp) {
     }
 }
 
+std::filesystem::path find_json_file(const std::string& pdb_id, bool is_legacy) {
+    // Try segmented directory structure first (new format)
+    std::filesystem::path base_dir = is_legacy ? "data/json_legacy" : "data/json";
+    std::filesystem::path segmented_file = base_dir / "hbond_list" / (pdb_id + ".json");
+    
+    if (std::filesystem::exists(segmented_file)) {
+        return segmented_file;
+    }
+    
+    // Fall back to old format with suffix
+    std::filesystem::path suffix_file = base_dir / (pdb_id + "_hbond_list.json");
+    
+    if (std::filesystem::exists(suffix_file)) {
+        return suffix_file;
+    }
+    
+    // Return the old format path even if it doesn't exist (for error message)
+    return suffix_file;
+}
+
+json load_json_array(const std::filesystem::path& file_path) {
+    std::ifstream file_stream(file_path);
+    if (!file_stream.is_open()) {
+        throw std::runtime_error("Could not open file: " + file_path.string());
+    }
+    
+    json data = json::parse(file_stream);
+    
+    // Handle both array format and wrapped format
+    if (data.is_array()) {
+        return data;
+    } else if (data.contains("calculations")) {
+        auto calc = data["calculations"];
+        if (calc.is_array()) {
+            json records;
+            for (const auto& item : calc) {
+                if (item.contains("type") && item["type"] == "hbond_list") {
+                    records.push_back(item);
+                }
+            }
+            return records;
+        } else if (calc.is_object() && calc.contains("hbond_list")) {
+            return calc["hbond_list"];
+        }
+    }
+    
+    // If we get here, return empty array
+    return json::array();
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 4) {
         std::cerr << "Usage: " << argv[0] << " <pdb_id> <residue1_idx> <residue2_idx>\n";
-        std::cerr << "Example: " << argv[0] << " 3G8T 92 160\n";
+        std::cerr << "Example: " << argv[0] << " 3G8T 946 947\n";
         std::cerr << "Example: " << argv[0] << " 6CAQ 75 78\n";
         std::cerr << "\n";
         std::cerr << "This tool compares H-bond detection ONLY (separate from polygon overlap).\n";
@@ -255,27 +305,29 @@ int main(int argc, char* argv[]) {
     int idx1 = std::stoi(argv[2]);
     int idx2 = std::stoi(argv[3]);
     
-    std::filesystem::path modern_file = "data/json/" + pdb_id + "_hbond_list.json";
-    std::filesystem::path legacy_file = "data/json_legacy/" + pdb_id + "_hbond_list.json";
+    std::filesystem::path modern_file = find_json_file(pdb_id, false);
+    std::filesystem::path legacy_file = find_json_file(pdb_id, true);
     
     if (!std::filesystem::exists(modern_file)) {
         std::cerr << "Error: Modern H-bond JSON not found: " << modern_file << "\n";
+        std::cerr << "  Tried: data/json/hbond_list/" << pdb_id << ".json\n";
+        std::cerr << "         data/json/" << pdb_id << "_hbond_list.json\n";
         return 1;
     }
     
     json legacy_data = json::array(); // Empty if legacy file doesn't exist
     if (std::filesystem::exists(legacy_file)) {
-        std::ifstream legacy_stream(legacy_file);
-        legacy_data = json::parse(legacy_stream);
+        legacy_data = load_json_array(legacy_file);
     } else {
         std::cerr << "Warning: Legacy H-bond JSON not found: " << legacy_file << "\n";
+        std::cerr << "  Tried: data/json_legacy/hbond_list/" << pdb_id << ".json\n";
+        std::cerr << "         data/json_legacy/" << pdb_id << "_hbond_list.json\n";
         std::cerr << "         Will only show modern H-bond detection.\n";
     }
     
     try {
         // Load modern H-bond records
-        std::ifstream modern_stream(modern_file);
-        json modern_data = json::parse(modern_stream);
+        json modern_data = load_json_array(modern_file);
         
         // Extract H-bond comparison
         HBondComparison comp = extract_hbond_comparison(modern_data, legacy_data, idx1, idx2);

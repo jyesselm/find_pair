@@ -4024,9 +4024,17 @@ void get_hbond_ij(long i, long j, char basei, char basej, miscPars *misc_pars,
     char *hb_type, **hb_atom1, **hb_atom2, aname1[5], aname2[5], stmp[20];
     double *hb_dist;
     long k, m, n, num_hbonds = 0, *lkg_type;
+    
+    fprintf(stderr, "[DEBUG] get_hbond_ij: ENTRY i=%ld j=%ld basei=%c basej=%c\n", i, j, basei, basej);
+    fprintf(stderr, "[DEBUG] get_hbond_ij: seidx=%p idx=%p AtomName=%p xyz=%p hb_info=%p\n",
+            (void*)seidx, (void*)idx, (void*)AtomName, (void*)xyz, (void*)hb_info);
+    
     hb_atom1 = cmatrix(1, BUF512, 0, 4);
+    fprintf(stderr, "[DEBUG] get_hbond_ij: Allocated hb_atom1=%p\n", (void*)hb_atom1);
     hb_atom2 = cmatrix(1, BUF512, 0, 4);
+    fprintf(stderr, "[DEBUG] get_hbond_ij: Allocated hb_atom2=%p\n", (void*)hb_atom2);
     hb_dist = dvector(1, BUF512);
+    fprintf(stderr, "[DEBUG] get_hbond_ij: Allocated hb_dist=%p\n", (void*)hb_dist);
     for (m = seidx[i][1]; m <= seidx[i][2]; m++) {
         for (n = seidx[j][1]; n <= seidx[j][2]; n++) {
             if (good_hbatoms(misc_pars, AtomName[m], AtomName[n], idx[m], idx[n]) &&
@@ -4059,9 +4067,13 @@ void get_hbond_ij(long i, long j, char basei, char basej, miscPars *misc_pars,
             strcat(hb_info, stmp);
         }
         /* Record hydrogen bond details to JSON (before freeing arrays) */
+        fprintf(stderr, "[DEBUG] get_hbond_ij: About to call json_writer_record_hbond_list for pair (%ld, %ld) with %ld hbonds\n", i, j, num_hbonds);
         json_writer_record_hbond_list(i, j, num_hbonds, hb_atom1, hb_atom2, hb_dist, hb_type, hb_info);
+        fprintf(stderr, "[DEBUG] get_hbond_ij: json_writer_record_hbond_list returned successfully\n");
         /* Also record detailed H-bond data */
+        fprintf(stderr, "[DEBUG] get_hbond_ij: About to call json_writer_record_hbonds\n");
         json_writer_record_hbonds(i, j, num_hbonds, hb_atom1, hb_atom2, hb_dist, hb_type, lkg_type);
+        fprintf(stderr, "[DEBUG] get_hbond_ij: json_writer_record_hbonds returned successfully\n");
         free_cvector(hb_type, 1, num_hbonds);
         free_lvector(lkg_type, 1, num_hbonds);
     }

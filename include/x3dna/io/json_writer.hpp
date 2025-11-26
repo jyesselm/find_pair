@@ -65,10 +65,17 @@ public:
 
     /**
      * @brief Write JSON to file
-     * @param output_path Path to output JSON file
+     * @param output_path Path to output JSON file or directory
      * @param pretty_print Whether to format with indentation
      */
     void write_to_file(const std::filesystem::path& output_path, bool pretty_print = true) const;
+
+    /**
+     * @brief Write split files to record-type-specific directories
+     * @param output_dir Base output directory (e.g., data/json)
+     * @param pretty_print Whether to format with indentation
+     */
+    void write_split_files(const std::filesystem::path& output_dir, bool pretty_print = true) const;
 
     // Record writing methods - matching legacy format
 
@@ -89,6 +96,12 @@ public:
      * @param structure Structure containing atoms
      */
     void record_pdb_atoms(const core::Structure& structure);
+
+    /**
+     * @brief Record residue indices (seidx) - maps residues to atom ranges
+     * @param structure Structure containing residues and atoms
+     */
+    void record_residue_indices(const core::Structure& structure);
 
     /**
      * @brief Record base frame calculation
@@ -285,13 +298,6 @@ private:
      * @param record Record to add
      */
     void add_calculation_record(const nlohmann::json& record);
-
-    /**
-     * @brief Write split files for each calculation type
-     * @param output_dir Directory to write split files
-     * @param pretty_print Whether to format with indentation
-     */
-    void write_split_files(const std::filesystem::path& output_dir, bool pretty_print) const;
 
     /**
      * @brief Load PDB lines into cache (lazy loading)

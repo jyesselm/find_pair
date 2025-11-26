@@ -228,7 +228,7 @@ def regenerate_legacy_json(
         executable_path = Path(executable_path)
 
     pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
-    json_file = project_root / "data" / "json_legacy" / f"{pdb_id}.json"
+    json_output_dir = project_root / "data" / "json_legacy"  # Output directory
 
     if not pdb_file.exists():
         return {
@@ -238,6 +238,8 @@ def regenerate_legacy_json(
         }
 
     try:
+        # Legacy code outputs split files to json_legacy directory
+        # It will create files like: <PDB_ID>_pdb_atoms.json, <PDB_ID>_base_pair.json, etc.
         cmd = [str(executable_path), str(pdb_file)]
 
         result = subprocess.run(
@@ -248,24 +250,33 @@ def regenerate_legacy_json(
             cwd=str(project_root / "org"),
         )
 
-        if not json_file.exists():
+        # Check if any JSON files were created (legacy outputs split files)
+        # Check for at least one record type file
+        record_types = ["pdb_atoms", "base_frame_calc", "base_pair"]
+        files_created = False
+        for record_type in record_types:
+            # Legacy outputs to root: <PDB_ID>_<record_type>.json
+            json_file = json_output_dir / f"{pdb_id}_{record_type}.json"
+            if json_file.exists():
+                files_created = True
+                # Validate the file
+                is_valid, error_msg, was_removed = JsonValidator.validate_and_clean(
+                    json_file, remove_invalid=True
+                )
+                if not is_valid:
+                    return {
+                        "pdb_id": pdb_id,
+                        "status": "error",
+                        "message": f"Invalid JSON removed: {error_msg}",
+                        "removed": was_removed,
+                    }
+
+        if not files_created:
             return {
                 "pdb_id": pdb_id,
                 "status": "error",
-                "message": f"JSON file not created: {json_file}",
+                "message": f"No JSON files created in {json_output_dir}",
                 "stderr": result.stderr[-500:] if result.stderr else "",
-            }
-
-        is_valid, error_msg, was_removed = JsonValidator.validate_and_clean(
-            json_file, remove_invalid=True
-        )
-
-        if not is_valid:
-            return {
-                "pdb_id": pdb_id,
-                "status": "error",
-                "message": f"Invalid JSON removed: {error_msg}",
-                "removed": was_removed,
             }
 
         return {
@@ -275,22 +286,18 @@ def regenerate_legacy_json(
         }
 
     except subprocess.TimeoutExpired:
-        if json_file.exists():
-            JsonValidator.remove_invalid_file(json_file, "Timeout during generation")
         return {
             "pdb_id": pdb_id,
             "status": "error",
             "message": "Timeout after 5 minutes",
-            "removed": True,
+            "removed": False,
         }
     except Exception as e:
-        if json_file.exists():
-            JsonValidator.remove_invalid_file(json_file, f"Exception: {str(e)}")
         return {
             "pdb_id": pdb_id,
             "status": "error",
             "message": str(e),
-            "removed": True,
+            "removed": False,
         }
 
 
@@ -302,7 +309,7 @@ def regenerate_modern_json(
 ) -> Dict:
     """Regenerate modern JSON for a single PDB."""
     pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
-    json_file = project_root / "data" / "json" / f"{pdb_id}.json"
+    json_output_dir = project_root / "data" / "json"  # Output directory, not file
 
     if not pdb_file.exists():
         return {
@@ -312,25 +319,37 @@ def regenerate_modern_json(
         }
 
     try:
-        cmd = [str(executable_path), str(pdb_file), str(json_file)]
+        # Create output directory if needed
+        json_output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Pass directory to executable (not a file path)
+        cmd = [str(executable_path), str(pdb_file), str(json_output_dir)]
         if use_legacy_mode:
             cmd.append("--legacy")
 
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
 
-        if json_file.exists():
-            is_valid, error_msg, was_removed = JsonValidator.validate_and_clean(
-                json_file, remove_invalid=True
-            )
+        # Check if any JSON files were created in the output directory
+        # Look for at least one record type file
+        record_types = ["pdb_atoms", "base_frame_calc", "base_pair"]
+        files_created = False
+        for record_type in record_types:
+            json_file = json_output_dir / record_type / f"{pdb_id}.json"
+            if json_file.exists():
+                files_created = True
+                # Validate the file
+                is_valid, error_msg, was_removed = JsonValidator.validate_and_clean(
+                    json_file, remove_invalid=True
+                )
+                if not is_valid:
+                    return {
+                        "pdb_id": pdb_id,
+                        "status": "error",
+                        "message": f"Invalid JSON removed: {error_msg}",
+                        "removed": was_removed,
+                    }
 
-            if not is_valid:
-                return {
-                    "pdb_id": pdb_id,
-                    "status": "error",
-                    "message": f"Invalid JSON removed: {error_msg}",
-                    "removed": was_removed,
-                }
-
+        if files_created:
             return {
                 "pdb_id": pdb_id,
                 "status": "success",
@@ -340,26 +359,22 @@ def regenerate_modern_json(
             return {
                 "pdb_id": pdb_id,
                 "status": "error",
-                "message": f"JSON file not created: {json_file}",
+                "message": f"No JSON files created in {json_output_dir}",
             }
 
     except subprocess.TimeoutExpired:
-        if json_file.exists():
-            JsonValidator.remove_invalid_file(json_file, "Timeout during generation")
         return {
             "pdb_id": pdb_id,
             "status": "error",
             "message": "Timeout during generation",
-            "removed": True,
+            "removed": False,
         }
     except Exception as e:
-        if json_file.exists():
-            JsonValidator.remove_invalid_file(json_file, f"Exception: {str(e)}")
         return {
             "pdb_id": pdb_id,
             "status": "error",
             "message": str(e),
-            "removed": True,
+            "removed": False,
         }
 
 

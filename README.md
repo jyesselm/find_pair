@@ -6,6 +6,22 @@ A modern C++ rewrite of the X3DNA v2.4 codebase with strong object-oriented desi
 
 🚧 **In Development** - Stage 0: Project Setup
 
+## Testing & JSON Comparison
+
+**For complete testing documentation, see [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)**
+
+Quick start for JSON comparison:
+```bash
+# Compare all PDBs
+python3 scripts/compare_json.py compare
+
+# Compare specific PDB
+python3 scripts/compare_json.py compare 1H4S
+
+# Compare test set
+python3 scripts/compare_json.py compare --test-set 100
+```
+
 ## Compiling and Running the Org Code
 
 The `org/` directory contains the original X3DNA code with JSON output support. To compile and run it:

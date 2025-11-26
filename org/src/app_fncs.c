@@ -438,12 +438,20 @@ void base_frame(long num_residue, char *bseq, long **seidx, long *res_type,
             json_writer_record_ls_fitting(i, nmatch, rms_fit, R, org[i],
                                           ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
             /* Record frame calculation with matched coordinates */
+            fprintf(stderr, "[DEBUG] app_fncs: About to call json_writer_record_frame_calc for residue %ld\n", i);
+            fflush(stderr);
             json_writer_record_frame_calc(i, bseq[i], spdb, rms_fit, nmatch,
                                            sRing_xyz, eRing_xyz,
                                            ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
+            fprintf(stderr, "[DEBUG] app_fncs: json_writer_record_frame_calc returned for residue %ld\n", i);
+            fflush(stderr);
         }
     }
+    fprintf(stderr, "[DEBUG] app_fncs: base_info loop finished, about to free memory\n");
+    fflush(stderr);
     free_pdb(NUM_RESIDUE_ATOMS, NULL, sAtomName, sResName, sChainID, sResSeq, sxyz, sMiscs);
+    fprintf(stderr, "[DEBUG] app_fncs: free_pdb completed\n");
+    fflush(stderr);
     free_dmatrix(eRing_xyz, 1, RR9, 1, 3);
     free_dmatrix(sRing_xyz, 1, RR9, 1, 3);
     free_dmatrix(fitted_xyz, 1, RR9, 1, 3);
