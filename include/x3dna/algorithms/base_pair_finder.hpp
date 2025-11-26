@@ -168,6 +168,13 @@ private:
      * @brief Get residue index in structure (0-based, counting all residues)
      */
     static size_t get_residue_index(const core::Structure& structure, const core::Residue& residue);
+
+    /**
+     * @brief Get base letter from ResidueType (matches legacy bseq character)
+     * @param type ResidueType enum value
+     * @return One-letter code (A, C, G, T, U) or '?' if unknown
+     */
+    static char get_base_letter_from_type(core::ResidueType type);
 };
 
 } // namespace algorithms
