@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <algorithm>
+#include <cctype>
 #include <nlohmann/json.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/core/reference_frame.hpp>
@@ -27,7 +29,12 @@ enum class ResidueType {
     CYTOSINE = 2,
     GUANINE = 3,
     THYMINE = 4,
-    URACIL = 5
+    URACIL = 5,
+    // Extended types for better classification
+    NONCANONICAL_RNA = 6,  // Modified nucleotides with ring atoms
+    WATER = 7,             // Water molecules (HOH, WAT)
+    ION = 8,               // Ions (MG, NA, CL, etc.)
+    LIGAND = 9             // Other small molecules/ligands
 };
 
 /**
@@ -203,10 +210,56 @@ public:
             return ResidueType::THYMINE;
         if (code == 'U')
             return ResidueType::URACIL;
+        
+        // Check for water molecules and ions
+        std::string res_name = name();
+        // Remove leading/trailing spaces for comparison
+        std::string res_name_trimmed = res_name;
+        while (!res_name_trimmed.empty() && res_name_trimmed[0] == ' ') {
+            res_name_trimmed.erase(0, 1);
+        }
+        while (!res_name_trimmed.empty() && res_name_trimmed.back() == ' ') {
+            res_name_trimmed.pop_back();
+        }
+        
+        // Check for water molecules (case-insensitive)
+        if (res_name_trimmed == "HOH" || res_name_trimmed == "WAT" || 
+            res_name_trimmed == "hoh" || res_name_trimmed == "wat") {
+            return ResidueType::WATER;
+        }
+        
+        // Check for common ions (case-insensitive, common PDB ion names)
+        std::string res_upper = res_name_trimmed;
+        std::transform(res_upper.begin(), res_upper.end(), res_upper.begin(), ::toupper);
+        if (res_upper == "MG" || res_upper == "NA" || res_upper == "CL" || res_upper == "K" ||
+            res_upper == "CA" || res_upper == "ZN" || res_upper == "FE" || res_upper == "MN" ||
+            res_upper == "CU" || res_upper == "NI" || res_upper == "CO" || res_upper == "CD" ||
+            res_upper == "SR" || res_upper == "BA" || res_upper == "RB" || res_upper == "CS") {
+            return ResidueType::ION;
+        }
+        
+        // Check for noncanonical RNA (modified nucleotides with ring atoms)
+        // This will be refined by checking for ring atoms in frame calculation
         if (code == '?') {
-            // Could be amino acid or unknown
+            // Check if it has ring atoms (indicates modified nucleotide)
+            static const std::vector<std::string> ring_atoms = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
+            int ring_count = 0;
+            for (const auto& atom : atoms()) {
+                for (const auto& ring_atom : ring_atoms) {
+                    if (atom.name() == ring_atom) {
+                        ring_count++;
+                        break;
+                    }
+                }
+            }
+            if (ring_count >= 3) {
+                return ResidueType::NONCANONICAL_RNA;
+            }
+            // Could be amino acid or ligand
             return ResidueType::UNKNOWN;
         }
+        
+        // Default to unknown (could be ligand or other molecule)
         return ResidueType::UNKNOWN;
     }
 

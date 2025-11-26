@@ -501,45 +501,65 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
     //   *bpid = 1 if fabs(shear) in [1.8, 2.8]
     //   *bpid = 2 if fabs(shear) <= 1.8 && base pair matches WC_LIST
     
-    // For now, use simplified version (full implementation requires bpstep_par from Stage 6)
     // Start with -1 (legacy initial value)
     int bp_type_id = -1;
     
-    // Check direction vector conditions (legacy requirement)
+    // Only set to 0 for invalid pairs
+    if (!result.is_valid) {
+        return 0;
+    }
+    
+    // Check direction vector condition (matches legacy)
     if (result.dir_x > 0.0 && result.dir_y < 0.0 && result.dir_z < 0.0) {
-        // Get base pair string
-        char base1 = res1->one_letter_code();
-        char base2 = res2->one_letter_code();
-        std::string bp_str = std::string(1, std::toupper(base1)) + std::string(1, std::toupper(base2));
+        // Get reference frames from residues
+        if (!res1->reference_frame().has_value() || !res2->reference_frame().has_value()) {
+            return bp_type_id; // Keep -1 if frames not available
+        }
         
+        // Calculate step parameters for this base pair
+        // Legacy: bpstep_par(r2, org[j], r1, org[i], ...)
+        // So we use frame2 (res2) first, frame1 (res1) second
+        core::BasePairStepParameters params = param_calculator_.calculate_step_parameters(
+            res2->reference_frame().value(), res1->reference_frame().value());
+        
+        // Extract geometric parameters (matching legacy pars array)
+        // pars[1] = Slide (shear)
+        // pars[2] = Rise (stretch)
+        // pars[6] = Twist (opening)
+        double shear = params.slide;
+        double stretch = params.rise;
+        double opening = params.twist;
+        
+        // Get base pair type string (e.g., "AT", "GC")
+        std::string bp_type = std::string(1, res1->one_letter_code()) +
+                             std::string(1, res2->one_letter_code());
+        
+        // Implement check_wc_wobble_pair logic
         // WC_LIST: "XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"
-        // Simplified: if base pair matches WC_LIST and is valid, set to 2
-        // Full implementation would require shear/stretch/opening from bpstep_par
-        // For now, if base pair is in WC_LIST and direction vectors are correct, assume bp_type_id = 2
-        // This is a heuristic - full accuracy requires bpstep_par (Stage 6)
-        if (result.is_valid) {
-            if (bp_str == "AT" || bp_str == "TA" || bp_str == "AU" || bp_str == "UA" ||
-                bp_str == "GC" || bp_str == "CG" || bp_str == "IC" || bp_str == "CI") {
-                // Base pair is in WC_LIST - set to 2 (Watson-Crick)
-                // Note: Full implementation would check fabs(shear) <= 1.8
-                bp_type_id = 2;
-            } else if (result.bp_type == core::BasePairType::WOBBLE) {
-                // Wobble pair (not in WC_LIST) - set to 1
-                // Note: Full implementation would check fabs(shear) in [1.8, 2.8]
-                bp_type_id = 1;
+        static const std::vector<std::string> WC_LIST = {
+            "XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"
+        };
+        
+        // Check stretch and opening thresholds
+        if (std::abs(stretch) > 2.0 || std::abs(opening) > 60.0) {
+            return bp_type_id; // Keep -1
+        }
+        
+        // Check for wobble pair (fabs(shear) in [1.8, 2.8])
+        if (std::abs(shear) >= 1.8 && std::abs(shear) <= 2.8) {
+            bp_type_id = 1; // Wobble
+        }
+        
+        // Check for Watson-Crick pair (fabs(shear) <= 1.8 AND in WC_LIST)
+        if (std::abs(shear) <= 1.8) {
+            for (const auto& wc : WC_LIST) {
+                if (bp_type == wc) {
+                    bp_type_id = 2; // Watson-Crick
+                    break;
+                }
             }
         }
     }
-    
-    // Legacy behavior: bp_type_id = -1 is kept for valid pairs when:
-    // 1. Direction vectors don't match (dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0)
-    // 2. OR check_wc_wobble_pair doesn't set it to 1 or 2
-    // Only set to 0 for invalid pairs
-    if (!result.is_valid) {
-        bp_type_id = 0;
-    }
-    // DO NOT convert -1 to 0 for valid pairs - legacy keeps -1 in some cases
-    // If bp_type_id is still -1 and is_valid is true, keep it as -1
     
     return bp_type_id;
 }
