@@ -1,0 +1,20 @@
+# X3DNA JSON Comparison Configuration
+# This file controls which comparisons are performed when comparing legacy and modern JSON outputs.
+
+# Comparison types to enable/disable
+comparisons:
+  atoms: false              # Compare pdb_atoms records (atom-by-atom comparison)
+  frames: true              # Compare frame calculations (base_frame_calc, frame_calc, ls_fitting)
+  steps: true               # Compare step parameters (bpstep_params, helical_params)
+  pairs: true               # Compare pair records (pair_validation, distance_checks, base_pair, find_bestpair_selection)
+  hbond_list: true          # Compare hbond_list records (hydrogen bond details for base pairs)
+  residue_indices: true     # Compare residue_indices records (residue-to-atom mappings)
+
+# Floating point comparison tolerance
+tolerance: 1.0e-6
+
+# Cache settings
+cache:
+  enabled: true             # Enable result caching
+  force_recompute: false    # Force recomputation even if cache exists
+

@@ -531,12 +531,15 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
         }
     }
     
-    // If still -1 and is_valid, set to 0 (no specific type)
-    if (bp_type_id == -1 && result.is_valid) {
-        bp_type_id = 0;
-    } else if (!result.is_valid) {
+    // Legacy behavior: bp_type_id = -1 is kept for valid pairs when:
+    // 1. Direction vectors don't match (dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0)
+    // 2. OR check_wc_wobble_pair doesn't set it to 1 or 2
+    // Only set to 0 for invalid pairs
+    if (!result.is_valid) {
         bp_type_id = 0;
     }
+    // DO NOT convert -1 to 0 for valid pairs - legacy keeps -1 in some cases
+    // If bp_type_id is still -1 and is_valid is true, keep it as -1
     
     return bp_type_id;
 }
