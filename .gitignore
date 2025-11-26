@@ -1,4 +1,8 @@
 build/
+data/pdb
+data/json
+data/json_legacy
+.comparison_cache
 cmake-build-*/
 .cache
 

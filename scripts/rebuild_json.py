@@ -250,26 +250,36 @@ def regenerate_legacy_json(
             cwd=str(project_root / "org"),
         )
 
-        # Check if any JSON files were created (legacy outputs split files)
-        # Check for at least one record type file
-        record_types = ["pdb_atoms", "base_frame_calc", "base_pair"]
+        # Check if any JSON files were created (legacy outputs split files in segmented structure)
+        # Check for at least one record type file in new segmented structure
+        from x3dna_json_compare.json_file_finder import find_json_file
+        
+        record_types = ["pdb_atoms", "base_frame_calc", "base_pair", "hbond_list"]
         files_created = False
         for record_type in record_types:
-            # Legacy outputs to root: <PDB_ID>_<record_type>.json
-            json_file = json_output_dir / f"{pdb_id}_{record_type}.json"
-            if json_file.exists():
+            # Legacy outputs to segmented structure: <record_type>/<PDB_ID>.json
+            json_file = find_json_file(json_output_dir, pdb_id, record_type)
+            if json_file and json_file.exists():
                 files_created = True
-                # Validate the file
-                is_valid, error_msg, was_removed = JsonValidator.validate_and_clean(
-                    json_file, remove_invalid=True
-                )
-                if not is_valid:
+                # Validate the file (legacy files are arrays, not objects)
+                try:
+                    import json
+                    with open(json_file) as f:
+                        data = json.load(f)
+                    # Accept both arrays and objects as valid JSON
+                    if not isinstance(data, (list, dict)):
+                        return {
+                            "pdb_id": pdb_id,
+                            "status": "error",
+                            "message": f"Invalid JSON format: expected array or object, got {type(data).__name__}",
+                        }
+                except Exception as e:
                     return {
                         "pdb_id": pdb_id,
                         "status": "error",
-                        "message": f"Invalid JSON removed: {error_msg}",
-                        "removed": was_removed,
+                        "message": f"JSON parse error: {str(e)}",
                     }
+                break  # Found at least one file, that's enough
 
         if not files_created:
             return {
@@ -331,23 +341,33 @@ def regenerate_modern_json(
 
         # Check if any JSON files were created in the output directory
         # Look for at least one record type file
-        record_types = ["pdb_atoms", "base_frame_calc", "base_pair"]
+        from x3dna_json_compare.json_file_finder import find_json_file
+        
+        record_types = ["pdb_atoms", "base_frame_calc", "base_pair", "hbond_list"]
         files_created = False
         for record_type in record_types:
-            json_file = json_output_dir / record_type / f"{pdb_id}.json"
-            if json_file.exists():
+            json_file = find_json_file(json_output_dir, pdb_id, record_type)
+            if json_file and json_file.exists():
                 files_created = True
-                # Validate the file
-                is_valid, error_msg, was_removed = JsonValidator.validate_and_clean(
-                    json_file, remove_invalid=True
-                )
-                if not is_valid:
+                # Validate the file (modern files are arrays, not objects)
+                try:
+                    import json
+                    with open(json_file) as f:
+                        data = json.load(f)
+                    # Accept both arrays and objects as valid JSON
+                    if not isinstance(data, (list, dict)):
+                        return {
+                            "pdb_id": pdb_id,
+                            "status": "error",
+                            "message": f"Invalid JSON format: expected array or object, got {type(data).__name__}",
+                        }
+                except Exception as e:
                     return {
                         "pdb_id": pdb_id,
                         "status": "error",
-                        "message": f"Invalid JSON removed: {error_msg}",
-                        "removed": was_removed,
+                        "message": f"JSON parse error: {str(e)}",
                     }
+                break  # Found at least one file, that's enough
 
         if files_created:
             return {
