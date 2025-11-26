@@ -62,19 +62,14 @@ std::string JsonWriter::to_string(bool pretty_print) const {
 }
 
 void JsonWriter::write_to_file(const std::filesystem::path& output_path, bool pretty_print) const {
-    // Write main metadata file
-    std::ofstream file(output_path);
-    if (!file.is_open()) {
-        throw std::runtime_error("Cannot open file for writing: " + output_path.string());
-    }
-
-    if (pretty_print) {
-        file << json_.dump(2);
-    } else {
-        file << json_.dump();
+    // If output_path is a directory, write split files directly
+    if (std::filesystem::is_directory(output_path) || output_path.extension().empty()) {
+        write_split_files(output_path, pretty_print);
+        return;
     }
     
-    // Write split files for each calculation type
+    // If output_path is a file, treat parent as directory and write split files
+    // (no main file - only split files in record-type directories)
     write_split_files(output_path.parent_path(), pretty_print);
 }
 
@@ -103,8 +98,29 @@ void JsonWriter::write_split_files(const std::filesystem::path& output_dir, bool
     
     std::cerr << "[JSON_WRITER] Writing " << split_records_.size() << " split files to " << output_dir << "\n";
     
+    // Map record types to directory names
+    std::map<std::string, std::string> type_to_dir = {
+        {"pdb_atoms", "pdb_atoms"},
+        {"base_frame_calc", "base_frame_calc"},
+        {"frame_calc", "frame_calc"},
+        {"ls_fitting", "frame_calc"},  // ls_fitting goes in frame_calc directory
+        {"base_pair", "base_pair"},
+        {"pair_validation", "pair_validation"},
+        {"distance_checks", "distance_checks"},
+        {"hbond_list", "hbond_list"},
+        {"find_bestpair_selection", "find_bestpair_selection"},
+    };
+    
     for (const auto& [calc_type, records] : split_records_) {
-        std::filesystem::path split_file = output_dir / (pdb_name_ + "_" + calc_type + ".json");
+        // Get directory name for this record type
+        std::string dir_name = type_to_dir.count(calc_type) ? type_to_dir[calc_type] : calc_type;
+        
+        // Create record-type-specific directory
+        std::filesystem::path record_dir = output_dir / dir_name;
+        std::filesystem::create_directories(record_dir);
+        
+        // Write file: <PDB_ID>.json in the record-type directory
+        std::filesystem::path split_file = record_dir / (pdb_name_ + ".json");
         std::ofstream file(split_file);
         if (!file.is_open()) {
             std::cerr << "[JSON_WRITER] Warning: Could not open split file for writing: " << split_file << "\n";
@@ -365,6 +381,96 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
     split_record.erase("type");
     split_records_["pdb_atoms"] = nlohmann::json::array();
     split_records_["pdb_atoms"].push_back(split_record);
+    
+    add_calculation_record(record);
+}
+
+void JsonWriter::record_residue_indices(const core::Structure& structure) {
+    // Collect all atoms with their legacy atom indices, sorted by PDB line number
+    // This matches legacy's residue_idx function which processes atoms in PDB file order
+    struct AtomInfo {
+        const core::Atom* atom;
+        size_t line_number;
+        int legacy_atom_idx;
+        std::string residue_key; // ResName + ChainID + ResSeq + insertion for grouping
+    };
+    
+    std::vector<AtomInfo> atoms;
+    
+    // Collect all atoms from all chains and residues
+    for (const auto& chain : structure.chains()) {
+        for (const auto& residue : chain.residues()) {
+            for (const auto& atom : residue.atoms()) {
+                int legacy_atom_idx = atom.legacy_atom_idx();
+                if (legacy_atom_idx > 0) {
+                    // Create residue key matching legacy's grouping: ResName + ChainID + ResSeq + insertion
+                    std::string key = atom.residue_name() + 
+                                     std::string(1, atom.chain_id()) +
+                                     std::to_string(atom.residue_seq()) +
+                                     std::string(1, atom.insertion());
+                    
+                    atoms.push_back({&atom, atom.line_number(), legacy_atom_idx, key});
+                }
+            }
+        }
+    }
+    
+    if (atoms.empty()) {
+        return;
+    }
+    
+    // Sort atoms by PDB line number (PDB file order)
+    std::sort(atoms.begin(), atoms.end(),
+              [](const AtomInfo& a, const AtomInfo& b) {
+                  return a.line_number < b.line_number;
+              });
+    
+    // Group consecutive atoms with the same residue key (matching legacy's residue_idx logic)
+    std::vector<std::pair<int, int>> residue_atom_ranges; // (start_atom, end_atom) for each residue
+    
+    if (atoms.empty()) {
+        return;
+    }
+    
+    // Process atoms in PDB file order, grouping by residue key
+    std::string current_residue_key = atoms[0].residue_key;
+    int current_residue_start = atoms[0].legacy_atom_idx;
+    int current_residue_end = atoms[0].legacy_atom_idx;
+    
+    for (size_t i = 1; i < atoms.size(); i++) {
+        if (atoms[i].residue_key == current_residue_key) {
+            // Same residue - extend the range
+            current_residue_end = std::max(current_residue_end, atoms[i].legacy_atom_idx);
+        } else {
+            // New residue - save previous and start new
+            residue_atom_ranges.push_back({current_residue_start, current_residue_end});
+            current_residue_key = atoms[i].residue_key;
+            current_residue_start = atoms[i].legacy_atom_idx;
+            current_residue_end = atoms[i].legacy_atom_idx;
+        }
+    }
+    
+    // Save the last residue
+    residue_atom_ranges.push_back({current_residue_start, current_residue_end});
+    
+    size_t num_residues = residue_atom_ranges.size();
+    
+    nlohmann::json record;
+    record["type"] = "residue_indices";
+    record["num_residue"] = num_residues;
+    
+    nlohmann::json seidx_array = nlohmann::json::array();
+    
+    // Build seidx array with 1-based residue indices
+    for (size_t i = 0; i < residue_atom_ranges.size(); i++) {
+        nlohmann::json entry;
+        entry["residue_idx"] = static_cast<int>(i + 1); // 1-based residue index
+        entry["start_atom"] = residue_atom_ranges[i].first;
+        entry["end_atom"] = residue_atom_ranges[i].second;
+        seidx_array.push_back(entry);
+    }
+    
+    record["seidx"] = seidx_array;
     
     add_calculation_record(record);
 }

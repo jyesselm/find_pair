@@ -211,6 +211,22 @@ private:
      */
     std::vector<core::hydrogen_bond> find_hydrogen_bonds(const core::Residue& res1,
                                                          const core::Residue& res2) const;
+
+    /**
+     * @brief Count hydrogen bonds simply (before validation) - matches legacy check_pair behavior
+     */
+    void count_hydrogen_bonds_simple(const core::Residue& res1, const core::Residue& res2,
+                                     int& num_base_hb, int& num_o2_hb) const;
+
+    /**
+     * @brief Check if atom is a base atom (matches legacy is_baseatom)
+     */
+    static bool is_base_atom(const std::string& atom_name);
+
+    /**
+     * @brief Check if two atoms can form a good H-bond (matches legacy good_hbatoms)
+     */
+    bool good_hb_atoms(const std::string& atom1, const std::string& atom2) const;
 };
 
 } // namespace algorithms

@@ -170,20 +170,26 @@ TEST_F(JsonWriterTest, RecordRemovedAtom) {
     EXPECT_TRUE(found);
 }
 
-// File writing
+// File writing - now writes split files to record-type directories
 TEST_F(JsonWriterTest, WriteToFile) {
     writer_->record_base_frame_calc(0, 'A', "Atomic_A.pdb", 0.001, {" N3 "});
 
-    std::filesystem::path output_file = "test_output.json";
-    writer_->write_to_file(output_file);
+    std::filesystem::path output_dir = "test_output_dir";
+    writer_->write_split_files(output_dir);
 
-    EXPECT_TRUE(std::filesystem::exists(output_file));
+    // Check that split file was created in record-type directory
+    std::filesystem::path split_file = output_dir / "base_frame_calc" / "test.json";
+    EXPECT_TRUE(std::filesystem::exists(split_file));
 
     // Read back and verify
-    std::ifstream file(output_file);
+    std::ifstream file(split_file);
     nlohmann::json read_json;
     file >> read_json;
 
-    EXPECT_EQ(read_json["pdb_name"], "test");
-    EXPECT_TRUE(read_json.contains("calculations"));
+    EXPECT_TRUE(read_json.is_array());
+    EXPECT_GT(read_json.size(), 0);
+    EXPECT_EQ(read_json[0]["type"], "base_frame_calc");
+    
+    // Clean up
+    std::filesystem::remove_all(output_dir);
 }

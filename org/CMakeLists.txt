@@ -122,6 +122,18 @@ set(TEST_HBOND_CONFLICT_SOURCES
 )
 add_executable(test_hbond_conflict ${TEST_HBOND_CONFLICT_SOURCES})
 
+# Test conflict resolution with detailed debug output
+set(TEST_HBOND_CONFLICT_DEBUG_SOURCES
+    src/test_hbond_conflict_debug.c
+    src/cmn_fncs.c
+    src/ana_fncs.c
+    src/app_fncs.c
+    src/nrutil.c
+    src/fncs_slre.c
+    src/json_writer.c
+)
+add_executable(test_hbond_conflict_debug ${TEST_HBOND_CONFLICT_DEBUG_SOURCES})
+
 # Test validation (isolated - takes H-bonds after conflict, applies validate_hbonds)
 set(TEST_HBOND_VALIDATION_SOURCES
     src/test_hbond_validation.c

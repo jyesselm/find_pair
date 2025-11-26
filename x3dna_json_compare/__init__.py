@@ -29,6 +29,7 @@ from .json_comparison import JsonComparator
 from .json_validator import JsonValidator
 from .parallel_executor import ParallelExecutor, print_progress
 from .hbond_comparison import compare_hbond_lists, HBondListComparison
+from .config import load_config, get_comparison_flags
 
 __all__ = [
     # Models
@@ -55,6 +56,9 @@ __all__ = [
     'JsonValidator',
     'ParallelExecutor',
     'print_progress',
+    # Configuration
+    'load_config',
+    'get_comparison_flags',
 ]
 
 __version__ = '1.0.0'

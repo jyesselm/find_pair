@@ -71,16 +71,16 @@ QualityScoreInfo extract_modern_quality(const json& validation_records, int idx1
                 }
             }
             
-            info.base_score = rtn_val[0] + 2.0 * rtn_val[1] + rtn_val[2] / 20.0;
-            info.final_score = rtn_val[4]; // rtn_val[5] is index 4 (0-based)
+            // Note: quality_score in calculated_values is the BASE score, not the final adjusted score
+            info.base_score = rtn_val[4]; // This is dorg + 2.0*d_v + plane_angle/20.0 (BASE score)
             info.bp_type_id = record.value("bp_type_id", 0);
             
-            // Calculate adjust_pairQuality: final_score = base_score + adjust_pairQuality - (bp_type_id == 2 ? 2.0 : 0.0)
-            // So: adjust_pairQuality = final_score - base_score + (bp_type_id == 2 ? 2.0 : 0.0)
-            info.adjust_pairQuality = info.final_score - info.base_score;
-            if (info.bp_type_id == 2) {
-                info.adjust_pairQuality += 2.0; // Adjust back to get true adjust_pairQuality
-            }
+            // The pair_validation record only contains the BASE quality_score
+            // The FINAL adjusted score = base_score + adjust_pairQuality - (bp_type_id == 2 ? 2.0 : 0.0)
+            // We don't have adjust_pairQuality or final_score in pair_validation records
+            // These would need to come from find_bestpair_selection or be calculated from H-bonds
+            info.final_score = info.base_score; // Placeholder - actual final score not in pair_validation
+            info.adjust_pairQuality = 0.0; // Would need to be calculated from H-bonds or found elsewhere
             
             // Handle is_valid as either boolean or number
             if (record.contains("is_valid")) {
@@ -140,16 +140,16 @@ QualityScoreInfo extract_legacy_quality(const json& validation_records, int idx1
                 }
             }
             
-            info.base_score = rtn_val[0] + 2.0 * rtn_val[1] + rtn_val[2] / 20.0;
-            info.final_score = rtn_val[4]; // rtn_val[5] is index 4 (0-based)
+            // Note: quality_score in calculated_values is the BASE score, not the final adjusted score
+            info.base_score = rtn_val[4]; // This is dorg + 2.0*d_v + plane_angle/20.0 (BASE score)
             info.bp_type_id = record.value("bp_type_id", 0);
             
-            // Calculate adjust_pairQuality: final_score = base_score + adjust_pairQuality - (bp_type_id == 2 ? 2.0 : 0.0)
-            // So: adjust_pairQuality = final_score - base_score + (bp_type_id == 2 ? 2.0 : 0.0)
-            info.adjust_pairQuality = info.final_score - info.base_score;
-            if (info.bp_type_id == 2) {
-                info.adjust_pairQuality += 2.0; // Adjust back to get true adjust_pairQuality
-            }
+            // The pair_validation record only contains the BASE quality_score
+            // The FINAL adjusted score = base_score + adjust_pairQuality - (bp_type_id == 2 ? 2.0 : 0.0)
+            // We don't have adjust_pairQuality or final_score in pair_validation records
+            // These would need to come from find_bestpair_selection or be calculated from H-bonds
+            info.final_score = info.base_score; // Placeholder - actual final score not in pair_validation
+            info.adjust_pairQuality = 0.0; // Would need to be calculated from H-bonds or found elsewhere
             
             // Handle is_valid as either boolean or number
             if (record.contains("is_valid")) {
@@ -188,31 +188,84 @@ void print_quality_comparison(const QualityScoreInfo& modern, const QualityScore
     std::cout << "  Legacy: " << legacy.bp_type_id << "\n";
     std::cout << "  Match: " << (modern.bp_type_id == legacy.bp_type_id ? "✓" : "✗") << "\n\n";
     
-    std::cout << "Final Quality Score (rtn_val[5]):\n";
+    std::cout << "Final Quality Score (BASE score from pair_validation):\n";
     std::cout << "  Modern: " << modern.final_score << "\n";
     std::cout << "  Legacy: " << legacy.final_score << "\n";
-    std::cout << "  Difference: " << (modern.final_score - legacy.final_score) << "\n\n";
+    std::cout << "  Difference: " << (modern.final_score - legacy.final_score) << "\n";
+    std::cout << "  Note: This is the BASE score, not the final adjusted score used for pair selection\n\n";
     
     std::cout << "Is Valid:\n";
     std::cout << "  Modern: " << (modern.is_valid ? "yes" : "no") << "\n";
     std::cout << "  Legacy: " << (legacy.is_valid ? "yes" : "no") << "\n";
     std::cout << "  Match: " << (modern.is_valid == legacy.is_valid ? "✓" : "✗") << "\n\n";
     
-    if (std::abs(modern.final_score - legacy.final_score) > 0.001) {
-        std::cout << "⚠️  QUALITY SCORE MISMATCH!\n";
-        if (std::abs(modern.adjust_pairQuality - legacy.adjust_pairQuality) > 0.001) {
-            std::cout << "   Root cause: adjust_pairQuality difference\n";
-            std::cout << "   This suggests H-bond detection differences for quality adjustment\n";
-        }
+    if (std::abs(modern.base_score - legacy.base_score) > 0.001) {
+        std::cout << "⚠️  BASE QUALITY SCORE MISMATCH!\n";
+        std::cout << "   This suggests differences in geometric calculations (dorg, d_v, plane_angle)\n";
     } else {
-        std::cout << "✓ Quality scores match\n";
+        std::cout << "✓ Base quality scores match\n";
     }
+    
+    std::cout << "\n";
+    std::cout << "NOTE: To get the FINAL adjusted quality score used for pair selection,\n";
+    std::cout << "      we need to look at find_bestpair_selection records or calculate\n";
+    std::cout << "      adjust_pairQuality from H-bonds (good H-bonds in [2.5, 3.5] range).\n";
+}
+
+std::filesystem::path find_json_file(const std::string& pdb_id, bool is_legacy) {
+    // Try segmented directory structure first (new format)
+    std::filesystem::path base_dir = is_legacy ? "data/json_legacy" : "data/json";
+    std::filesystem::path segmented_file = base_dir / "pair_validation" / (pdb_id + ".json");
+    
+    if (std::filesystem::exists(segmented_file)) {
+        return segmented_file;
+    }
+    
+    // Fall back to old format with suffix
+    std::filesystem::path suffix_file = base_dir / (pdb_id + "_pair_validation.json");
+    
+    if (std::filesystem::exists(suffix_file)) {
+        return suffix_file;
+    }
+    
+    // Return the old format path even if it doesn't exist (for error message)
+    return suffix_file;
+}
+
+json load_json_array(const std::filesystem::path& file_path) {
+    std::ifstream file_stream(file_path);
+    if (!file_stream.is_open()) {
+        throw std::runtime_error("Could not open file: " + file_path.string());
+    }
+    
+    json data = json::parse(file_stream);
+    
+    // Handle both array format and wrapped format
+    if (data.is_array()) {
+        return data;
+    } else if (data.contains("calculations")) {
+        auto calc = data["calculations"];
+        if (calc.is_array()) {
+            json records;
+            for (const auto& item : calc) {
+                if (item.contains("type") && item["type"] == "pair_validation") {
+                    records.push_back(item);
+                }
+            }
+            return records;
+        } else if (calc.is_object() && calc.contains("pair_validation")) {
+            return calc["pair_validation"];
+        }
+    }
+    
+    // If we get here, return empty array
+    return json::array();
 }
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
         std::cerr << "Usage: " << argv[0] << " <pdb_id> <residue1_idx> <residue2_idx>\n";
-        std::cerr << "Example: " << argv[0] << " 3G8T 92 160\n";
+        std::cerr << "Example: " << argv[0] << " 3G8T 946 947\n";
         std::cerr << "Example: " << argv[0] << " 6CAQ 75 78\n";
         return 1;
     }
@@ -221,27 +274,29 @@ int main(int argc, char* argv[]) {
     int idx1 = std::stoi(argv[2]);
     int idx2 = std::stoi(argv[3]);
     
-    std::filesystem::path modern_file = "data/json/" + pdb_id + "_pair_validation.json";
-    std::filesystem::path legacy_file = "data/json_legacy/" + pdb_id + "_pair_validation.json";
+    std::filesystem::path modern_file = find_json_file(pdb_id, false);
+    std::filesystem::path legacy_file = find_json_file(pdb_id, true);
     
     if (!std::filesystem::exists(modern_file)) {
         std::cerr << "Error: Modern JSON not found: " << modern_file << "\n";
+        std::cerr << "  Tried: data/json/pair_validation/" << pdb_id << ".json\n";
+        std::cerr << "         data/json/" << pdb_id << "_pair_validation.json\n";
         return 1;
     }
     
     if (!std::filesystem::exists(legacy_file)) {
         std::cerr << "Error: Legacy JSON not found: " << legacy_file << "\n";
+        std::cerr << "  Tried: data/json_legacy/pair_validation/" << pdb_id << ".json\n";
+        std::cerr << "         data/json_legacy/" << pdb_id << "_pair_validation.json\n";
         return 1;
     }
     
     try {
         // Load modern validation records
-        std::ifstream modern_stream(modern_file);
-        json modern_data = json::parse(modern_stream);
+        json modern_data = load_json_array(modern_file);
         
         // Load legacy validation records
-        std::ifstream legacy_stream(legacy_file);
-        json legacy_data = json::parse(legacy_stream);
+        json legacy_data = load_json_array(legacy_file);
         
         // Extract quality scores
         QualityScoreInfo modern_info = extract_modern_quality(modern_data, idx1, idx2);

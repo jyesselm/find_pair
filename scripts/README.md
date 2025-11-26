@@ -2,6 +2,10 @@
 
 Complete reference for all scripts in the `scripts/` directory.
 
+**⚠️ Important**: For complete testing and JSON comparison documentation, see **[docs/TESTING_GUIDE.md](../docs/TESTING_GUIDE.md)**.
+
+**For information about deprecated/redundant scripts, see [docs/REDUNDANT_SCRIPTS.md](../docs/REDUNDANT_SCRIPTS.md)**.
+
 ---
 
 ## Main Scripts
@@ -465,6 +469,8 @@ The scripts use reusable modules from `x3dna_json_compare` package:
 ## Best Practices
 
 1. **Use the main scripts**: Use `compare_json.py` for all JSON comparisons and `rebuild_json.py` for all JSON rebuilding operations
+2. **See TESTING_GUIDE.md**: For complete testing workflow, see [docs/TESTING_GUIDE.md](../docs/TESTING_GUIDE.md)
+3. **Avoid deprecated scripts**: See [docs/REDUNDANT_SCRIPTS.md](../docs/REDUNDANT_SCRIPTS.md) for deprecated scripts and migration guide
 2. **Use validation**: Always validate JSON files before using them
 3. **Dry-run first**: Use dry-run mode for destructive operations (clean command)
 4. **Check return codes**: Scripts return appropriate exit codes

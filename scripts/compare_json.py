@@ -48,6 +48,7 @@ import multiprocessing
 from datetime import datetime
 
 from x3dna_json_compare import JsonComparator, ComparisonResult, JsonValidator
+from x3dna_json_compare.config import load_config, get_comparison_flags
 
 
 def get_all_pdb_files(project_root: Path) -> List[str]:
@@ -65,20 +66,40 @@ def get_all_pdb_files(project_root: Path) -> List[str]:
 
 def find_available_pdbs(project_root: Path, use_legacy_mode: bool = False) -> List[str]:
     """Find all PDB IDs that have both legacy and modern JSON files."""
+    from x3dna_json_compare.json_file_finder import find_json_file
+    
     legacy_dir = project_root / "data" / "json_legacy"
     modern_dir = project_root / "data" / "json"
 
-    legacy_files = {f.stem for f in legacy_dir.glob("*.json")}
+    # Find PDBs with files in new structure: <record_type>/<PDB_ID>.json
+    # Check pdb_atoms directory as indicator
+    legacy_pdb_atoms_dir = legacy_dir / "pdb_atoms"
+    modern_pdb_atoms_dir = modern_dir / "pdb_atoms"
+    
+    legacy_files = set()
+    if legacy_pdb_atoms_dir.exists():
+        legacy_files = {f.stem for f in legacy_pdb_atoms_dir.glob("*.json")}
+    else:
+        # Fall back to old structure: <PDB_ID>_*.json in root
+        legacy_files = {f.stem.split("_")[0] for f in legacy_dir.glob("*_pdb_atoms.json")}
+        # Also check for main files
+        legacy_files.update({f.stem for f in legacy_dir.glob("*.json") if not "_" in f.stem})
 
     modern_files = set()
-    for f in modern_dir.glob("*.json"):
-        stem = f.stem
-        if use_legacy_mode:
-            if stem.endswith("_legacy"):
-                modern_files.add(stem[:-7])
-        else:
-            if not stem.endswith("_legacy"):
-                modern_files.add(stem)
+    if modern_pdb_atoms_dir.exists():
+        modern_files = {f.stem for f in modern_pdb_atoms_dir.glob("*.json")}
+    else:
+        # Fall back to old structure
+        modern_files = {f.stem.split("_")[0] for f in modern_dir.glob("*_pdb_atoms.json")}
+        # Also check for main files
+        for f in modern_dir.glob("*.json"):
+            stem = f.stem
+            if use_legacy_mode:
+                if stem.endswith("_legacy"):
+                    modern_files.add(stem[:-7])
+            else:
+                if not stem.endswith("_legacy"):
+                    modern_files.add(stem)
 
     common = sorted(legacy_files & modern_files)
     return common
@@ -226,19 +247,15 @@ def generate_test_set(project_root: Path, size: int, seed: Optional[int] = None)
 def get_modern_file_path(
     project_root: Path, pdb_id: str, use_legacy_mode: bool = False
 ) -> Optional[Path]:
-    """Get the path to modern JSON file."""
+    """Get a dummy path to modern JSON file (actual files are in record-type directories)."""
     modern_dir = project_root / "data" / "json"
 
     if use_legacy_mode:
-        legacy_mode_file = modern_dir / f"{pdb_id}_legacy.json"
-        if legacy_mode_file.exists():
-            return legacy_mode_file
-
-    regular_file = modern_dir / f"{pdb_id}.json"
-    if regular_file.exists():
-        return regular_file
-
-    return None
+        # Legacy mode files have _legacy suffix
+        return modern_dir / f"{pdb_id}_legacy.json"
+    else:
+        # Return dummy path - JsonComparator will find split files in subdirectories
+        return modern_dir / f"{pdb_id}.json"
 
 
 def find_executables(project_root: Path) -> Tuple[Optional[Path], Optional[Path]]:
@@ -309,31 +326,58 @@ def regenerate_modern_json(
             return False
 
     pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
-    json_file = project_root / "data" / "json" / f"{pdb_id}.json"
+    json_output_dir = project_root / "data" / "json"  # Output directory, not file
 
     if not pdb_file.exists():
         return False
 
     try:
         # Ensure output directory exists
-        json_file.parent.mkdir(parents=True, exist_ok=True)
+        json_output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Run generate_modern_json
-        cmd = [str(modern_exe), str(pdb_file), str(json_file)]
+        # Run generate_modern_json (expects directory, not file)
+        cmd = [str(modern_exe), str(pdb_file), str(json_output_dir)]
         if use_legacy_mode:
             cmd.append("--legacy")
 
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
 
-        if json_file.exists():
-            # Validate the generated JSON
-            is_valid, _, _ = JsonValidator.validate_and_clean(
-                json_file, remove_invalid=True
-            )
-            return is_valid
+        # Check if segmented files were created (new structure)
+        from x3dna_json_compare.json_file_finder import find_json_file
+        json_file_check = find_json_file(json_output_dir, pdb_id, "pdb_atoms")
+        if json_file_check and json_file_check.exists():
+            return True  # Segmented files created successfully
+        
+        # Also check for hbond_list as a fallback indicator
+        json_file_check = find_json_file(json_output_dir, pdb_id, "hbond_list")
+        if json_file_check and json_file_check.exists():
+            return True  # Segmented files created successfully
+        
         return False
     except Exception:
         return False
+
+
+def create_comparator(config_path: Optional[Path] = None, project_root: Optional[Path] = None) -> JsonComparator:
+    """Create a JsonComparator from YAML config file."""
+    if project_root is None:
+        project_root = Path.cwd()
+    
+    # Load config
+    if config_path is None:
+        # Try to find config in project root
+        config_path = project_root / "comparison_config.yaml"
+    
+    config = load_config(config_path)
+    flags = get_comparison_flags(config)
+    
+    # Create comparator with config values
+    return JsonComparator(
+        tolerance=config.get("tolerance", 1e-6),
+        enable_cache=config.get("cache", {}).get("enabled", True),
+        force_recompute=config.get("cache", {}).get("force_recompute", False),
+        **flags
+    )
 
 
 def compare_single_pdb(
@@ -342,13 +386,16 @@ def compare_single_pdb(
     use_legacy_mode: bool = False,
     comparator: Optional[JsonComparator] = None,
     regenerate: bool = False,
+    config_path: Optional[Path] = None,
 ) -> ComparisonResult:
     """Compare a single PDB file."""
     if comparator is None:
-        comparator = JsonComparator(enable_cache=True)  # Enable caching by default
+        comparator = create_comparator(config_path, project_root)
 
+    # Use a dummy file path for comparison - the JsonComparator will find split files
+    # The actual files are in record-type-specific directories
     legacy_file = project_root / "data" / "json_legacy" / f"{pdb_id}.json"
-    modern_file = get_modern_file_path(project_root, pdb_id, use_legacy_mode)
+    modern_file = project_root / "data" / "json" / f"{pdb_id}.json"
     pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
 
     # Only regenerate if --regenerate flag is set
@@ -405,35 +452,43 @@ def compare_single_pdb(
                 # Re-get the file path after regeneration
                 modern_file = get_modern_file_path(project_root, pdb_id, use_legacy_mode)
     
-    # Check if files exist (but don't regenerate unless flag is set)
-    # Allow split file format - check if main file or any split files exist
+    # Check if files exist in new directory structure
+    # Check for at least one record type file in new structure, or fall back to old structure
+    from x3dna_json_compare.json_file_finder import find_json_file
+    
     legacy_dir = legacy_file.parent
+    modern_dir = modern_file.parent
+    
+    # Check if legacy data exists (new or old structure)
     has_legacy_data = legacy_file.exists()
     if not has_legacy_data:
-        # Check if split files exist (legacy code sometimes outputs split files)
-        split_files = [
-            legacy_dir / f"{pdb_id}_pdb_atoms.json",
-            legacy_dir / f"{pdb_id}_base_frame_calc.json",
-            legacy_dir / f"{pdb_id}_frame_calc.json",
-            legacy_dir / f"{pdb_id}_ls_fitting.json",
-        ]
-        has_legacy_data = any(f.exists() for f in split_files)
+        # Check new structure: <record_type>/<PDB_ID>.json
+        legacy_atoms = find_json_file(legacy_dir, pdb_id, "pdb_atoms")
+        has_legacy_data = legacy_atoms and legacy_atoms.exists()
     
     if not has_legacy_data:
         return ComparisonResult(
             pdb_id=pdb_id,
             status="error",
             errors=[
-                f"Legacy file not found: {legacy_file} (and no split files found). Use --regenerate to create it."
+                f"Legacy JSON files not found for {pdb_id}. Use --regenerate to create them."
             ],
         )
     
-    if not modern_file or not modern_file.exists():
+    # Check if modern data exists (new or old structure)
+    # Skip if modern_file is a directory (segmented JSON structure)
+    has_modern_data = modern_file.exists() and modern_file.is_file()
+    if not has_modern_data:
+        # Check new structure: <record_type>/<PDB_ID>.json
+        modern_atoms = find_json_file(modern_dir, pdb_id, "pdb_atoms")
+        has_modern_data = modern_atoms and modern_atoms.exists()
+    
+    if not has_modern_data:
         return ComparisonResult(
             pdb_id=pdb_id,
             status="error",
             errors=[
-                f"Modern file not found: {modern_file}. Use --regenerate to create it."
+                f"Modern JSON files not found for {pdb_id}. Use --regenerate to create them."
             ],
         )
 
@@ -497,6 +552,17 @@ def analyze_results(results: Dict[str, ComparisonResult]) -> Dict:
         "distance_checks_missing_in_modern": 0,
         "distance_checks_extra_in_modern": 0,
         "distance_checks_mismatched": 0,
+        # H-bond list comparison stats
+        "hbond_list_total_legacy": 0,
+        "hbond_list_total_modern": 0,
+        "hbond_list_missing_in_modern": 0,
+        "hbond_list_extra_in_modern": 0,
+        "hbond_list_mismatched_pairs": 0,
+        # Residue indices comparison stats
+        "residue_indices_missing_in_modern": 0,
+        "residue_indices_extra_in_modern": 0,
+        "residue_indices_num_residue_match": True,
+        "residue_indices_mismatched_entries": 0,
     }
 
     for pdb_id, result in results.items():
@@ -622,6 +688,26 @@ def analyze_results(results: Dict[str, ComparisonResult]) -> Dict:
             stats["distance_checks_missing_in_modern"] += len(dcc.missing_in_modern)
             stats["distance_checks_extra_in_modern"] += len(dcc.extra_in_modern)
             stats["distance_checks_mismatched"] += len(dcc.mismatched_checks)
+        
+        # H-bond list comparison statistics
+        if hasattr(result, 'hbond_list_comparison') and result.hbond_list_comparison:
+            hlc = result.hbond_list_comparison
+            stats["hbond_list_total_legacy"] += hlc.total_legacy
+            stats["hbond_list_total_modern"] += hlc.total_modern
+            stats["hbond_list_missing_in_modern"] += len(hlc.missing_in_modern)
+            stats["hbond_list_extra_in_modern"] += len(hlc.extra_in_modern)
+            stats["hbond_list_mismatched_pairs"] += len(hlc.mismatched_pairs)
+        
+        # Residue indices comparison statistics
+        if hasattr(result, 'residue_indices_comparison') and result.residue_indices_comparison:
+            ric = result.residue_indices_comparison
+            if ric.missing_in_modern:
+                stats["residue_indices_missing_in_modern"] += 1
+            if ric.extra_in_modern:
+                stats["residue_indices_extra_in_modern"] += 1
+            if not ric.num_residue_match:
+                stats["residue_indices_num_residue_match"] = False
+            stats["residue_indices_mismatched_entries"] += len(ric.mismatched_entries)
 
     return stats
 
@@ -740,16 +826,52 @@ def generate_report(
         lines.append(f"Extra in modern: {stats['distance_checks_extra_in_modern']}")
         lines.append(f"Mismatched checks: {stats['distance_checks_mismatched']}")
         lines.append("")
-    elif any(
-        result.frame_comparison is None
-        for result in results.values()
-        if hasattr(result, "frame_comparison")
-    ):
-        # Frame comparison was skipped
-        pass
-
-        matching_residues = stats["total_residues"] - stats["missing_residues"]
-        if matching_residues > 0:
+    
+    # H-bond list comparison statistics
+    if stats["hbond_list_total_legacy"] > 0 or stats["hbond_list_total_modern"] > 0:
+        lines.append("H-BOND LIST STATISTICS")
+        lines.append("-" * 80)
+        lines.append(f"Total legacy H-bond lists: {stats['hbond_list_total_legacy']}")
+        lines.append(f"Total modern H-bond lists: {stats['hbond_list_total_modern']}")
+        lines.append(f"Common pairs: {stats['hbond_list_total_legacy'] - stats['hbond_list_missing_in_modern']}")
+        lines.append(f"Missing in modern: {stats['hbond_list_missing_in_modern']}")
+        lines.append(f"Extra in modern: {stats['hbond_list_extra_in_modern']}")
+        lines.append(f"Mismatched pairs: {stats['hbond_list_mismatched_pairs']}")
+        lines.append("")
+    
+    # Residue indices comparison statistics
+    # Show statistics if residue indices comparisons were performed
+    # Check if any results have residue_indices_comparison set (not None means comparison was performed)
+    has_residue_indices_comparison = False
+    total_residue_indices_pdbs = 0
+    for result in results.values():
+        if result.residue_indices_comparison is not None:
+            has_residue_indices_comparison = True
+            total_residue_indices_pdbs += 1
+    
+    if has_residue_indices_comparison:
+        lines.append("RESIDUE INDICES STATISTICS")
+        lines.append("-" * 80)
+        
+        # Show summary even if everything matches
+        if (stats["residue_indices_missing_in_modern"] == 0 and 
+            stats["residue_indices_extra_in_modern"] == 0 and
+            stats["residue_indices_num_residue_match"] and
+            stats["residue_indices_mismatched_entries"] == 0):
+            lines.append(f"✅ All residue indices match perfectly ({total_residue_indices_pdbs} PDBs compared)")
+        else:
+            if stats["residue_indices_missing_in_modern"] > 0:
+                lines.append(f"Missing in modern: {stats['residue_indices_missing_in_modern']}")
+            if stats["residue_indices_extra_in_modern"] > 0:
+                lines.append(f"Extra in modern: {stats['residue_indices_extra_in_modern']}")
+            if not stats["residue_indices_num_residue_match"]:
+                lines.append("⚠️  Residue count mismatch detected")
+            if stats["residue_indices_mismatched_entries"] > 0:
+                lines.append(f"Mismatched entries: {stats['residue_indices_mismatched_entries']}")
+        lines.append("")
+    
+    matching_residues = stats["total_residues"] - stats["missing_residues"]
+    if matching_residues > 0:
             exact_rate = stats["exact_atom_matches"] / matching_residues * 100
             set_rate = stats["atom_set_matches"] / matching_residues * 100
             real_diff_rate = stats["real_atom_differences"] / matching_residues * 100
@@ -1149,21 +1271,22 @@ def common_options(f):
         is_flag=True,
         help="Disable result caching (caching is enabled by default for better performance)",
     )(f)
+    f = click.option(
+        "--config",
+        type=click.Path(path_type=Path, exists=True),
+        default=None,
+        help="Path to YAML configuration file (default: comparison_config.yaml in project root)",
+    )(f)
     return f
 
 
 def _compare_pdb_worker(args):
     """Worker function for parallel processing (needs to be picklable)."""
-    pdb_id, project_root_str, use_legacy_mode, enable_cache, compare_atoms, compare_frames, regenerate = args
+    pdb_id, project_root_str, use_legacy_mode, regenerate = args
     project_root = Path(project_root_str)
     
-    # Create new comparator for this process
-    comparator = JsonComparator(
-        enable_cache=enable_cache,
-        compare_atoms=compare_atoms,
-        compare_frames=compare_frames,
-        force_recompute=False,
-    )
+    # Create new comparator for this process (loads config automatically)
+    comparator = create_comparator(None, project_root)
     
     return compare_single_pdb(
         pdb_id, project_root, use_legacy_mode, comparator, regenerate
@@ -1196,9 +1319,6 @@ def run_comparison(
                 pdb_id,
                 str(project_root),  # Convert Path to string for pickling
                 use_legacy_mode,
-                comparator.enable_cache,
-                comparator.compare_atoms,
-                comparator.compare_frames,
                 regenerate,
             )
             for pdb_id in pdb_ids
@@ -1253,7 +1373,7 @@ def cli():
 @click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, pdb_ids):
+def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, config, pdb_ids):
     """Compare atoms and frames for specified PDB(s) or all available."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
@@ -1282,12 +1402,33 @@ def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenera
         click.echo(
             "  (Will regenerate JSON files if missing or with --regenerate flag)"
         )
-    if not no_cache:
+    
+    # Load config from YAML file
+    config_path = config or (project_root / "comparison_config.yaml")
+    comparator = create_comparator(config_path, project_root)
+    # Override cache setting from command line
+    if no_cache:
+        comparator.enable_cache = False
+    
+    if comparator.enable_cache and not no_cache:
         click.echo("  (Caching enabled - use --no-cache to disable)")
-
-    comparator = JsonComparator(
-        enable_cache=not no_cache, compare_atoms=True, compare_frames=True, compare_steps=True, compare_pairs=True
-    )
+    
+    # Show which comparisons are enabled
+    enabled = []
+    if comparator.compare_atoms:
+        enabled.append("atoms")
+    if comparator.compare_frames:
+        enabled.append("frames")
+    if comparator.compare_steps:
+        enabled.append("steps")
+    if comparator.compare_pairs:
+        enabled.append("pairs")
+    if comparator.compare_hbond_list:
+        enabled.append("hbond_list")
+    if comparator.compare_residue_indices:
+        enabled.append("residue_indices")
+    if enabled:
+        click.echo(f"  Enabled comparisons: {', '.join(enabled)}")
     results = run_comparison(
         pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate
     )

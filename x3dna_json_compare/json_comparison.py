@@ -17,9 +17,11 @@ from .pair_comparison import compare_pair_validations, compare_distance_checks
 from .base_pair_comparison import compare_base_pairs
 from .find_bestpair_comparison import compare_find_bestpair_selections
 from .hbond_comparison import compare_hbond_lists
+from .residue_indices_comparison import compare_residue_indices
 from .pdb_utils import PdbFileReader
 from .result_cache import ComparisonCache
 from .parallel_executor import ParallelExecutor, print_progress
+from .json_file_finder import find_json_file
 
 
 class JsonComparator:
@@ -31,7 +33,9 @@ class JsonComparator:
                  compare_atoms: bool = True,
                  compare_frames: bool = True,
                  compare_steps: bool = True,
-                 compare_pairs: bool = True):
+                 compare_pairs: bool = True,
+                 compare_hbond_list: bool = True,
+                 compare_residue_indices: bool = True):
         """
         Initialize comparator with caching support.
         
@@ -44,6 +48,8 @@ class JsonComparator:
             compare_frames: If True, compare frame calculations (base_frame_calc, frame_calc, ls_fitting)
             compare_steps: If True, compare step parameters (bpstep_params, helical_params)
             compare_pairs: If True, compare pair validation and distance checks
+            compare_hbond_list: If True, compare hbond_list records
+            compare_residue_indices: If True, compare residue_indices records
         """
         self.cache_dir = Path(cache_dir)
         self.tolerance = tolerance
@@ -53,11 +59,17 @@ class JsonComparator:
         self.compare_frames = compare_frames
         self.compare_steps = compare_steps
         self.compare_pairs = compare_pairs
+        self.compare_hbond_list = compare_hbond_list
+        self.compare_residue_indices = compare_residue_indices
         self.cache = ComparisonCache(self.cache_dir) if enable_cache else None
     
     def _load_json(self, json_file: Path) -> Optional[Dict]:
         """Load JSON file, handling both objects and arrays, and files with extra data."""
         if not json_file.exists():
+            return None
+        
+        # Skip if path is a directory (segmented JSON structure)
+        if json_file.is_dir():
             return None
         
         try:
@@ -135,7 +147,14 @@ class JsonComparator:
         # If split files, load from split file
         if is_split_files and json_file:
             pdb_name = json_data.get('pdb_name', json_file.stem)
-            split_file = json_file.parent / f"{pdb_name}_pdb_atoms.json"
+            base_dir = json_file.parent
+            
+            # Try new structure first: <record_type>/<PDB_ID>.json
+            split_file = find_json_file(base_dir, pdb_name, "pdb_atoms")
+            if not split_file or not split_file.exists():
+                # Fall back to old structure: <PDB_ID>_<record_type>.json
+                split_file = base_dir / f"{pdb_name}_pdb_atoms.json"
+            
             if split_file.exists():
                 try:
                     split_data = self._load_json(split_file)
@@ -160,7 +179,15 @@ class JsonComparator:
         
         # If still no atoms found and we have a file path, try split file format as fallback
         if not atoms and json_file:
-            split_file = json_file.parent / f"{json_file.stem}_pdb_atoms.json"
+            pdb_id = json_file.stem
+            base_dir = json_file.parent
+            
+            # Try new structure first: <record_type>/<PDB_ID>.json
+            split_file = find_json_file(base_dir, pdb_id, "pdb_atoms")
+            if not split_file or not split_file.exists():
+                # Fall back to old structure: <PDB_ID>_<record_type>.json
+                split_file = base_dir / f"{pdb_id}_pdb_atoms.json"
+            
             if split_file.exists():
                 try:
                     split_data = self._load_json(split_file)
@@ -190,14 +217,21 @@ class JsonComparator:
                     records.append(calc)
         
         # If no records found and we have a file path, try split file format
+        # Try new structure first, then fall back to old structure
         if not records and json_file:
+            pdb_id = json_file.stem
+            base_dir = json_file.parent
+            
             for calc_type in ['base_frame_calc', 'ls_fitting', 'frame_calc']:
-                split_file = json_file.parent / f"{json_file.stem}_{calc_type}.json"
-                if split_file.exists():
+                # Map ls_fitting to frame_calc directory in new structure
+                dir_name = 'frame_calc' if calc_type == 'ls_fitting' else calc_type
+                
+                # Try new structure: <record_type>/<PDB_ID>.json
+                split_file = find_json_file(base_dir, pdb_id, dir_name)
+                if split_file and split_file.exists():
                     try:
                         split_data = self._load_json(split_file)
                         if isinstance(split_data, list):
-                            # Split file contains array of entries (already in correct format)
                             records.extend(split_data)
                     except Exception:
                         pass
@@ -251,17 +285,31 @@ class JsonComparator:
                 pass
         
         # Handle split file format (array of records) - this is the primary format
+        # Try new structure first, then fall back to old structure
         if json_file:
-            # Extract base name from file (e.g., "1Q96_find_bestpair_selection.json" -> "1Q96")
-            # or from main file path (e.g., "1Q96.json" -> "1Q96")
+            # Extract PDB ID from file
             if json_file.name.endswith('_find_bestpair_selection.json'):
-                base_name = json_file.name.replace('_find_bestpair_selection.json', '')
+                pdb_id = json_file.name.replace('_find_bestpair_selection.json', '')
             else:
-                base_name = json_file.stem
-            split_file = json_file.parent / f"{base_name}_find_bestpair_selection.json"
-            if split_file.exists() and split_file != json_file:
+                pdb_id = json_file.stem
+            base_dir = json_file.parent
+            
+            # Try new structure: find_bestpair_selection/<PDB_ID>.json
+            split_file = find_json_file(base_dir, pdb_id, "find_bestpair_selection")
+            if split_file and split_file.exists() and split_file != json_file:
                 try:
                     split_data = self._load_json(split_file)
+                    if isinstance(split_data, list):
+                        records.extend(split_data)
+                        return records
+                except Exception:
+                    pass
+            
+            # Fall back to old structure: <PDB_ID>_find_bestpair_selection.json
+            old_split_file = base_dir / f"{pdb_id}_find_bestpair_selection.json"
+            if old_split_file.exists() and old_split_file != json_file:
+                try:
+                    split_data = self._load_json(old_split_file)
                     if isinstance(split_data, list):
                         records.extend(split_data)
                         return records
@@ -310,13 +358,17 @@ class JsonComparator:
         
         # If no records found in main file and we have a file path, try split file format
         # (Modern code writes to split files, legacy writes to main file)
+        # Try new structure first, then fall back to old structure
         if not records and json_file:
-            split_file = json_file.parent / f"{json_file.stem}_base_pair.json"
-            if split_file.exists():
+            pdb_id = json_file.stem
+            base_dir = json_file.parent
+            
+            # Try new structure: base_pair/<PDB_ID>.json
+            split_file = find_json_file(base_dir, pdb_id, "base_pair")
+            if split_file and split_file.exists():
                 try:
                     split_data = self._load_json(split_file)
                     if isinstance(split_data, list):
-                        # Split files now contain the 'type' field in each record
                         records.extend(split_data)
                 except Exception:
                     pass
@@ -340,18 +392,18 @@ class JsonComparator:
                     records.append(calc)
         
         # If no records found and we have a file path, try split file format
+        # Try new structure first, then fall back to old structure
         if not records and json_file:
-            split_file = json_file.parent / f"{json_file.stem}_pair_validation.json"
-            if split_file.exists():
+            pdb_id = json_file.stem
+            base_dir = json_file.parent
+            
+            # Try new structure: pair_validation/<PDB_ID>.json
+            split_file = find_json_file(base_dir, pdb_id, "pair_validation")
+            if split_file and split_file.exists():
                 try:
                     split_data = self._load_json(split_file)
                     if isinstance(split_data, list):
-                        # Split files don't have type field - add it for consistency
-                        for record in split_data:
-                            if isinstance(record, dict):
-                                record_with_type = record.copy()
-                                record_with_type['type'] = 'pair_validation'
-                                records.append(record_with_type)
+                        records.extend(split_data)
                 except Exception:
                     pass
         
@@ -408,13 +460,17 @@ class JsonComparator:
                     records.append(calc)
         
         # If no records found and we have a file path, try split file format
+        # Try new structure first, then fall back to old structure
         if not records and json_file:
-            split_file = json_file.parent / f"{json_file.stem}_hbond_list.json"
-            if split_file.exists():
+            pdb_id = json_file.stem
+            base_dir = json_file.parent
+            
+            # Try new structure: hbond_list/<PDB_ID>.json
+            split_file = find_json_file(base_dir, pdb_id, "hbond_list")
+            if split_file and split_file.exists():
                 try:
                     split_data = self._load_json(split_file)
                     if isinstance(split_data, list):
-                        # Split file contains array of entries (already in correct format)
                         records.extend(split_data)
                 except Exception:
                     pass
@@ -459,6 +515,85 @@ class JsonComparator:
         
         return records
     
+    def _extract_residue_indices_records(self, json_data: Optional[Dict], json_file: Optional[Path] = None) -> List[Dict]:
+        """Extract residue_indices records from JSON (supports array, grouped, and split file formats)."""
+        records = []
+        
+        # Try to extract from main JSON data if available
+        if json_data:
+            calculations = json_data.get('calculations', {})
+            
+            # Handle grouped format: calculations is a dict with type keys
+            if isinstance(calculations, dict):
+                calc_group = calculations.get('residue_indices', [])
+                if isinstance(calc_group, list):
+                    records.extend(calc_group)
+            # Handle array format: calculations is a list
+            elif isinstance(calculations, list):
+                for calc in calculations:
+                    if isinstance(calc, dict) and calc.get('type') == 'residue_indices':
+                        records.append(calc)
+        
+        # If no records found and we have a file path, try split file format
+        # Try new structure first, then fall back to old structure
+        if not records and json_file:
+            pdb_id = json_file.stem
+            base_dir = json_file.parent
+            
+            # Try new structure: residue_indices/<PDB_ID>.json
+            split_file = find_json_file(base_dir, pdb_id, "residue_indices")
+            if split_file and split_file.exists():
+                try:
+                    split_data = self._load_json(split_file)
+                    if isinstance(split_data, list):
+                        records.extend(split_data)
+                    elif isinstance(split_data, dict) and split_data.get('type') == 'residue_indices':
+                        records.append(split_data)
+                except Exception:
+                    pass
+            
+            # Fall back to old structure: <PDB_ID>_residue_indices.json
+            if not records:
+                old_split_file = base_dir / f"{pdb_id}_residue_indices.json"
+                if old_split_file.exists():
+                    try:
+                        split_data = self._load_json(old_split_file)
+                        if isinstance(split_data, list):
+                            records.extend(split_data)
+                        elif isinstance(split_data, dict) and split_data.get('type') == 'residue_indices':
+                            records.append(split_data)
+                    except Exception:
+                        pass
+        
+        # Handle main JSON file directly if it's an array or dict
+        if not records and json_file and json_file.exists():
+            try:
+                with open(json_file, 'r') as f:
+                    content = f.read()
+                decoder = json.JSONDecoder()
+                idx = 0
+                while idx < len(content):
+                    # Skip whitespace
+                    while idx < len(content) and content[idx].isspace():
+                        idx += 1
+                    if idx >= len(content):
+                        break
+                    try:
+                        obj, new_idx = decoder.raw_decode(content, idx)
+                        if isinstance(obj, dict) and obj.get('type') == 'residue_indices':
+                            records.append(obj)
+                        idx = new_idx
+                    except json.JSONDecodeError:
+                        # Try to find next object start
+                        next_brace = content.find('{', idx + 1)
+                        if next_brace == -1:
+                            break
+                        idx = next_brace
+            except Exception:
+                pass
+        
+        return records
+    
     def compare_files(self, legacy_file: Path, modern_file: Path,
                      pdb_file: Path, pdb_id: str) -> ComparisonResult:
         """
@@ -487,18 +622,47 @@ class JsonComparator:
         # If main legacy file doesn't exist, check for split files and create minimal wrapper
         legacy_json = self._load_json(legacy_file)
         if legacy_json is None and not legacy_file.exists():
-            # Check if split files exist - if so, create minimal JSON structure
-            split_atoms = legacy_file.parent / f"{legacy_file.stem}_pdb_atoms.json"
-            if split_atoms.exists():
+            # Check if split files exist in new structure: <record_type>/<PDB_ID>.json
+            # or old structure: <PDB_ID>_<record_type>.json
+            pdb_id = legacy_file.stem
+            base_dir = legacy_file.parent
+            
+            # Try new structure first
+            split_atoms = find_json_file(base_dir, pdb_id, "pdb_atoms")
+            if not split_atoms or not split_atoms.exists():
+                # Fall back to old structure
+                split_atoms = base_dir / f"{pdb_id}_pdb_atoms.json"
+            
+            if split_atoms and split_atoms.exists():
                 # Create minimal JSON structure that indicates split files exist
                 legacy_json = {
-                    'pdb_name': legacy_file.stem,
+                    'pdb_name': pdb_id,
                     'calculations': [{'_split_files': True}]
                 }
             else:
                 legacy_json = None
         
         modern_json = self._load_json(modern_file)
+        if modern_json is None and modern_file and not modern_file.exists():
+            # Check if split files exist in new structure: <record_type>/<PDB_ID>.json
+            # or old structure: <PDB_ID>_<record_type>.json
+            pdb_id_from_file = modern_file.stem
+            base_dir = modern_file.parent
+            
+            # Try new structure first
+            split_atoms = find_json_file(base_dir, pdb_id_from_file, "pdb_atoms")
+            if not split_atoms or not split_atoms.exists():
+                # Fall back to old structure
+                split_atoms = base_dir / f"{pdb_id_from_file}_pdb_atoms.json"
+            
+            if split_atoms and split_atoms.exists():
+                # Create minimal JSON structure that indicates split files exist
+                modern_json = {
+                    'pdb_name': pdb_id_from_file,
+                    'calculations': [{'_split_files': True}]
+                }
+            else:
+                modern_json = None
         
         result = ComparisonResult(
             pdb_id=pdb_id,
@@ -657,7 +821,7 @@ class JsonComparator:
                 result.errors.append(f"Error comparing pair validations: {e}")
         
         # Compare hbond_list records
-        if self.compare_pairs:
+        if self.compare_hbond_list:
             try:
                 legacy_hbond_lists = self._extract_hbond_list_records(legacy_json, legacy_file)
                 modern_hbond_lists = self._extract_hbond_list_records(modern_json, modern_file)
@@ -669,6 +833,20 @@ class JsonComparator:
                     result.hbond_list_comparison = hbond_list_comparison
             except Exception as e:
                 result.errors.append(f"Error comparing hbond_list records: {e}")
+        
+        # Compare residue_indices records
+        if self.compare_residue_indices:
+            try:
+                legacy_residue_indices = self._extract_residue_indices_records(legacy_json, legacy_file)
+                modern_residue_indices = self._extract_residue_indices_records(modern_json, modern_file)
+                
+                if legacy_residue_indices or modern_residue_indices:
+                    residue_indices_comparison = compare_residue_indices(
+                        legacy_residue_indices, modern_residue_indices, self.tolerance
+                    )
+                    result.residue_indices_comparison = residue_indices_comparison
+            except Exception as e:
+                result.errors.append(f"Error comparing residue_indices records: {e}")
         
         # Determine status
         if result.errors:
@@ -703,6 +881,7 @@ class JsonComparator:
         
         # Prepare comparison tasks
         def compare_pdb(pdb_id: str) -> tuple[str, ComparisonResult]:
+            # Use dummy file paths - JsonComparator will find split files in new structure
             legacy_file = project_root / 'data' / 'json_legacy' / f'{pdb_id}.json'
             modern_file = project_root / 'data' / 'json' / f'{pdb_id}.json'
             pdb_file = project_root / 'data' / 'pdb' / f'{pdb_id}.pdb'

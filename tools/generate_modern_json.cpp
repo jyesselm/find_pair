@@ -20,15 +20,21 @@ using namespace x3dna::geometry;
 
 int main(int argc, char* argv[]) {
     if (argc < 3 || argc > 4) {
-        std::cerr << "Usage: " << argv[0] << " <input_pdb_file> <output_json_file> [--legacy]\n";
-        std::cerr << "Example: " << argv[0] << " data/pdb/1ABC.pdb data/json/1ABC.json\n";
+        std::cerr << "Usage: " << argv[0] << " <input_pdb_file> <output_json_dir> [--legacy]\n";
+        std::cerr << "Example: " << argv[0] << " data/pdb/1ABC.pdb data/json\n";
         std::cerr << "Options:\n";
         std::cerr << "  --legacy    Exclude C4 atom from matching (matches legacy behavior)\n";
+        std::cerr << "\n";
+        std::cerr << "Output: Creates segmented JSON files in record-type-specific directories:\n";
+        std::cerr << "  <output_json_dir>/pdb_atoms/<PDB_ID>.json\n";
+        std::cerr << "  <output_json_dir>/base_frame_calc/<PDB_ID>.json\n";
+        std::cerr << "  <output_json_dir>/base_pair/<PDB_ID>.json\n";
+        std::cerr << "  etc.\n";
         return 1;
     }
 
     std::filesystem::path pdb_file = argv[1];
-    std::filesystem::path json_file = argv[2];
+    std::filesystem::path json_output_dir = argv[2];  // Now expects a directory, not a file
 
     // Check for legacy mode flag
     bool legacy_mode = false;
@@ -51,7 +57,10 @@ int main(int argc, char* argv[]) {
 
     try {
         // Create output directory if needed
-        std::filesystem::create_directories(json_file.parent_path());
+        std::filesystem::create_directories(json_output_dir);
+        
+        // Extract PDB name from file
+        std::string pdb_name = std::filesystem::path(pdb_file).stem().string();
 
         // Parse PDB file
         PdbParser parser;
@@ -63,8 +72,8 @@ int main(int argc, char* argv[]) {
 
         // Try to find legacy JSON file for PDB line caching (optional)
         std::filesystem::path legacy_json_file;
-        std::filesystem::path legacy_dir = json_file.parent_path().parent_path() / "json_legacy";
-        std::filesystem::path legacy_file = legacy_dir / json_file.filename();
+        std::filesystem::path legacy_dir = json_output_dir.parent_path() / "json_legacy";
+        std::filesystem::path legacy_file = legacy_dir / "pdb_atoms" / (pdb_name + ".json");
         if (std::filesystem::exists(legacy_file)) {
             legacy_json_file = legacy_file;
         }
@@ -76,6 +85,9 @@ int main(int argc, char* argv[]) {
         // Note: Legacy indices are already set on atoms during PDB parsing
         // We do NOT load legacy indices from legacy JSON files - they are generated fresh
         writer.record_pdb_atoms(structure);
+        
+        // Record residue indices (seidx) - maps residues to atom ranges
+        writer.record_residue_indices(structure);
 
         // Calculate frames and record frame calculations
         BaseFrameCalculator calculator("data/templates");
@@ -260,10 +272,10 @@ int main(int argc, char* argv[]) {
         }
         std::cout << "  Base pairs found: " << base_pairs.size() << "\n";
 
-        // Write JSON to file
-        writer.write_to_file(json_file);
+        // Write split JSON files to record-type-specific directories
+        writer.write_split_files(json_output_dir, true);
 
-        std::cout << "Successfully generated JSON: " << json_file << "\n";
+        std::cout << "Successfully generated JSON files in: " << json_output_dir << "\n";
         std::cout << "  Atoms: " << structure.num_atoms() << "\n";
         std::cout << "  Total residues: " << residue_idx - 1 << "\n";
         std::cout << "  Nucleotides found: " << nucleotides_found << "\n";

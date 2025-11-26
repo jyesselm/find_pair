@@ -150,32 +150,12 @@ long json_writer_init(const char *pdbfile) {
     strncpy(pdb_file_path, pdbfile, sizeof(pdb_file_path) - 1);
     pdb_file_path[sizeof(pdb_file_path) - 1] = '\0';
     
-    /* Open metadata file for writing */
-    json_file = fopen(json_filename, "w");
-    if (!json_file) {
-        fprintf(stderr, "[JSON_WRITER] Error: Could not open %s for writing\n", json_filename);
-        return FALSE;
-    }
-    
-    /* Write JSON header with metadata */
-    fprintf(json_file, "{\n");
-    fprintf(json_file, "  \"pdb_file\": \"%s\",\n", pdbfile);
-    fprintf(json_file, "  \"pdb_name\": \"%s\",\n", pdb_name);
-    fprintf(json_file, "  \"calculations\": [\n");
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"_note\": \"Calculations are split into separate files: %s_*.json\",\n", pdb_name);
-    fprintf(json_file, "      \"_split_files\": true\n");
-    fprintf(json_file, "    }\n");
-    fprintf(json_file, "  ],\n");
-    fprintf(json_file, "  \"metadata\": {\n");
-    fprintf(json_file, "    \"version\": \"%s\"\n", Gvars.X3DNA_VER);
-    fprintf(json_file, "  }\n");
-    fprintf(json_file, "}\n");
-    
+    /* No longer create main JSON file - only split files are written */
+    json_file = NULL;
     first_entry = TRUE;
     initialized = TRUE;
     
-    fprintf(stderr, "[JSON_WRITER] Initialized: %s\n", json_filename);
+    fprintf(stderr, "[JSON_WRITER] Initialized for split files in %s/json_legacy/%s/*.json\n", dir_path, json_base_name);
     return TRUE;
 }
 
@@ -186,30 +166,54 @@ static FILE* get_type_file_handle(const char *calc_type, long *is_first_entry) {
     struct stat st;
     long i;
     
-    if (!json_writer_is_initialized() || !calc_type) return NULL;
+    fprintf(stderr, "[DEBUG] get_type_file_handle: ENTRY calc_type=%s\n", calc_type ? calc_type : "NULL");
+    
+    if (!json_writer_is_initialized() || !calc_type) {
+        fprintf(stderr, "[DEBUG] get_type_file_handle: Not initialized or calc_type is NULL, returning NULL\n");
+        return NULL;
+    }
     
     /* Check if file is already open */
     for (i = 0; i < num_type_files; i++) {
         if (strcmp(type_files[i].calc_type, calc_type) == 0 && type_files[i].file != NULL) {
+            fprintf(stderr, "[DEBUG] get_type_file_handle: Found existing file handle for %s\n", calc_type);
             *is_first_entry = (type_files[i].entry_count == 0);
             type_files[i].entry_count++;
             return type_files[i].file;
         }
     }
     
-    /* Determine file path */
+    fprintf(stderr, "[DEBUG] get_type_file_handle: Creating new file for %s\n", calc_type);
+    
+    /* Determine file path - new structure: <record_type>/<PDB_ID>.json */
+    char type_dir[BUF1K];
     if (stat("../data", &st) == 0) {
-        sprintf(type_filename, "../data/json_legacy/%s_%s.json", json_base_name, calc_type);
+        sprintf(type_dir, "../data/json_legacy/%s", calc_type);
+        sprintf(type_filename, "../data/json_legacy/%s/%s.json", calc_type, json_base_name);
     } else {
-        sprintf(type_filename, "data/json_legacy/%s_%s.json", json_base_name, calc_type);
+        sprintf(type_dir, "data/json_legacy/%s", calc_type);
+        sprintf(type_filename, "data/json_legacy/%s/%s.json", calc_type, json_base_name);
+    }
+    
+    fprintf(stderr, "[DEBUG] get_type_file_handle: type_dir=%s type_filename=%s\n", type_dir, type_filename);
+    
+    /* Create record-type directory if it doesn't exist */
+    if (stat(type_dir, &st) == -1) {
+        fprintf(stderr, "[DEBUG] get_type_file_handle: Creating directory %s\n", type_dir);
+        if (mkdir(type_dir, 0755) != 0) {
+            fprintf(stderr, "[JSON_WRITER] Warning: Could not create directory %s\n", type_dir);
+            return NULL;
+        }
     }
     
     /* Create new file */
+    fprintf(stderr, "[DEBUG] get_type_file_handle: Opening file %s\n", type_filename);
     fp = fopen(type_filename, "w");
     if (!fp) {
         fprintf(stderr, "[JSON_WRITER] Warning: Could not create %s\n", type_filename);
         return NULL;
     }
+    fprintf(stderr, "[DEBUG] get_type_file_handle: File opened successfully, writing array start\n");
     fprintf(fp, "[\n");
     
     /* Store in type_files array */
@@ -219,9 +223,13 @@ static FILE* get_type_file_handle(const char *calc_type, long *is_first_entry) {
         type_files[num_type_files].file = fp;
         type_files[num_type_files].entry_count = 1;
         num_type_files++;
+        fprintf(stderr, "[DEBUG] get_type_file_handle: Stored in type_files array, num_type_files=%ld\n", num_type_files);
+    } else {
+        fprintf(stderr, "[DEBUG] get_type_file_handle: WARNING num_type_files >= 32, cannot store more files\n");
     }
     
     *is_first_entry = TRUE;
+    fprintf(stderr, "[DEBUG] get_type_file_handle: EXIT successful, returning file handle\n");
     return fp;
 }
 
@@ -229,31 +237,47 @@ static FILE* get_type_file_handle(const char *calc_type, long *is_first_entry) {
 void json_writer_finalize(void) {
     long i;
     
-    if (!initialized || !json_file) {
+    fprintf(stderr, "[DEBUG] json_writer_finalize: ENTRY\n");
+    
+    if (!initialized) {
+        fprintf(stderr, "[DEBUG] json_writer_finalize: Not initialized, returning\n");
         return;
     }
     
+    fprintf(stderr, "[DEBUG] json_writer_finalize: num_type_files=%ld\n", num_type_files);
+    
     /* Close all open type files */
     for (i = 0; i < num_type_files; i++) {
+        fprintf(stderr, "[DEBUG] json_writer_finalize: Processing type file %ld: calc_type=%s file=%p\n", 
+                i, type_files[i].calc_type, (void*)type_files[i].file);
         if (type_files[i].file != NULL) {
+            fprintf(stderr, "[DEBUG] json_writer_finalize: Closing file for %s\n", type_files[i].calc_type);
             fprintf(type_files[i].file, "\n]");
+            fprintf(stderr, "[DEBUG] json_writer_finalize: Flushing file for %s\n", type_files[i].calc_type);
             fflush(type_files[i].file);
+            fprintf(stderr, "[DEBUG] json_writer_finalize: Closing file handle for %s\n", type_files[i].calc_type);
             fclose(type_files[i].file);
             type_files[i].file = NULL;
+            fprintf(stderr, "[DEBUG] json_writer_finalize: Closed file for %s\n", type_files[i].calc_type);
         }
     }
     
-    /* Close and finalize metadata file (already written in init) */
-    fclose(json_file);
-    json_file = NULL;
+    /* No main JSON file to close - only split files are used */
+    if (json_file) {
+        fprintf(stderr, "[DEBUG] json_writer_finalize: Closing main json_file\n");
+        fclose(json_file);
+        json_file = NULL;
+    }
     initialized = FALSE;
     num_type_files = 0;
     
-    fprintf(stderr, "[JSON_WRITER] Finalized: %s (split files: %s_*.json)\n", json_filename, json_base_name);
+    fprintf(stderr, "[DEBUG] json_writer_finalize: About to print final message\n");
+    fprintf(stderr, "[JSON_WRITER] Finalized: split files written to %s/json_legacy/%s/*.json\n", json_dir_path, json_base_name);
+    fprintf(stderr, "[DEBUG] json_writer_finalize: EXIT successful\n");
 }
 
 long json_writer_is_initialized(void) {
-    return initialized && (json_file != NULL);
+    return initialized; /* No longer require json_file to be open */
 }
 
 void json_writer_record_bpstep_params(long bp_idx1, long bp_idx2, 
@@ -261,6 +285,7 @@ void json_writer_record_bpstep_params(long bp_idx1, long bp_idx2,
                                       double *mst_org,
                                       double **mst_orien) {
     if (!json_writer_is_initialized()) return;
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -293,6 +318,7 @@ void json_writer_record_helical_params(long bp_idx1, long bp_idx2,
                                        double *mst_orgH,
                                        double **mst_orienH) {
     if (!json_writer_is_initialized()) return;
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -365,6 +391,7 @@ void json_writer_record_base_pair(long i, long j, char *bp_type,
 
 void json_writer_record_ref_frame(long residue_idx, double **orien, double *org) {
     if (!json_writer_is_initialized()) return;
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -386,10 +413,29 @@ void json_writer_record_ref_frame(long residue_idx, double **orien, double *org)
 void json_writer_record_sequence(long num_residue, char *bseq) {
     char esc_seq[BUF512];
     
-    if (!json_writer_is_initialized()) return;
-    if (!bseq) return;
+    fprintf(stderr, "[DEBUG] json_writer_record_sequence: ENTRY num_residue=%ld\n", num_residue);
+    fflush(stderr);
+    
+    if (!json_writer_is_initialized()) {
+        fprintf(stderr, "[DEBUG] json_writer_record_sequence: Not initialized, returning\n");
+        return;
+    }
+    if (!bseq) {
+        fprintf(stderr, "[DEBUG] json_writer_record_sequence: bseq is NULL, returning\n");
+        return;
+    }
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_sequence: json_file=%p\n", (void*)json_file);
+    fflush(stderr);
+    
+    if (!json_file) {
+        fprintf(stderr, "[DEBUG] json_writer_record_sequence: json_file is NULL, returning (using split files)\n");
+        return;
+    }
     
     json_escape_string(bseq, esc_seq, sizeof(esc_seq));
+    
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -409,6 +455,7 @@ void json_writer_record_bp_sequence(long num_bp, char **bp_seq, long ds) {
     
     if (!json_writer_is_initialized()) return;
     if (!bp_seq) return;
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -621,35 +668,72 @@ void json_writer_record_pdb_atoms(long num, char **AtomName, char **ResName,
 
 void json_writer_record_residue_indices(long num_residue, long **seidx) {
     long i;
+    FILE *type_file;
+    long is_first;
     
-    if (!json_writer_is_initialized()) return;
-    if (!seidx) return;
+    fprintf(stderr, "[DEBUG] json_writer_record_residue_indices: ENTRY num_residue=%ld\n", num_residue);
+    fflush(stderr);
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    if (!json_writer_is_initialized()) {
+        fprintf(stderr, "[DEBUG] json_writer_record_residue_indices: Not initialized, returning\n");
+        return;
+    }
+    if (!seidx) {
+        fprintf(stderr, "[DEBUG] json_writer_record_residue_indices: seidx is NULL, returning\n");
+        return;
+    }
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"residue_indices\",\n");
-    fprintf(json_file, "      \"num_residue\": %ld,\n", num_residue);
-    fprintf(json_file, "      \"seidx\": [\n");
+    /* Write to separate file for easier comparison (matches other record functions) */
+    type_file = get_type_file_handle("residue_indices", &is_first);
+    fprintf(stderr, "[DEBUG] json_writer_record_residue_indices: get_type_file_handle returned type_file=%p is_first=%ld\n", 
+            (void*)type_file, is_first);
+    if (!type_file) {
+        fprintf(stderr, "[DEBUG] json_writer_record_residue_indices: type_file is NULL, returning\n");
+        return;
+    }
+    
+    if (!is_first) fprintf(type_file, ",\n");
+    
+    fprintf(type_file, "  {\n");
+    fprintf(type_file, "    \"type\": \"residue_indices\",\n");
+    fprintf(type_file, "    \"num_residue\": %ld,\n", num_residue);
+    fprintf(type_file, "    \"seidx\": [\n");
     
     for (i = 1; i <= num_residue; i++) {
-        if (i > 1) fprintf(json_file, ",\n");
-        fprintf(json_file, "        {\"residue_idx\": %ld, \"start_atom\": %ld, \"end_atom\": %ld}",
+        if (i > 1) fprintf(type_file, ",\n");
+        fprintf(type_file, "      {\"residue_idx\": %ld, \"start_atom\": %ld, \"end_atom\": %ld}",
                 i, seidx[i][1], seidx[i][2]);
     }
     
-    fprintf(json_file, "\n      ]\n");
-    fprintf(json_file, "    }");
+    fprintf(type_file, "\n    ]\n");
+    fprintf(type_file, "  }");
     
-    fflush(json_file);
+    fflush(type_file);
+    fprintf(stderr, "[DEBUG] json_writer_record_residue_indices: EXIT successful\n");
 }
 
 void json_writer_record_base_pairs(long ds, long num_bp, long **pair_num) {
     long i, j;
     
-    if (!json_writer_is_initialized()) return;
-    if (!pair_num) return;
+    fprintf(stderr, "[DEBUG] json_writer_record_base_pairs: ENTRY ds=%ld num_bp=%ld\n", ds, num_bp);
+    fflush(stderr);
+    
+    if (!json_writer_is_initialized()) {
+        fprintf(stderr, "[DEBUG] json_writer_record_base_pairs: Not initialized, returning\n");
+        return;
+    }
+    if (!pair_num) {
+        fprintf(stderr, "[DEBUG] json_writer_record_base_pairs: pair_num is NULL, returning\n");
+        return;
+    }
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_base_pairs: json_file=%p\n", (void*)json_file);
+    fflush(stderr);
+    
+    if (!json_file) {
+        fprintf(stderr, "[DEBUG] json_writer_record_base_pairs: json_file is NULL, returning (using split files)\n");
+        return;
+    }
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -679,8 +763,25 @@ void json_writer_record_base_pairs(long ds, long num_bp, long **pair_num) {
 void json_writer_record_all_ref_frames(long ds, long num_bp, double **orien, double **org) {
     long i, j, k, idx;
     
-    if (!json_writer_is_initialized()) return;
-    if (!orien || !org) return;
+    fprintf(stderr, "[DEBUG] json_writer_record_all_ref_frames: ENTRY ds=%ld num_bp=%ld\n", ds, num_bp);
+    fflush(stderr);
+    
+    if (!json_writer_is_initialized()) {
+        fprintf(stderr, "[DEBUG] json_writer_record_all_ref_frames: Not initialized, returning\n");
+        return;
+    }
+    if (!orien || !org) {
+        fprintf(stderr, "[DEBUG] json_writer_record_all_ref_frames: NULL pointers, returning\n");
+        return;
+    }
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_all_ref_frames: json_file=%p\n", (void*)json_file);
+    fflush(stderr);
+    
+    if (!json_file) {
+        fprintf(stderr, "[DEBUG] json_writer_record_all_ref_frames: json_file is NULL, returning (using split files)\n");
+        return;
+    }
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -730,6 +831,7 @@ void json_writer_record_wc_info(long num_bp, long *WC_info) {
     
     if (!json_writer_is_initialized()) return;
     if (!WC_info) return;
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -755,6 +857,7 @@ void json_writer_record_ry(long num_residue, long *RY) {
     
     if (!json_writer_is_initialized()) return;
     if (!RY) return;
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -778,8 +881,25 @@ void json_writer_record_ry(long num_residue, long *RY) {
 void json_writer_record_helices(long num_bp, long *bphlx) {
     long i;
     
-    if (!json_writer_is_initialized()) return;
-    if (!bphlx) return;
+    fprintf(stderr, "[DEBUG] json_writer_record_helices: ENTRY num_bp=%ld\n", num_bp);
+    fflush(stderr);
+    
+    if (!json_writer_is_initialized()) {
+        fprintf(stderr, "[DEBUG] json_writer_record_helices: Not initialized, returning\n");
+        return;
+    }
+    if (!bphlx) {
+        fprintf(stderr, "[DEBUG] json_writer_record_helices: bphlx is NULL, returning\n");
+        return;
+    }
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_helices: json_file=%p\n", (void*)json_file);
+    fflush(stderr);
+    
+    if (!json_file) {
+        fprintf(stderr, "[DEBUG] json_writer_record_helices: json_file is NULL, returning (using split files)\n");
+        return;
+    }
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -805,6 +925,7 @@ void json_writer_record_twist_rise(long nbpm1, double **twist_rise) {
     
     if (!json_writer_is_initialized()) return;
     if (!twist_rise) return;
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -829,6 +950,7 @@ void json_writer_record_twist_rise(long nbpm1, double **twist_rise) {
 void json_writer_record_input_parameters(miscPars *misc_pars, long ds, long hetatm, long ip) {
     if (!json_writer_is_initialized()) return;
     if (!misc_pars) return;
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -985,39 +1107,15 @@ void json_writer_record_hbonds(long base_i, long base_j, long num_hbonds,
                                 char **hb_atom1, char **hb_atom2,
                                 double *hb_dist, char *hb_type,
                                 long *lkg_type) {
-    long i;
-    char esc_atom1[BUF512], esc_atom2[BUF512];
-    
+    /* NOTE: This function is deprecated - we now use json_writer_record_hbond_list
+     * which writes to split files. This function is kept for backward compatibility
+     * but disabled when using split files (json_file is NULL).
+     */
     if (!json_writer_is_initialized()) return;
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
-    
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"hydrogen_bonds\",\n");
-    fprintf(json_file, "      \"base_i\": %ld,\n", base_i);
-    fprintf(json_file, "      \"base_j\": %ld,\n", base_j);
-    fprintf(json_file, "      \"num_hbonds\": %ld,\n", num_hbonds);
-    fprintf(json_file, "      \"hbonds\": [\n");
-    
-    for (i = 1; i <= num_hbonds; i++) {
-        if (i > 1) fprintf(json_file, ",\n");
-        json_escape_string(hb_atom1[i], esc_atom1, sizeof(esc_atom1));
-        json_escape_string(hb_atom2[i], esc_atom2, sizeof(esc_atom2));
-        fprintf(json_file, "        {\n");
-        fprintf(json_file, "          \"hbond_idx\": %ld,\n", i);
-        fprintf(json_file, "          \"donor_atom\": \"%s\",\n", esc_atom1);
-        fprintf(json_file, "          \"acceptor_atom\": \"%s\",\n", esc_atom2);
-        fprintf(json_file, "          \"distance\": %.6f,\n", hb_dist ? fabs(hb_dist[i]) : 0.0);
-        fprintf(json_file, "          \"type\": \"%c\",\n", hb_type && hb_type[i] ? hb_type[i] : ' ');
-        fprintf(json_file, "          \"linkage_type\": %ld\n", lkg_type ? lkg_type[i] : 0);
-        fprintf(json_file, "        }");
-    }
-    
-    fprintf(json_file, "\n      ]\n");
-    fprintf(json_file, "    }");
-    
-    fflush(json_file);
+    /* Skip if using split files (json_file is NULL) - hbond_list already recorded */
+    /* This prevents crashes from trying to write to NULL json_file */
+    return;
 }
 
 void json_writer_record_base_frame_calc(long residue_idx, char base_type,
@@ -1077,15 +1175,38 @@ void json_writer_record_pair_validation(long base_i, long base_j,
                                          long is_valid, long bp_type_id,
                                          double dir_x, double dir_y, double dir_z,
                                          double *rtn_val, miscPars *misc_pars) {
+    static long call_count = 0;
+    call_count++;
     FILE *type_file;
     long is_first;
     
-    if (!json_writer_is_initialized()) return;
-    if (!rtn_val || !misc_pars) return;
+    if (call_count % 50000 == 0) {
+        fprintf(stderr, "[DEBUG] json_writer_record_pair_validation: Call #%ld for pair (%ld, %ld)\n", call_count, base_i, base_j);
+        fflush(stderr);
+    }
     
+    fprintf(stderr, "[DEBUG] json_writer_record_pair_validation: ENTRY pair (%ld, %ld) call_count=%ld\n", base_i, base_j, call_count);
+    fflush(stderr);
+    
+    if (!json_writer_is_initialized()) {
+        fprintf(stderr, "[DEBUG] json_writer_record_pair_validation: Not initialized\n");
+        return;
+    }
+    if (!rtn_val || !misc_pars) {
+        fprintf(stderr, "[DEBUG] json_writer_record_pair_validation: NULL pointers\n");
+        return;
+    }
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_pair_validation: About to get file handle\n");
+    fflush(stderr);
     /* Write to separate file for easier comparison */
     type_file = get_type_file_handle("pair_validation", &is_first);
-    if (!type_file) return;
+    fprintf(stderr, "[DEBUG] json_writer_record_pair_validation: Got file handle=%p is_first=%ld\n", (void*)type_file, is_first);
+    fflush(stderr);
+    if (!type_file) {
+        fprintf(stderr, "[DEBUG] json_writer_record_pair_validation: File handle is NULL, returning\n");
+        return;
+    }
     
     if (!is_first) fprintf(type_file, ",\n");
     
@@ -1136,46 +1257,93 @@ void json_writer_record_hbond_list(long base_i, long base_j, long num_hbonds,
                                     char **hb_atom1, char **hb_atom2,
                                     double *hb_dist, char *hb_type,
                                     const char *hb_info_string) {
+    FILE *type_file;
+    long is_first;
     long i;
     char esc_atom1[BUF512], esc_atom2[BUF512], esc_info[BUF1K];
     
-    if (!json_writer_is_initialized()) return;
+    fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: ENTRY base_i=%ld base_j=%ld num_hbonds=%ld\n", base_i, base_j, num_hbonds);
+    fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: hb_atom1=%p hb_atom2=%p hb_dist=%p hb_type=%p hb_info_string=%p\n", 
+            (void*)hb_atom1, (void*)hb_atom2, (void*)hb_dist, (void*)hb_type, (void*)hb_info_string);
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    if (!json_writer_is_initialized()) {
+        fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: NOT INITIALIZED, returning\n");
+        return;
+    }
+    fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: Initialized check passed\n");
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"hbond_list\",\n");
-    fprintf(json_file, "      \"base_i\": %ld,\n", base_i);
-    fprintf(json_file, "      \"base_j\": %ld,\n", base_j);
-    fprintf(json_file, "      \"num_hbonds\": %ld,\n", num_hbonds);
-    json_escape_string(hb_info_string, esc_info, sizeof(esc_info));
-    fprintf(json_file, "      \"hb_info_string\": \"%s\",\n", esc_info);
-    fprintf(json_file, "      \"hbonds\": [\n");
-    
-    for (i = 1; i <= num_hbonds && hb_atom1 && hb_atom2; i++) {
-        if (i > 1) fprintf(json_file, ",\n");
-        json_escape_string(hb_atom1[i], esc_atom1, sizeof(esc_atom1));
-        json_escape_string(hb_atom2[i], esc_atom2, sizeof(esc_atom2));
-        fprintf(json_file, "        {\n");
-        fprintf(json_file, "          \"hbond_idx\": %ld,\n", i);
-        fprintf(json_file, "          \"donor_atom\": \"%s\",\n", esc_atom1);
-        fprintf(json_file, "          \"acceptor_atom\": \"%s\",\n", esc_atom2);
-        if (hb_dist) {
-            fprintf(json_file, "          \"distance\": %.6f", fabs(hb_dist[i]));
-        } else {
-            fprintf(json_file, "          \"distance\": null");
-        }
-        if (hb_type && hb_type[i]) {
-            fprintf(json_file, ",\n          \"type\": \"%c\"", hb_type[i]);
-        }
-        fprintf(json_file, "\n        }");
+    /* Write to separate file for easier comparison (matches other record functions) */
+    type_file = get_type_file_handle("hbond_list", &is_first);
+    fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: get_type_file_handle returned type_file=%p is_first=%ld\n", 
+            (void*)type_file, is_first);
+    if (!type_file) {
+        fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: type_file is NULL, returning\n");
+        return;
     }
     
-    fprintf(json_file, "\n      ]\n");
-    fprintf(json_file, "    }");
+    if (!is_first) fprintf(type_file, ",\n");
     
-    fflush(json_file);
+    fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: About to write record header\n");
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"hbond_list\",\n");
+    fprintf(type_file, "      \"base_i\": %ld,\n", base_i);
+    fprintf(type_file, "      \"base_j\": %ld,\n", base_j);
+    fprintf(type_file, "      \"num_hbonds\": %ld,\n", num_hbonds);
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: About to escape hb_info_string\n");
+    if (hb_info_string) {
+        json_escape_string(hb_info_string, esc_info, sizeof(esc_info));
+        fprintf(type_file, "      \"hb_info_string\": \"%s\",\n", esc_info);
+    } else {
+        fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: WARNING hb_info_string is NULL\n");
+        fprintf(type_file, "      \"hb_info_string\": \"\",\n");
+    }
+    
+    fprintf(type_file, "      \"hbonds\": [\n");
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: About to loop through %ld hbonds\n", num_hbonds);
+    for (i = 1; i <= num_hbonds && hb_atom1 && hb_atom2; i++) {
+        fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: Processing hbond %ld of %ld\n", i, num_hbonds);
+        if (i > 1) fprintf(type_file, ",\n");
+        
+        if (hb_atom1[i]) {
+            json_escape_string(hb_atom1[i], esc_atom1, sizeof(esc_atom1));
+        } else {
+            fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: WARNING hb_atom1[%ld] is NULL\n", i);
+            strcpy(esc_atom1, "");
+        }
+        
+        if (hb_atom2[i]) {
+            json_escape_string(hb_atom2[i], esc_atom2, sizeof(esc_atom2));
+        } else {
+            fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: WARNING hb_atom2[%ld] is NULL\n", i);
+            strcpy(esc_atom2, "");
+        }
+        
+        fprintf(type_file, "        {\n");
+        fprintf(type_file, "          \"hbond_idx\": %ld,\n", i);
+        fprintf(type_file, "          \"donor_atom\": \"%s\",\n", esc_atom1);
+        fprintf(type_file, "          \"acceptor_atom\": \"%s\",\n", esc_atom2);
+        if (hb_dist) {
+            fprintf(type_file, "          \"distance\": %.6f", fabs(hb_dist[i]));
+        } else {
+            fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: WARNING hb_dist is NULL\n");
+            fprintf(type_file, "          \"distance\": null");
+        }
+        if (hb_type && hb_type[i]) {
+            fprintf(type_file, ",\n          \"type\": \"%c\"", hb_type[i]);
+        }
+        fprintf(type_file, "\n        }");
+        fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: Finished hbond %ld\n", i);
+    }
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: Finished loop, closing record\n");
+    fprintf(type_file, "\n      ]\n");
+    fprintf(type_file, "    }");
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: About to fflush\n");
+    fflush(type_file);
+    fprintf(stderr, "[DEBUG] json_writer_record_hbond_list: EXIT successful\n");
 }
 
 void json_writer_record_frame_calc(long residue_idx, char base_type,
@@ -1184,20 +1352,49 @@ void json_writer_record_frame_calc(long residue_idx, char base_type,
                                     double **matched_std_xyz,
                                     double **matched_exp_xyz,
                                     const char *residue_name, char chain_id, long residue_seq, char insertion_code) {
+    static long call_count = 0;
+    call_count++;
     long i;
     char esc_template[BUF512], esc_resname[BUF512];
     FILE *type_file;
     long is_first = TRUE;
     
-    if (!json_writer_is_initialized()) return;
+    if (call_count % 1000 == 0) {
+        fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: Call #%ld residue_idx=%ld\n", call_count, residue_idx);
+        fflush(stderr);
+    }
     
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: ENTRY residue_idx=%ld call_count=%ld\n", residue_idx, call_count);
+    fflush(stderr);
+    
+    if (!json_writer_is_initialized()) {
+        fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: Not initialized, returning\n");
+        return;
+    }
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: About to get file handle\n");
+    fflush(stderr);
     type_file = get_type_file_handle("frame_calc", &is_first);
-    if (!type_file) return;
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: Got file handle=%p is_first=%ld\n", (void*)type_file, is_first);
+    fflush(stderr);
+    if (!type_file) {
+        fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: File handle is NULL, returning\n");
+        return;
+    }
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: About to write record\n");
+    fflush(stderr);
     
     if (!is_first) fprintf(type_file, ",\n");
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: Wrote comma if needed\n");
+    fflush(stderr);
+    
     fprintf(type_file, "  {\n");
     fprintf(type_file, "    \"residue_idx\": %ld,\n", residue_idx);
     fprintf(type_file, "    \"base_type\": \"%c\",\n", base_type);
+    
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: Wrote header, about to write residue info\n");
+    fflush(stderr);
     
     /* Add residue identification information */
     if (residue_name) {
@@ -1210,11 +1407,15 @@ void json_writer_record_frame_calc(long residue_idx, char base_type,
         fprintf(type_file, "    \"insertion\": \"%c\",\n", insertion_code);
     }
     
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: About to escape template file\n");
+    fflush(stderr);
     json_escape_string(template_file, esc_template, sizeof(esc_template));
     fprintf(type_file, "    \"template_file\": \"%s\",\n", esc_template);
     fprintf(type_file, "    \"rms_fit\": %.6f,\n", rms_fit);
     fprintf(type_file, "    \"num_matched_atoms\": %ld,\n", num_matched_atoms);
     
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: About to write matched coordinates\n");
+    fflush(stderr);
     if (matched_std_xyz && matched_exp_xyz) {
         fprintf(type_file, "    \"matched_coordinates\": [\n");
         for (i = 1; i <= num_matched_atoms; i++) {
@@ -1230,36 +1431,47 @@ void json_writer_record_frame_calc(long residue_idx, char base_type,
         fprintf(type_file, "\n    ]\n");
     }
     
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: About to close record\n");
+    fflush(stderr);
     fprintf(type_file, "  }");
     
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: About to fflush\n");
+    fflush(stderr);
     fflush(type_file);
+    fprintf(stderr, "[DEBUG] json_writer_record_frame_calc: EXIT successful\n");
+    fflush(stderr);
 }
 
 void json_writer_record_ring_atoms(long residue_idx, long *ring_atom_indices,
                                     long num_ring_atoms) {
     long i;
+    FILE *type_file;
+    long is_first;
     
     if (!json_writer_is_initialized()) return;
     if (!ring_atom_indices) return;
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    /* Write to separate file for easier comparison */
+    type_file = get_type_file_handle("ring_atoms", &is_first);
+    if (!type_file) return;
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"ring_atoms\",\n");
-    fprintf(json_file, "      \"residue_idx\": %ld,\n", residue_idx);
-    fprintf(json_file, "      \"num_ring_atoms\": %ld,\n", num_ring_atoms);
-    fprintf(json_file, "      \"ring_atom_indices\": [");
+    if (!is_first) fprintf(type_file, ",\n");
+    
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"ring_atoms\",\n");
+    fprintf(type_file, "      \"residue_idx\": %ld,\n", residue_idx);
+    fprintf(type_file, "      \"num_ring_atoms\": %ld,\n", num_ring_atoms);
+    fprintf(type_file, "      \"ring_atom_indices\": [");
     
     for (i = 1; i <= num_ring_atoms; i++) {
-        if (i > 1) fprintf(json_file, ", ");
-        fprintf(json_file, "%ld", ring_atom_indices[i]);
+        if (i > 1) fprintf(type_file, ", ");
+        fprintf(type_file, "%ld", ring_atom_indices[i]);
     }
     
-    fprintf(json_file, "]\n");
-    fprintf(json_file, "    }");
+    fprintf(type_file, "]\n");
+    fprintf(type_file, "    }");
     
-    fflush(json_file);
+    fflush(type_file);
 }
 
 void json_writer_record_distance_checks(long base_i, long base_j,
@@ -1350,6 +1562,7 @@ void json_writer_record_removed_atom(const char* pdb_line, const char* reason,
     long has_fields = FALSE;
     
     if (!json_writer_is_initialized()) return;
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;
@@ -1405,6 +1618,7 @@ void json_writer_record_removed_atom(const char* pdb_line, const char* reason,
 
 void json_writer_record_removed_atoms_summary(long num_removed) {
     if (!json_writer_is_initialized()) return;
+    if (!json_file) return; /* Using split files - json_file is NULL */
     
     if (!first_entry) fprintf(json_file, ",\n");
     first_entry = FALSE;

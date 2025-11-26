@@ -116,6 +116,7 @@ class ComparisonResult:
     pair_validation_comparison: Optional[Any] = None  # PairValidationComparison from pair_comparison
     distance_checks_comparison: Optional[Any] = None  # DistanceChecksComparison from pair_comparison
     hbond_list_comparison: Optional[Any] = None  # HBondListComparison from hbond_comparison
+    residue_indices_comparison: Optional[Any] = None  # ResidueIndicesComparison from residue_indices_comparison
     errors: List[str] = field(default_factory=list)
     cache_key: Optional[str] = None
     timestamp: float = 0.0
@@ -169,6 +170,13 @@ class ComparisonResult:
             if (self.hbond_list_comparison.missing_in_modern or
                 self.hbond_list_comparison.extra_in_modern or
                 self.hbond_list_comparison.mismatched_pairs):
+                return True
+        
+        if self.residue_indices_comparison:
+            if (self.residue_indices_comparison.missing_in_modern or
+                self.residue_indices_comparison.extra_in_modern or
+                self.residue_indices_comparison.mismatched_entries or
+                not self.residue_indices_comparison.num_residue_match):
                 return True
         
         return False
@@ -262,6 +270,16 @@ class ComparisonResult:
                 'total_legacy': self.hbond_list_comparison.total_legacy,
                 'total_modern': self.hbond_list_comparison.total_modern,
                 'common_count': self.hbond_list_comparison.common_count,
+            }
+        
+        if self.residue_indices_comparison:
+            result['residue_indices_differences'] = {
+                'missing_in_modern': 1 if self.residue_indices_comparison.missing_in_modern else 0,
+                'extra_in_modern': 1 if self.residue_indices_comparison.extra_in_modern else 0,
+                'num_residue_match': self.residue_indices_comparison.num_residue_match,
+                'mismatched_entries': len(self.residue_indices_comparison.mismatched_entries),
+                'legacy_num_residue': self.residue_indices_comparison.legacy_num_residue,
+                'modern_num_residue': self.residue_indices_comparison.modern_num_residue,
             }
         
         return result
