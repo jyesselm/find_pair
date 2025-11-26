@@ -2,7 +2,8 @@
 
 **Last Updated**: 2025-11-26  
 **Goal**: Achieve 100% match between legacy and modern code outputs  
-**Current Status**: 90% perfect matches on 100-set test, 100% on 10-PDB test set
+**Current Status**: 90% perfect matches on 100-set test, 100% on 10-PDB test set  
+**Stage 6 Status**: ✅ Implemented, ⏳ Needs debugging for frame accessibility
 
 ---
 
@@ -64,7 +65,7 @@
 - **Impact**: Some pairs may still differ (legacy has geometric params, modern doesn't) - this is expected
 - **Note**: Full accuracy requires Stage 6 (ParameterCalculator) implementation
 
-### 8. Stage 6 (ParameterCalculator) Implementation (2025-11-26) ✅ COMPLETE
+### 8. Stage 6 (ParameterCalculator) Implementation (2025-11-26) ✅ IMPLEMENTED, ⏳ DEBUGGING
 - **Issue**: `bp_type_id = 2` assignment requires geometric parameters (shear, stretch, opening) from `bpstep_par`
 - **Root Cause**: Legacy's `check_wc_wobble_pair` uses step parameters to classify Watson-Crick and wobble pairs
 - **Fix**: Implemented `ParameterCalculator` class following MODERNIZATION_PLAN.md:
@@ -72,9 +73,12 @@
   - Implemented `bpstep_par_impl()` matching legacy `bpstep_par()` algorithm
   - Added geometry utility functions (arb_rotation, vec_ang, magang, etc.)
   - Updated `calculate_bp_type_id()` to use step parameters for classification
-- **Status**: ✅ **COMPILED** - Code compiles successfully, ready for testing
-- **Impact**: Should fix `bp_type_id = 2` assignment for pairs like (1102, 1127) in 6CAQ
-- **Next Steps**: Test on 6CAQ to verify bp_type_id = 2 assignment matches legacy
+- **Status**: ✅ **COMPILED** - Code compiles successfully
+- **Current Issue**: Reference frames may not be accessible in `calculate_bp_type_id()`
+  - Pair (1102, 1127) in 6CAQ: Legacy `bp_type_id=2`, Modern `bp_type_id=-1`
+  - Direction vectors match condition (`dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0`)
+  - Validation passes (requires frames), but frames may not be accessible during `bp_type_id` calculation
+- **Next Steps**: Debug frame accessibility, verify step parameter calculation matches legacy
 
 ### 7. Residue Type Classification (2025-11-26) ✅ COMPLETE
 - **Issue**: "Unknown residue types" message was not informative
@@ -469,12 +473,111 @@ if (!result.is_valid) {
 
 ### Legacy
 - `org/src/cmn_fncs.c`: `check_pair()`, `calculate_more_bppars()`, `adjust_pairQuality()`
-- `org/src/ana_fncs.c`: `get_oarea()`, `check_wc_wobble_pair()`
+- `org/src/ana_fncs.c`: `get_oarea()`, `check_wc_wobble_pair()`, `bpstep_par()`
 - `org/src/find_pair.c`: `find_bestpair()`, `best_pair()`
+- `org/src/nrutil.c`: Geometry utilities (`magang()`, `vec_ang()`, `arb_rotation()`, etc.)
 
 ### Modern
-- `src/x3dna/algorithms/base_pair_finder.cpp`: Pair finding and selection
+- `src/x3dna/algorithms/base_pair_finder.cpp`: Pair finding and selection, `calculate_bp_type_id()`
 - `src/x3dna/algorithms/base_pair_validator.cpp`: Validation and overlap calculation
 - `src/x3dna/algorithms/hydrogen_bond_finder.cpp`: H-bond detection
 - `src/x3dna/algorithms/parameter_calculator.cpp`: Step parameter calculation (Stage 6)
+  - `bpstep_par_impl()`: Core algorithm matching legacy `bpstep_par()`
+  - Geometry utilities: `arb_rotation()`, `vec_ang()`, `magang()`, etc.
+
+---
+
+## Next Steps & Action Items
+
+### Priority 1: Debug Stage 6 Frame Accessibility ⏳ IN PROGRESS
+
+**Issue**: Reference frames may not be accessible when `calculate_bp_type_id()` is called, even though validation passed.
+
+**Investigation Steps**:
+1. **Verify frame storage**: Check if frames are set on residue objects after frame calculation
+   - Location: `src/x3dna/algorithms/base_frame_calculator.cpp`
+   - Verify: `residue.set_reference_frame()` is called after calculation
+   
+2. **Debug frame access**: Add temporary debug output in `calculate_bp_type_id()`
+   - Check: `res1->reference_frame().has_value()` vs `res2->reference_frame().has_value()`
+   - Verify: Frames are available at the time of `bp_type_id` calculation
+   
+3. **Test step parameter calculation**: Verify `bpstep_par_impl()` produces correct values
+   - Compare: Modern step parameters vs legacy `bpstep_params` JSON records
+   - Test pair: (1102, 1127) in 6CAQ (if frames become accessible)
+   
+4. **Verify bp_type_id assignment**: Once frames are accessible, verify classification works
+   - Expected: Pair (1102, 1127) should get `bp_type_id = 2` (Watson-Crick)
+   - Check: All conditions met (direction vectors, stretch ≤ 2.0, opening ≤ 60°, shear ≤ 1.8, in WC_LIST)
+
+**Files to Modify**:
+- `src/x3dna/algorithms/base_pair_finder.cpp`: Add debug output, verify frame access
+- `src/x3dna/algorithms/base_frame_calculator.cpp`: Verify frames are stored on residues
+
+**Success Criteria**:
+- ✅ Frames accessible in `calculate_bp_type_id()`
+- ✅ Step parameters calculated correctly
+- ✅ `bp_type_id = 2` assigned for pair (1102, 1127) in 6CAQ
+- ✅ Quality score matches legacy (should be 2.0 lower due to `bp_type_id = 2`)
+
+### Priority 2: Test on Additional PDBs
+
+**Goal**: Verify Stage 6 works across different structures
+
+**Test Cases**:
+1. Find PDBs with `bp_type_id = 2` pairs in legacy
+2. Verify modern assigns `bp_type_id = 2` correctly
+3. Check quality score adjustments match legacy
+
+**Tools**:
+- `scripts/analyze_mismatched_pairs.py`: Find pairs with `bp_type_id` differences
+- `scripts/compare_json.py`: Compare overall match rates
+
+### Priority 3: Remaining 6CAQ Mismatches
+
+**Current Status**: 10 missing, 3 extra pairs
+
+**Analysis Needed**:
+1. **9 pairs not found in validation**: Investigate why these pairs aren't being validated
+   - Pairs: (495, 498), (501, 506), (939, 1378), (1029, 1184), (1380, 1473), (1382, 1470), (1385, 1467), (1489, 1492)
+   - Check: Are these pairs being skipped during validation? Why?
+   
+2. **1 pair with quality score difference**: (1102, 1127) - should be fixed by Stage 6 debugging
+   
+3. **3 extra pairs**: Likely tie-breaking issues (quality scores match)
+   - Pairs: (1104, 1127), (1105, 1126), (1372, 1473)
+   - Action: Verify these are acceptable differences or investigate tie-breaking logic
+
+### Priority 4: Tie-Breaking Logic
+
+**Issue**: When quality scores are identical, selection order may differ between legacy and modern
+
+**Investigation**:
+1. Document current tie-breaking behavior
+2. Compare with legacy iteration order
+3. Determine if differences are acceptable or need fixing
+
+**Impact**: Low priority - these are edge cases with identical scores
+
+---
+
+## Implementation Checklist
+
+### Stage 6 (ParameterCalculator) ✅ COMPLETE
+- [x] Create `ParameterCalculator` class
+- [x] Implement `bpstep_par_impl()` matching legacy
+- [x] Add geometry utility functions
+- [x] Update `calculate_bp_type_id()` to use step parameters
+- [x] Integrate into `BasePairFinder`
+- [x] Add to CMakeLists.txt
+- [x] Compile successfully
+- [ ] Debug frame accessibility ⏳ IN PROGRESS
+- [ ] Verify step parameter calculation
+- [ ] Test `bp_type_id = 2` assignment
+- [ ] Verify quality score adjustments
+
+### Remaining Issues
+- [ ] Fix 9 pairs not found in validation (6CAQ)
+- [ ] Investigate tie-breaking logic
+- [ ] Test on 100-set to measure overall improvement
 

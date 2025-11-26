@@ -7,12 +7,19 @@
 
 ## 🎯 Primary Documents (Start Here)
 
-### [100_PERCENT_MATCH_PLAN.md](100_PERCENT_MATCH_PLAN.md) ⭐ **MAIN DOCUMENT**
+### [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md) ⭐ **MAIN DOCUMENT**
 **Single source of truth for reaching 100% match**
-- Current status: 99.5% match (1044/1048 pairs)
-- Completed fixes: H-bond type detection for modified nucleotides
-- Next steps: Prioritized action plan with 5 clear steps
+- Current status: 90% perfect matches (90/100 PDBs)
+- Completed fixes: H-bond conflict resolution, overlap calculation, bp_type_id preservation, Stage 6 implementation
+- Remaining issues: 6CAQ mismatches, tie-breaking logic
 - **Use this for**: Current status, what's done, what's next
+
+### [NEXT_STEPS.md](NEXT_STEPS.md) ⭐ **ACTION PLAN**
+**Detailed action plan and next steps**
+- Immediate priority: Debug Stage 6 frame accessibility
+- Investigation steps for missing pairs
+- Testing checklist and success criteria
+- **Use this for**: What to work on next, detailed investigation steps
 
 ### [HBOND_INVESTIGATION.md](HBOND_INVESTIGATION.md)
 **H-bond investigation and fixes**
@@ -89,8 +96,8 @@ The following documents were removed as they were outdated or superseded:
 ### By Task
 
 **I want to...**
-- **See current status**: [100_PERCENT_MATCH_PLAN.md](100_PERCENT_MATCH_PLAN.md#executive-summary)
-- **Know what to do next**: [100_PERCENT_MATCH_PLAN.md](100_PERCENT_MATCH_PLAN.md#next-steps-to-reach-100)
+- **See current status**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md)
+- **Know what to do next**: [NEXT_STEPS.md](NEXT_STEPS.md)
 - **Understand the H-bond fix**: [HBOND_INVESTIGATION.md](HBOND_INVESTIGATION.md)
 - **Find tools to build**: [TOOLS_TO_CREATE.md](TOOLS_TO_CREATE.md)
 - **Compare JSON structures**: [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md)
@@ -100,10 +107,11 @@ The following documents were removed as they were outdated or superseded:
 ### By Topic
 
 **Topics:**
-- **100% Match Goal**: [100_PERCENT_MATCH_PLAN.md](100_PERCENT_MATCH_PLAN.md)
+- **100% Match Goal**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md)
+- **Next Steps**: [NEXT_STEPS.md](NEXT_STEPS.md)
 - **H-bond Detection**: [HBOND_INVESTIGATION.md](HBOND_INVESTIGATION.md), [legacy/04_ALGORITHMS.md](legacy/04_ALGORITHMS.md#3-h-bond-detection-workflow)
-- **Quality Scores**: [100_PERCENT_MATCH_PLAN.md](100_PERCENT_MATCH_PLAN.md#step-2-quality-score-investigation-high-priority---1-2-days)
-- **Residue Recognition**: [100_PERCENT_MATCH_PLAN.md](100_PERCENT_MATCH_PLAN.md#step-3-residue-inclusion-fix-high-priority---1-2-days)
+- **Quality Scores**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md#quality-score-calculation)
+- **Stage 6 (ParameterCalculator)**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md#8-stage-6-parametercalculator-implementation-2025-11-26--complete), [NEXT_STEPS.md](NEXT_STEPS.md#immediate-priority-debug-stage-6--in-progress)
 - **JSON Structure**: [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md)
 - **Algorithms**: [ALGORITHM_CRITICAL_GUIDE.md](ALGORITHM_CRITICAL_GUIDE.md)
 - **Modernization**: [MODERNIZATION_PLAN.md](MODERNIZATION_PLAN.md), [modernization/](modernization/)
@@ -114,7 +122,8 @@ The following documents were removed as they were outdated or superseded:
 
 | Document | Status | Last Updated | Priority |
 |----------|--------|--------------|----------|
-| 100_PERCENT_MATCH_PLAN.md | ✅ Active | 2025-11-25 | ⭐⭐⭐ |
+| 100_PERCENT_MATCH_STATUS.md | ✅ Active | 2025-11-26 | ⭐⭐⭐ |
+| NEXT_STEPS.md | ✅ Active | 2025-11-26 | ⭐⭐⭐ |
 | HBOND_INVESTIGATION.md | 📖 Reference | 2025-11-25 | ⭐ |
 | TOOLS_TO_CREATE.md | ✅ Active | 2025-11-25 | ⭐⭐ |
 | HBOND_INVESTIGATION.md | 📖 Reference | 2025-11-25 | ⭐ |
@@ -136,7 +145,7 @@ The following documents were removed as they were outdated or superseded:
 
 ## Maintenance Notes
 
-- **Primary document**: Always keep `100_PERCENT_MATCH_PLAN.md` as the single source of truth
+- **Primary document**: Always keep `100_PERCENT_MATCH_STATUS.md` as the single source of truth
 - **When adding new docs**: Update this README
 - **When removing docs**: Mark them in "Removed Documents" section
 - **Status updates**: Update "Document Status" table
