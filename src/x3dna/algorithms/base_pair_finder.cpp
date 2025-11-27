@@ -56,6 +56,8 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
     // Store Phase 1 validation results: key is (min(i,j), max(i,j)) normalized pair
     // This ensures we use the same validation result regardless of order
     std::map<std::pair<int, int>, ValidationResult> phase1_validation_results;
+    // Store bp_type_id calculated in Phase 1 to ensure consistency during selection
+    std::map<std::pair<int, int>, int> phase1_bp_type_ids;
 
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
@@ -112,6 +114,15 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
                     std::make_pair(legacy_idx2, legacy_idx1);
                 phase1_validation_results[normalized_pair] = result;
 
+                // Calculate and store bp_type_id for consistency during selection
+                // CRITICAL: Calculate bp_type_id once in Phase 1 and reuse during selection
+                // This matches legacy behavior where bp_type_id is calculated in check_pair
+                // and reused (legacy recalculates in best_pair, but uses same frames)
+                double quality_adjustment = adjust_pair_quality(result.hbonds);
+                double adjusted_quality_score = result.quality_score + quality_adjustment;
+                int bp_type_id = calculate_bp_type_id(res1, res2, result, adjusted_quality_score);
+                phase1_bp_type_ids[normalized_pair] = bp_type_id;
+
                 // Record validation and base_pair for all pairs that pass validation
                 // (matches legacy check_pair -> calculate_more_bppars ->
                 // json_writer_record_base_pair)
@@ -164,7 +175,8 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
 
             // Find best partner for this residue (using legacy 1-based index from PDB parsing)
             auto best_partner = find_best_partner(legacy_idx1, structure, matched_indices,
-                                                  residue_by_legacy_idx, phase1_validation_results, writer);
+                                                  residue_by_legacy_idx, phase1_validation_results,
+                                                  phase1_bp_type_ids, writer);
 
             if (!best_partner.has_value()) {
                 continue;
@@ -175,7 +187,8 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
 
             // Check if res_idx2's best partner is res_idx1 (mutual best match)
             auto partner_of_partner = find_best_partner(legacy_idx2, structure, matched_indices,
-                                                        residue_by_legacy_idx, phase1_validation_results, writer);
+                                                        residue_by_legacy_idx, phase1_validation_results,
+                                                        phase1_bp_type_ids, writer);
 
             if (partner_of_partner.has_value() && partner_of_partner->first == legacy_idx1) {
                 // Mutual best match found - get second residue first
@@ -326,6 +339,7 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
     const std::vector<bool>& matched_indices,
     const std::map<int, const Residue*>& residue_by_legacy_idx,
     const std::map<std::pair<int, int>, ValidationResult>& phase1_validation_results,
+    const std::map<std::pair<int, int>, int>& phase1_bp_type_ids, // Store bp_type_id from Phase 1
     io::JsonWriter* /* writer */) const {
 
     // Get residue using legacy index
@@ -422,8 +436,17 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             double adjusted_quality_score = result.quality_score + quality_adjustment;
 
             // Apply bp_type_id == 2 adjustment (if applicable)
-            // We need to calculate bp_type_id first to know if we should subtract 2.0
-            int bp_type_id = calculate_bp_type_id(res1, residue, result, adjusted_quality_score);
+            // CRITICAL: Use bp_type_id from Phase 1 to ensure consistency
+            // Legacy recalculates in best_pair, but uses same frames, so result should be same
+            // We store Phase 1 bp_type_id to ensure exact consistency
+            int bp_type_id = -1;
+            auto bp_type_it = phase1_bp_type_ids.find(normalized_pair);
+            if (bp_type_it != phase1_bp_type_ids.end()) {
+                bp_type_id = bp_type_it->second;
+            } else {
+                // Fallback: calculate on the fly (shouldn't happen if Phase 1 ran)
+                bp_type_id = calculate_bp_type_id(res1, residue, result, adjusted_quality_score);
+            }
             if (bp_type_id == 2) {
                 adjusted_quality_score -= 2.0;
             }

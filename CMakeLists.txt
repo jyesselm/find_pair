@@ -139,6 +139,18 @@ target_link_libraries(debug_direction_vectors PRIVATE x3dna)
 add_executable(compare_validation_discrepancy tools/compare_validation_discrepancy.cpp)
 target_link_libraries(compare_validation_discrepancy PRIVATE x3dna)
 
+add_executable(compare_quality_score_components tools/compare_quality_score_components.cpp)
+target_link_libraries(compare_quality_score_components PRIVATE x3dna)
+
+add_executable(trace_pair_selection tools/trace_pair_selection.cpp)
+target_link_libraries(trace_pair_selection PRIVATE x3dna)
+
+add_executable(compare_bp_type_id_calculation tools/compare_bp_type_id_calculation.cpp)
+target_link_libraries(compare_bp_type_id_calculation PRIVATE x3dna)
+
+add_executable(compare_frames_and_step_params tools/compare_frames_and_step_params.cpp)
+target_link_libraries(compare_frames_and_step_params PRIVATE x3dna)
+
 # Documentation
 if(BUILD_DOCS)
     find_package(Doxygen)

@@ -123,6 +123,7 @@ private:
         const std::vector<bool>& matched_indices,
         const std::map<int, const core::Residue*>& residue_by_legacy_idx,
         const std::map<std::pair<int, int>, ValidationResult>& phase1_validation_results,
+        const std::map<std::pair<int, int>, int>& phase1_bp_type_ids, // Store bp_type_id from Phase 1
         io::JsonWriter* writer = nullptr) const;
 
     /**
