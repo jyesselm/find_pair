@@ -35,26 +35,13 @@ namespace fs = std::filesystem;
 class ProtocolsIntegrationTest : public integration_test_base {
 protected:
     void SetUp() override {
-        // Don't call integration_test_base::SetUp() - we'll discover pairs differently
-        // Try to find JSON files in data/json (modern) or data/json_legacy (legacy)
-        
-        // First try modern JSON directory
-        auto modern_pairs = test_data_discovery::discover_pairs("data/pdb", "data/json");
-        if (!modern_pairs.empty()) {
-            pairs_ = modern_pairs;
-        } else {
-            // Fall back to legacy JSON directory
-            pairs_ = test_data_discovery::discover_pairs("data/pdb", "data/json_legacy");
-        }
-        
-        // If still empty, try using globals files
-        if (pairs_.empty()) {
-            pairs_ = discover_pairs_with_globals();
-        }
+        // Use ONLY legacy JSON files from data/json_legacy/ for comparison
+        // Legacy JSON files are named with _globals.json suffix
+        pairs_ = discover_pairs_with_legacy_globals();
         
         if (pairs_.empty()) {
-            GTEST_SKIP() << "No PDB/JSON pairs found for testing. "
-                         << "Place JSON files in data/json/ or data/json_legacy/ to enable tests.";
+            GTEST_SKIP() << "No PDB/legacy JSON pairs found for testing. "
+                         << "Place legacy JSON files (with _globals.json suffix) in data/json_legacy/ to enable tests.";
         }
         
         // Set up config with defaults
@@ -63,14 +50,14 @@ protected:
     }
     
     /**
-     * @brief Discover pairs using _globals.json files
+     * @brief Discover pairs using legacy _globals.json files from data/json_legacy/
      */
-    std::vector<pdb_json_pair> discover_pairs_with_globals() {
+    std::vector<pdb_json_pair> discover_pairs_with_legacy_globals() {
         std::vector<pdb_json_pair> pairs;
         fs::path pdb_dir = "data/pdb";
-        fs::path json_dir = "data/json_legacy";
+        fs::path json_legacy_dir = "data/json_legacy";
         
-        if (!fs::exists(pdb_dir) || !fs::exists(json_dir)) {
+        if (!fs::exists(pdb_dir) || !fs::exists(json_legacy_dir)) {
             return pairs;
         }
         
@@ -80,10 +67,10 @@ protected:
             }
             
             std::string pdb_name = pdb_file.path().stem().string();
-            fs::path globals_file = json_dir / (pdb_name + "_globals.json");
+            fs::path globals_file = json_legacy_dir / (pdb_name + "_globals.json");
             
             if (fs::exists(globals_file)) {
-                // Use globals file as the JSON file
+                // Use globals file as the JSON file for legacy comparison
                 pairs.push_back({pdb_file.path(), globals_file, globals_file, pdb_name});
             }
         }
@@ -92,57 +79,55 @@ protected:
     }
     
     /**
-     * @brief Load base pairs from legacy JSON or modern JSON
+     * @brief Load base pairs from legacy JSON file
+     * Legacy JSON files are in data/json_legacy/base_pair/PDB_ID.json
+     * They are arrays of base pair objects (not objects with a "pairs" array)
      */
     std::vector<nlohmann::json> load_legacy_base_pairs(const fs::path& json_file) {
         std::vector<nlohmann::json> base_pairs;
         
         try {
-            auto legacy_json = load_legacy_json(json_file);
+            // Extract PDB name from globals file path
+            std::string pdb_name = json_file.stem().string();
+            if (pdb_name.find("_globals") != std::string::npos) {
+                pdb_name = pdb_name.substr(0, pdb_name.find("_globals"));
+            }
             
-            // Try to find base_pair records in calculations array
-            auto records = find_records_by_type(legacy_json, "base_pair");
+            // Legacy base_pair files are in data/json_legacy/base_pair/PDB_ID.json
+            fs::path legacy_base_pair_file = fs::path("data/json_legacy/base_pair") / (pdb_name + ".json");
             
-            for (const auto& record : records) {
-                if (record.contains("pairs") && record["pairs"].is_array()) {
-                    for (const auto& pair : record["pairs"]) {
+            if (fs::exists(legacy_base_pair_file)) {
+                std::ifstream file(legacy_base_pair_file);
+                nlohmann::json legacy_json;
+                file >> legacy_json;
+                
+                // Legacy base_pair JSON files are arrays of base pair objects
+                if (legacy_json.is_array()) {
+                    for (const auto& pair : legacy_json) {
+                        base_pairs.push_back(pair);
+                    }
+                } else if (legacy_json.contains("pairs") && legacy_json["pairs"].is_array()) {
+                    // Fallback: if it's an object with a "pairs" array
+                    for (const auto& pair : legacy_json["pairs"]) {
                         base_pairs.push_back(pair);
                     }
                 }
-            }
-            
-            // If no records found, try loading from modern JSON structure
-            if (base_pairs.empty() && json_file.string().find("json_legacy") == std::string::npos) {
-                // This might be a modern JSON file - try different structure
-                if (legacy_json.contains("type") && legacy_json["type"] == "base_pair") {
-                    if (legacy_json.contains("pairs") && legacy_json["pairs"].is_array()) {
-                        for (const auto& pair : legacy_json["pairs"]) {
+            } else {
+                // Fallback: try loading from globals file if it has calculations array
+                auto legacy_json = load_legacy_json(json_file);
+                auto records = find_records_by_type(legacy_json, "base_pair");
+                
+                for (const auto& record : records) {
+                    if (record.contains("pairs") && record["pairs"].is_array()) {
+                        for (const auto& pair : record["pairs"]) {
                             base_pairs.push_back(pair);
                         }
                     }
                 }
             }
         } catch (const std::exception& e) {
-            // If loading fails, try loading from modern JSON directory structure
-            try {
-                std::string pdb_name = json_file.stem().string();
-                if (pdb_name.find("_globals") != std::string::npos) {
-                    pdb_name = pdb_name.substr(0, pdb_name.find("_globals"));
-                }
-                fs::path modern_json = fs::path("data/json/base_pair") / (pdb_name + ".json");
-                if (fs::exists(modern_json)) {
-                    std::ifstream file(modern_json);
-                    nlohmann::json modern_json_obj;
-                    file >> modern_json_obj;
-                    if (modern_json_obj.contains("pairs") && modern_json_obj["pairs"].is_array()) {
-                        for (const auto& pair : modern_json_obj["pairs"]) {
-                            base_pairs.push_back(pair);
-                        }
-                    }
-                }
-            } catch (const std::exception&) {
-                // If all loading fails, return empty vector
-            }
+            // If loading fails, return empty vector
+            // This is expected if the legacy JSON doesn't have base_pair records
         }
         
         return base_pairs;
@@ -175,7 +160,13 @@ protected:
         }
         
         for (const auto& pair_json : legacy_pairs) {
-            if (pair_json.contains("residue1") && pair_json.contains("residue2")) {
+            // Legacy JSON uses "base_i" and "base_j" (1-based indices)
+            if (pair_json.contains("base_i") && pair_json.contains("base_j")) {
+                int i = pair_json["base_i"].get<int>();
+                int j = pair_json["base_j"].get<int>();
+                legacy_set.insert({std::min(i, j), std::max(i, j)});
+            } else if (pair_json.contains("residue1") && pair_json.contains("residue2")) {
+                // Fallback: modern format uses "residue1" and "residue2"
                 int i = pair_json["residue1"].get<int>();
                 int j = pair_json["residue2"].get<int>();
                 legacy_set.insert({std::min(i, j), std::max(i, j)});
@@ -237,14 +228,16 @@ TEST_F(ProtocolsIntegrationTest, FindPairProtocolSinglePDB) {
     // Get base pairs
     const auto& modern_pairs = protocol.base_pairs();
     
-    // Load legacy base pairs
+    // Load legacy base pairs from data/json_legacy/base_pair/PDB_ID.json
     auto legacy_pairs = load_legacy_base_pairs(pair.json_file);
     
-    // Compare
+    // Compare with legacy JSON
     if (!legacy_pairs.empty()) {
+        // Compare base pairs with legacy (from data/json_legacy/)
         compare_base_pairs(modern_pairs, legacy_pairs, pair.pdb_name);
     } else {
-        // If no legacy pairs, at least verify protocol executed
+        // If no legacy pairs found, at least verify protocol executed
+        // This might happen if legacy JSON doesn't exist for this PDB
         EXPECT_GE(modern_pairs.size(), 0) << "Protocol should return pairs (even if empty)";
     }
 }
