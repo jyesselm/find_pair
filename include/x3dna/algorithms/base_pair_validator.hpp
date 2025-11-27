@@ -29,7 +29,7 @@ struct ValidationParameters {
     double min_dv = 0.0;
     double max_dv = 2.5;
     double min_dNN = 4.5;
-    double max_dNN = 1e10; // XBIG
+    double max_dNN = 1e18; // XBIG (matches legacy)
 
     // Angle constraints
     double min_plane_angle = 0.0;
