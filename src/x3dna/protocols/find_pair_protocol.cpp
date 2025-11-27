@@ -106,16 +106,14 @@ void FindPairProtocol::find_pairs(core::Structure& structure) {
     // Future: May need to reorder pairs here for exact legacy match
 }
 
-void FindPairProtocol::detect_helices(core::Structure& structure) {
-    // TODO: Implement helix detection when HelixDetector is available
-    // For now, this is a placeholder
-    (void)structure;  // Suppress unused parameter warning
+void FindPairProtocol::detect_helices(core::Structure& /* structure */) {
+    // Detect helices from base pairs
+    helices_ = helix_detector_.detect_helices(base_pairs_);
 }
 
-void FindPairProtocol::reorder_pairs(core::Structure& structure) {
-    // TODO: Implement pair reordering
-    // This may be needed for exact legacy compatibility
-    (void)structure;  // Suppress unused parameter warning
+void FindPairProtocol::reorder_pairs(core::Structure& /* structure */) {
+    // Reorder base pairs to 5'→3' orientation
+    helix_detector_.reorder_base_pairs(base_pairs_);
 }
 
 } // namespace protocols

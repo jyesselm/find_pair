@@ -35,6 +35,7 @@ add_library(x3dna
     src/x3dna/io/json_reader.cpp
     src/x3dna/io/pdb_writer.cpp
     src/x3dna/io/input_file_parser.cpp
+    src/x3dna/io/input_file_writer.cpp
     src/x3dna/core/structure_legacy_order.cpp
     src/x3dna/core/structure_legacy_order_impl.cpp
     src/x3dna/algorithms/standard_base_templates.cpp
@@ -44,10 +45,13 @@ add_library(x3dna
     src/x3dna/algorithms/base_pair_finder.cpp
     src/x3dna/algorithms/parameter_calculator.cpp
     src/x3dna/algorithms/hydrogen_bond_finder.cpp
+    src/x3dna/algorithms/helix_detector.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.cpp
     src/x3dna/config/config_manager.cpp
     src/x3dna/protocols/find_pair_protocol.cpp
+    src/x3dna/protocols/analyze_protocol.cpp
+    src/x3dna/apps/command_line_parser.cpp
 )
 target_include_directories(x3dna PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -149,6 +153,13 @@ target_link_libraries(compare_quality_score_components PRIVATE x3dna)
 
 add_executable(trace_pair_selection tools/trace_pair_selection.cpp)
 target_link_libraries(trace_pair_selection PRIVATE x3dna)
+
+# Applications
+add_executable(find_pair_app apps/find_pair_app.cpp)
+target_link_libraries(find_pair_app PRIVATE x3dna)
+
+add_executable(analyze_app apps/analyze_app.cpp)
+target_link_libraries(analyze_app PRIVATE x3dna)
 
 add_executable(compare_bp_type_id_calculation tools/compare_bp_type_id_calculation.cpp)
 target_link_libraries(compare_bp_type_id_calculation PRIVATE x3dna)
