@@ -73,8 +73,15 @@ void ConfigManager::load_from_json(const nlohmann::json& json) {
 }
 
 void ConfigManager::set_defaults() {
-    // Thresholds already have default values from struct initialization
-    // Just ensure x3dna_home is set if not already
+    // Reset thresholds to defaults
+    thresholds_ = ParameterThresholds();
+    
+    // Reset options
+    include_hetatm_ = false;
+    include_waters_ = false;
+    legacy_mode_ = false;
+    
+    // Set x3dna_home if not already set
     if (x3dna_home_.empty()) {
         // Try to get from environment variable
         const char* env_home = std::getenv("X3DNA_HOMEDIR");
