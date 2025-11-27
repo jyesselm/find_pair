@@ -35,7 +35,27 @@ namespace fs = std::filesystem;
 class ProtocolsIntegrationTest : public integration_test_base {
 protected:
     void SetUp() override {
-        integration_test_base::SetUp();
+        // Don't call integration_test_base::SetUp() - we'll discover pairs differently
+        // Try to find JSON files in data/json (modern) or data/json_legacy (legacy)
+        
+        // First try modern JSON directory
+        auto modern_pairs = test_data_discovery::discover_pairs("data/pdb", "data/json");
+        if (!modern_pairs.empty()) {
+            pairs_ = modern_pairs;
+        } else {
+            // Fall back to legacy JSON directory
+            pairs_ = test_data_discovery::discover_pairs("data/pdb", "data/json_legacy");
+        }
+        
+        // If still empty, try using globals files
+        if (pairs_.empty()) {
+            pairs_ = discover_pairs_with_globals();
+        }
+        
+        if (pairs_.empty()) {
+            GTEST_SKIP() << "No PDB/JSON pairs found for testing. "
+                         << "Place JSON files in data/json/ or data/json_legacy/ to enable tests.";
+        }
         
         // Set up config with defaults
         auto& config = ConfigManager::instance();
@@ -43,13 +63,44 @@ protected:
     }
     
     /**
-     * @brief Load base pairs from legacy JSON
+     * @brief Discover pairs using _globals.json files
+     */
+    std::vector<pdb_json_pair> discover_pairs_with_globals() {
+        std::vector<pdb_json_pair> pairs;
+        fs::path pdb_dir = "data/pdb";
+        fs::path json_dir = "data/json_legacy";
+        
+        if (!fs::exists(pdb_dir) || !fs::exists(json_dir)) {
+            return pairs;
+        }
+        
+        for (const auto& pdb_file : fs::directory_iterator(pdb_dir)) {
+            if (pdb_file.path().extension() != ".pdb") {
+                continue;
+            }
+            
+            std::string pdb_name = pdb_file.path().stem().string();
+            fs::path globals_file = json_dir / (pdb_name + "_globals.json");
+            
+            if (fs::exists(globals_file)) {
+                // Use globals file as the JSON file
+                pairs.push_back({pdb_file.path(), globals_file, globals_file, pdb_name});
+            }
+        }
+        
+        return pairs;
+    }
+    
+    /**
+     * @brief Load base pairs from legacy JSON or modern JSON
      */
     std::vector<nlohmann::json> load_legacy_base_pairs(const fs::path& json_file) {
         std::vector<nlohmann::json> base_pairs;
         
         try {
             auto legacy_json = load_legacy_json(json_file);
+            
+            // Try to find base_pair records in calculations array
             auto records = find_records_by_type(legacy_json, "base_pair");
             
             for (const auto& record : records) {
@@ -59,8 +110,39 @@ protected:
                     }
                 }
             }
+            
+            // If no records found, try loading from modern JSON structure
+            if (base_pairs.empty() && json_file.string().find("json_legacy") == std::string::npos) {
+                // This might be a modern JSON file - try different structure
+                if (legacy_json.contains("type") && legacy_json["type"] == "base_pair") {
+                    if (legacy_json.contains("pairs") && legacy_json["pairs"].is_array()) {
+                        for (const auto& pair : legacy_json["pairs"]) {
+                            base_pairs.push_back(pair);
+                        }
+                    }
+                }
+            }
         } catch (const std::exception& e) {
-            // If loading fails, return empty vector
+            // If loading fails, try loading from modern JSON directory structure
+            try {
+                std::string pdb_name = json_file.stem().string();
+                if (pdb_name.find("_globals") != std::string::npos) {
+                    pdb_name = pdb_name.substr(0, pdb_name.find("_globals"));
+                }
+                fs::path modern_json = fs::path("data/json/base_pair") / (pdb_name + ".json");
+                if (fs::exists(modern_json)) {
+                    std::ifstream file(modern_json);
+                    nlohmann::json modern_json_obj;
+                    file >> modern_json_obj;
+                    if (modern_json_obj.contains("pairs") && modern_json_obj["pairs"].is_array()) {
+                        for (const auto& pair : modern_json_obj["pairs"]) {
+                            base_pairs.push_back(pair);
+                        }
+                    }
+                }
+            } catch (const std::exception&) {
+                // If all loading fails, return empty vector
+            }
         }
         
         return base_pairs;
