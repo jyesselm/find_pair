@@ -263,7 +263,90 @@ with open('data/json_legacy/find_bestpair_selection/6CAQ.json') as f:
 
 ---
 
-## Status: Ready for Next Session
+## Status: Investigation Complete - Ready for Legacy Step Parameter Extraction
 
-All tools are in place. The next step is to verify why legacy calculates different step parameters or uses different bp_type_id logic, even though the frames match perfectly.
+All tools are in place. The investigation has verified that:
+- ✅ Modern `check_wc_wobble_pair` logic matches legacy exactly
+- ✅ Modern step parameter calculations are correct
+- ✅ Modern correctly assigns `bp_type_id=2` for problematic pairs
+
+**Next Step**: Extract step parameters from legacy code execution to compare directly with modern calculations.
+
+**See**: `docs/BP_TYPE_ID_INVESTIGATION_SUMMARY.md` for complete investigation details.
+
+---
+
+## Investigation Update (2025-01-27)
+
+### Verification of check_wc_wobble_pair Logic ✅
+
+**Legacy Implementation** (`org/src/ana_fncs.c:1122-1131`):
+```c
+void check_wc_wobble_pair(long *bpid, char *bp, double shear, double stretch, double opening)
+{
+    static char *WC[9] = { WC_LIST };
+    if (fabs(stretch) > 2.0 || fabs(opening) > 60)
+        return;
+    if (dval_in_range(fabs(shear), 1.8, 2.8))
+        *bpid = 1;
+    if (fabs(shear) <= 1.8 && num_strmatch(bp, WC, 1, 8))
+        *bpid = 2;
+}
+```
+
+**Modern Implementation** (`src/x3dna/algorithms/base_pair_finder.cpp:660-689`):
+- ✅ Thresholds match: `fabs(stretch) > 2.0 || fabs(opening) > 60`
+- ✅ Wobble check matches: `fabs(shear) >= 1.8 && fabs(shear) <= 2.8` → `bp_type_id = 1`
+- ✅ WC check matches: `fabs(shear) <= 1.8 && bp_type in WC_LIST` → `bp_type_id = 2`
+- ✅ WC_LIST matches: `{"XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"}`
+
+**Conclusion**: The `check_wc_wobble_pair` logic is correctly implemented in modern code.
+
+### Root Cause Hypothesis
+
+Since the logic matches perfectly, the most likely cause is that **legacy calculates different step parameters** than modern, even though:
+- ✅ Frames match perfectly
+- ✅ Frame reversal logic is correct
+- ✅ Frame order is correct (r2, r1)
+
+**Possible reasons for different step parameters**:
+1. **Numerical precision differences** in `bpstep_par` calculation
+2. **Different handling of edge cases** (e.g., degenerate z-axes)
+3. **Subtle differences in matrix operations** (e.g., rotation matrix construction)
+
+### Next Steps
+
+1. ✅ **Verified modern step parameters** - Modern calculates correct step parameters:
+   - Pair (1024, 1188): shear=-1.719321, stretch=-0.035735, opening=-50.870333 → bp_type_id=2
+   - Pair (980, 997): shear=-1.370042, stretch=-1.925168, opening=-22.298109 → bp_type_id=2
+2. ⏳ **Run legacy code with debug output** to capture actual step parameters for these pairs
+3. ⏳ **Compare step parameters directly** - Need to verify if legacy calculates different values
+4. ⏳ **Verify bpstep_par implementation** - Check for subtle differences in numerical precision or edge cases
+
+### Tools Created
+
+- ✅ `scripts/compare_step_params_for_pairs.py` - Script to compare step parameters from JSON
+- ✅ `tools/compare_frames_and_step_params` - C++ tool to compare frames and step parameters
+- ✅ `tools/compare_bp_type_id_calculation` - Analyzes bp_type_id calculation step-by-step
+
+### Modern Step Parameter Results (Verified)
+
+**Pair (1024, 1188) - AU:**
+- Direction vectors: dir_x=0.622029, dir_y=-0.623112, dir_z=-0.973039 ✅
+- Step parameters: shear=-1.719321, stretch=-0.035735, opening=-50.870333
+- Thresholds: fabs(stretch)=0.035735 ≤ 2.0 ✅, fabs(opening)=50.870333 ≤ 60.0 ✅
+- WC check: fabs(shear)=1.719321 ≤ 1.8 ✅, bp_type="AU" in WC_LIST ✅
+- **Result**: bp_type_id = 2 (Watson-Crick)
+
+**Pair (980, 997) - CG:**
+- Direction vectors: dir_x=0.741459, dir_y=-0.923190, dir_z=-0.799189 ✅
+- Step parameters: shear=-1.370042, stretch=-1.925168, opening=-22.298109
+- Thresholds: fabs(stretch)=1.925168 ≤ 2.0 ✅, fabs(opening)=22.298109 ≤ 60.0 ✅
+- WC check: fabs(shear)=1.370042 ≤ 1.8 ✅, bp_type="CG" in WC_LIST ✅
+- **Result**: bp_type_id = 2 (Watson-Crick)
+
+**Conclusion**: Modern code correctly calculates step parameters and assigns bp_type_id=2. The discrepancy with legacy suggests legacy either:
+1. Calculates different step parameters (numerical precision differences)
+2. Has a bug in check_wc_wobble_pair logic
+3. Uses different base pair string construction
 

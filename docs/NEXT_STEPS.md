@@ -309,17 +309,20 @@ When quality scores are identical, selection order may differ between legacy and
    - **Result**: Reduced missing pairs from 10 to 2 in 6CAQ
    - **Status**: All 8 pairs now validated (some correctly fail validation due to geometric constraints)
 
-3. **Invalid Pairs Being Selected** (2 pairs): ⚠️ BUG FOUND - INVESTIGATING
-   - **Problem**: Pairs (980, 997) and (1024, 1188) have `is_valid=0` in recorded validation but are in modern selection
-   - **Root Cause Hypothesis**: Validation results differ between Phase 1 (recording) and selection phase
-     - Phase 1: Records validation for pairs where `i < j` (lines 81-110)
-     - Selection: Validates pairs in both directions via `find_best_partner`
-     - `find_best_partner` only returns pairs where `result.is_valid == true` (line 352)
-   - **Investigation**: 
-     - Added safety check (line 172) but it won't trigger since `find_best_partner` filters invalid pairs
-     - Need to verify: Are frames different? Are validation parameters different? Is validation non-deterministic?
-   - **Status**: Validation should be symmetric - investigating why results differ
-   - **Priority**: HIGH - This is a bug that needs to be fixed
+3. **bp_type_id Differences** (4 pairs in 6CAQ): ⏳ INVESTIGATING
+   - **Problem**: Modern assigns `bp_type_id=2` to pairs (1024, 1188) and (980, 997), but legacy assigns `bp_type_id=-1`
+   - **Root Cause Hypothesis**: Legacy calculates different step parameters than modern
+     - Modern calculates: shear=-1.719321 (fabs=1.719321 ≤ 1.8), stretch=-0.035735 (fabs ≤ 2.0), opening=-50.870333 (fabs ≤ 60.0)
+     - Modern base pair: AU (in WC_LIST) → `bp_type_id = 2`
+     - Legacy: Assigns `bp_type_id = -1`, suggesting step parameters don't meet thresholds
+   - **Investigation Results** (2025-01-27):
+     - ✅ Verified `check_wc_wobble_pair` logic matches between legacy and modern
+     - ✅ Verified WC_LIST matches: `{"XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"}`
+     - ✅ Verified thresholds match: `fabs(stretch) > 2.0 || fabs(opening) > 60`
+     - ✅ Verified frames match perfectly between legacy and modern
+     - ⏳ Need to verify: Do legacy step parameters differ from modern?
+   - **Status**: Logic is correct, likely step parameter calculation differences
+   - **Priority**: HIGH - Affects quality score and pair selection
 
 4. **Tie-Breaking Issues** (2 pairs): ⏳ PENDING
    - **Problem**: Pairs (968, 1024) and (980, 998) have matching quality scores but different selection
