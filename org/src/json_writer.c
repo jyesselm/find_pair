@@ -19,6 +19,7 @@ typedef struct {
 
 /* Singleton state */
 static long initialized = FALSE;
+static long json_disabled = FALSE; /* Flag to disable JSON output */
 static FILE *json_file = NULL;
 static TypeFileHandle type_files[32] = {{0}}; /* File handles for each calculation type */
 static long num_type_files = 0;
@@ -85,10 +86,18 @@ static void json_write_matrix(FILE *fp, double **m) {
     fprintf(fp, "]]");
 }
 
+void json_writer_disable(void) {
+    json_disabled = TRUE;
+}
+
 long json_writer_init(const char *pdbfile) {
     char pdb_name[BUF512];
     char dir_path[BUF1K];
     struct stat st = {0};
+    
+    if (json_disabled) {
+        return FALSE; /* JSON output is disabled */
+    }
     
     if (initialized) {
         return TRUE; /* Already initialized */
@@ -277,7 +286,7 @@ void json_writer_finalize(void) {
 }
 
 long json_writer_is_initialized(void) {
-    return initialized; /* No longer require json_file to be open */
+    return initialized && !json_disabled; /* No longer require json_file to be open */
 }
 
 void json_writer_record_bpstep_params(long bp_idx1, long bp_idx2, 

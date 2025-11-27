@@ -565,6 +565,10 @@ void analyze_cmdline(int argc, char *argv[], struct_args_ana *args)
             args->circular = set_switch_default_true(argv[i]);
             continue;
         }
+        if (lux_ncmatch(argv[i], "^--?no-?json")) {
+            json_writer_disable();
+            continue;
+        }
         upperstr(argv[i]);
         for (j = 1; j < (long) strlen(argv[i]); j++)
             if (argv[i][j] == 'C')

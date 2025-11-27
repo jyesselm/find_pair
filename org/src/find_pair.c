@@ -65,6 +65,10 @@ void fp_cmdline(int argc, char *argv[], struct_args_fp *args)
             break;
         if (check_global_options(argv[i]))
             continue;
+        if (lux_ncmatch(argv[i], "^--?no-?json")) {
+            json_writer_disable();
+            continue;
+        }
         if (lux_ncmatch(argv[i], "^--?hjb")) {
             args->hjb = TRUE;
             continue;

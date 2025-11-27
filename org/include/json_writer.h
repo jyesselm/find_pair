@@ -127,4 +127,7 @@ void json_writer_record_find_bestpair_selection(long num_bp, long **base_pairs);
 /* Check if JSON writer is initialized */
 long json_writer_is_initialized(void);
 
+/* Disable JSON output (call before json_writer_init to prevent any JSON files from being created) */
+void json_writer_disable(void);
+
 #endif /* JSON_WRITER_H */
