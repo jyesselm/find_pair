@@ -83,49 +83,51 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
     // check_pair(i, j, ...); } } This validates all pairs BEFORE best partner selection NOTE:
     // Legacy uses i < num_residue, which means i goes from 1 to num_residue-1 (inclusive) So we
     // need legacy_idx1 to go from 1 to max_legacy_idx-1 (inclusive), which is < max_legacy_idx
-    if (writer) {
-        for (int legacy_idx1 = 1; legacy_idx1 <= max_legacy_idx - 1; ++legacy_idx1) {
-            auto it1 = residue_by_legacy_idx.find(legacy_idx1);
-            if (it1 == residue_by_legacy_idx.end() || !it1->second) {
+    // CRITICAL: Phase 1 validation must ALWAYS run to populate phase1_validation_results,
+    // even if writer is nullptr. The pair selection logic depends on these results.
+    for (int legacy_idx1 = 1; legacy_idx1 <= max_legacy_idx - 1; ++legacy_idx1) {
+        auto it1 = residue_by_legacy_idx.find(legacy_idx1);
+        if (it1 == residue_by_legacy_idx.end() || !it1->second) {
+            continue;
+        }
+        const Residue* res1 = it1->second;
+        if (!is_nucleotide(*res1) || !res1->reference_frame().has_value()) {
+            continue;
+        }
+
+        for (int legacy_idx2 = legacy_idx1 + 1; legacy_idx2 <= max_legacy_idx; ++legacy_idx2) {
+            auto it2 = residue_by_legacy_idx.find(legacy_idx2);
+            if (it2 == residue_by_legacy_idx.end() || !it2->second) {
                 continue;
             }
-            const Residue* res1 = it1->second;
-            if (!is_nucleotide(*res1) || !res1->reference_frame().has_value()) {
+            const Residue* res2 = it2->second;
+            if (!is_nucleotide(*res2) || !res2->reference_frame().has_value()) {
                 continue;
             }
 
-            for (int legacy_idx2 = legacy_idx1 + 1; legacy_idx2 <= max_legacy_idx; ++legacy_idx2) {
-                auto it2 = residue_by_legacy_idx.find(legacy_idx2);
-                if (it2 == residue_by_legacy_idx.end() || !it2->second) {
-                    continue;
-                }
-                const Residue* res2 = it2->second;
-                if (!is_nucleotide(*res2) || !res2->reference_frame().has_value()) {
-                    continue;
-                }
+            // Validate pair (matches legacy check_pair)
+            ValidationResult result = validator_.validate(*res1, *res2);
 
-                // Validate pair (matches legacy check_pair)
-                ValidationResult result = validator_.validate(*res1, *res2);
+            // Store validation result for use during selection (normalized by index order)
+            // This ensures consistency between Phase 1 and selection
+            std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2) ?
+                std::make_pair(legacy_idx1, legacy_idx2) :
+                std::make_pair(legacy_idx2, legacy_idx1);
+            phase1_validation_results[normalized_pair] = result;
 
-                // Store validation result for use during selection (normalized by index order)
-                // This ensures consistency between Phase 1 and selection
-                std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2) ?
-                    std::make_pair(legacy_idx1, legacy_idx2) :
-                    std::make_pair(legacy_idx2, legacy_idx1);
-                phase1_validation_results[normalized_pair] = result;
+            // Calculate and store bp_type_id for consistency during selection
+            // CRITICAL: Calculate bp_type_id once in Phase 1 and reuse during selection
+            // This matches legacy behavior where bp_type_id is calculated in check_pair
+            // and reused (legacy recalculates in best_pair, but uses same frames)
+            double quality_adjustment = adjust_pair_quality(result.hbonds);
+            double adjusted_quality_score = result.quality_score + quality_adjustment;
+            int bp_type_id = calculate_bp_type_id(res1, res2, result, adjusted_quality_score);
+            phase1_bp_type_ids[normalized_pair] = bp_type_id;
 
-                // Calculate and store bp_type_id for consistency during selection
-                // CRITICAL: Calculate bp_type_id once in Phase 1 and reuse during selection
-                // This matches legacy behavior where bp_type_id is calculated in check_pair
-                // and reused (legacy recalculates in best_pair, but uses same frames)
-                double quality_adjustment = adjust_pair_quality(result.hbonds);
-                double adjusted_quality_score = result.quality_score + quality_adjustment;
-                int bp_type_id = calculate_bp_type_id(res1, res2, result, adjusted_quality_score);
-                phase1_bp_type_ids[normalized_pair] = bp_type_id;
-
-                // Record validation and base_pair for all pairs that pass validation
-                // (matches legacy check_pair -> calculate_more_bppars ->
-                // json_writer_record_base_pair)
+            // Record validation and base_pair for all pairs that pass validation (only if writer provided)
+            // (matches legacy check_pair -> calculate_more_bppars ->
+            // json_writer_record_base_pair)
+            if (writer) {
                 record_validation_results(legacy_idx1, legacy_idx2, res1, res2, result, writer);
             }
         }

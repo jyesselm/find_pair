@@ -138,6 +138,9 @@ target_link_libraries(debug_bp_type_id_step_params PRIVATE x3dna)
 add_executable(debug_direction_vectors tools/debug_direction_vectors.cpp)
 target_link_libraries(debug_direction_vectors PRIVATE x3dna)
 
+add_executable(debug_protocol_6v9q tools/debug_protocol_6v9q.cpp)
+target_link_libraries(debug_protocol_6v9q PRIVATE x3dna)
+
 add_executable(compare_validation_discrepancy tools/compare_validation_discrepancy.cpp)
 target_link_libraries(compare_validation_discrepancy PRIVATE x3dna)
 
