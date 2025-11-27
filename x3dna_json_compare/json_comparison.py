@@ -627,13 +627,23 @@ class JsonComparator:
             pdb_id = legacy_file.stem
             base_dir = legacy_file.parent
             
-            # Try new structure first
-            split_atoms = find_json_file(base_dir, pdb_id, "pdb_atoms")
-            if not split_atoms or not split_atoms.exists():
-                # Fall back to old structure
-                split_atoms = base_dir / f"{pdb_id}_pdb_atoms.json"
+            # Try new structure first - check essential record types (since pdb_atoms may have been deleted)
+            split_file_found = None
+            for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+                split_file = find_json_file(base_dir, pdb_id, record_type)
+                if split_file and split_file.exists():
+                    split_file_found = split_file
+                    break
             
-            if split_atoms and split_atoms.exists():
+            # Fall back to old structure
+            if not split_file_found:
+                for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+                    old_file = base_dir / f"{pdb_id}_{record_type}.json"
+                    if old_file.exists():
+                        split_file_found = old_file
+                        break
+            
+            if split_file_found:
                 # Create minimal JSON structure that indicates split files exist
                 legacy_json = {
                     'pdb_name': pdb_id,
@@ -649,13 +659,23 @@ class JsonComparator:
             pdb_id_from_file = modern_file.stem
             base_dir = modern_file.parent
             
-            # Try new structure first
-            split_atoms = find_json_file(base_dir, pdb_id_from_file, "pdb_atoms")
-            if not split_atoms or not split_atoms.exists():
-                # Fall back to old structure
-                split_atoms = base_dir / f"{pdb_id_from_file}_pdb_atoms.json"
+            # Try new structure first - check essential record types (since pdb_atoms may have been deleted)
+            split_file_found = None
+            for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+                split_file = find_json_file(base_dir, pdb_id_from_file, record_type)
+                if split_file and split_file.exists():
+                    split_file_found = split_file
+                    break
             
-            if split_atoms and split_atoms.exists():
+            # Fall back to old structure
+            if not split_file_found:
+                for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+                    old_file = base_dir / f"{pdb_id_from_file}_{record_type}.json"
+                    if old_file.exists():
+                        split_file_found = old_file
+                        break
+            
+            if split_file_found:
                 # Create minimal JSON structure that indicates split files exist
                 modern_json = {
                     'pdb_name': pdb_id_from_file,
