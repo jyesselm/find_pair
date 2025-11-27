@@ -280,26 +280,47 @@ def compare_pdb_parameters(pdb_name, project_root):
     legacy_step = parse_legacy_step_par(legacy_step_par)
     legacy_helix = parse_legacy_helix_par(legacy_helix_par)
     
-    num_steps = len(legacy_pairs) - 1
+    # Create mapping: find matching consecutive pair sequences
+    # Order doesn't matter - we match by residue indices
+    def find_matching_step_sequence(legacy_pairs, modern_pairs):
+        """Find matching consecutive pair sequences and map their step parameters."""
+        matched_steps = []  # List of (legacy_step_num, modern_step_num, bp_pair_seq)
+        
+        # Build maps: pair sequence -> step number
+        # Legacy: step i is between bp i and bp i+1
+        legacy_pair_to_step = {}
+        for i in range(len(legacy_pairs) - 1):
+            bp1 = normalize_pair(legacy_pairs[i][0], legacy_pairs[i][1])
+            bp2 = normalize_pair(legacy_pairs[i+1][0], legacy_pairs[i+1][1])
+            legacy_pair_to_step[(bp1, bp2)] = i + 1  # 1-based step numbering
+        
+        # Modern: step i is between bp i and bp i+1
+        modern_pair_to_step = {}
+        for i in range(len(modern_pairs) - 1):
+            bp1 = normalize_pair(modern_pairs[i][0], modern_pairs[i][1])
+            bp2 = normalize_pair(modern_pairs[i+1][0], modern_pairs[i+1][1])
+            modern_pair_to_step[(bp1, bp2)] = i + 1  # 1-based step numbering
+        
+        # Find matching consecutive sequences
+        for (leg_bp1, leg_bp2), leg_step in legacy_pair_to_step.items():
+            if (leg_bp1, leg_bp2) in modern_pair_to_step:
+                mod_step = modern_pair_to_step[(leg_bp1, leg_bp2)]
+                matched_steps.append((leg_step, mod_step, (leg_bp1, leg_bp2)))
+        
+        return matched_steps
+    
+    # Find matching step sequences
+    matched_steps = find_matching_step_sequence(legacy_pairs, modern_pairs)
     
     # Compare
     step_diffs = []
     helix_diffs = []
     tolerance = 0.01
     
-    # Legacy uses 1-based step numbering (step 1 is between bp 1 and 2)
-    # Modern uses 1-based step numbering in output (step 1 is between bp 1 and 2)
-    # But legacy file has first line with zeros (first bp), then steps start from line 2
-    # So legacy step 1 corresponds to modern step 1
-    for step_num in range(1, num_steps + 1):
-        # Legacy step numbers start from 1 (after skipping first line with zeros)
-        legacy_step_idx = step_num
-        # Modern step numbers also start from 1
-        modern_step_idx = step_num
-        
-        if legacy_step_idx in legacy_step and modern_step_idx in modern_step:
-            leg = legacy_step[legacy_step_idx]
-            mod = modern_step[modern_step_idx]
+    for leg_step, mod_step, (bp1, bp2) in matched_steps:
+        if leg_step in legacy_step and mod_step in modern_step:
+            leg = legacy_step[leg_step]
+            mod = modern_step[mod_step]
             
             for param_name in ['shift', 'slide', 'rise', 'tilt', 'roll', 'twist']:
                 leg_val = leg[param_name]
@@ -307,24 +328,38 @@ def compare_pdb_parameters(pdb_name, project_root):
                 diff = abs(leg_val - mod_val)
                 if diff > tolerance:
                     step_diffs.append({
-                        'step': step_num,
+                        'legacy_step': leg_step,
+                        'modern_step': mod_step,
+                        'bp_pair': f"{bp1[0]}-{bp1[1]}/{bp2[0]}-{bp2[1]}",
                         'param': param_name,
                         'legacy': leg_val,
                         'modern': mod_val,
                         'diff': diff
                     })
-        elif legacy_step_idx not in legacy_step:
-            step_diffs.append({'step': step_num, 'param': 'ALL', 'error': 'Missing in legacy'})
-        elif modern_step_idx not in modern_step:
-            step_diffs.append({'step': step_num, 'param': 'ALL', 'error': 'Missing in modern'})
+        elif leg_step not in legacy_step:
+            step_diffs.append({
+                'legacy_step': leg_step,
+                'modern_step': mod_step,
+                'bp_pair': f"{bp1[0]}-{bp1[1]}/{bp2[0]}-{bp2[1]}",
+                'param': 'ALL',
+                'error': 'Missing in legacy'
+            })
+        elif mod_step not in modern_step:
+            step_diffs.append({
+                'legacy_step': leg_step,
+                'modern_step': mod_step,
+                'bp_pair': f"{bp1[0]}-{bp1[1]}/{bp2[0]}-{bp2[1]}",
+                'param': 'ALL',
+                'error': 'Missing in modern'
+            })
     
-    for step_num in range(1, num_steps + 1):
-        legacy_step_idx = step_num
-        modern_step_idx = step_num
-        
-        if legacy_step_idx in legacy_helix and modern_step_idx in modern_helix:
-            leg = legacy_helix[legacy_step_idx]
-            mod = modern_helix[modern_step_idx]
+    # Use same matching for helical parameters
+    matched_helix_steps = matched_steps  # Same matching logic
+    
+    for leg_step, mod_step, (bp1, bp2) in matched_helix_steps:
+        if leg_step in legacy_helix and mod_step in modern_helix:
+            leg = legacy_helix[leg_step]
+            mod = modern_helix[mod_step]
             
             for param_name in ['x_disp', 'y_disp', 'h_rise', 'inclination', 'tip', 'h_twist']:
                 leg_val = leg[param_name]
@@ -332,21 +367,35 @@ def compare_pdb_parameters(pdb_name, project_root):
                 diff = abs(leg_val - mod_val)
                 if diff > tolerance:
                     helix_diffs.append({
-                        'step': step_num,
+                        'legacy_step': leg_step,
+                        'modern_step': mod_step,
+                        'bp_pair': f"{bp1[0]}-{bp1[1]}/{bp2[0]}-{bp2[1]}",
                         'param': param_name,
                         'legacy': leg_val,
                         'modern': mod_val,
                         'diff': diff
                     })
-        elif legacy_step_idx not in legacy_helix:
-            helix_diffs.append({'step': step_num, 'param': 'ALL', 'error': 'Missing in legacy'})
-        elif modern_step_idx not in modern_helix:
-            helix_diffs.append({'step': step_num, 'param': 'ALL', 'error': 'Missing in modern'})
+        elif leg_step not in legacy_helix:
+            helix_diffs.append({
+                'legacy_step': leg_step,
+                'modern_step': mod_step,
+                'bp_pair': f"{bp1[0]}-{bp1[1]}/{bp2[0]}-{bp2[1]}",
+                'param': 'ALL',
+                'error': 'Missing in legacy'
+            })
+        elif mod_step not in modern_helix:
+            helix_diffs.append({
+                'legacy_step': leg_step,
+                'modern_step': mod_step,
+                'bp_pair': f"{bp1[0]}-{bp1[1]}/{bp2[0]}-{bp2[1]}",
+                'param': 'ALL',
+                'error': 'Missing in modern'
+            })
     
     return {
         'pdb': pdb_name,
         'num_pairs': len(legacy_pairs),
-        'num_steps': num_steps,
+        'num_matched_steps': len(matched_steps),
         'legacy_step_count': len(legacy_step),
         'modern_step_count': len(modern_step),
         'legacy_helix_count': len(legacy_helix),
@@ -383,7 +432,7 @@ def main():
         
         results.append(result)
         
-        print(f"  Pairs: {result['num_pairs']}, Steps: {result['num_steps']}")
+        print(f"  Pairs: {result['num_pairs']}, Matched step sequences: {result['num_matched_steps']}")
         print(f"  Legacy step params: {result['legacy_step_count']}, modern: {result['modern_step_count']}")
         print(f"  Legacy helix params: {result['legacy_helix_count']}, modern: {result['modern_helix_count']}")
         
@@ -394,18 +443,22 @@ def main():
                 print(f"  ❌ Step parameter differences: {len(result['step_diffs'])}")
                 for diff in result['step_diffs'][:3]:
                     if 'error' in diff:
-                        print(f"    Step {diff['step']}: {diff['error']}")
+                        bp_info = diff.get('bp_pair', 'N/A')
+                        print(f"    {bp_info} (L:{diff['legacy_step']}, M:{diff['modern_step']}): {diff['error']}")
                     else:
-                        print(f"    Step {diff['step']} {diff['param']}: legacy={diff['legacy']:.3f}, "
+                        bp_info = diff.get('bp_pair', 'N/A')
+                        print(f"    {bp_info} {diff['param']}: legacy={diff['legacy']:.3f}, "
                               f"modern={diff['modern']:.3f}, diff={diff['diff']:.3f}")
             
             if result['helix_diffs']:
                 print(f"  ❌ Helical parameter differences: {len(result['helix_diffs'])}")
                 for diff in result['helix_diffs'][:3]:
                     if 'error' in diff:
-                        print(f"    Step {diff['step']}: {diff['error']}")
+                        bp_info = diff.get('bp_pair', 'N/A')
+                        print(f"    {bp_info} (L:{diff['legacy_step']}, M:{diff['modern_step']}): {diff['error']}")
                     else:
-                        print(f"    Step {diff['step']} {diff['param']}: legacy={diff['legacy']:.3f}, "
+                        bp_info = diff.get('bp_pair', 'N/A')
+                        print(f"    {bp_info} {diff['param']}: legacy={diff['legacy']:.3f}, "
                               f"modern={diff['modern']:.3f}, diff={diff['diff']:.3f}")
         
         print()
