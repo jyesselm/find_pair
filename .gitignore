@@ -74,3 +74,12 @@ docs/api/
 # OS files
 .DS_Store
 Thumbs.db
+
+# IDE files
+.cursor/
+
+# Temporary test directories
+base_frame_calc/
+
+# Generated comparison results (can be regenerated)
+comparison_results_summary.json
