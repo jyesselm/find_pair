@@ -463,8 +463,12 @@ def compare_single_pdb(
     has_legacy_data = legacy_file.exists()
     if not has_legacy_data:
         # Check new structure: <record_type>/<PDB_ID>.json
-        legacy_atoms = find_json_file(legacy_dir, pdb_id, "pdb_atoms")
-        has_legacy_data = legacy_atoms and legacy_atoms.exists()
+        # Try essential record types (since pdb_atoms may have been deleted)
+        for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+            legacy_file_check = find_json_file(legacy_dir, pdb_id, record_type)
+            if legacy_file_check and legacy_file_check.exists():
+                has_legacy_data = True
+                break
     
     if not has_legacy_data:
         return ComparisonResult(
@@ -480,8 +484,12 @@ def compare_single_pdb(
     has_modern_data = modern_file.exists() and modern_file.is_file()
     if not has_modern_data:
         # Check new structure: <record_type>/<PDB_ID>.json
-        modern_atoms = find_json_file(modern_dir, pdb_id, "pdb_atoms")
-        has_modern_data = modern_atoms and modern_atoms.exists()
+        # Try essential record types (since pdb_atoms may have been deleted)
+        for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+            modern_file_check = find_json_file(modern_dir, pdb_id, record_type)
+            if modern_file_check and modern_file_check.exists():
+                has_modern_data = True
+                break
     
     if not has_modern_data:
         return ComparisonResult(

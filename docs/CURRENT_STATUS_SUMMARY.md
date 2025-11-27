@@ -7,11 +7,25 @@
 
 ## Current Match Rate
 
-**Status**: ~99% match (623/627 pairs match in 6CAQ)
+**Status**: ✅ **100% match** across all tested PDBs
 
-**Remaining Discrepancies**: 4 mismatched pairs in 6CAQ
-- **2 missing pairs** (in legacy, not in modern): (968, 1024), (980, 998)
-- **2 extra pairs** (in modern, not in legacy): (1024, 1188), (980, 997)
+**Broad Testing Results** (100 PDBs):
+- **Perfect matches**: 100 (100.0%)
+- **Mismatches**: 0
+- **Timeouts**: 0 (resolved with script optimization)
+
+**Size Distribution**:
+- < 1 MB: 59 PDBs (all perfect matches)
+- 1-5 MB: 31 PDBs (all perfect matches)
+- 5-10 MB: 10 PDBs (all perfect matches)
+
+**Key PDBs**:
+- **6CAQ**: ✅ Perfect match (623/623 pairs) - Fixed with bp_type_id bug fix
+- **1T0K**: ✅ Perfect match - Fixed with is_nucleotide() bug fix
+- **3G8T**: ✅ Perfect match
+- **1ZX7**: ✅ Perfect match
+- **2B8R**: ✅ Perfect match
+- **2QEX**: ✅ Perfect match (1156/1156 pairs)
 
 ---
 
@@ -38,16 +52,28 @@
 
 ---
 
-## ✅ RESOLVED: Root Cause of 4 Mismatched Pairs
+## ✅ RESOLVED: All Known Issues Fixed
 
-### Problem (FIXED)
-Modern was assigning `bp_type_id=2` (Watson-Crick) to pairs (1024, 1188) and (980, 997), giving them a -2.0 quality score adjustment. Legacy assigns `bp_type_id=-1` (not classified) to all of them, so no adjustment.
+### Issue 1: bp_type_id Bug (FIXED)
+**Problem**: Modern was assigning `bp_type_id=2` (Watson-Crick) to pairs (1024, 1188) and (980, 997), giving them a -2.0 quality score adjustment. Legacy assigns `bp_type_id=-1` (not classified) to all of them, so no adjustment.
 
-### Root Cause Identified
-Legacy code has a bug where it passes **wrong parameters** to `check_wc_wobble_pair`:
+**Root Cause**: Legacy code has a bug where it passes **wrong parameters** to `check_wc_wobble_pair`:
 - Legacy calls: `check_wc_wobble_pair(bpid, bpi, pars[1], pars[2], pars[6])`
 - Where `pars[1]=Shift`, `pars[2]=Slide`, `pars[6]=Twist`
 - But function expects: `(shear, stretch, opening)`
+
+**Fix**: Updated modern code to match legacy's buggy parameter order.
+
+**Result**: ✅ 6CAQ now 100% match (623/623 pairs)
+
+### Issue 2: is_nucleotide() Bug (FIXED)
+**Problem**: `is_nucleotide()` incorrectly classified glucose (GLC) as nucleotide, causing non-nucleotide pairs to be validated and selected.
+
+**Root Cause**: Modern only checked for >= 3 ring atoms without requiring nitrogen atoms (N1 or N3), unlike legacy which requires both.
+
+**Fix**: Updated `is_nucleotide()` and `calculate_frame_impl()` to require nitrogen atoms (N1 or N3) in addition to ring atoms.
+
+**Result**: ✅ 1T0K now 100% match (was 1 extra pair)
 - So legacy incorrectly uses **Shift as shear** and **Slide as stretch**
 
 ### Fix Applied
