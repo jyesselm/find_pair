@@ -38,10 +38,30 @@
 
 ---
 
-## Root Cause of Remaining 4 Mismatched Pairs
+## ✅ RESOLVED: Root Cause of 4 Mismatched Pairs
 
-### Problem
-Modern assigns `bp_type_id=2` (Watson-Crick) to pairs (1024, 1188) and (980, 997), giving them a -2.0 quality score adjustment. Legacy assigns `bp_type_id=-1` (not classified) to all of them, so no adjustment.
+### Problem (FIXED)
+Modern was assigning `bp_type_id=2` (Watson-Crick) to pairs (1024, 1188) and (980, 997), giving them a -2.0 quality score adjustment. Legacy assigns `bp_type_id=-1` (not classified) to all of them, so no adjustment.
+
+### Root Cause Identified
+Legacy code has a bug where it passes **wrong parameters** to `check_wc_wobble_pair`:
+- Legacy calls: `check_wc_wobble_pair(bpid, bpi, pars[1], pars[2], pars[6])`
+- Where `pars[1]=Shift`, `pars[2]=Slide`, `pars[6]=Twist`
+- But function expects: `(shear, stretch, opening)`
+- So legacy incorrectly uses **Shift as shear** and **Slide as stretch**
+
+### Fix Applied
+Updated modern code to match legacy's buggy parameter order:
+```cpp
+double shear = params.shift;      // BUG: Should be params.slide
+double stretch = params.slide;    // BUG: Should be params.rise
+double opening = params.twist;    // Correct
+```
+
+### Result
+✅ **100% match achieved for 6CAQ** - All 623 pairs in `find_bestpair_selection` now match perfectly!
+
+See `docs/BP_TYPE_ID_BUG_FIX.md` for complete details.
 
 ### Quality Score Comparison
 

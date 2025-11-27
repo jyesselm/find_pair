@@ -9,6 +9,7 @@ and root cause identification.
 
 import json
 import sys
+import subprocess
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
@@ -440,6 +441,30 @@ def main():
         idx = sys.argv.index('--output')
         if idx + 1 < len(sys.argv):
             output_file = Path(sys.argv[idx + 1])
+    
+    # Check if modern JSON exists, generate if missing
+    modern_json_file = find_json_file(pdb_id, 'find_bestpair_selection', False)
+    pdb_file = project_root / "data/pdb" / f"{pdb_id}.pdb"
+    
+    if not modern_json_file or not modern_json_file.exists():
+        if pdb_file.exists():
+            print(f"Modern JSON not found for {pdb_id}. Generating...")
+            try:
+                result = subprocess.run(
+                    ['build/generate_modern_json', str(pdb_file), str(project_root / 'data/json')],
+                    capture_output=True,
+                    text=True,
+                    timeout=600
+                )
+                if result.returncode != 0:
+                    print(f"Warning: Failed to generate modern JSON: {result.stderr[:200]}")
+            except subprocess.TimeoutExpired:
+                print(f"Warning: Timeout generating modern JSON for {pdb_id}")
+            except Exception as e:
+                print(f"Warning: Error generating modern JSON: {e}")
+        else:
+            print(f"Error: PDB file not found: {pdb_file}")
+            sys.exit(1)
     
     # Use existing comparison infrastructure
     legacy_records = load_json_records(pdb_id, 'find_bestpair_selection', True)

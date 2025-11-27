@@ -154,6 +154,9 @@ target_link_libraries(compare_frames_and_step_params PRIVATE x3dna)
 add_executable(test_bpstep_par_equivalence tools/test_bpstep_par_equivalence.cpp)
 target_link_libraries(test_bpstep_par_equivalence PRIVATE x3dna)
 
+add_executable(analyze_validation_difference tools/analyze_validation_difference.cpp)
+target_link_libraries(analyze_validation_difference PRIVATE x3dna)
+
 # Documentation
 if(BUILD_DOCS)
     find_package(Doxygen)

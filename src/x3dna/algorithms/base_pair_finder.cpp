@@ -642,13 +642,18 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
         core::BasePairStepParameters params =
             param_calculator_.calculate_step_parameters(frame2, frame1);
 
-        // Extract geometric parameters (matching legacy pars array)
-        // pars[1] = Slide (shear)
-        // pars[2] = Rise (stretch)
-        // pars[6] = Twist (opening)
-        double shear = params.slide;
-        double stretch = params.rise;
-        double opening = params.twist;
+        // CRITICAL: Legacy has a bug - it passes wrong parameters to check_wc_wobble_pair!
+        // Legacy calls: check_wc_wobble_pair(bpid, bpi, pars[1], pars[2], pars[6])
+        // Where pars[1]=Shift, pars[2]=Slide, pars[6]=Twist
+        // But function expects: (shear, stretch, opening)
+        // So legacy incorrectly uses:
+        //   pars[1] (Shift) as shear ❌
+        //   pars[2] (Slide) as stretch ❌
+        //   pars[6] (Twist) as opening ✅
+        // To match legacy output exactly, we must replicate this bug:
+        double shear = params.shift;      // BUG: Should be params.slide
+        double stretch = params.slide;    // BUG: Should be params.rise
+        double opening = params.twist;    // Correct
 
         // Get base pair type string (e.g., "AT", "GC")
         // CRITICAL: Use ResidueType to get base letter (more reliable than one_letter_code)
@@ -729,11 +734,17 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
     // Check for modified nucleotides (like XGR, XCR, XTR, XAR in 3KNC)
     // These have ResidueType::UNKNOWN but have ring atoms
     // Legacy code treats residues with ring atoms as nucleotides (RY >= 0)
+    // CRITICAL: Must require nitrogen atoms (N1 or N3) to prevent non-nucleotides
+    // like glucose (GLC) from being incorrectly classified
     if (type == ResidueType::UNKNOWN) {
         // Check for ring atoms (similar to legacy residue_ident and generate_modern_json)
         static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
                                                                    " N1 ", " C6 ", " C5 "};
+        static const std::vector<std::string> nitrogen_atoms = {" N1 ", " N3 "};
+        
         int ring_atom_count = 0;
+        bool has_nitrogen = false;
+        
         for (const auto& atom_name : common_ring_atoms) {
             for (const auto& atom : residue.atoms()) {
                 if (atom.name() == atom_name) {
@@ -742,8 +753,26 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
                 }
             }
         }
-        // If has >= 3 ring atoms, treat as nucleotide (matches legacy and generate_modern_json)
-        if (ring_atom_count >= 3) {
+        
+        // Check for nitrogen atoms (N1 or N3) - required for nucleotides
+        // This prevents non-nucleotides like glucose (GLC) from being classified
+        // Glucose has C4, C5, C6 but no N1 or N3, so it won't pass this check
+        for (const auto& atom_name : nitrogen_atoms) {
+            for (const auto& atom : residue.atoms()) {
+                if (atom.name() == atom_name) {
+                    has_nitrogen = true;
+                    break;
+                }
+            }
+            if (has_nitrogen) {
+                break;
+            }
+        }
+        
+        // Require >= 3 ring atoms AND at least one nitrogen atom (N1 or N3)
+        // This matches legacy's requirement: residue_ident checks for N1 or N3
+        // and performs RMSD check (we require nitrogen as a simpler check)
+        if (ring_atom_count >= 3 && has_nitrogen) {
             return true;
         }
     }
