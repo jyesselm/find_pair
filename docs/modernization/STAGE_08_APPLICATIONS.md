@@ -19,6 +19,7 @@ Implement the application executables (find_pair_app and analyze_app) that provi
 - [ ] Create `include/x3dna/apps/CommandLineParser.hpp`
 - [ ] Parse find_pair options
 - [ ] Parse analyze options
+- [ ] **Parse `--legacy-mode` flag** (for exact legacy compatibility)
 - [ ] Handle input/output files
 - [ ] Validate arguments
 - [ ] Write unit tests
@@ -31,6 +32,7 @@ class CommandLineParser {
         bool single_strand = false;
         bool find_all_pairs = false;
         bool divide_helices = false;
+        bool legacy_mode = false;  // Enable legacy compatibility mode
         // ... other options
     };
     
@@ -39,12 +41,19 @@ class CommandLineParser {
 };
 ```
 
+**Legacy Mode Flag**:
+- `--legacy-mode`: Enable exact compatibility with legacy code
+- Breaks some OOP principles for exact matching
+- Essential for regression testing and comparison
+- See `docs/LEGACY_MODE_DESIGN.md` for details
+
 **Deliverable**: Command-line parser
 
 ### Task 8.2: Implement find_pair_app
 - [ ] Create `apps/find_pair_app.cpp`
-- [ ] Parse command-line arguments
+- [ ] Parse command-line arguments (including `--legacy-mode`)
 - [ ] Load configuration
+- [ ] **Set legacy mode in ConfigManager if flag is present**
 - [ ] Parse PDB file
 - [ ] Execute FindPairProtocol
 - [ ] Write output files
@@ -53,9 +62,19 @@ class CommandLineParser {
 
 **Key Features**:
 - Command-line interface matching original
+- **`--legacy-mode` flag for exact legacy compatibility**
 - Output file generation
 - Error reporting
 - Progress reporting (optional)
+
+**Example Usage**:
+```bash
+# Modern mode (default)
+./find_pair_app data/pdb/1H4S.pdb
+
+# Legacy mode (exact match)
+./find_pair_app --legacy-mode data/pdb/1H4S.pdb
+```
 
 **Deliverable**: find_pair_app executable
 

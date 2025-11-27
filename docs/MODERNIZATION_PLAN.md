@@ -545,12 +545,18 @@ public:
     bool include_waters() const { return include_waters_; }
     void set_include_waters(bool value) { include_waters_ = value; }
     
+    // Legacy mode (for exact compatibility with legacy code)
+    // When enabled, breaks some OOP principles for exact matching
+    bool legacy_mode() const { return legacy_mode_; }
+    void set_legacy_mode(bool value) { legacy_mode_ = value; }
+    
 private:
     ConfigManager() = default;
     ParameterThresholds thresholds_;
     std::filesystem::path x3dna_home_;
     bool include_hetatm_ = false;
     bool include_waters_ = false;
+    bool legacy_mode_ = false;  // Enable legacy compatibility mode
 };
 
 struct ParameterThresholds {

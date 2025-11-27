@@ -46,6 +46,8 @@ add_library(x3dna
     src/x3dna/algorithms/hydrogen_bond_finder.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.cpp
+    src/x3dna/config/config_manager.cpp
+    src/x3dna/protocols/find_pair_protocol.cpp
 )
 target_include_directories(x3dna PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
