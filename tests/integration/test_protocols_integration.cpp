@@ -545,6 +545,8 @@ TEST_F(ProtocolsIntegrationTest, FindPairProtocolMultiplePDBs) {
                     std::cout << "✗ " << pair.pdb_name << ": modern=" << modern_set.size() 
                               << " unique, legacy=" << legacy_set.size() << " unique (MISMATCH)" << std::endl;
                 }
+            } else {
+                std::cout << "⚠ " << pair.pdb_name << ": No legacy pairs found (skipped)" << std::endl;
             }
             
             successful++;
