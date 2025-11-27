@@ -49,31 +49,45 @@ def parse_legacy_step_par(par_file):
         # Line 1: "   7 # base-pairs"
         # Line 2: "   0 # ***local base-pair & step parameters***"
         # Line 3: "#        Shear    Stretch   Stagger   Buckle   Prop-Tw   Opening     Shift     Slide     Rise      Tilt      Roll      Twist"
-        # Then data lines with 13 values: step_num + 6 bp params + 6 step params
-        lines = f.readlines()
-        for i, line in enumerate(lines):
+        # Then data lines with base pair info + 13 values: base_pair_type + 6 bp params + 6 step params
+        # BUT: First line has 0.000 for all step params (it's the first base pair, no step)
+        # Subsequent lines represent steps between consecutive pairs
+        
+        line_num = 0
+        for line in f:
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
             
             # Parse data line
-            # Format: step_num + 6 bp params (Shear Stretch Stagger Buckle Prop-Tw Opening) + 6 step params (Shift Slide Rise Tilt Roll Twist)
+            # Format: base_pair_type + 6 bp params (Shear Stretch Stagger Buckle Prop-Tw Opening) + 6 step params (Shift Slide Rise Tilt Roll Twist)
             parts = line.split()
             if len(parts) >= 13:
                 try:
-                    step_num = int(parts[0])
-                    # Step parameters are at positions 7-12 (0-indexed: 6-11)
-                    values = [float(p) for p in parts[7:13]]
-                    if len(values) == 6:
-                        params[step_num] = {
-                            'shift': values[0],
-                            'slide': values[1],
-                            'rise': values[2],
-                            'tilt': values[3],
-                            'roll': values[4],
-                            'twist': values[5]
-                        }
-                except (ValueError, IndexError):
+                    # Check if first token is a base pair type (e.g., "U-A", "C-G")
+                    # If it contains '-', it's a base pair type, otherwise it's a number
+                    if '-' in parts[0]:
+                        # Format: "U-A" + 6 bp params + 6 step params
+                        # Step number is line number (1-based), but first line is base pair 1, step 1 is between bp 1 and bp 2
+                        step_num = line_num  # line_num starts at 0, becomes 1, 2, 3...
+                        # Step parameters are at positions 7-12 (0-indexed: 6-11)
+                        values = [float(p) for p in parts[7:13]]
+                        if len(values) == 6:
+                            # Skip first line if all step params are zero (it's the first base pair)
+                            if line_num == 0 and all(abs(v) < 0.001 for v in values):
+                                line_num += 1
+                                continue
+                            
+                            params[step_num] = {
+                                'shift': values[0],
+                                'slide': values[1],
+                                'rise': values[2],
+                                'tilt': values[3],
+                                'roll': values[4],
+                                'twist': values[5]
+                            }
+                            line_num += 1
+                except (ValueError, IndexError) as e:
                     continue
             elif len(parts) >= 7:  # Fallback: maybe just step params
                 try:
@@ -104,29 +118,39 @@ def parse_legacy_helix_par(par_file):
         # Line 1: "   7 # base-pairs"
         # Line 2: "   1 # ***local base-pair & helical parameters***"
         # Line 3: "#        Shear    Stretch   Stagger   Buckle   Prop-Tw   Opening     X-disp    Y-disp    h-Rise    Incl.     Tip     h-Twist"
-        # Then data lines with 13 values: step_num + 6 bp params + 6 helical params
+        # Then data lines with base pair info + 13 values: base_pair_type + 6 bp params + 6 helical params
+        line_num = 0
         for line in f:
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
             
             # Parse data line
-            # Format: step_num + 6 bp params + 6 helical params (X-disp Y-disp h-Rise Incl. Tip h-Twist)
+            # Format: base_pair_type + 6 bp params + 6 helical params (X-disp Y-disp h-Rise Incl. Tip h-Twist)
             parts = line.split()
             if len(parts) >= 13:
                 try:
-                    step_num = int(parts[0])
-                    # Helical parameters are at positions 7-12 (0-indexed: 6-11)
-                    values = [float(p) for p in parts[7:13]]
-                    if len(values) == 6:
-                        params[step_num] = {
-                            'x_disp': values[0],
-                            'y_disp': values[1],
-                            'h_rise': values[2],
-                            'inclination': values[3],
-                            'tip': values[4],
-                            'h_twist': values[5]
-                        }
+                    # Check if first token is a base pair type (e.g., "U-A", "C-G")
+                    if '-' in parts[0]:
+                        # Format: "U-A" + 6 bp params + 6 helical params
+                        step_num = line_num
+                        # Helical parameters are at positions 7-12 (0-indexed: 6-11)
+                        values = [float(p) for p in parts[7:13]]
+                        if len(values) == 6:
+                            # Skip first line if all helical params are zero
+                            if line_num == 0 and all(abs(v) < 0.001 for v in values):
+                                line_num += 1
+                                continue
+                            
+                            params[step_num] = {
+                                'x_disp': values[0],
+                                'y_disp': values[1],
+                                'h_rise': values[2],
+                                'inclination': values[3],
+                                'tip': values[4],
+                                'h_twist': values[5]
+                            }
+                            line_num += 1
                 except (ValueError, IndexError):
                     continue
             elif len(parts) >= 7:  # Fallback
@@ -263,10 +287,19 @@ def compare_pdb_parameters(pdb_name, project_root):
     helix_diffs = []
     tolerance = 0.01
     
+    # Legacy uses 1-based step numbering (step 1 is between bp 1 and 2)
+    # Modern uses 1-based step numbering in output (step 1 is between bp 1 and 2)
+    # But legacy file has first line with zeros (first bp), then steps start from line 2
+    # So legacy step 1 corresponds to modern step 1
     for step_num in range(1, num_steps + 1):
-        if step_num in legacy_step and step_num in modern_step:
-            leg = legacy_step[step_num]
-            mod = modern_step[step_num]
+        # Legacy step numbers start from 1 (after skipping first line with zeros)
+        legacy_step_idx = step_num
+        # Modern step numbers also start from 1
+        modern_step_idx = step_num
+        
+        if legacy_step_idx in legacy_step and modern_step_idx in modern_step:
+            leg = legacy_step[legacy_step_idx]
+            mod = modern_step[modern_step_idx]
             
             for param_name in ['shift', 'slide', 'rise', 'tilt', 'roll', 'twist']:
                 leg_val = leg[param_name]
@@ -280,15 +313,18 @@ def compare_pdb_parameters(pdb_name, project_root):
                         'modern': mod_val,
                         'diff': diff
                     })
-        elif step_num not in legacy_step:
+        elif legacy_step_idx not in legacy_step:
             step_diffs.append({'step': step_num, 'param': 'ALL', 'error': 'Missing in legacy'})
-        elif step_num not in modern_step:
+        elif modern_step_idx not in modern_step:
             step_diffs.append({'step': step_num, 'param': 'ALL', 'error': 'Missing in modern'})
     
     for step_num in range(1, num_steps + 1):
-        if step_num in legacy_helix and step_num in modern_helix:
-            leg = legacy_helix[step_num]
-            mod = modern_helix[step_num]
+        legacy_step_idx = step_num
+        modern_step_idx = step_num
+        
+        if legacy_step_idx in legacy_helix and modern_step_idx in modern_helix:
+            leg = legacy_helix[legacy_step_idx]
+            mod = modern_helix[modern_step_idx]
             
             for param_name in ['x_disp', 'y_disp', 'h_rise', 'inclination', 'tip', 'h_twist']:
                 leg_val = leg[param_name]
@@ -302,9 +338,9 @@ def compare_pdb_parameters(pdb_name, project_root):
                         'modern': mod_val,
                         'diff': diff
                     })
-        elif step_num not in legacy_helix:
+        elif legacy_step_idx not in legacy_helix:
             helix_diffs.append({'step': step_num, 'param': 'ALL', 'error': 'Missing in legacy'})
-        elif step_num not in modern_helix:
+        elif modern_step_idx not in modern_helix:
             helix_diffs.append({'step': step_num, 'param': 'ALL', 'error': 'Missing in modern'})
     
     return {
