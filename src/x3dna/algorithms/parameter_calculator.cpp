@@ -305,8 +305,8 @@ ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFram
     
 
     // Calculate h-Twist (pars[6]): angle between y-axes of rotated frames around axis_h
-    geometry::Vector3D y1_h = rot1_h.column(1);
-    geometry::Vector3D y2_h = rot2_h.column(1);
+    geometry::Vector3D y1_h = rot1_h.column(1); // rot1_h y-axis (column 2 in 1-based)
+    geometry::Vector3D y2_h = rot2_h.column(1); // rot2_h y-axis (column 2 in 1-based)
     params.twist = vec_ang(y1_h, y2_h, axis_h);
 
     // Calculate h-Rise (pars[3]): projection of org2-org1 onto axis_h
@@ -314,11 +314,9 @@ ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFram
     params.rise = org_diff.dot(axis_h);
 
     // Calculate Tip and Inclination (pars[5] and pars[4])
-    geometry::Vector3D h_x_norm = h_x;
-    if (h_x_norm.length() > XEPS) h_x_norm = h_x_norm / h_x_norm.length();
-    
-    // phi: angle between hinge1 and h_x around axis_h
-    double phi = deg2rad(vec_ang(hinge1, h_x_norm, axis_h));
+    // phi: angle between hinge1 and y1_h (rot1_h y-axis) around axis_h
+    // Matching legacy: phi = vec_ang(hinge1, t1, axis_h) where t1 = rot1_h y-axis
+    double phi = deg2rad(vec_ang(hinge1, y1_h, axis_h));
     params.tip = TipInc1 * std::cos(phi);
     params.inclination = TipInc1 * std::sin(phi);
 
@@ -327,7 +325,7 @@ ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFram
     geometry::Vector3D t1_proj = org_diff - (params.rise * axis_h);
     
     // Calculate org1_h and org2_h on helical axis
-    constexpr double HTWIST0 = 0.1; // Threshold for small twist angle
+    constexpr double HTWIST0 = 0.05; // Threshold for small twist angle (matches legacy)
     geometry::Vector3D org1_h, org2_h;
     
     if (std::abs(params.twist) < HTWIST0) {
