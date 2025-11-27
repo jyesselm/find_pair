@@ -476,6 +476,8 @@ TEST_F(ProtocolsIntegrationTest, FindPairProtocolSinglePDB) {
 
 /**
  * @brief Test FindPairProtocol with multiple PDB files
+ * 
+ * Tests multiple PDBs and compares unique pairs (not total counts)
  */
 TEST_F(ProtocolsIntegrationTest, FindPairProtocolMultiplePDBs) {
     if (pairs_.empty()) {
@@ -509,14 +511,39 @@ TEST_F(ProtocolsIntegrationTest, FindPairProtocolMultiplePDBs) {
             // Get base pairs
             const auto& modern_pairs = protocol.base_pairs();
             
-            // Load legacy base pairs
+            // Load legacy base pairs (from find_bestpair_selection)
             auto legacy_pairs = load_legacy_base_pairs(pair.json_file);
             
-            // Compare if legacy pairs available
+            // Compare unique pairs if legacy pairs available
             if (!legacy_pairs.empty()) {
-                if (modern_pairs.size() == legacy_pairs.size()) {
-                    // Quick check: compare counts
+                // Build normalized sets for comparison
+                std::set<std::pair<int, int>> modern_set;
+                std::set<std::pair<int, int>> legacy_set;
+                
+                // Modern pairs: convert to 1-based and normalize
+                for (const auto& p : modern_pairs) {
+                    int i = static_cast<int>(p.residue_idx1()) + 1;
+                    int j = static_cast<int>(p.residue_idx2()) + 1;
+                    modern_set.insert({std::min(i, j), std::max(i, j)});
+                }
+                
+                // Legacy pairs: already 1-based, normalize
+                for (const auto& p_json : legacy_pairs) {
+                    if (p_json.contains("base_i") && p_json.contains("base_j")) {
+                        int i = p_json["base_i"].get<int>();
+                        int j = p_json["base_j"].get<int>();
+                        legacy_set.insert({std::min(i, j), std::max(i, j)});
+                    }
+                }
+                
+                // Compare unique pair counts
+                if (modern_set.size() == legacy_set.size()) {
                     matched++;
+                    std::cout << "✓ " << pair.pdb_name << ": " << modern_set.size() 
+                              << " unique pairs match" << std::endl;
+                } else {
+                    std::cout << "✗ " << pair.pdb_name << ": modern=" << modern_set.size() 
+                              << " unique, legacy=" << legacy_set.size() << " unique (MISMATCH)" << std::endl;
                 }
             }
             
@@ -531,7 +558,7 @@ TEST_F(ProtocolsIntegrationTest, FindPairProtocolMultiplePDBs) {
     
     if (matched > 0) {
         std::cout << "Matched " << matched << " out of " << successful
-                  << " PDBs with legacy base pairs" << std::endl;
+                  << " PDBs with legacy base pairs (unique pair counts)" << std::endl;
     }
 }
 
