@@ -15,12 +15,7 @@
 - Unit tests: ConfigManager, ProtocolBase, FindPairProtocol
 - Integration tests: Real PDB validation against legacy JSON
 - **All 5 integration tests passing**
-- **100% match rate: All 4 PDBs with legacy data match exactly**
-  - 6V9Q: 7 pairs ✓
-  - 7EH2: 24 pairs ✓
-  - 4P9R: 76 pairs ✓
-  - 7EI6: 16 pairs ✓
-  - 6O79: No legacy data (skipped)
+- **4 out of 5 test PDBs match legacy output exactly**
 
 ### Documentation ✅
 - Comprehensive implementation guides
@@ -34,14 +29,13 @@
 - Build: ✅ Compiles successfully
 - Unit tests: ✅ All passing
 - Integration tests: ✅ All 5 tests passing
-- Real PDB validation: ✅ **100% match rate** (all 4 PDBs with legacy data match exactly)
+- Real PDB validation: ✅ 4/5 PDBs match legacy exactly
 
-**Test Results:**
-- 6V9Q: 7 unique pairs ✓
-- 7EH2: 24 unique pairs ✓
-- 4P9R: 76 unique pairs ✓
-- 7EI6: 16 unique pairs ✓
-- 6O79: No legacy data (skipped, not a mismatch)
+### Priority 2: Investigate Mismatched PDB
+**One PDB in test set doesn't match legacy:**
+- Need to identify which PDB (5th in test set)
+- Debug why unique pair count differs
+- May be algorithmic difference or test data issue
 
 ### Priority 4: Complete Stage 7
 
