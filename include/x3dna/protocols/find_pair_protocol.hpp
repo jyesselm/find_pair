@@ -11,6 +11,7 @@
 #include <x3dna/core/structure_legacy_order.hpp>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/algorithms/base_pair_finder.hpp>
+#include <x3dna/algorithms/helix_detector.hpp>
 #include <x3dna/io/json_writer.hpp>
 #include <memory>
 #include <vector>
@@ -117,6 +118,13 @@ public:
     }
 
     /**
+     * @brief Get detected helices
+     */
+    const std::vector<algorithms::Helix>& helices() const {
+        return helices_;
+    }
+
+    /**
      * @brief Get frame calculator (for configuration)
      */
     algorithms::BaseFrameCalculator& frame_calculator() {
@@ -142,18 +150,22 @@ private:
     void find_pairs(core::Structure& structure);
 
     /**
-     * @brief Detect helices (placeholder for future implementation)
+     * @brief Detect helices using HelixDetector
      */
     void detect_helices(core::Structure& structure);
 
     /**
-     * @brief Reorder pairs (placeholder for future implementation)
+     * @brief Reorder pairs using HelixDetector
      */
     void reorder_pairs(core::Structure& structure);
 
     // Algorithm components
     algorithms::BaseFrameCalculator frame_calculator_;
     algorithms::BasePairFinder pair_finder_;
+    algorithms::HelixDetector helix_detector_;
+
+    // Results - helices
+    std::vector<algorithms::Helix> helices_;
 
     // Options
     bool single_strand_mode_ = false;
