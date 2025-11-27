@@ -283,5 +283,29 @@ endif()
 
 gtest_discover_tests(test_residue_ordering_json_comparison)
 
+# Protocols integration test
+add_executable(test_protocols_integration
+    test_protocols_integration.cpp
+)
+
+target_include_directories(test_protocols_integration PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(test_protocols_integration
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+# Link filesystem library if needed
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_protocols_integration PRIVATE stdc++fs)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(test_protocols_integration PRIVATE c++fs)
+endif()
+
+gtest_discover_tests(test_protocols_integration)
+
 # Note: More integration tests will be added as we implement each stage
 
