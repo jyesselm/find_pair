@@ -1,0 +1,75 @@
+{
+  "special_templates": {
+    "PSU": {
+      "template": "Atomic_P.pdb",
+      "base_type": "P",
+      "description": "Pseudouridine"
+    },
+    "PSU ": {
+      "template": "Atomic_P.pdb",
+      "base_type": "P",
+      "description": "Pseudouridine (with trailing space)"
+    },
+    "I": {
+      "template": "Atomic_I.pdb",
+      "base_type": "I",
+      "description": "Inosine"
+    },
+    "  I": {
+      "template": "Atomic_I.pdb",
+      "base_type": "I",
+      "description": "Inosine (with leading spaces)"
+    },
+    " DI": {
+      "template": "Atomic_I.pdb",
+      "base_type": "I",
+      "description": "Inosine (with leading space and D)"
+    },
+    "B8N": {
+      "template": "Atomic.p.pdb",
+      "base_type": "p",
+      "description": "B8N modified nucleotide"
+    },
+    "B8N ": {
+      "template": "Atomic.p.pdb",
+      "base_type": "p",
+      "description": "B8N (with trailing space)"
+    },
+    "C4J": {
+      "template": "Atomic.p.pdb",
+      "base_type": "p",
+      "description": "C4J modified nucleotide"
+    },
+    "B8H": {
+      "template": "Atomic.p.pdb",
+      "base_type": "p",
+      "description": "B8H modified nucleotide"
+    },
+    "FHU": {
+      "template": "Atomic.p.pdb",
+      "base_type": "p",
+      "description": "FHU modified nucleotide"
+    },
+    "I2T": {
+      "template": "Atomic.p.pdb",
+      "base_type": "p",
+      "description": "I2T modified nucleotide"
+    },
+    "UY1": {
+      "template": "Atomic.p.pdb",
+      "base_type": "p",
+      "description": "UY1 modified nucleotide"
+    },
+    "M1Y": {
+      "template": "Atomic.p.pdb",
+      "base_type": "p",
+      "description": "M1Y modified nucleotide"
+    }
+  },
+  "standard_names": [
+    "A", "C", "G", "T", "U",
+    "DA", "DC", "DG", "DT", "DU",
+    "ADE", "CYT", "GUA", "THY", "URA"
+  ]
+}
+
