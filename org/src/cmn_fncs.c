@@ -405,13 +405,19 @@ FILE *open_file(char *filename, char *filemode)
     else {
         /* When JSON writer is active, disable most output file writes */
         /* BUT: Allow .inp files to be written (needed for analyze step) */
+        /* AND: Allow .par files to be written (needed for parameter comparison) */
         /* Also allow reads for input files */
         if (json_writer_is_initialized() && 
             (filemode[0] == 'w' || filemode[0] == 'a' || strstr(filemode, "w") != NULL)) {
-            /* Check if this is an .inp file (needed for analyze) */
+            /* Check if this is an .inp or .par file (needed for analyze/comparison) */
             long len = strlen(filename);
             if (len >= 4 && strcmp(filename + len - 4, ".inp") == 0) {
                 /* Allow .inp files to be written - they're needed for analyze step */
+                fp = fopen(filename, filemode);
+                if (fp == NULL)
+                    fatal("open_file <%s> failed: %s\n", filename, strerror(errno));
+            } else if (len >= 4 && strcmp(filename + len - 4, ".par") == 0) {
+                /* Allow .par files to be written - needed for parameter comparison */
                 fp = fopen(filename, filemode);
                 if (fp == NULL)
                     fatal("open_file <%s> failed: %s\n", filename, strerror(errno));
