@@ -46,6 +46,7 @@ protected:
 - [ ] Orchestrate base pair finding
 - [ ] Orchestrate helix detection
 - [ ] Handle options (single strand, all pairs, etc.)
+- [ ] **Support `--legacy-mode` flag** (for exact legacy compatibility)
 - [ ] Add JSON recording
 - [ ] Write comprehensive unit tests
 
@@ -58,6 +59,7 @@ public:
     void set_single_strand_mode(bool value);
     void set_find_all_pairs(bool value);
     void set_divide_helices(bool value);
+    void set_legacy_mode(bool value);  // Enable legacy compatibility mode
     
     const std::vector<BasePair>& base_pairs() const;
     const std::vector<Helix>& helices() const;
@@ -71,8 +73,16 @@ private:
     std::unique_ptr<BaseFrameCalculator> frame_calculator_;
     std::unique_ptr<BasePairFinder> pair_finder_;
     std::unique_ptr<HelixDetector> helix_detector_;
+    bool legacy_mode_ = false;  // Legacy compatibility mode
 };
 ```
+
+**Legacy Mode Support**:
+- When `legacy_mode_` is true, use legacy iteration order
+- Use 1-based indexing where legacy does
+- Match legacy algorithm behavior exactly
+- Output JSON in exact legacy format
+- See `docs/LEGACY_MODE_DESIGN.md` for details
 
 **Deliverable**: Fully tested FindPairProtocol
 
