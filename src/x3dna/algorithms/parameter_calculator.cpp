@@ -216,11 +216,146 @@ ParameterCalculator::calculate_step_parameters_for_pair(const core::BasePair& pa
 }
 
 core::HelicalParameters
-ParameterCalculator::calculate_helical_parameters(const core::BasePair& /* pair1 */,
-                                                  const core::BasePair& /* pair2 */) {
-    // TODO: Implement helical_par algorithm
-    // For now, return default values
+ParameterCalculator::calculate_helical_parameters(const core::BasePair& pair1,
+                                                  const core::BasePair& pair2) {
+    if (!pair1.frame1().has_value() || !pair1.frame2().has_value() ||
+        !pair2.frame1().has_value() || !pair2.frame2().has_value()) {
+        throw std::runtime_error("Base pairs must have reference frames for helical parameter calculation");
+    }
+
+    // Use frame1 from each pair (matching legacy refs_i_j behavior)
+    return calculate_helical_parameters_impl(pair1.frame1().value(), pair2.frame1().value());
+}
+
+core::HelicalParameters
+ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFrame& frame1,
+                                                      const core::ReferenceFrame& frame2) {
     core::HelicalParameters params;
+    
+    // Get rotation matrices and origins
+    const geometry::Matrix3D& rot1 = frame1.rotation();
+    const geometry::Vector3D& org1 = frame1.origin();
+    const geometry::Matrix3D& rot2 = frame2.rotation();
+    const geometry::Vector3D& org2 = frame2.origin();
+
+    // Legacy uses 1-based indexing, we use 0-based
+    // rot[i][j] in legacy = rot.at(i-1, j-1) in modern
+    // Columns: 0=x, 1=y, 2=z
+
+    // Calculate axis_h from cross product of (rot2 x-axis - rot1 x-axis) and (rot2 y-axis - rot1 y-axis)
+    geometry::Vector3D x1 = rot1.column(0); // rot1 x-axis
+    geometry::Vector3D y1 = rot1.column(1); // rot1 y-axis
+    geometry::Vector3D z1 = rot1.column(2); // rot1 z-axis
+    geometry::Vector3D x2 = rot2.column(0); // rot2 x-axis
+    geometry::Vector3D y2 = rot2.column(1); // rot2 y-axis
+    geometry::Vector3D z2 = rot2.column(2); // rot2 z-axis
+
+    geometry::Vector3D t1 = x2 - x1; // rot2[i][1] - rot1[i][1]
+    geometry::Vector3D t2 = y2 - y1; // rot2[i][2] - rot1[i][2]
+    geometry::Vector3D axis_h = t1.cross(t2);
+
+    // Normalize axis_h
+    double vlen = axis_h.length();
+    if (vlen < XEPS) {
+        // Default to z-axis if degenerate
+        axis_h = geometry::Vector3D(0.0, 0.0, 1.0);
+    } else {
+        axis_h = axis_h / vlen;
+    }
+
+    // Calculate TipInc1: angle between axis_h and rot1 z-axis
+    double TipInc1 = magang(axis_h, z1);
+    geometry::Vector3D hinge1 = axis_h.cross(z1);
+    if (hinge1.length() < XEPS) {
+        hinge1 = geometry::Vector3D(1.0, 0.0, 0.0); // Default hinge
+    } else {
+        hinge1 = hinge1 / hinge1.length();
+    }
+
+    // Rotate rot1 to align z-axis with axis_h
+    geometry::Matrix3D temp_rot = arb_rotation(hinge1, -TipInc1);
+    geometry::Matrix3D rot1_h = temp_rot * rot1;
+
+    // Calculate TipInc2: angle between axis_h and rot2 z-axis
+    double TipInc2 = magang(axis_h, z2);
+    geometry::Vector3D hinge2 = axis_h.cross(z2);
+    if (hinge2.length() < XEPS) {
+        hinge2 = geometry::Vector3D(1.0, 0.0, 0.0); // Default hinge
+    } else {
+        hinge2 = hinge2 / hinge2.length();
+    }
+
+    // Rotate rot2 to align z-axis with axis_h
+    temp_rot = arb_rotation(hinge2, -TipInc2);
+    geometry::Matrix3D rot2_h = temp_rot * rot2;
+
+    // Calculate helical midstep frame orientation
+    // Sum of x and y axes from rotated frames
+    geometry::Vector3D h_x = rot1_h.column(0) + rot2_h.column(0);
+    geometry::Vector3D h_y = rot1_h.column(1) + rot2_h.column(1);
+    
+    // Normalize
+    double h_x_len = h_x.length();
+    double h_y_len = h_y.length();
+    if (h_x_len > XEPS) h_x = h_x / h_x_len;
+    if (h_y_len > XEPS) h_y = h_y / h_y_len;
+
+    // Build helical midstep orientation matrix
+    geometry::Matrix3D mst_orienH = x_y_z_2_mtx(h_x, h_y, axis_h);
+    
+
+    // Calculate h-Twist (pars[6]): angle between y-axes of rotated frames around axis_h
+    geometry::Vector3D y1_h = rot1_h.column(1);
+    geometry::Vector3D y2_h = rot2_h.column(1);
+    params.twist = vec_ang(y1_h, y2_h, axis_h);
+
+    // Calculate h-Rise (pars[3]): projection of org2-org1 onto axis_h
+    geometry::Vector3D org_diff = org2 - org1;
+    params.rise = org_diff.dot(axis_h);
+
+    // Calculate Tip and Inclination (pars[5] and pars[4])
+    geometry::Vector3D h_x_norm = h_x;
+    if (h_x_norm.length() > XEPS) h_x_norm = h_x_norm / h_x_norm.length();
+    
+    // phi: angle between hinge1 and h_x around axis_h
+    double phi = deg2rad(vec_ang(hinge1, h_x_norm, axis_h));
+    params.tip = TipInc1 * std::cos(phi);
+    params.inclination = TipInc1 * std::sin(phi);
+
+    // Calculate X-disp and Y-disp (pars[1] and pars[2])
+    // Project displacement onto helical frame
+    geometry::Vector3D t1_proj = org_diff - (params.rise * axis_h);
+    
+    // Calculate org1_h and org2_h on helical axis
+    constexpr double HTWIST0 = 0.1; // Threshold for small twist angle
+    geometry::Vector3D org1_h, org2_h;
+    
+    if (std::abs(params.twist) < HTWIST0) {
+        // Small twist: use midpoint
+        org1_h = org1 + 0.5 * t1_proj;
+    } else {
+        // Large twist: calculate axis displacement
+        geometry::Vector3D AD_axis = get_vector(t1_proj, axis_h, 90.0 - params.twist / 2.0);
+        double AD_mag = 0.5 * t1_proj.length() / std::sin(deg2rad(params.twist / 2.0));
+        org1_h = org1 + AD_mag * AD_axis;
+    }
+    
+    org2_h = org1_h + params.rise * axis_h;
+    
+    // Update helical midstep origin now that we have org1_h and org2_h
+    geometry::Vector3D mst_orgH = (org1_h + org2_h) * 0.5;
+    params.midstep_frame = core::ReferenceFrame(mst_orienH, mst_orgH);
+
+    // Calculate X-disp and Y-disp from org1_h to org1
+    geometry::Vector3D disp = org1_h - org1;
+    
+    // Project onto rotated frame axes
+    geometry::Vector3D rot1_h_x = rot1_h.column(0);
+    geometry::Vector3D rot1_h_y = rot1_h.column(1);
+    
+    params.x_displacement = disp.dot(rot1_h_x);
+    params.y_displacement = disp.dot(rot1_h_y);
+
     return params;
 }
 
