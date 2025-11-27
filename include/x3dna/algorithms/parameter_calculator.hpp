@@ -61,6 +61,15 @@ public:
                                                          const core::BasePair& pair2);
 
     /**
+     * @brief Calculate helical parameters from two reference frames
+     * @param frame1 First reference frame
+     * @param frame2 Second reference frame
+     * @return HelicalParameters structure
+     */
+    core::HelicalParameters calculate_helical_parameters_impl(const core::ReferenceFrame& frame1,
+                                                              const core::ReferenceFrame& frame2);
+
+    /**
      * @brief Calculate step parameters for all consecutive pairs
      * @param pairs Vector of base pairs
      * @return Vector of step parameters (one per consecutive pair)
