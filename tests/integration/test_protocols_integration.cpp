@@ -135,14 +135,36 @@ protected:
     
     /**
      * @brief Compare base pairs from protocol with legacy JSON
+     * 
+     * Verifies that modern protocol output matches legacy JSON from data/json_legacy/
      */
     void compare_base_pairs(const std::vector<BasePair>& modern_pairs,
                            const std::vector<nlohmann::json>& legacy_pairs,
                            const std::string& pdb_name) {
+        // Verify legacy pairs were loaded (from data/json_legacy/base_pair/)
+        EXPECT_FALSE(legacy_pairs.empty())
+            << "No legacy base pairs loaded from data/json_legacy/base_pair/ for " << pdb_name;
+        
+        if (legacy_pairs.empty()) {
+            return;  // Can't compare if no legacy data
+        }
+        
+        // Log legacy values for verification
+        std::cout << "Comparing " << pdb_name << ": modern=" << modern_pairs.size() 
+                  << ", legacy=" << legacy_pairs.size() << " pairs" << std::endl;
+        
+        // Verify legacy pairs have correct structure (base_i, base_j)
+        if (!legacy_pairs.empty()) {
+            const auto& first_legacy = legacy_pairs[0];
+            EXPECT_TRUE(first_legacy.contains("base_i") && first_legacy.contains("base_j"))
+                << "Legacy JSON missing base_i/base_j fields (not from data/json_legacy/)";
+        }
+        
         EXPECT_EQ(modern_pairs.size(), legacy_pairs.size())
             << "Base pair count mismatch for " << pdb_name
             << ": modern=" << modern_pairs.size()
-            << ", legacy=" << legacy_pairs.size();
+            << ", legacy=" << legacy_pairs.size()
+            << " (legacy from data/json_legacy/base_pair/)";
         
         if (modern_pairs.size() != legacy_pairs.size()) {
             return;  // Can't compare if counts don't match
@@ -160,15 +182,13 @@ protected:
         }
         
         for (const auto& pair_json : legacy_pairs) {
-            // Legacy JSON uses "base_i" and "base_j" (1-based indices)
+            // Legacy JSON uses "base_i" and "base_j" (1-based indices from org code)
+            EXPECT_TRUE(pair_json.contains("base_i") && pair_json.contains("base_j"))
+                << "Legacy JSON missing base_i/base_j (should be from data/json_legacy/)";
+            
             if (pair_json.contains("base_i") && pair_json.contains("base_j")) {
                 int i = pair_json["base_i"].get<int>();
                 int j = pair_json["base_j"].get<int>();
-                legacy_set.insert({std::min(i, j), std::max(i, j)});
-            } else if (pair_json.contains("residue1") && pair_json.contains("residue2")) {
-                // Fallback: modern format uses "residue1" and "residue2"
-                int i = pair_json["residue1"].get<int>();
-                int j = pair_json["residue2"].get<int>();
                 legacy_set.insert({std::min(i, j), std::max(i, j)});
             }
         }
@@ -188,7 +208,7 @@ protected:
         for (const auto& pair : legacy_set) {
             EXPECT_TRUE(modern_set.find(pair) != modern_set.end())
                 << "Pair (" << pair.first << ", " << pair.second
-                << ") found in legacy but not in modern for " << pdb_name;
+                << ") found in legacy (from data/json_legacy/) but not in modern for " << pdb_name;
         }
     }
 };
@@ -231,9 +251,22 @@ TEST_F(ProtocolsIntegrationTest, FindPairProtocolSinglePDB) {
     // Load legacy base pairs from data/json_legacy/base_pair/PDB_ID.json
     auto legacy_pairs = load_legacy_base_pairs(pair.json_file);
     
-    // Compare with legacy JSON
+    // Verify legacy values were loaded from data/json_legacy/
+    EXPECT_FALSE(legacy_pairs.empty())
+        << "Failed to load legacy base pairs from data/json_legacy/base_pair/ for " << pair.pdb_name;
+    
+    // Verify legacy pairs have correct structure (from org code)
     if (!legacy_pairs.empty()) {
-        // Compare base pairs with legacy (from data/json_legacy/)
+        const auto& first_legacy = legacy_pairs[0];
+        EXPECT_TRUE(first_legacy.contains("base_i") && first_legacy.contains("base_j"))
+            << "Legacy JSON missing base_i/base_j (not from org code output)";
+        EXPECT_TRUE(first_legacy.contains("bp_type"))
+            << "Legacy JSON missing bp_type (not from org code output)";
+    }
+    
+    // Compare with legacy JSON from data/json_legacy/
+    if (!legacy_pairs.empty()) {
+        // Compare base pairs with legacy (from data/json_legacy/ - org code output)
         compare_base_pairs(modern_pairs, legacy_pairs, pair.pdb_name);
     } else {
         // If no legacy pairs found, at least verify protocol executed
