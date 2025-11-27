@@ -52,6 +52,10 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
     // Use the legacy_residue_idx already stored on atoms (set during PDB parsing, NOT from JSON)
     std::map<int, const Residue*> residue_by_legacy_idx;
     int max_legacy_idx = 0;
+    
+    // Store Phase 1 validation results: key is (min(i,j), max(i,j)) normalized pair
+    // This ensures we use the same validation result regardless of order
+    std::map<std::pair<int, int>, ValidationResult> phase1_validation_results;
 
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
@@ -100,6 +104,13 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
 
                 // Validate pair (matches legacy check_pair)
                 ValidationResult result = validator_.validate(*res1, *res2);
+
+                // Store validation result for use during selection (normalized by index order)
+                // This ensures consistency between Phase 1 and selection
+                std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2) ?
+                    std::make_pair(legacy_idx1, legacy_idx2) :
+                    std::make_pair(legacy_idx2, legacy_idx1);
+                phase1_validation_results[normalized_pair] = result;
 
                 // Record validation and base_pair for all pairs that pass validation
                 // (matches legacy check_pair -> calculate_more_bppars ->
@@ -153,7 +164,7 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
 
             // Find best partner for this residue (using legacy 1-based index from PDB parsing)
             auto best_partner = find_best_partner(legacy_idx1, structure, matched_indices,
-                                                  residue_by_legacy_idx, writer);
+                                                  residue_by_legacy_idx, phase1_validation_results, writer);
 
             if (!best_partner.has_value()) {
                 continue;
@@ -164,17 +175,44 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
 
             // Check if res_idx2's best partner is res_idx1 (mutual best match)
             auto partner_of_partner = find_best_partner(legacy_idx2, structure, matched_indices,
-                                                        residue_by_legacy_idx, writer);
+                                                        residue_by_legacy_idx, phase1_validation_results, writer);
 
             if (partner_of_partner.has_value() && partner_of_partner->first == legacy_idx1) {
-                // Mutual best match found - create base pair
-                matched_indices[legacy_idx1] = true;
-                matched_indices[legacy_idx2] = true;
-
-                // Get second residue using legacy index
+                // Mutual best match found - get second residue first
                 auto res2_it = residue_by_legacy_idx.find(legacy_idx2);
                 const Residue* res2_ptr =
                     (res2_it != residue_by_legacy_idx.end()) ? res2_it->second : nullptr;
+                
+                if (!res2_ptr) {
+                    continue; // Safety check
+                }
+                
+                // Double-check validation to ensure pair is still valid
+                // CRITICAL: Validate in same order as Phase 1 (lower index first)
+                // Phase 1 validates (i, j) where i < j, so we must do the same
+                // This ensures consistency with Phase 1 validation results
+                ValidationResult final_check;
+                const Residue* check_res1;
+                const Residue* check_res2;
+                if (legacy_idx1 < legacy_idx2) {
+                    // Normal order: (i, j) where i < j
+                    check_res1 = res1_ptr;
+                    check_res2 = res2_ptr;
+                } else {
+                    // Swapped: normalize to (min, max) order
+                    check_res1 = res2_ptr;  // Lower index residue
+                    check_res2 = res1_ptr;  // Higher index residue
+                }
+                final_check = validator_.validate(*check_res1, *check_res2);
+                if (!final_check.is_valid) {
+                    // Pair is invalid - skip it (this should not happen if validation is consistent)
+                    // This catches cases where validation results differ between phases
+                    continue;
+                }
+                
+                // Mutual best match found - create base pair
+                matched_indices[legacy_idx1] = true;
+                matched_indices[legacy_idx2] = true;
 
                 // Create BasePair object (using 0-based indices for BasePair)
                 // Convert from legacy 1-based indices to 0-based by subtracting 1
@@ -287,6 +325,7 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
     const Structure& /* structure */, // Unused, kept for API compatibility
     const std::vector<bool>& matched_indices,
     const std::map<int, const Residue*>& residue_by_legacy_idx,
+    const std::map<std::pair<int, int>, ValidationResult>& phase1_validation_results,
     io::JsonWriter* /* writer */) const {
 
     // Get residue using legacy index
@@ -340,16 +379,44 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             continue; // Skip non-nucleotide residues (RY[j] < 0 equivalent)
         }
 
-        // Validate pair
-        ValidationResult result = validator_.validate(*res1, *residue);
+        // Validate pair - use Phase 1 validation result if available
+        // This ensures consistency: if Phase 1 said pair is invalid, don't select it
+        std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2) ?
+            std::make_pair(legacy_idx1, legacy_idx2) :
+            std::make_pair(legacy_idx2, legacy_idx1);
+        
+        ValidationResult result;
+        auto phase1_it = phase1_validation_results.find(normalized_pair);
+        if (phase1_it != phase1_validation_results.end()) {
+            // Use Phase 1 validation result for consistency
+            // CRITICAL: If Phase 1 said pair is invalid, we must not select it
+            result = phase1_it->second;
+            // Skip if invalid (this is the key fix - use Phase 1 result, not re-validate)
+            if (!result.is_valid) {
+                continue; // Pair was invalid in Phase 1, skip it
+            }
+        } else {
+            // Fallback: validate on the fly (shouldn't happen if Phase 1 ran and writer was set)
+            // But if writer is nullptr, Phase 1 didn't run, so we need to validate here
+            if (legacy_idx1 < legacy_idx2) {
+                result = validator_.validate(*res1, *residue);
+            } else {
+                result = validator_.validate(*residue, *res1);
+            }
+            // Still check validity
+            if (!result.is_valid) {
+                continue;
+            }
+        }
 
         // NOTE: Validation results are now recorded in Phase 1 (validate_all_pairs)
         // We only use the result here for best partner selection
 
         // Check if valid and has better score
+        // Note: result.is_valid is already checked above (we skip invalid pairs)
         // CRITICAL: Legacy uses rtn_val[5] which is AFTER adjust_pairQuality and bp_type_id
         // adjustment We need to calculate the adjusted quality_score here for pair selection
-        if (result.is_valid) {
+        {
             // Apply adjust_pairQuality adjustment
             double quality_adjustment = adjust_pair_quality(result.hbonds);
             double adjusted_quality_score = result.quality_score + quality_adjustment;
@@ -627,6 +694,12 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
     if (type == ResidueType::ADENINE || type == ResidueType::CYTOSINE ||
         type == ResidueType::GUANINE || type == ResidueType::THYMINE ||
         type == ResidueType::URACIL) {
+        return true;
+    }
+
+    // Check for modified nucleotides (PSEUDOURIDINE, INOSINE, NONCANONICAL_RNA)
+    if (type == ResidueType::PSEUDOURIDINE || type == ResidueType::INOSINE ||
+        type == ResidueType::NONCANONICAL_RNA) {
         return true;
     }
 

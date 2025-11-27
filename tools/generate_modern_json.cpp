@@ -237,6 +237,9 @@ int main(int argc, char* argv[]) {
                     FrameCalculationResult frame_result = calculator.calculate_frame(residue);
 
                     if (frame_result.is_valid) {
+                        // CRITICAL: Store frame on residue (required for validation in find_pairs)
+                        residue.set_reference_frame(frame_result.frame);
+                        
                         char base_type = residue.one_letter_code();
 
                         // Record base_frame_calc
