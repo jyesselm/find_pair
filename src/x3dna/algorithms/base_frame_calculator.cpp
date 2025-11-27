@@ -60,6 +60,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
                                                                    " N1 ", " C6 ", " C5 "};
         static const std::vector<std::string> purine_ring_atoms = {" N7 ", " C8 ", " N9 "};
+        static const std::vector<std::string> nitrogen_atoms = {" N1 ", " N3 "};
 
         for (const auto& atom_name : common_ring_atoms) {
             for (const auto& atom : residue.atoms()) {
@@ -83,7 +84,24 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
             }
         }
 
-        has_ring_atoms = (ring_atom_count >= 3);
+        // CRITICAL: Require nitrogen atoms (N1 or N3) to prevent non-nucleotides
+        // like glucose (GLC) from being treated as nucleotides
+        // This matches the fix in BasePairFinder::is_nucleotide()
+        bool has_nitrogen = false;
+        for (const auto& atom_name : nitrogen_atoms) {
+            for (const auto& atom : residue.atoms()) {
+                if (atom.name() == atom_name) {
+                    has_nitrogen = true;
+                    break;
+                }
+            }
+            if (has_nitrogen) {
+                break;
+            }
+        }
+
+        // Require >= 3 ring atoms AND at least one nitrogen atom (N1 or N3)
+        has_ring_atoms = (ring_atom_count >= 3 && has_nitrogen);
 
 #ifdef DEBUG_FRAME_CALC
         if (has_ring_atoms) {
