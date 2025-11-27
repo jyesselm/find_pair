@@ -87,7 +87,8 @@ void FindPairProtocol::find_pairs(core::Structure& structure) {
         params.min_base_hb = thresholds.min_base_hb;
         params.hb_lower = thresholds.hb_lower;
         params.hb_dist1 = thresholds.hb_dist1;
-        params.hb_dist2 = thresholds.hb_dist2;
+        // Note: hb_dist2 is not part of ValidationParameters
+        // It's used in hydrogen bond conflict resolution but not in validation
         params.hb_atoms = thresholds.hb_atoms;
         params.overlap_threshold = thresholds.overlap_threshold;
         pair_finder_.set_parameters(params);
