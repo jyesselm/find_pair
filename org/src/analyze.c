@@ -600,6 +600,9 @@ void analyze_cmdline(int argc, char *argv[], struct_args_ana *args)
     } else {
         if (is_empty_string(args->torsion)) {
             for (j = i; j < argc; j++) {
+                /* Skip arguments that look like flags (start with -) */
+                if (argv[j][0] == '-' && strcmp(argv[j], "tmpfile") != 0)
+                    continue;
                 if (strcmp(argv[j], "tmpfile"))
                     fprintf(stderr, "\n......Processing structure #%ld: <%s>......\n",
                             j - i + 1, argv[j]);
