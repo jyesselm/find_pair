@@ -1,7 +1,13 @@
 # Next Steps & Action Plan
 
 **Last Updated**: 2025-01-27  
-**Current Focus**: Stage 6 (ParameterCalculator) - ✅ COMPLETE, optional improvements for 100% match
+**Current Focus**: Fixing remaining 4 pairs (2 missing + 2 extra) to achieve 100% match on 6CAQ
+
+**Recent Updates**:
+- ✅ Fixed `is_nucleotide()` to include PSEUDOURIDINE, INOSINE, NONCANONICAL_RNA (2025-01-27)
+- ✅ Reduced missing pairs from 10 to 2 in 6CAQ
+- ⚠️ Found bug: 2 invalid pairs (is_valid=0) are being selected
+- ⏳ Investigating why invalid pairs are selected and fixing tie-breaking for 2 missing pairs
 
 ---
 
@@ -22,9 +28,10 @@
 - **1ZX7, 2B8R**: 100% perfect matches
 
 **Remaining Issues** (<1% of pairs):
-- 5 pairs: Modified nucleotides without frames (PSU, G7M, M2G, 2MG, 5MC) - separate issue
+- ✅ **FIXED**: Modified nucleotides now recognized (updated `is_nucleotide()` to include PSEUDOURIDINE, INOSINE, NONCANONICAL_RNA)
+- **2 missing pairs**: (968, 1024), (980, 998) - matching quality scores, likely tie-breaking issue
+- **2 extra pairs**: (980, 997), (1024, 1188) - have `is_valid=0` but are in selection (BUG - should not be selected)
 - Some pairs: Step parameter differences causing `bp_type_id` mismatches
-- 3 pairs: Quality score tie-breaking (acceptable)
 
 **Overall Progress**: From ~90% to ~99% match rate - **significant improvement achieved**.
 
@@ -79,20 +86,19 @@ Pair (1102, 1127) in 6CAQ showed:
 
 ---
 
-## Secondary Priority: Investigate Missing Pairs in 6CAQ ✅ COMPLETE
+## Secondary Priority: Investigate Missing Pairs in 6CAQ ✅ MOSTLY COMPLETE
 
 ### Problem
-10 pairs are missing in modern but exist in legacy:
+10 pairs were missing in modern but exist in legacy:
 - (495, 498), (501, 506), (939, 1378), (968, 1024), (980, 998)
 - (1029, 1184), (1380, 1473), (1382, 1470), (1385, 1467), (1489, 1492)
 
 ### Investigation Results ✅
 
-1. **Pairs NOT validated (5 pairs)**: Modified nucleotides without frames
-   - (495, 498): Residue 495 (PSU) has no frame
-   - (501, 506): Residue 506 (G7M) has no frame
-   - (939, 1378): Both residues (M2G, 5MC) have no frames
-   - (1029, 1184): Residue 1184 (2MG) has no frame
+1. **Pairs NOT validated (8 pairs)**: Modified nucleotides not recognized as nucleotides ✅ FIXED
+   - **Root Cause**: `is_nucleotide()` function didn't check for `PSEUDOURIDINE`, `INOSINE`, or `NONCANONICAL_RNA` residue types
+   - **Fix Applied**: Updated `is_nucleotide()` in `src/x3dna/algorithms/base_pair_finder.cpp` to include these types
+   - **Result**: All 8 pairs now validated (though some fail validation due to geometric constraints, which is correct)
    - **Root Cause**: Frame calculation fails for modified nucleotides (PSU, G7M, M2G, 2MG, 5MC)
    - **Status**: Separate issue - frame calculation for modified nucleotides needs improvement
 
@@ -255,14 +261,26 @@ When quality scores are identical, selection order may differ between legacy and
    - **Impact**: Ensures correct base letters (A, C, G, T, U) for WC_LIST matching
    - **Result**: More reliable `bp_type_id` classification
 
-3. **Overall Match Rate**: Improved from ~90% to ~99%
+3. **Modified Nucleotides Investigation** (2025-01-27): ✅ COMPLETE
+   - **Investigated**: Validation discrepancy for modified nucleotides
+   - **Result**: Frames are calculated and stored correctly
+   - **Finding**: Pairs correctly fail validation due to geometric constraints (d_v_check), not frame calculation issues
+   - **Tool Created**: `debug_dorg_discrepancy` tool for investigation
+
+4. **Step Parameter Differences Investigation** (2025-01-27): ✅ COMPLETE
+   - **Investigated**: bp_type_id differences between legacy and modern
+   - **Result**: Found 10 pairs in 6CAQ with bp_type_id differences
+   - **Finding**: Direction vectors and geometric values match perfectly, suggesting step parameter calculation differences
+   - **Tool Created**: `scripts/investigate_bp_type_id_differences.py` for analysis
+
+5. **Overall Match Rate**: Improved from ~90% to ~99%
    - **20 PDBs tested**: 16/20 perfect matches (80%), 99.32% overall match rate
    - **6CAQ**: 613/623 pairs (98.4% match)
    - **1ZX7, 2B8R**: 100% perfect matches
 
 ### Remaining Issues (for 100% match)
 
-1. **Modified Nucleotides** (5 pairs in 6CAQ): ✅ PARTIALLY FIXED
+1. **Modified Nucleotides** (5 pairs in 6CAQ): ✅ FIXED - Frames calculated correctly
    - Residues: PSU, G7M, M2G, 2MG, 5MC
    - **Fix Applied**: Added detection for pseudouridine (C1'-C5 bond) and NONCANONICAL_RNA handling
    - **Result**: All modified nucleotides now have frames calculated correctly
@@ -270,16 +288,57 @@ When quality scores are identical, selection order may differ between legacy and
      - G7M, M2G, 2MG → Atomic_G.pdb (guanine template)
      - 5MC → Atomic_C.pdb (cytosine template)
    - **RMS fits match legacy** (e.g., PSU seq=516: rms=0.039442 in both)
-   - **Remaining Issue**: These pairs still fail geometric validation (d_v_check, distance_check)
-     - Example: (495, 498) has dorg=17.25 in validation but frame origins are only 6.46 apart
-     - This suggests a discrepancy between stored frames and validation calculation
-   - Priority: Medium - requires deeper investigation into validation flow
+   - **Investigation Results** (2025-01-27):
+     - ✅ Frames are calculated and stored correctly on residue objects
+     - ✅ dorg calculation matches between frame origins and validation (verified with debug_dorg_discrepancy tool)
+     - ✅ Validation correctly fails these pairs on geometric checks (d_v_check, distance_check)
+     - Example: (495, 498) - dorg=10.0161 Å, d_v=8.5698 (fails d_v_check: > 2.5)
+     - **Status**: These pairs correctly fail validation due to geometric constraints, not frame calculation issues
+   - Priority: Low - behavior is correct, pairs fail validation as expected
 
-2. **Step Parameter Differences** (some pairs):
-   - Issue: Modern assigns `bp_type_id = 2` but legacy keeps `-1` for some pairs
-   - Possible causes: Subtle differences in step parameter calculation
-   - Status: Needs deeper investigation
-   - Priority: Low (affects very few pairs)
+2. **is_nucleotide() Fix** (2025-01-27): ✅ COMPLETE
+   - **Problem**: 8 pairs not being validated because modified nucleotides weren't recognized
+   - **Root Cause**: `is_nucleotide()` didn't check for `PSEUDOURIDINE`, `INOSINE`, or `NONCANONICAL_RNA` types
+   - **Fix Applied**: Updated `is_nucleotide()` in `src/x3dna/algorithms/base_pair_finder.cpp` to include these types
+   - **Result**: Reduced missing pairs from 10 to 2 in 6CAQ
+   - **Status**: All 8 pairs now validated (some correctly fail validation due to geometric constraints)
+
+3. **Invalid Pairs Being Selected** (2 pairs): ⚠️ BUG FOUND - INVESTIGATING
+   - **Problem**: Pairs (980, 997) and (1024, 1188) have `is_valid=0` in recorded validation but are in modern selection
+   - **Root Cause Hypothesis**: Validation results differ between Phase 1 (recording) and selection phase
+     - Phase 1: Records validation for pairs where `i < j` (lines 81-110)
+     - Selection: Validates pairs in both directions via `find_best_partner`
+     - `find_best_partner` only returns pairs where `result.is_valid == true` (line 352)
+   - **Investigation**: 
+     - Added safety check (line 172) but it won't trigger since `find_best_partner` filters invalid pairs
+     - Need to verify: Are frames different? Are validation parameters different? Is validation non-deterministic?
+   - **Status**: Validation should be symmetric - investigating why results differ
+   - **Priority**: HIGH - This is a bug that needs to be fixed
+
+4. **Tie-Breaking Issues** (2 pairs): ⏳ PENDING
+   - **Problem**: Pairs (968, 1024) and (980, 998) have matching quality scores but different selection
+   - **Status**: Likely tie-breaking issue - acceptable if scores match exactly
+   - **Priority**: LOW - Acceptable difference when scores match
+
+5. **Step Parameter Differences** (some pairs): ⏳ INVESTIGATED
+   - Issue: Modern assigns `bp_type_id = 2` but legacy keeps `-1` for some pairs (or vice versa)
+   - **Investigation Results** (2025-01-27):
+     - Found 10 pairs in 6CAQ with bp_type_id differences
+     - 7 pairs: Modern=2, Legacy=-1
+     - 3 pairs: Modern=-1, Legacy=2
+     - Direction vectors match perfectly between legacy and modern
+     - Geometric values (dorg, d_v, plane_angle) match perfectly
+     - Direction vector condition (dir_x > 0 && dir_y < 0 && dir_z < 0) is met for all pairs
+     - **Root Cause**: Likely differences in step parameter calculation (shear, stretch, opening)
+       - Step parameters are not stored in JSON for single pairs (only for consecutive pairs in helices)
+       - Need to add debug output to `calculate_bp_type_id()` to compare step parameters
+     - **Possible Causes**:
+       1. Step parameter calculation differences (shear, stretch, opening thresholds)
+       2. Base pair type string differences (WC_LIST matching - "AT", "GC", etc.)
+       3. Frame reversal logic differences (though direction vectors match)
+   - **Status**: Investigation tool created (`scripts/investigate_bp_type_id_differences.py`)
+   - **Next Steps**: Add debug logging to compare step parameters for mismatched pairs
+   - Priority: Low (affects very few pairs, ~10 in 6CAQ out of 623 total)
 
 3. **Quality Score Tie-Breaking** (3 pairs in 6CAQ):
    - Issue: When quality scores match exactly, selection order may differ
@@ -295,9 +354,10 @@ When quality scores are identical, selection order may differ between legacy and
    - **Fixed**: Added NONCANONICAL_RNA handling for modified nucleotides
    - **Result**: All modified nucleotides now have frames (PSU, G7M, M2G, 2MG, 5MC)
 
-2. **Investigate Step Parameter Differences**:
-   - Add debug logging to compare step parameters for mismatched pairs
-   - Verify frame reversal is applied correctly in all cases
+2. **Investigate Step Parameter Differences**: ✅ TOOL CREATED
+   - ✅ Created `tools/debug_bp_type_id_step_params.cpp` to debug step parameters
+   - ⏳ Need to verify pair indices match between JSON and PDB parsing
+   - Next: Run tool on confirmed mismatched pairs to compare step parameters
 
 3. **Run 100-Set Test**:
    - Measure overall improvement on larger test set

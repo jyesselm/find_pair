@@ -130,6 +130,15 @@ target_link_libraries(debug_hbond_conflict_resolution PRIVATE x3dna)
 add_executable(debug_dorg_discrepancy tools/debug_dorg_discrepancy.cpp)
 target_link_libraries(debug_dorg_discrepancy PRIVATE x3dna)
 
+add_executable(debug_bp_type_id_step_params tools/debug_bp_type_id_step_params.cpp)
+target_link_libraries(debug_bp_type_id_step_params PRIVATE x3dna)
+
+add_executable(debug_direction_vectors tools/debug_direction_vectors.cpp)
+target_link_libraries(debug_direction_vectors PRIVATE x3dna)
+
+add_executable(compare_validation_discrepancy tools/compare_validation_discrepancy.cpp)
+target_link_libraries(compare_validation_discrepancy PRIVATE x3dna)
+
 # Documentation
 if(BUILD_DOCS)
     find_package(Doxygen)

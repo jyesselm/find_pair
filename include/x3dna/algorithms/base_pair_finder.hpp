@@ -122,6 +122,7 @@ private:
         const core::Structure& structure,
         const std::vector<bool>& matched_indices,
         const std::map<int, const core::Residue*>& residue_by_legacy_idx,
+        const std::map<std::pair<int, int>, ValidationResult>& phase1_validation_results,
         io::JsonWriter* writer = nullptr) const;
 
     /**
