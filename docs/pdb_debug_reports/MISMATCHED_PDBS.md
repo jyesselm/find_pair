@@ -1,8 +1,8 @@
 # Mismatched PDBs Report
 
 **Generated**: 2025-11-28  
-**Test**: 84 PDBs with `--fix-indices`  
-**Result**: 83/84 perfect (98.8%)
+**Test**: 255 PDBs with `--fix-indices`  
+**Result**: 250/255 perfect (98.0%)
 
 ---
 
@@ -10,12 +10,26 @@
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ Perfect Match | 83 | 98.8% |
-| ⚠️ Has Differences | 1 | 1.2% |
+| ✅ Perfect Match | 250 | 98.0% |
+| ⚠️ Has Differences | 5 | 2.0% |
+
+**All 5 mismatches are due to legacy data quality issues (duplicate records), NOT code bugs.**
 
 ---
 
-## Mismatched PDB: 1EFW
+## All Mismatched PDBs
+
+| PDB | Missing | Extra | Legacy Duplicates | Root Cause |
+|-----|---------|-------|-------------------|------------|
+| 1EFW | 1 | 2 | 110 | Duplicate records |
+| 1QRU | 1 | 1 | 56 | Duplicate records |
+| 1TN1 | 0 | 1 | 56 | Duplicate records |
+| 1TN2 | 0 | 1 | 56 | Duplicate records |
+| 1TTT | 1 | 2 | 184 | Duplicate records |
+
+---
+
+## Detailed Analysis: 1EFW
 
 ### Pair Differences
 

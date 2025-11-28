@@ -218,22 +218,69 @@ JsonWriter (output)
 
 ---
 
+## Test Results Summary
+
+**255 PDBs tested with `--fix-indices`: 250 perfect (98.0%)**
+
+| Batch | Tested | Perfect | Rate |
+|-------|--------|---------|------|
+| First 100 | 84 | 83 | 98.8% |
+| Next 200 | 171 | 167 | 97.7% |
+| **Total** | **255** | **250** | **98.0%** |
+
+All 5 mismatches are **legacy data issues** (duplicate records), NOT code bugs.
+
+---
+
+## Next Steps
+
+### Priority 1: Re-test Residue Recognition PDBs ⏳
+
+These were flagged earlier - need to verify if `--fix-indices` resolves them:
+
+| PDB | Issue | Command |
+|-----|-------|---------|
+| 3KNC | Only 16/66 residues recognized | `./build/generate_modern_json data/pdb/3KNC.pdb data/json --fix-indices` |
+| 5UJ2 | Residue 2 missing (0 atoms) | `./build/generate_modern_json data/pdb/5UJ2.pdb data/json --fix-indices` |
+
+### Priority 2: Legacy Data Issues (Low Priority)
+
+These 5 PDBs have **duplicate records in legacy JSON** - legacy data bug, not modern code bug:
+
+| PDB | Missing | Extra | Legacy Duplicates |
+|-----|---------|-------|-------------------|
+| 1EFW | 1 | 2 | 110 |
+| 1QRU | 1 | 1 | 56 |
+| 1TN1 | 0 | 1 | 56 |
+| 1TN2 | 0 | 1 | 56 |
+| 1TTT | 1 | 2 | 184 |
+
+**Action**: Accept as legacy data issues OR regenerate legacy JSON.
+
+### Priority 3: Expand Testing
+
+- [ ] Test on full 1000-set (skip corrupted legacy JSONs)
+- [ ] Count how many legacy JSONs have parse errors
+- [ ] Regenerate corrupted legacy JSONs if needed
+
+---
+
 ## Success Criteria
 
-### Short Term (This Week)
-- [ ] Test --fix-indices with full workflow
-- [ ] Investigate all 9 missing pairs in 6CAQ
-- [ ] Document root causes
+### ✅ Completed
+- [x] Test --fix-indices with full workflow
+- [x] Test on 255 PDBs - 98.0% match
+- [x] Identify all mismatches as legacy data issues
+- [x] 6CAQ now matches 100% with --fix-indices
 
-### Medium Term (Next 1-2 Weeks)
-- [ ] Fix 6CAQ to 100% match
-- [ ] Investigate 3KNC residue recognition
-- [ ] Investigate 5UJ2 missing residue
+### In Progress
+- [ ] Re-test 3KNC and 5UJ2 with --fix-indices
+- [ ] Expand testing to 500+ PDBs
 
 ### Long Term
-- [ ] 100% match on 100-set test
-- [ ] All PDBs pass
-- [ ] Documentation complete
+- [ ] Fix root cause in PdbParser (so --fix-indices not needed)
+- [ ] Regenerate corrupted legacy JSONs
+- [ ] 100% match on all valid PDBs
 
 ---
 
