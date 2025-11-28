@@ -73,7 +73,11 @@ def get_all_pdb_ids(project_root: Path) -> List[str]:
 
 def get_test_set_path(project_root: Path, size: int) -> Path:
     """Get the path to a test set file."""
-    test_sets_dir = project_root / "data" / "test_sets"
+    # Check resources/test_sets first (new location), fall back to data/test_sets (old location)
+    resources_dir = project_root / "resources" / "test_sets"
+    data_dir = project_root / "data" / "test_sets"
+    
+    test_sets_dir = resources_dir if resources_dir.exists() else data_dir
     test_sets_dir.mkdir(parents=True, exist_ok=True)
     return test_sets_dir / f"test_set_{size}.json"
 
@@ -896,7 +900,8 @@ def generate_test_sets(seed, force):
         click.echo()
 
     click.echo("Test set generation complete!")
-    click.echo(f"Test sets saved in: {project_root / 'data' / 'test_sets'}")
+    test_sets_dir = project_root / "resources" / "test_sets"
+    click.echo(f"Test sets saved in: {test_sets_dir}")
 
 
 def main():

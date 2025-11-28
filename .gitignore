@@ -6,6 +6,24 @@ data/json_legacy
 cmake-build-*/
 .cache
 
+# Temporary test files
+*.inp
+*.out
+
+# Temporary directories
+temp_compare/
+base_frame_calc/
+
+# Temporary data files
+bestpairs.pdb
+bp_order.dat
+hel_regions.pdb
+col_*.scr
+*.par
+
+# Generated comparison results
+comparison_results_summary.json
+
 # Python
 __pycache__/
 *.py[cod]

@@ -6,27 +6,38 @@
 
 ## Overview
 
-The data directory is organized to separate modern JSON files, legacy JSON files, and comparison data.
+Resources (required runtime files) and data (test inputs and generated outputs) are now separated:
+
+- **`resources/`** - Required runtime resources (templates, config, test sets)
+- **`data/`** - Test inputs (PDB files) and generated outputs (JSON files)
 
 ---
 
 ## Directory Structure
 
+### Resources Directory (Required Runtime Resources)
+
+```
+resources/
+├── templates/          # Template files for base frame calculation
+│   └── Atomic_*.pdb
+├── config/             # Configuration files
+│   └── special_residues.json
+└── test_sets/          # Test set definitions
+    ├── test_set_10.json
+    ├── test_set_50.json
+    ├── test_set_100.json
+    ├── test_set_500.json
+    └── test_set_1000.json
+```
+
+### Data Directory (Test Inputs and Generated Outputs)
+
 ```
 data/
-├── config/              # Configuration files
-│   └── special_residues.json
-├── pdb/                 # PDB files (keep as-is)
+├── pdb/                 # PDB files (test inputs)
 │   └── *.pdb
-├── templates/           # Template files (keep as-is)
-│   └── Atomic_*.pdb
-├── test_sets/          # Test set definitions
-│   ├── test_set_10.json
-│   ├── test_set_50.json
-│   ├── test_set_100.json
-│   ├── test_set_500.json
-│   └── test_set_1000.json
-├── json/               # Modern JSON files (all modern output)
+├── json/               # Modern JSON files (all modern output, generated)
 │   ├── pdb_atoms/     # PDB atom records
 │   │   └── *.json
 │   ├── base_frame_calc/  # Base frame calculation records

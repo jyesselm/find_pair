@@ -331,13 +331,17 @@ find_pair_2/
     └── modernization/      # Stage-by-stage modernization plan
 ```
 
-## Data Directory Structure
+## Directory Structure
 
-- **`data/pdb/`** - PDB structure files
-- **`data/templates/`** - Template files (Atomic_*.pdb) for base frame calculation
-- **`data/json/`** - Modern JSON output files (segmented by record type)
-- **`data/json_legacy/`** - Legacy JSON output files (reference for comparison)
-- **`data/test_sets/`** - Test set definitions (test_set_10.json, test_set_100.json, etc.)
+### Resources Directory (Required Runtime Resources)
+- **`resources/templates/`** - Template files (Atomic_*.pdb) for base frame calculation
+- **`resources/config/`** - Configuration files (special_residues.json)
+- **`resources/test_sets/`** - Test set definitions (test_set_10.json, test_set_100.json, etc.)
+
+### Data Directory (Test Inputs and Generated Outputs)
+- **`data/pdb/`** - PDB structure files (test inputs)
+- **`data/json/`** - Modern JSON output files (segmented by record type, generated)
+- **`data/json_legacy/`** - Legacy JSON output files (reference for comparison, generated)
 
 See [docs/DATA_STRUCTURE.md](docs/DATA_STRUCTURE.md) for complete data directory documentation.
 
