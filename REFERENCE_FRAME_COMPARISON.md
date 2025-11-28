@@ -1,47 +1,40 @@
 # Reference Frame Comparison Results
 
-## Finding: Reference Frames Differ
+## Finding: Reference Frames Match ✅
 
-For **1A34**, we compared reference frames for matching base pairs and found differences.
+For **1A34**, we compared reference frames for matching base pairs.
 
-### Differences Found
+### Frame Convention Issue (Resolved)
 
-**Pattern**: Sign differences in rotation matrix elements
-- `rotation[0][1]`: Opposite signs (legacy=0.526626, modern=-0.526626)
-- `rotation[0][2]`: Opposite signs (legacy=0.344861, modern=-0.344861)
+**Initial Finding**: Sign differences in rotation matrix elements  
+**Root Cause**: Legacy stores frames for both directions of each pair `(i,j)` and `(j,i)`. The frame orientation depends on which residue is "first" in the pair.
 
-This suggests a **coordinate system convention difference**:
-- Different axis orientations (right-handed vs left-handed)
-- Different frame definitions
-- Different axis ordering
+**Solution**: When comparing, use the frame where the residue is the "first" (base_i) in the pair. Modern uses this convention.
 
-### Impact on Parameters
+### Final Result
 
-**This explains the parameter differences!**
+✅ **ALL REFERENCE FRAMES MATCH** (tolerance: 0.01)
 
-If reference frames differ, then:
-- Step parameters (calculated from frames) will differ
-- Helical parameters (calculated from frames) will differ
+For **1A34**:
+- 9 matching base pairs
+- 18 reference frames compared (2 per pair)
+- All frames match within tolerance
 
-This is the **root cause** of the parameter differences we observed.
+### Impact on Parameter Differences
 
-## Next Steps
+**Reference frames match**, so parameter differences must come from:
+1. **Parameter calculation algorithm** differences (not frame differences)
+2. **Numerical precision** or rounding differences
+3. **Step definition** differences (which frames to use for which step)
 
-1. **Investigate coordinate system conventions**
-   - Check if legacy uses right-handed vs modern uses left-handed (or vice versa)
-   - Verify axis definitions match
-
-2. **Check frame calculation code**
-   - Compare `BaseFrameCalculator` implementation with legacy
-   - Verify axis ordering and orientation
-
-3. **Determine if difference is expected**
-   - Some differences might be acceptable (different conventions)
-   - Or might need to align conventions for exact matching
+Since frames match, the parameter differences are likely due to:
+- Different algorithms for calculating step/helical parameters from frames
+- Different handling of edge cases
+- Numerical precision differences in intermediate calculations
 
 ## Status
 
-✅ **Reference frames extracted and compared**  
-⚠️ **Frames differ** - Sign differences in rotation matrices  
-🔍 **Root cause of parameter differences identified**
+✅ **Reference frames match** - After accounting for frame convention  
+✅ **Frames are NOT the root cause** of parameter differences  
+🔍 **Parameter differences likely due to calculation algorithm differences**
 

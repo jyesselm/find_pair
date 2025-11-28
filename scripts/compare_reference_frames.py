@@ -44,24 +44,59 @@ def load_legacy_frames(pdb_name, project_root):
         return {}
     
     frames = {}
+    # For each residue, prefer frame where it's the "first" (base_i) in the pair
+    # This matches modern convention where orien_i is used
+    residue_as_first = {}  # Track which pair has this residue as base_i
+    
     with open(bp_file) as f:
         data = json.load(f)
         if isinstance(data, list):
             for entry in data:
-                # Legacy base_pair JSON has orien_i, orien_j, org_i, org_j for each pair
-                # Extract frames for both residues in the pair
-                if 'base_i' in entry and 'orien_i' in entry and 'org_i' in entry:
+                if 'base_i' in entry and 'base_j' in entry:
                     base_i = entry['base_i']
-                    frames[base_i] = {
-                        'rotation': entry['orien_i'],
-                        'origin': entry['org_i']
-                    }
-                if 'base_j' in entry and 'orien_j' in entry and 'org_j' in entry:
                     base_j = entry['base_j']
-                    frames[base_j] = {
-                        'rotation': entry['orien_j'],
-                        'origin': entry['org_j']
-                    }
+                    pair_key = normalize_pair(base_i, base_j)
+                    
+                    # Store frame for base_i (when it's first in pair) - prefer this
+                    if 'orien_i' in entry and 'org_i' in entry:
+                        if base_i not in frames or base_i not in residue_as_first:
+                            frames[base_i] = {
+                                'rotation': entry['orien_i'],
+                                'origin': entry['org_i']
+                            }
+                            residue_as_first[base_i] = True
+                    
+                    # Store frame for base_j (when it's second in pair)
+                    # But prefer frame where base_j is first (will overwrite if we find it)
+                    if 'orien_j' in entry and 'org_j' in entry:
+                        if base_j not in frames or base_j not in residue_as_first:
+                            frames[base_j] = {
+                                'rotation': entry['orien_j'],
+                                'origin': entry['org_j']
+                            }
+                            # base_j is NOT first in this pair
+                            if base_j not in residue_as_first:
+                                residue_as_first[base_j] = False
+    
+    # Now update frames for residues that were stored as "second" (orien_j)
+    # Try to find frame where they're "first" (orien_i) - modern uses this convention
+    for entry in data:
+        if 'base_i' in entry and 'base_j' in entry:
+            base_i = entry['base_i']
+            base_j = entry['base_j']
+            
+            # If base_j was stored as second, see if we can find it as first
+            if base_j in residue_as_first and not residue_as_first[base_j]:
+                # Look for entry where base_j is base_i
+                for entry2 in data:
+                    if entry2.get('base_i') == base_j and 'orien_i' in entry2 and 'org_i' in entry2:
+                        frames[base_j] = {
+                            'rotation': entry2['orien_i'],
+                            'origin': entry2['org_i']
+                        }
+                        residue_as_first[base_j] = True
+                        break
+    
     return frames
 
 def load_modern_frames(pdb_name, project_root):
@@ -110,6 +145,8 @@ def compare_frames(legacy_frames, modern_frames, legacy_pairs, modern_pairs, pro
         mod_res1, mod_res2 = modern_norm[pair_norm]
         
         # Compare frames for residue 1
+        # Note: legacy uses 1-based indices, modern might use 0-based in JSON
+        # But base_pair JSON should have 1-based indices
         if leg_res1 in legacy_frames and mod_res1 in modern_frames:
             leg_frame1 = legacy_frames[leg_res1]
             mod_frame1 = modern_frames[mod_res1]
@@ -121,6 +158,18 @@ def compare_frames(legacy_frames, modern_frames, legacy_pairs, modern_pairs, pro
                     'pair': pair_norm,
                     'differences': diff1
                 })
+        elif leg_res1 in legacy_frames:
+            differences.append({
+                'residue': leg_res1,
+                'pair': pair_norm,
+                'error': f'Missing in modern (legacy has {leg_res1}, modern has {list(modern_frames.keys())[:5]})'
+            })
+        elif mod_res1 in modern_frames:
+            differences.append({
+                'residue': leg_res1,
+                'pair': pair_norm,
+                'error': f'Missing in legacy (modern has {mod_res1}, legacy has {list(legacy_frames.keys())[:5]})'
+            })
         
         # Compare frames for residue 2
         if leg_res2 in legacy_frames and mod_res2 in modern_frames:
@@ -162,10 +211,25 @@ def compare_frame_data(leg_frame, mod_frame, residue_idx):
         leg_rot = leg_frame['rotation']
         mod_rot = mod_frame['rotation']
         if isinstance(leg_rot, list) and isinstance(mod_rot, list):
-            # Handle both 3x3 and 9-element formats
+            # Handle both 3x3 (list of rows) and 9-element formats
             leg_flat = flatten_matrix(leg_rot)
             mod_flat = flatten_matrix(mod_rot)
             
+            if len(leg_flat) == 9 and len(mod_flat) == 9:
+                for i, (l, m) in enumerate(zip(leg_flat, mod_flat)):
+                    diff = abs(l - m)
+                    if diff > tolerance:
+                        differences.append({
+                            'component': f'rotation[{i//3}][{i%3}]',
+                            'legacy': l,
+                            'modern': m,
+                            'diff': diff
+                        })
+    else:
+        # If 'rotation' key not found, might be direct matrix
+        if isinstance(leg_frame, list) and isinstance(mod_frame, list):
+            leg_flat = flatten_matrix(leg_frame)
+            mod_flat = flatten_matrix(mod_frame)
             if len(leg_flat) == 9 and len(mod_flat) == 9:
                 for i, (l, m) in enumerate(zip(leg_flat, mod_flat)):
                     diff = abs(l - m)
