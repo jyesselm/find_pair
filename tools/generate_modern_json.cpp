@@ -10,6 +10,7 @@
 #include <x3dna/core/structure.hpp>
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/io/json_writer.hpp>
+#include <x3dna/io/residue_index_fixer.hpp>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/algorithms/base_pair_finder.hpp>
 
@@ -19,11 +20,12 @@ using namespace x3dna::algorithms;
 using namespace x3dna::geometry;
 
 int main(int argc, char* argv[]) {
-    if (argc < 3 || argc > 4) {
-        std::cerr << "Usage: " << argv[0] << " <input_pdb_file> <output_json_dir> [--legacy]\n";
+    if (argc < 3 || argc > 5) {
+        std::cerr << "Usage: " << argv[0] << " <input_pdb_file> <output_json_dir> [--legacy] [--fix-indices]\n";
         std::cerr << "Example: " << argv[0] << " data/pdb/1ABC.pdb data/json\n";
         std::cerr << "Options:\n";
-        std::cerr << "  --legacy    Exclude C4 atom from matching (matches legacy behavior)\n";
+        std::cerr << "  --legacy       Exclude C4 atom from matching (matches legacy behavior)\n";
+        std::cerr << "  --fix-indices  Fix residue indices from legacy JSON (for comparison)\n";
         std::cerr << "\n";
         std::cerr << "Output: Creates segmented JSON files in record-type-specific directories:\n";
         std::cerr << "  <output_json_dir>/pdb_atoms/<PDB_ID>.json\n";
@@ -36,16 +38,20 @@ int main(int argc, char* argv[]) {
     std::filesystem::path pdb_file = argv[1];
     std::filesystem::path json_output_dir = argv[2];  // Now expects a directory, not a file
 
-    // Check for legacy mode flag
+    // Check for options
     bool legacy_mode = false;
-    if (argc == 4) {
-        std::string flag = argv[3];
+    bool fix_indices = false;
+    for (int i = 3; i < argc; i++) {
+        std::string flag = argv[i];
         if (flag == "--legacy") {
             legacy_mode = true;
             std::cout << "Legacy compatibility mode enabled (C4 atom excluded)\n";
+        } else if (flag == "--fix-indices") {
+            fix_indices = true;
+            std::cout << "Fix indices mode enabled (will match legacy JSON indices)\n";
         } else {
             std::cerr << "Error: Unknown option: " << flag << "\n";
-            std::cerr << "Use --legacy to enable legacy compatibility mode\n";
+            std::cerr << "Use --legacy or --fix-indices\n";
             return 1;
         }
     }
@@ -69,6 +75,24 @@ int main(int argc, char* argv[]) {
 
         // Parse PDB file (atoms will have legacy indices assigned sequentially during parsing)
         Structure structure = parser.parse_file(pdb_file);
+
+        // Fix indices from legacy JSON if requested
+        if (fix_indices) {
+            std::filesystem::path legacy_base_frame = 
+                json_output_dir.parent_path() / "json_legacy" / "base_frame_calc" / (pdb_name + ".json");
+            if (std::filesystem::exists(legacy_base_frame)) {
+                int fixed = x3dna::io::fix_residue_indices_from_json(structure, legacy_base_frame.string());
+                if (fixed > 0) {
+                    std::cout << "[INFO] Fixed " << fixed << " residue indices from: " 
+                              << legacy_base_frame << "\n";
+                } else {
+                    std::cerr << "[WARNING] Could not fix indices from: " << legacy_base_frame << "\n";
+                }
+            } else {
+                std::cerr << "[WARNING] Legacy JSON not found for --fix-indices: " 
+                          << legacy_base_frame << "\n";
+            }
+        }
 
         // Try to find legacy JSON file for PDB line caching (optional)
         std::filesystem::path legacy_json_file;
