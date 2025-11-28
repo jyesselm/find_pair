@@ -14,8 +14,8 @@ namespace algorithms {
 StandardBaseTemplates::StandardBaseTemplates() {
     template_path_ = find_template_path();
     if (template_path_.empty()) {
-        // Default to local data/templates directory
-        template_path_ = std::filesystem::path("data/templates");
+        // Default to resources/templates directory (new location)
+        template_path_ = std::filesystem::path("resources/templates");
     }
 }
 
@@ -27,7 +27,7 @@ StandardBaseTemplates::StandardBaseTemplates(const std::filesystem::path& templa
 }
 
 std::filesystem::path StandardBaseTemplates::find_template_path() {
-    // Check X3DNA_HOMEDIR environment variable
+    // Check X3DNA_HOMEDIR environment variable first
     const char* x3dna_home = std::getenv("X3DNA_HOMEDIR");
     if (x3dna_home) {
         std::filesystem::path config_path = std::filesystem::path(x3dna_home) / "config";
@@ -36,7 +36,13 @@ std::filesystem::path StandardBaseTemplates::find_template_path() {
         }
     }
 
-    // Check local data/templates directory
+    // Check resources/templates directory (new location)
+    std::filesystem::path resources_path = "resources/templates";
+    if (std::filesystem::exists(resources_path)) {
+        return resources_path;
+    }
+
+    // Fall back to data/templates directory (backward compatibility)
     std::filesystem::path local_path = "data/templates";
     if (std::filesystem::exists(local_path)) {
         return local_path;

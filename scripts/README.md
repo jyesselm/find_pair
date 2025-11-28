@@ -2,13 +2,16 @@
 
 This directory contains Python scripts for comparing, analyzing, and managing JSON data from legacy and modern codebases.
 
-## Core Tools
+## Core Tools (Active)
+
+These are the main scripts that should be used for regular work:
 
 ### Comparison
 - **`compare_json.py`** - Main comparison tool for comparing legacy and modern JSON outputs
   ```bash
-  python3 scripts/compare_json.py --pdb-id 3CF5
-  python3 scripts/compare_json.py --test-set 100
+  python3 scripts/compare_json.py compare
+  python3 scripts/compare_json.py compare 1H4S
+  python3 scripts/compare_json.py compare --test-set 100
   ```
 
 ### JSON Management
@@ -18,10 +21,10 @@ This directory contains Python scripts for comparing, analyzing, and managing JS
   python3 scripts/rebuild_json.py regenerate
   
   # Regenerate only modern JSON
-  python3 scripts/rebuild_json.py regenerate --modern-only --test-set 100
+  python3 scripts/rebuild_json.py regenerate --modern-only
   
   # Regenerate only legacy JSON
-  python3 scripts/rebuild_json.py regenerate --legacy-only --test-set 100
+  python3 scripts/rebuild_json.py regenerate --legacy-only
   
   # Validate JSON files
   python3 scripts/rebuild_json.py validate
@@ -30,71 +33,53 @@ This directory contains Python scripts for comparing, analyzing, and managing JS
   python3 scripts/rebuild_json.py clean --execute
   ```
 
-## Analysis Tools
+## Archived Scripts
 
-### Difference Analysis
-- **`analyze_find_bestpair_differences.py`** - Analyze differences in find_bestpair_selection records
-  ```bash
-  python3 scripts/analyze_find_bestpair_differences.py --test-set 100
-  python3 scripts/analyze_find_bestpair_differences.py 3CF5
-  ```
+The `archive/` directory contains one-off analysis, investigation, and debugging scripts that were used during development but are no longer actively maintained. These are kept for reference:
 
-### Investigation Tools
-- **`investigate_specific_pairs.py`** - Investigate why specific pairs differ
-  ```bash
-  python3 scripts/investigate_specific_pairs.py 3CME 3844 3865
-  ```
+- Analysis scripts (`analyze_*.py`)
+- Investigation scripts (`investigate_*.py`)
+- Comparison scripts (other than `compare_json.py`)
+- Debug scripts (`debug_*.py`)
+- Utility scripts for specific tasks
 
-- **`investigate_bp_type_id_differences.py`** - Debug bp_type_id calculation differences
+If you need functionality from archived scripts, consider using the core tools first (`compare_json.py` and `rebuild_json.py`), as they have comprehensive features.
 
-- **`investigate_hbond_mismatches.py`** - Debug hydrogen bond mismatches
+## Directory Structure
 
-## Testing Tools
+```
+scripts/
+├── README.md              # This file
+├── compare_json.py        # Main comparison tool (ACTIVE)
+├── rebuild_json.py        # JSON management tool (ACTIVE)
+└── archive/               # Archived one-off scripts
+    ├── analyze_*.py
+    ├── investigate_*.py
+    ├── compare_*.py
+    └── ...
+```
 
-- **`test_multiple_pdbs.py`** - Test multiple PDBs with various filters
-  ```bash
-  python3 scripts/test_multiple_pdbs.py --filter small
-  python3 scripts/test_multiple_pdbs.py --filter large
-  ```
+## Usage Examples
 
-## Cleanup Tools
+### Quick Comparison
+```bash
+# Compare all available PDBs
+python3 scripts/compare_json.py compare
 
-- **`cleanup_optional_json.py`** - Remove optional JSON record types to save space
-  ```bash
-  python3 scripts/cleanup_optional_json.py --execute
-  ```
+# Compare specific PDB
+python3 scripts/compare_json.py compare 1H4S
 
-- **`cleanup_json_data.py`** - General JSON cleanup utilities
+# Compare with verbose output
+python3 scripts/compare_json.py compare 1H4S --verbose
+```
 
-## Utility Tools
+### Regenerate JSON
+```bash
+# Regenerate modern JSON for a specific PDB
+python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
 
-- **`check_legacy_json_progress.py`** - Check progress of legacy JSON generation
+# Regenerate for test set
+python3 scripts/rebuild_json.py regenerate --test-set 100
+```
 
-- **`parse_legacy_debug_output.py`** - Parse debug output from legacy code
-
-- **`compare_step_params_for_pairs.py`** - Compare step parameters for specific pairs
-
-## Specialized Tools
-
-- **`generate_hbond_list_from_json.py`** - Generate hydrogen bond lists from JSON
-
-- **`create_legacy_hbond_list.py`** - Create legacy hydrogen bond lists
-
-- **`generate_and_compare_residue_ordering_batch.py`** - Compare residue ordering across PDBs
-
-## Deprecated Scripts
-
-The following scripts have been removed and their functionality consolidated:
-
-- `deep_analyze_find_bestpair_differences.py` → Use `analyze_find_bestpair_differences.py`
-- `analyze_remaining_differences.py` → Use `analyze_find_bestpair_differences.py`
-- `analyze_mismatched_pairs.py` → Use `compare_json.py`
-- `generate_legacy_json_batch.py` → Use `rebuild_json.py regenerate --legacy-only`
-- `generate_missing_modern_json.py` → Use `rebuild_json.py regenerate --modern-only`
-- `test_tie_breaking_fix.py` → Obsolete (fix complete)
-- `test_all_small_pdbs.py` → Use `test_multiple_pdbs.py`
-- `test_pdbs_by_size.py` → Use `test_multiple_pdbs.py`
-- `compare_existing_legacy_pdbs.py` → Use `compare_json.py`
-- `cleanup_large_legacy_json.py` → One-time cleanup, no longer needed
-
-See `CLEANUP_PLAN.md` for details on the cleanup and migration guide.
+For more detailed documentation, see [docs/TESTING_GUIDE.md](../docs/TESTING_GUIDE.md).
