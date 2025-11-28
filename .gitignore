@@ -101,3 +101,6 @@ base_frame_calc/
 
 # Generated comparison results (can be regenerated)
 comparison_results_summary.json
+
+# Large test JSON files (exceed GitHub file size limits)
+data/json_test/
