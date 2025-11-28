@@ -190,7 +190,7 @@ python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
 ### Step 2: Compare with Legacy
 
 ```bash
-# Quick comparison
+# Quick comparison (atoms, frames, and steps - frames checked first automatically)
 python3 scripts/compare_json.py compare 1H4S
 
 # Detailed comparison with report
@@ -200,7 +200,12 @@ python3 scripts/compare_json.py compare 1H4S --verbose --output report.md
 python3 scripts/compare_json.py atoms 1H4S
 python3 scripts/compare_json.py frames 1H4S
 python3 scripts/compare_json.py ring-atoms 1H4S
+
+# Compare step parameters (frames are automatically verified first)
+python3 scripts/compare_json.py steps 1H4S
 ```
+
+**Important**: When comparing step parameters, frames are automatically checked first since step parameters depend on frames. If frames don't match, step parameter comparisons may be unreliable.
 
 ### Step 3: Analyze Differences
 
@@ -470,6 +475,7 @@ python3 scripts/rebuild_json.py clean --execute
 
 ## Related Documentation
 
+- [COMPARISON_WORKFLOW.md](COMPARISON_WORKFLOW.md) ⭐ **NEW** - Frame-first comparison workflow
 - [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md) - Detailed JSON record types and comparison checks
 - [LEGACY_TEST_TOOLS.md](LEGACY_TEST_TOOLS.md) - Legacy test tools documentation
 - [scripts/README.md](../scripts/README.md) - Scripts reference guide
