@@ -545,6 +545,10 @@ def analyze_results(results: Dict[str, ComparisonResult]) -> Dict:
         "step_total_modern": 0,
         "step_missing_steps": 0,
         "step_mismatched_steps": 0,
+        "helical_total_legacy": 0,
+        "helical_total_modern": 0,
+        "helical_missing_steps": 0,
+        "helical_mismatched_steps": 0,
         "find_bestpair_total_legacy": 0,
         "find_bestpair_total_modern": 0,
         "find_bestpair_missing_in_modern": 0,
@@ -658,13 +662,21 @@ def analyze_results(results: Dict[str, ComparisonResult]) -> Dict:
                 base_type = missing.base_type
                 stats["base_type_stats"][base_type]["missing"] += 1
         
-        # Process step comparison
+        # Process step comparison (bpstep_params)
         if result.step_comparison:
             sc = result.step_comparison
             stats["step_total_legacy"] += sc.total_legacy
             stats["step_total_modern"] += sc.total_modern
             stats["step_missing_steps"] += len(sc.missing_steps)
             stats["step_mismatched_steps"] += len(sc.mismatched_steps)
+        
+        # Process helical comparison (helical_params)
+        if result.helical_comparison:
+            hc = result.helical_comparison
+            stats["helical_total_legacy"] += hc.total_legacy
+            stats["helical_total_modern"] += hc.total_modern
+            stats["helical_missing_steps"] += len(hc.missing_steps)
+            stats["helical_mismatched_steps"] += len(hc.mismatched_steps)
         
         # Find bestpair selection comparison statistics (PRIMARY - actual selected pairs)
         if hasattr(result, 'find_bestpair_comparison') and result.find_bestpair_comparison:
@@ -784,14 +796,24 @@ def generate_report(
         lines.append(f"Mismatched calculations: {stats['mismatched_calculations']}")
         lines.append("")
     
-    # Step parameter comparison statistics
+    # Step parameter comparison statistics (bpstep_params)
     if stats["step_total_legacy"] > 0 or stats["step_total_modern"] > 0:
-        lines.append("STEP PARAMETER STATISTICS")
+        lines.append("STEP PARAMETER STATISTICS (bpstep_params)")
         lines.append("-" * 80)
         lines.append(f"Total legacy steps: {stats['step_total_legacy']}")
         lines.append(f"Total modern steps: {stats['step_total_modern']}")
         lines.append(f"Missing steps: {stats['step_missing_steps']}")
         lines.append(f"Mismatched steps: {stats['step_mismatched_steps']}")
+        lines.append("")
+    
+    # Helical parameter comparison statistics (helical_params)
+    if stats["helical_total_legacy"] > 0 or stats["helical_total_modern"] > 0:
+        lines.append("HELICAL PARAMETER STATISTICS (helical_params)")
+        lines.append("-" * 80)
+        lines.append(f"Total legacy helical: {stats['helical_total_legacy']}")
+        lines.append(f"Total modern helical: {stats['helical_total_modern']}")
+        lines.append(f"Missing helical: {stats['helical_missing_steps']}")
+        lines.append(f"Mismatched helical: {stats['helical_mismatched_steps']}")
         lines.append("")
     
     # Find bestpair selection statistics (PRIMARY - actual selected pairs)

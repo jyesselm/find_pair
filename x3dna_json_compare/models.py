@@ -110,7 +110,8 @@ class ComparisonResult:
     status: str  # 'match', 'diff', 'error'
     atom_comparison: Optional[AtomComparison] = None
     frame_comparison: Optional[FrameComparison] = None
-    step_comparison: Optional['StepComparison'] = None  # Forward reference - defined in step_comparison.py
+    step_comparison: Optional['StepComparison'] = None  # Forward reference - bpstep_params comparison (for backward compatibility)
+    helical_comparison: Optional['StepComparison'] = None  # helical_params comparison
     find_bestpair_comparison: Optional[Any] = None  # FindBestpairComparison (actual selected pairs)
     base_pair_comparison: Optional[Any] = None  # BasePairComparison from base_pair_comparison (pairs that pass all checks)
     pair_validation_comparison: Optional[Any] = None  # PairValidationComparison from pair_comparison
@@ -142,6 +143,11 @@ class ComparisonResult:
         if self.step_comparison:
             if (self.step_comparison.missing_steps or
                 self.step_comparison.mismatched_steps):
+                return True
+        
+        if self.helical_comparison:
+            if (self.helical_comparison.missing_steps or
+                self.helical_comparison.mismatched_steps):
                 return True
         
         if self.find_bestpair_comparison:
@@ -221,6 +227,16 @@ class ComparisonResult:
                 'mismatched_steps': len(self.step_comparison.mismatched_steps),
                 'total_legacy': self.step_comparison.total_legacy,
                 'total_modern': self.step_comparison.total_modern,
+                'parameter_type': self.step_comparison.parameter_type,
+            }
+        
+        if self.helical_comparison:
+            result['helical_differences'] = {
+                'missing_steps': len(self.helical_comparison.missing_steps),
+                'mismatched_steps': len(self.helical_comparison.mismatched_steps),
+                'total_legacy': self.helical_comparison.total_legacy,
+                'total_modern': self.helical_comparison.total_modern,
+                'parameter_type': self.helical_comparison.parameter_type,
             }
         
         if self.find_bestpair_comparison:
@@ -348,12 +364,31 @@ class ComparisonResult:
                 mismatched_steps=[],  # Empty list but count preserved
                 total_legacy=step_diff.get('total_legacy', 0),
                 total_modern=step_diff.get('total_modern', 0),
+                parameter_type=step_diff.get('parameter_type', 'bpstep_params'),
             )
             # Set lists to non-empty if there were differences
             if step_diff.get('missing_steps', 0) > 0:
                 step_comparison.missing_steps = [{}]  # Minimal placeholder
             if step_diff.get('mismatched_steps', 0) > 0:
                 step_comparison.mismatched_steps = [{}]  # Minimal placeholder
+        
+        helical_comparison = None
+        if 'helical_differences' in data:
+            helical_diff = data['helical_differences']
+            # Import StepComparison here to avoid circular dependency
+            from .step_comparison import StepComparison
+            helical_comparison = StepComparison(
+                missing_steps=[],  # Empty list but count preserved
+                mismatched_steps=[],  # Empty list but count preserved
+                total_legacy=helical_diff.get('total_legacy', 0),
+                total_modern=helical_diff.get('total_modern', 0),
+                parameter_type=helical_diff.get('parameter_type', 'helical_params'),
+            )
+            # Set lists to non-empty if there were differences
+            if helical_diff.get('missing_steps', 0) > 0:
+                helical_comparison.missing_steps = [{}]  # Minimal placeholder
+            if helical_diff.get('mismatched_steps', 0) > 0:
+                helical_comparison.mismatched_steps = [{}]  # Minimal placeholder
         
         # Determine correct status from differences (recalculate from summary data)
         # This fixes cases where cached status might be incorrect
@@ -387,5 +422,6 @@ class ComparisonResult:
             atom_comparison=atom_comparison,
             frame_comparison=frame_comparison,
             step_comparison=step_comparison,
+            helical_comparison=helical_comparison,
         )
 

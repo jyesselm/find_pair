@@ -810,12 +810,11 @@ class JsonComparator:
                             frame_comparison=frame_comparison  # Pass frame comparison to verify frames first
                         )
                     
-                    # Combine step comparisons (for now, we'll store bpstep separately)
-                    # TODO: Create a unified StepComparison that handles both types
+                    # Store both comparison types separately (unified approach)
                     if bpstep_comparison:
                         result.step_comparison = bpstep_comparison
-                    elif helical_comparison:
-                        result.step_comparison = helical_comparison
+                    if helical_comparison:
+                        result.helical_comparison = helical_comparison
             except Exception as e:
                 # Don't fail comparison on step parameter errors (they may not be generated yet)
                 result.errors.append(f"Error comparing step parameters: {e}")

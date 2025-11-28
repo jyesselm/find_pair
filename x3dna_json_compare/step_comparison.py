@@ -13,11 +13,16 @@ from .models import FrameComparison, FrameMismatch
 
 @dataclass
 class StepComparison:
-    """Result of step parameter comparison."""
+    """Result of step parameter comparison.
+    
+    Can represent either bpstep_params or helical_params comparison.
+    Use UnifiedStepComparison to store both types together.
+    """
     missing_steps: List[Dict] = field(default_factory=list)
     mismatched_steps: List[Dict] = field(default_factory=list)
     total_legacy: int = 0
     total_modern: int = 0
+    parameter_type: str = "bpstep_params"  # "bpstep_params" or "helical_params"
 
 
 def compare_step_parameters(
@@ -43,7 +48,7 @@ def compare_step_parameters(
     Returns:
         StepComparison result with a flag indicating if frames matched
     """
-    result = StepComparison()
+    result = StepComparison(parameter_type=parameter_type)
     
     # Warn if frames don't match (step parameters depend on frames)
     # Note: Warning is added in json_comparison.py, but we store frame status here too
