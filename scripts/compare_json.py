@@ -1583,7 +1583,11 @@ def frames(verbose, diff_only, show_all, legacy_mode, output, threads, regenerat
 @common_options
 @click.argument("pdb_ids", nargs=-1)
 def steps(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, pdb_ids):
-    """Compare only step parameters (bpstep_params, helical_params) - skip atoms and frames."""
+    """Compare step parameters (bpstep_params, helical_params). 
+    
+    IMPORTANT: Frames are verified first since step parameters depend on frames.
+    If frames don't match, step parameter comparison may be unreliable.
+    """
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
     
@@ -1612,11 +1616,13 @@ def steps(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate
     click.echo(
         f"Comparing step parameters for {len(pdb_ids)} file(s) using {max_workers} thread(s)..."
     )
+    click.echo("  NOTE: Frames will be verified first (step parameters depend on frames)")
     if not no_cache:
         click.echo("  (Caching enabled - use --no-cache to disable)")
 
+    # Compare frames FIRST, then steps (frames are required for step parameter comparison)
     comparator = JsonComparator(
-        enable_cache=not no_cache, compare_atoms=False, compare_frames=False, compare_steps=True
+        enable_cache=not no_cache, compare_atoms=False, compare_frames=True, compare_steps=True
     )
     results = run_comparison(
         pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate

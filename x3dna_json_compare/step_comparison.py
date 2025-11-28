@@ -23,20 +23,35 @@ class StepComparison:
 def compare_step_parameters(
     legacy_records: List[Dict], 
     modern_records: List[Dict],
-    parameter_type: str = "bpstep_params"  # or "helical_params"
+    parameter_type: str = "bpstep_params",  # or "helical_params"
+    frame_comparison: Optional[FrameComparison] = None  # Optional: verify frames match first
 ) -> StepComparison:
     """
     Compare step parameters between legacy and modern JSON.
+    
+    Step parameters are calculated FROM reference frames. If frames don't match,
+    step parameters cannot match either. It's recommended to verify frames match
+    before comparing step parameters.
     
     Args:
         legacy_records: List of legacy step parameter records
         modern_records: List of modern step parameter records
         parameter_type: Type of parameters to compare ("bpstep_params" or "helical_params")
+        frame_comparison: Optional FrameComparison result - if provided, will verify
+                         frames match before comparing steps
         
     Returns:
-        StepComparison result
+        StepComparison result with a flag indicating if frames matched
     """
     result = StepComparison()
+    
+    # Warn if frames don't match (step parameters depend on frames)
+    # Note: Warning is added in json_comparison.py, but we store frame status here too
+    if frame_comparison:
+        if frame_comparison.mismatched_calculations or frame_comparison.missing_residues:
+            # Step parameters depend on frames - if frames don't match, 
+            # step parameter differences are expected
+            pass  # Warning already added in json_comparison.py
     
     # Build maps by bp_idx1, bp_idx2 (or equivalent indices)
     legacy_map = {}

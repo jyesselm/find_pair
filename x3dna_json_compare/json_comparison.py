@@ -738,8 +738,13 @@ class JsonComparator:
                 # Don't fail on atom comparison errors
                 pass
         
-        # Compare frames
-        if self.compare_frames:
+        # Compare frames FIRST (step parameters depend on frames, so verify frames are correct)
+        # ALWAYS check frames if comparing steps, even if compare_frames is False
+        frame_comparison = None
+        frames_match = True
+        need_frame_check = self.compare_frames or self.compare_steps
+        
+        if need_frame_check:
             try:
                 legacy_frames = self._extract_frame_records(legacy_json, legacy_file)
                 modern_frames = self._extract_frame_records(modern_json, modern_file)
@@ -747,17 +752,40 @@ class JsonComparator:
                 frame_comparison = compare_frames(
                     legacy_frames, modern_frames, pdb_file, pdb_reader, legacy_atoms
                 )
-                result.frame_comparison = frame_comparison
+                
+                # Only store in result if compare_frames was explicitly requested
+                if self.compare_frames:
+                    result.frame_comparison = frame_comparison
+                
+                # Check if frames match (no mismatches)
+                if frame_comparison.mismatched_calculations or frame_comparison.missing_residues:
+                    frames_match = False
+                    if self.compare_steps:
+                        result.errors.append(
+                            "WARNING: Frame mismatches detected. Step parameter comparison "
+                            "may be unreliable since step parameters are calculated from frames. "
+                            "Fix frame differences first before comparing step parameters."
+                        )
             except Exception as e:
                 result.errors.append(f"Error comparing frames: {e}")
+                frames_match = False
         
-        # Compare step parameters
+        # Compare step parameters (warn if frames don't match)
         if self.compare_steps:
             try:
                 legacy_steps = self._extract_step_records(legacy_json, legacy_file)
                 modern_steps = self._extract_step_records(modern_json, modern_file)
                 
                 if legacy_steps or modern_steps:
+                    # If frames don't match, warn but still do step comparison
+                    if not frames_match and frame_comparison:
+                        result.errors.append(
+                            f"Step parameter comparison proceeding despite frame mismatches "
+                            f"({len(frame_comparison.mismatched_calculations)} mismatched frames, "
+                            f"{len(frame_comparison.missing_residues)} missing residues). "
+                            f"Results may be unreliable."
+                        )
+                    
                     # Compare bpstep_params
                     legacy_bpstep = [r for r in legacy_steps if r.get('type') == 'bpstep_params']
                     modern_bpstep = [r for r in modern_steps if r.get('type') == 'bpstep_params']
@@ -765,7 +793,9 @@ class JsonComparator:
                     bpstep_comparison = None
                     if legacy_bpstep or modern_bpstep:
                         bpstep_comparison = compare_step_parameters(
-                            legacy_bpstep, modern_bpstep, parameter_type="bpstep_params"
+                            legacy_bpstep, modern_bpstep, 
+                            parameter_type="bpstep_params",
+                            frame_comparison=frame_comparison  # Pass frame comparison to verify frames first
                         )
                     
                     # Compare helical_params
@@ -775,7 +805,9 @@ class JsonComparator:
                     helical_comparison = None
                     if legacy_helical or modern_helical:
                         helical_comparison = compare_step_parameters(
-                            legacy_helical, modern_helical, parameter_type="helical_params"
+                            legacy_helical, modern_helical, 
+                            parameter_type="helical_params",
+                            frame_comparison=frame_comparison  # Pass frame comparison to verify frames first
                         )
                     
                     # Combine step comparisons (for now, we'll store bpstep separately)
@@ -786,6 +818,7 @@ class JsonComparator:
                         result.step_comparison = helical_comparison
             except Exception as e:
                 # Don't fail comparison on step parameter errors (they may not be generated yet)
+                result.errors.append(f"Error comparing step parameters: {e}")
                 pass
         
         # Compare find_bestpair_selection records (PRIMARY - actual selected pairs from find_bestpair)
