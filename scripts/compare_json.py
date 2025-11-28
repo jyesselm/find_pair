@@ -1270,6 +1270,81 @@ def generate_report(
                         lines.append(f"  ... and {len(ac.mismatched_fields) - 50} more")
                     lines.append("")
 
+    # Step parameter comparison details (bpstep_params) - when verbose mode is enabled
+    if verbose and len(results) == 1:
+        pdb_id = list(results.keys())[0]
+        result = results[pdb_id]
+        if result.step_comparison:
+            sc = result.step_comparison
+            if sc.missing_steps or sc.mismatched_steps:
+                lines.append("=" * 80)
+                lines.append("STEP PARAMETER COMPARISON DETAILS (bpstep_params)")
+                lines.append("=" * 80)
+                
+                if sc.missing_steps:
+                    lines.append(f"\nMISSING IN MODERN ({len(sc.missing_steps)} steps):")
+                    for missing in sc.missing_steps[:20]:
+                        bp_idx1 = missing.get('bp_idx1', '?')
+                        bp_idx2 = missing.get('bp_idx2', '?')
+                        lines.append(f"  Step bp_idx1={bp_idx1}, bp_idx2={bp_idx2}")
+                    if len(sc.missing_steps) > 20:
+                        lines.append(f"  ... and {len(sc.missing_steps) - 20} more")
+                    lines.append("")
+                
+                if sc.mismatched_steps:
+                    lines.append(f"\nMISMATCHED STEPS ({len(sc.mismatched_steps)} steps):")
+                    for mismatch in sc.mismatched_steps[:20]:
+                        bp_idx1 = mismatch.get('bp_idx1', '?')
+                        bp_idx2 = mismatch.get('bp_idx2', '?')
+                        mismatches = mismatch.get('mismatches', {})
+                        lines.append(f"\n  Step bp_idx1={bp_idx1}, bp_idx2={bp_idx2}:")
+                        for field, diff_info in list(mismatches.items())[:10]:
+                            leg_val = diff_info.get('legacy', '?')
+                            mod_val = diff_info.get('modern', '?')
+                            diff = diff_info.get('diff', 0.0)
+                            lines.append(f"    {field}: legacy={leg_val}, modern={mod_val}, diff={diff:.6e}")
+                        if len(mismatches) > 10:
+                            lines.append(f"    ... and {len(mismatches) - 10} more parameter differences")
+                    if len(sc.mismatched_steps) > 20:
+                        lines.append(f"  ... and {len(sc.mismatched_steps) - 20} more mismatched steps")
+                    lines.append("")
+        
+        # Helical parameter comparison details (helical_params) - when verbose mode is enabled
+        if result.helical_comparison:
+            hc = result.helical_comparison
+            if hc.missing_steps or hc.mismatched_steps:
+                lines.append("=" * 80)
+                lines.append("HELICAL PARAMETER COMPARISON DETAILS (helical_params)")
+                lines.append("=" * 80)
+                
+                if hc.missing_steps:
+                    lines.append(f"\nMISSING IN MODERN ({len(hc.missing_steps)} helical steps):")
+                    for missing in hc.missing_steps[:20]:
+                        bp_idx1 = missing.get('bp_idx1', '?')
+                        bp_idx2 = missing.get('bp_idx2', '?')
+                        lines.append(f"  Helical step bp_idx1={bp_idx1}, bp_idx2={bp_idx2}")
+                    if len(hc.missing_steps) > 20:
+                        lines.append(f"  ... and {len(hc.missing_steps) - 20} more")
+                    lines.append("")
+                
+                if hc.mismatched_steps:
+                    lines.append(f"\nMISMATCHED HELICAL STEPS ({len(hc.mismatched_steps)} steps):")
+                    for mismatch in hc.mismatched_steps[:20]:
+                        bp_idx1 = mismatch.get('bp_idx1', '?')
+                        bp_idx2 = mismatch.get('bp_idx2', '?')
+                        mismatches = mismatch.get('mismatches', {})
+                        lines.append(f"\n  Helical step bp_idx1={bp_idx1}, bp_idx2={bp_idx2}:")
+                        for field, diff_info in list(mismatches.items())[:10]:
+                            leg_val = diff_info.get('legacy', '?')
+                            mod_val = diff_info.get('modern', '?')
+                            diff = diff_info.get('diff', 0.0)
+                            lines.append(f"    {field}: legacy={leg_val}, modern={mod_val}, diff={diff:.6e}")
+                        if len(mismatches) > 10:
+                            lines.append(f"    ... and {len(mismatches) - 10} more parameter differences")
+                    if len(hc.mismatched_steps) > 20:
+                        lines.append(f"  ... and {len(hc.mismatched_steps) - 20} more mismatched helical steps")
+                    lines.append("")
+
     return "\n".join(lines)
 
 
