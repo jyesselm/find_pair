@@ -36,6 +36,13 @@
 - Troubleshooting
 - **Use this for**: How to test, compare, and validate
 
+### [NEXT_STEPS.md](NEXT_STEPS.md) ⭐ **NEXT STEPS**
+**What to do next after find_pair validation**
+- Priority 1: Move to step parameters (analyze phase)
+- Priority 2: Investigate 6 mismatched PDBs (optional)
+- Priority 3: Expand testing (optional)
+- **Use this for**: Clear guidance on what to work on next
+
 ### [HBOND_INVESTIGATION.md](HBOND_INVESTIGATION.md)
 **H-bond investigation and fixes**
 - Problem: Modified nucleotides getting incorrect H-bond types
@@ -129,7 +136,8 @@
 ### By Task
 
 **I want to...**
-- **See current status**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md)
+- **See current status**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md) ⭐ **Start here**
+- **Know what to do next**: [100_PERCENT_MATCH_STATUS.md#what-to-do-next](100_PERCENT_MATCH_STATUS.md#what-to-do-next) ⭐ **Next steps**
 - **See validation results**: [FIND_PAIR_VALIDATION_COMPREHENSIVE.md](FIND_PAIR_VALIDATION_COMPREHENSIVE.md)
 - **Understand base_pair recording**: [BASE_PAIR_RECORDING.md](BASE_PAIR_RECORDING.md)
 - **Run tests**: [TESTING_GUIDE.md](TESTING_GUIDE.md)

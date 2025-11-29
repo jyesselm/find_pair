@@ -683,11 +683,105 @@ if (!result.is_valid) {
 - [ ] Test `bp_type_id = 2` assignment
 - [ ] Verify quality score adjustments
 
-### Next Steps (See ACTION_PLAN_NEXT_STEPS.md)
-- [x] **Priority 1**: Test --fix-indices with full workflow ✅ COMPLETE
-- [x] **Priority 2**: Investigate 9 missing pairs in 6CAQ ✅ RESOLVED (all pairs now found)
-- [x] **Priority 3**: Test on multiple PDBs to measure improvements ✅ COMPLETE (100% match on 10-PDB test set)
-- [ ] Test on 100-set to measure overall improvement
-- [ ] Investigate base_pair record generation (Phase 3)
-- [ ] Verify quality score calculations (Phase 4)
+---
+
+## 🎯 What To Do Next
+
+### ✅ Completed Work
+
+- [x] **Residue indexing fix** - ✅ COMPLETE (100% match on 10-PDB test set)
+- [x] **Base pair recording fix** - ✅ COMPLETE (100% match on all tested PDBs)
+- [x] **find_pair validation** - ✅ COMPLETE (97.8% match on primary output, 312/319 PDBs)
+- [x] **Comprehensive testing** - ✅ COMPLETE (140+ PDBs tested, 100% executable success)
+
+### 📋 Recommended Next Steps
+
+#### Priority 1: Move to Step Parameters (Analyze Phase) ⭐ **RECOMMENDED**
+
+**Status**: find_pair phase is validated and ready. Next logical step is to work on step parameters.
+
+**What to do**:
+1. **Implement step parameter calculation** (if not already done)
+   - `bpstep_params` - Step parameters (Shift, Slide, Rise, Tilt, Roll, Twist)
+   - `helical_params` - Helical parameters
+   - These are calculated in the analyze phase, not find_pair phase
+
+2. **Test step parameter calculation**
+   - Compare with legacy step parameters
+   - Verify calculations match legacy output
+   - Test on multiple PDBs
+
+3. **Document step parameter results**
+   - Update validation reports
+   - Document any differences found
+
+**Tools to use**:
+- `scripts/compare_json.py steps <PDB_ID>` - Compare step parameters
+- `build/generate_modern_json` - Generate modern JSON with step parameters
+
+**See**: [COMPARISON_COVERAGE.md](COMPARISON_COVERAGE.md) for what's currently being compared
+
+#### Priority 2: Investigate 6 Mismatched PDBs (Optional) ⚠️ **LOW PRIORITY**
+
+**Status**: 6 PDBs show mismatches in find_bestpair_selection (1.9% of tested PDBs)
+
+**PDBs to investigate**:
+- 1TN1, 1TN2, 1TTT, 3F2T, 5V0O, 9CF3
+
+**What to do**:
+1. Run detailed comparison on each mismatched PDB
+   ```bash
+   python3 scripts/compare_json.py compare 1TN1 --verbose
+   ```
+
+2. Investigate root causes:
+   - Residue indexing differences?
+   - Quality score calculation edge cases?
+   - Validation threshold differences?
+   - Tie-breaking logic differences?
+
+3. Determine if fixes are needed or if differences are acceptable
+
+**Priority**: Low (97.8% match rate is excellent, these are edge cases)
+
+#### Priority 3: Expand Testing (Optional)
+
+**What to do**:
+1. Generate modern JSON for more PDBs
+   ```bash
+   # Generate for all PDBs with legacy JSON
+   python3 scripts/rebuild_json.py regenerate --modern-only --fix-indices
+   ```
+
+2. Run comprehensive comparison
+   ```bash
+   python3 scripts/compare_json.py compare
+   ```
+
+3. Update validation reports with expanded results
+
+**Priority**: Low (current validation is comprehensive)
+
+---
+
+### 📊 Current Status Summary
+
+| Component | Status | Match Rate |
+|-----------|--------|------------|
+| find_pair executable | ✅ Validated | 100% success |
+| find_bestpair_selection | ✅ Validated | 97.8% (312/319) |
+| base_pair records | ✅ Validated | 100% (319/319) |
+| frame_calc | ✅ Validated | 98.48% |
+| Step parameters | ⏳ Not yet tested | - |
+
+**Overall**: find_pair phase is **production-ready** with 97.8% match on primary output.
+
+---
+
+### 🔗 Related Documentation
+
+- [FIND_PAIR_VALIDATION_COMPREHENSIVE.md](FIND_PAIR_VALIDATION_COMPREHENSIVE.md) - Full validation results
+- [COMPARISON_COVERAGE.md](COMPARISON_COVERAGE.md) - What's being compared
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) - How to test and validate
+- [FIX_INDICES_OPTION.md](FIX_INDICES_OPTION.md) - Residue indexing fix
 
