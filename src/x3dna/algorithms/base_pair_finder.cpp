@@ -273,6 +273,15 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
         writer->record_find_bestpair_selection(selected_pairs_legacy_idx);
     }
 
+    // Record base_pair records ONLY for pairs in the final selection
+    // This matches legacy behavior where base_pair records correspond to ref_frames.dat
+    // (only pairs that appear in the final output)
+    if (writer) {
+        for (const auto& pair : base_pairs) {
+            writer->record_base_pair(pair);
+        }
+    }
+
     return base_pairs;
 }
 
@@ -532,34 +541,9 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
                                        result.dir_z, rtn_val, validator_.parameters());
     }
 
-    // Record base_pair for ALL pairs that pass validation (matches legacy calculate_more_bppars)
-    // Legacy records base_pair inside calculate_more_bppars for all pairs that pass validation
-    if (result.is_valid) {
-        // Create BasePair object with validation results
-        BasePair validation_pair(static_cast<size_t>(legacy_idx1) - 1,
-                                 static_cast<size_t>(legacy_idx2) - 1, result.bp_type);
-
-        // Set frames if available
-        if (res1->reference_frame().has_value()) {
-            validation_pair.set_frame1(res1->reference_frame().value());
-        }
-        if (res2->reference_frame().has_value()) {
-            validation_pair.set_frame2(res2->reference_frame().value());
-        }
-
-        // Set hydrogen bonds
-        validation_pair.set_hydrogen_bonds(result.hbonds);
-
-        // Set bp_type string
-        char base1 = res1->one_letter_code();
-        char base2 = res2->one_letter_code();
-        if (base1 != ' ' && base2 != ' ') {
-            validation_pair.set_bp_type(std::string(1, base1) + std::string(1, base2));
-        }
-
-        // Record base_pair (will assign indices automatically)
-        writer->record_base_pair(validation_pair);
-    }
+    // NOTE: base_pair records are now only recorded for pairs in the final selection
+    // (matching legacy behavior where base_pair records correspond to ref_frames.dat)
+    // This recording happens after find_bestpair selection, not during validation
 
     // Record distance checks only if also passes hydrogen bond check
     // (legacy only records distance_checks for pairs that pass hbond check)
@@ -632,6 +616,16 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
         if (!res1->reference_frame().has_value() || !res2->reference_frame().has_value()) {
             // Frames should be available since validation passed
             // This might indicate frames aren't set on residue objects
+            // DEBUG: Log when frames are missing (can be removed after debugging)
+            #ifdef DEBUG_BP_TYPE_ID
+            std::cerr << "[DEBUG] calculate_bp_type_id: Frames missing for pair ("
+                      << res1->name() << " " << res1->seq_num() << ", "
+                      << res2->name() << " " << res2->seq_num() << ")\n";
+            std::cerr << "  res1->reference_frame().has_value(): " 
+                      << res1->reference_frame().has_value() << "\n";
+            std::cerr << "  res2->reference_frame().has_value(): " 
+                      << res2->reference_frame().has_value() << "\n";
+            #endif
             return bp_type_id; // Keep -1 if frames not available
         }
 
@@ -657,6 +651,17 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
         // Use frame2 first, frame1 second (matches legacy order)
         core::BasePairStepParameters params =
             param_calculator_.calculate_step_parameters(frame2, frame1);
+
+        // DEBUG: Log step parameters for debugging (can be removed after debugging)
+        #ifdef DEBUG_BP_TYPE_ID
+        std::cerr << "[DEBUG] calculate_bp_type_id: Step parameters for pair ("
+                  << res1->name() << " " << res1->seq_num() << ", "
+                  << res2->name() << " " << res2->seq_num() << "):\n";
+        std::cerr << "  shift=" << params.shift << ", slide=" << params.slide 
+                  << ", rise=" << params.rise << "\n";
+        std::cerr << "  tilt=" << params.tilt << ", roll=" << params.roll 
+                  << ", twist=" << params.twist << "\n";
+        #endif
 
         // CRITICAL: Legacy has a bug - it passes wrong parameters to check_wc_wobble_pair!
         // Legacy calls: check_wc_wobble_pair(bpid, bpi, pars[1], pars[2], pars[6])
@@ -702,11 +707,30 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
             for (const auto& wc : WC_LIST) {
                 if (bp_type == wc) {
                     bp_type_id = 2; // Watson-Crick
+                    #ifdef DEBUG_BP_TYPE_ID
+                    std::cerr << "[DEBUG] calculate_bp_type_id: Assigned bp_type_id=2 (Watson-Crick) for pair ("
+                              << res1->name() << " " << res1->seq_num() << ", "
+                              << res2->name() << " " << res2->seq_num() << ")\n";
+                    std::cerr << "  bp_type=" << bp_type << ", shear=" << shear 
+                              << ", stretch=" << stretch << ", opening=" << opening << "\n";
+                    #endif
                     break;
                 }
             }
             // If not in WC_LIST, keep previous assignment (wobble if set, otherwise -1)
         }
+        
+        #ifdef DEBUG_BP_TYPE_ID
+        if (bp_type_id == -1) {
+            std::cerr << "[DEBUG] calculate_bp_type_id: Kept bp_type_id=-1 for pair ("
+                      << res1->name() << " " << res1->seq_num() << ", "
+                      << res2->name() << " " << res2->seq_num() << ")\n";
+            std::cerr << "  bp_type=" << bp_type << ", shear=" << shear 
+                      << ", stretch=" << stretch << ", opening=" << opening << "\n";
+            std::cerr << "  stretch check: " << (std::abs(stretch) > 2.0) 
+                      << ", opening check: " << (std::abs(opening) > 60.0) << "\n";
+        }
+        #endif
     }
 
     return bp_type_id;

@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Last Updated**: 2025-11-25  
+**Last Updated**: 2025-11-28  
 **Status**: Consolidated and organized
 
 ---
@@ -8,18 +8,33 @@
 ## 🎯 Primary Documents (Start Here)
 
 ### [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md) ⭐ **MAIN DOCUMENT**
-**Single source of truth for reaching 100% match**
-- Current status: 90% perfect matches (90/100 PDBs)
-- Completed fixes: H-bond conflict resolution, overlap calculation, bp_type_id preservation, Stage 6 implementation
-- Remaining issues: 6CAQ mismatches, tie-breaking logic
-- **Use this for**: Current status, what's done, what's next
+**Single source of truth for match status and progress**
+- Current status: 97.8% perfect matches on primary output (312/319 PDBs)
+- 10-PDB test set: 100% perfect matches (10/10)
+- Completed fixes: Residue indexing, base_pair recording, H-bond conflict resolution, overlap calculation, bp_type_id preservation, Stage 6 implementation
+- Remaining issues: 6 PDBs with selection mismatches (1TN1, 1TN2, 1TTT, 3F2T, 5V0O, 9CF3)
+- **Use this for**: Current status, what's done, what's next, PDBs with differences
 
-### [NEXT_STEPS.md](NEXT_STEPS.md) ⭐ **ACTION PLAN**
-**Detailed action plan and next steps**
-- Immediate priority: Debug Stage 6 frame accessibility
-- Investigation steps for missing pairs
-- Testing checklist and success criteria
-- **Use this for**: What to work on next, detailed investigation steps
+### [FIND_PAIR_VALIDATION_COMPREHENSIVE.md](FIND_PAIR_VALIDATION_COMPREHENSIVE.md) ⭐ **VALIDATION REPORT**
+**Comprehensive validation results and status**
+- Executable functionality: 100% success rate (140+ PDBs tested)
+- Primary output match: 97.8% perfect match (312/319 PDBs)
+- Test coverage: 10-PDB set, 30-PDB sample, 100-PDB sample, 319 PDBs comprehensive
+- **Use this for**: Validation results, test statistics, known issues
+
+### [BASE_PAIR_RECORDING.md](BASE_PAIR_RECORDING.md) ⭐ **BASE PAIR FIX**
+**Complete documentation of base_pair recording fix**
+- Problem: Modern recorded all validated pairs, legacy only records selected pairs
+- Solution: Updated to match legacy behavior
+- Results: 100% match on all tested PDBs (319/319, 25,323 pairs)
+- **Use this for**: Understanding base_pair recording behavior
+
+### [TESTING_GUIDE.md](TESTING_GUIDE.md) ⭐ **TESTING GUIDE**
+**Complete guide for testing and validation**
+- JSON comparison workflows
+- Test types and execution
+- Troubleshooting
+- **Use this for**: How to test, compare, and validate
 
 ### [HBOND_INVESTIGATION.md](HBOND_INVESTIGATION.md)
 **H-bond investigation and fixes**
@@ -80,14 +95,32 @@
 
 ---
 
-## 🗑️ Removed Documents
+## 📦 Archived Documents
 
-The following documents were removed as they were outdated or superseded:
+**Note**: Many historical documents have been archived to `docs/archive/historical/` to keep the main documentation clean and focused.
 
-- ~~**PAIR_MATCHING_ISSUES.md**~~ - Outdated status (contradicted current plan)
-- ~~**PAIR_MATCHING_DEBUGGING.md**~~ - Superseded by HBOND_INVESTIGATION.md and 100_PERCENT_MATCH_PLAN.md
-- ~~**RESIDUE_INVESTIGATION_FINDINGS.md**~~ - Information consolidated into 100_PERCENT_MATCH_PLAN.md
-- ~~**RESIDUE_INVESTIGATION_TOOLS.md**~~ - Tool information moved to TOOLS_TO_CREATE.md
+### Archive Structure
+
+- `archive/historical/superseded/` - Superseded by consolidated docs
+- `archive/historical/test_results/` - Old test results
+- `archive/historical/investigations/` - Historical investigations
+- `archive/historical/old_plans/` - Old action plans
+- `archive/historical/completed_fixes/` - Completed fix documentation
+- `archive/historical/redundant/` - Redundant/duplicate docs
+
+**Total archived**: ~60 files  
+**Remaining in root**: ~15 essential files
+
+### Key Archived Documents
+
+- Superseded validation docs → `archive/historical/superseded/`
+- Old test results → `archive/historical/test_results/`
+- Historical investigations → `archive/historical/investigations/`
+- Old plans/status → `archive/historical/old_plans/`
+- Completed fixes → `archive/historical/completed_fixes/`
+- Redundant docs → `archive/historical/redundant/`
+
+**See**: [archive/ARCHIVE_PLAN.md](archive/ARCHIVE_PLAN.md) for complete archive plan
 
 ---
 
@@ -97,10 +130,12 @@ The following documents were removed as they were outdated or superseded:
 
 **I want to...**
 - **See current status**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md)
-- **Know what to do next**: [NEXT_STEPS.md](NEXT_STEPS.md)
-- **Understand the H-bond fix**: [HBOND_INVESTIGATION.md](HBOND_INVESTIGATION.md)
-- **Find tools to build**: [TOOLS_TO_CREATE.md](TOOLS_TO_CREATE.md)
+- **See validation results**: [FIND_PAIR_VALIDATION_COMPREHENSIVE.md](FIND_PAIR_VALIDATION_COMPREHENSIVE.md)
+- **Understand base_pair recording**: [BASE_PAIR_RECORDING.md](BASE_PAIR_RECORDING.md)
+- **Run tests**: [TESTING_GUIDE.md](TESTING_GUIDE.md)
+- **Use --fix-indices**: [FIX_INDICES_OPTION.md](FIX_INDICES_OPTION.md)
 - **Compare JSON structures**: [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md)
+- **See what's compared**: [COMPARISON_COVERAGE.md](COMPARISON_COVERAGE.md)
 - **Debug an issue**: [DEBUGGING_STRATEGIES.md](DEBUGGING_STRATEGIES.md)
 - **Build the project**: [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)
 
@@ -108,10 +143,13 @@ The following documents were removed as they were outdated or superseded:
 
 **Topics:**
 - **100% Match Goal**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md)
-- **Next Steps**: [NEXT_STEPS.md](NEXT_STEPS.md)
+- **Validation Results**: [FIND_PAIR_VALIDATION_COMPREHENSIVE.md](FIND_PAIR_VALIDATION_COMPREHENSIVE.md)
+- **Base Pair Recording**: [BASE_PAIR_RECORDING.md](BASE_PAIR_RECORDING.md)
+- **Residue Indexing**: [FIX_INDICES_OPTION.md](FIX_INDICES_OPTION.md)
+- **Testing**: [TESTING_GUIDE.md](TESTING_GUIDE.md)
 - **H-bond Detection**: [HBOND_INVESTIGATION.md](HBOND_INVESTIGATION.md), [legacy/04_ALGORITHMS.md](legacy/04_ALGORITHMS.md#3-h-bond-detection-workflow)
 - **Quality Scores**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md#quality-score-calculation)
-- **Stage 6 (ParameterCalculator)**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md#8-stage-6-parametercalculator-implementation-2025-11-26--complete), [NEXT_STEPS.md](NEXT_STEPS.md#immediate-priority-debug-stage-6--in-progress)
+- **Stage 6 (ParameterCalculator)**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md#8-stage-6-parametercalculator-implementation-2025-11-26--complete)
 - **JSON Structure**: [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md)
 - **Algorithms**: [ALGORITHM_CRITICAL_GUIDE.md](ALGORITHM_CRITICAL_GUIDE.md)
 - **Modernization**: [MODERNIZATION_PLAN.md](MODERNIZATION_PLAN.md), [modernization/](modernization/)
@@ -122,11 +160,12 @@ The following documents were removed as they were outdated or superseded:
 
 | Document | Status | Last Updated | Priority |
 |----------|--------|--------------|----------|
-| 100_PERCENT_MATCH_STATUS.md | ✅ Active | 2025-11-26 | ⭐⭐⭐ |
-| NEXT_STEPS.md | ✅ Active | 2025-11-26 | ⭐⭐⭐ |
-| HBOND_INVESTIGATION.md | 📖 Reference | 2025-11-25 | ⭐ |
-| TOOLS_TO_CREATE.md | ✅ Active | 2025-11-25 | ⭐⭐ |
-| HBOND_INVESTIGATION.md | 📖 Reference | 2025-11-25 | ⭐ |
+| 100_PERCENT_MATCH_STATUS.md | ✅ Active | 2025-11-28 | ⭐⭐⭐ |
+| FIND_PAIR_VALIDATION_COMPREHENSIVE.md | ✅ Active | 2025-11-28 | ⭐⭐⭐ |
+| BASE_PAIR_RECORDING.md | ✅ Active | 2025-11-28 | ⭐⭐⭐ |
+| TESTING_GUIDE.md | ✅ Active | 2025-11-28 | ⭐⭐⭐ |
+| FIX_INDICES_OPTION.md | 📚 Reference | - | ⭐⭐ |
+| COMPARISON_COVERAGE.md | 📚 Reference | 2025-11-28 | ⭐⭐ |
 | JSON_DATA_TYPES_AND_COMPARISONS.md | 📚 Reference | - | ⭐⭐ |
 | ALGORITHM_CRITICAL_GUIDE.md | 📚 Reference | - | ⭐⭐ |
 | DEBUGGING_STRATEGIES.md | 📚 Reference | - | ⭐ |

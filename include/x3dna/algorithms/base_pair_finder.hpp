@@ -93,6 +93,13 @@ public:
         return validator_.parameters();
     }
 
+    /**
+     * @brief Check if residue is a nucleotide
+     * @param residue Residue to check
+     * @return True if residue is a nucleotide (standard or modified)
+     */
+    static bool is_nucleotide(const core::Residue& residue);
+
 private:
     BasePairValidator validator_;
     ParameterCalculator param_calculator_;
@@ -125,11 +132,6 @@ private:
         const std::map<std::pair<int, int>, ValidationResult>& phase1_validation_results,
         const std::map<std::pair<int, int>, int>& phase1_bp_type_ids, // Store bp_type_id from Phase 1
         io::JsonWriter* writer = nullptr) const;
-
-    /**
-     * @brief Check if residue is a nucleotide
-     */
-    static bool is_nucleotide(const core::Residue& residue);
 
     /**
      * @brief Adjust quality score based on hydrogen bonds (matches legacy adjust_pairQuality)

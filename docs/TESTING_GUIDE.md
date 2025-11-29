@@ -185,7 +185,13 @@ See [LEGACY_TEST_TOOLS.md](LEGACY_TEST_TOOLS.md) for detailed documentation.
 
 # Or use the rebuild script
 python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
+
+# Use --fix-indices option when comparing with legacy (recommended)
+# This fixes residue indices by matching with legacy JSON
+./build/find_pair_app --fix-indices data/pdb/1H4S.pdb output.inp
 ```
+
+**Note**: The `--fix-indices` option is useful when comparing modern output with legacy, as it ensures residues are matched correctly even if initial parsing assigns different indices. See [FIX_INDICES_OPTION.md](FIX_INDICES_OPTION.md) for details.
 
 ### Step 2: Compare with Legacy
 
@@ -313,6 +319,16 @@ python3 scripts/compare_json.py generate-test-sets
 | `scripts/compare_ring_atoms.py` | Ring atom matching | Debugging frame calculation differences |
 | `scripts/debug_hbond_mismatch.py` | Debug H-bond mismatches | Investigating specific H-bond issues |
 | `scripts/debug_validation_mismatch.py` | Debug validation mismatches | Investigating validation differences |
+
+### Residue Indexing Tools (For Comparison with Legacy)
+
+| Tool | Purpose | When to Use |
+|------|---------|-------------|
+| `build/find_pair_app --fix-indices` | Fix residue indices from legacy JSON | When comparing with legacy output |
+| `build/test_residue_matching_by_pdb_props` | Test PDB properties matching | Testing residue matching approach |
+| `build/fix_residue_indices_from_json` | Fix indices standalone tool | Debugging residue index issues |
+| `build/check_residue_indices` | Check for duplicate indices | Verifying residue mapping |
+| `build/debug_bp_type_id_step_params` | Debug bp_type_id calculation | Debugging bp_type_id issues (auto-fixes indices) |
 
 ### C++ Comparison Tools (Advanced)
 
@@ -451,6 +467,23 @@ python3 scripts/rebuild_json.py clean --execute
 3. **Cache issues**: Use `--no-cache` flag to bypass caching
 4. **Threading issues**: Use `--threads 1` for single-threaded execution
 
+### Residue Indexing Issues
+
+1. **Wrong residues matched**: Use `--fix-indices` option when comparing with legacy
+   ```bash
+   ./build/find_pair_app --fix-indices data/pdb/6CAQ.pdb output.inp
+   ```
+
+2. **Residue indices don't match legacy**: 
+   - Check if legacy JSON file exists: `data/json_legacy/base_frame_calc/<PDB_ID>.json`
+   - Use `build/test_residue_matching_by_pdb_props` to verify matching
+   - Use `build/check_residue_indices` to check for duplicate indices
+
+3. **Frame origins don't match**: 
+   - May be due to residue indexing mismatch
+   - Try using `--fix-indices` option
+   - Use `build/debug_frame_json` to compare frame calculations
+
 ### Performance Issues
 
 1. **Use caching**: Comparison results are cached by default
@@ -463,13 +496,15 @@ python3 scripts/rebuild_json.py clean --execute
 ## Best Practices
 
 1. **Use `compare_json.py`** for all JSON comparisons
-2. **Run tests regularly** during development
-3. **Compare with legacy** before committing changes
-4. **Use test sets** for quick validation
-5. **Document test failures** and fixes
-6. **Keep test data up to date**
-7. **Use verbose output** when debugging
-8. **Save reports** for important comparisons
+2. **Use `--fix-indices` option** when comparing with legacy output
+3. **Run tests regularly** during development
+4. **Compare with legacy** before committing changes
+5. **Use test sets** for quick validation
+6. **Document test failures** and fixes
+7. **Keep test data up to date**
+8. **Use verbose output** when debugging
+9. **Save reports** for important comparisons
+10. **Verify residue matching** if frame origins or dorg don't match
 
 ---
 
@@ -478,6 +513,8 @@ python3 scripts/rebuild_json.py clean --execute
 - [COMPARISON_WORKFLOW.md](COMPARISON_WORKFLOW.md) ⭐ **NEW** - Frame-first comparison workflow
 - [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md) - Detailed JSON record types and comparison checks
 - [LEGACY_TEST_TOOLS.md](LEGACY_TEST_TOOLS.md) - Legacy test tools documentation
+- [FIX_INDICES_OPTION.md](FIX_INDICES_OPTION.md) ⭐ **NEW** - Using --fix-indices option for comparison
+- [RESIDUE_INDEXING_COMPLETE.md](RESIDUE_INDEXING_COMPLETE.md) - Residue indexing solution details
 - [scripts/README.md](../scripts/README.md) - Scripts reference guide
 - [x3dna_json_compare/README.md](../x3dna_json_compare/README.md) - Comparison library API
 - [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) - Build instructions

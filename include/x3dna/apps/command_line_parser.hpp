@@ -30,6 +30,8 @@ struct FindPairOptions {
     bool hjb = false;                  // -hjb flag
     std::string map_file;              // -m flag
     bool legacy_mode = false;          // --legacy-mode flag
+    bool fix_indices_from_legacy_json = false;  // --fix-indices flag
+    std::string legacy_json_file = "";  // --fix-indices=FILE (auto-detected if empty)
 
     /**
      * @brief Check if any option is set
@@ -37,7 +39,7 @@ struct FindPairOptions {
     bool has_options() const {
         return single_strand || find_all_pairs || divide_helices || curves ||
                curves_plus || hetatm || detailed || waters || hjb ||
-               !map_file.empty() || legacy_mode;
+               !map_file.empty() || legacy_mode || fix_indices_from_legacy_json;
     }
 };
 

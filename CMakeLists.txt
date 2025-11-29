@@ -13,6 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_TESTS "Build tests" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
 option(BUILD_DOCS "Build documentation" OFF)
+option(DEBUG_BP_TYPE_ID "Enable debug output for bp_type_id calculation" OFF)
 
 # Compiler flags
 if(MSVC)
@@ -36,6 +37,7 @@ add_library(x3dna
     src/x3dna/io/pdb_writer.cpp
     src/x3dna/io/input_file_parser.cpp
     src/x3dna/io/input_file_writer.cpp
+    src/x3dna/io/residue_index_fixer.cpp
     src/x3dna/core/structure_legacy_order.cpp
     src/x3dna/core/structure_legacy_order_impl.cpp
     src/x3dna/algorithms/standard_base_templates.cpp
@@ -62,6 +64,11 @@ target_include_directories(x3dna PUBLIC
 target_link_libraries(x3dna PUBLIC
     nlohmann_json::nlohmann_json
 )
+
+# Add compile definitions for debug flags
+if(DEBUG_BP_TYPE_ID)
+    target_compile_definitions(x3dna PRIVATE DEBUG_BP_TYPE_ID)
+endif()
 
 # Testing (after dependencies are loaded)
 if(BUILD_TESTS)
@@ -138,6 +145,21 @@ target_link_libraries(debug_dorg_discrepancy PRIVATE x3dna)
 
 add_executable(debug_bp_type_id_step_params tools/debug_bp_type_id_step_params.cpp)
 target_link_libraries(debug_bp_type_id_step_params PRIVATE x3dna)
+
+add_executable(debug_frame_json tools/debug_frame_json.cpp)
+target_link_libraries(debug_frame_json PRIVATE x3dna)
+
+add_executable(check_residue_indices tools/check_residue_indices.cpp)
+target_link_libraries(check_residue_indices PRIVATE x3dna)
+
+add_executable(investigate_missing_pairs tools/investigate_missing_pairs.cpp)
+target_link_libraries(investigate_missing_pairs PRIVATE x3dna nlohmann_json)
+
+add_executable(test_residue_matching_by_pdb_props tools/test_residue_matching_by_pdb_props.cpp)
+target_link_libraries(test_residue_matching_by_pdb_props PRIVATE x3dna)
+
+add_executable(fix_residue_indices_from_json tools/fix_residue_indices_from_json.cpp)
+target_link_libraries(fix_residue_indices_from_json PRIVATE x3dna)
 
 add_executable(debug_direction_vectors tools/debug_direction_vectors.cpp)
 target_link_libraries(debug_direction_vectors PRIVATE x3dna)

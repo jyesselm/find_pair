@@ -42,6 +42,9 @@ int main(int argc, char* argv[]) {
         protocol.set_find_all_pairs(options.find_all_pairs);
         protocol.set_divide_helices(options.divide_helices);
         protocol.set_legacy_mode(options.legacy_mode);
+        if (options.fix_indices_from_legacy_json) {
+            protocol.set_fix_indices_from_legacy_json(true, options.legacy_json_file);
+        }
 
         // Execute protocol
         std::cout << "Finding base pairs...\n";
