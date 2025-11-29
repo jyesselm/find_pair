@@ -12,11 +12,13 @@
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/io/pdb_parser.hpp>
+#include <x3dna/io/residue_index_fixer.hpp>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/algorithms/base_pair_finder.hpp>
 #include <x3dna/algorithms/parameter_calculator.hpp>
 #include <nlohmann/json.hpp>
+#include <filesystem>
 
 using namespace x3dna;
 using json = nlohmann::json;
@@ -29,8 +31,9 @@ void print_separator(const std::string& title) {
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0] << " <pdb_file> <legacy_idx1> <legacy_idx2> [pdb_id]\n";
+        std::cerr << "Usage: " << argv[0] << " <pdb_file> <legacy_idx1> <legacy_idx2> [pdb_id] [legacy_json_file]\n";
         std::cerr << "Example: " << argv[0] << " data/pdb/6CAQ.pdb 1141 1151 6CAQ\n";
+        std::cerr << "         " << argv[0] << " data/pdb/6CAQ.pdb 1141 1151 6CAQ data/json_legacy/base_frame_calc/6CAQ.json\n";
         return 1;
     }
 
@@ -38,6 +41,7 @@ int main(int argc, char* argv[]) {
     int target_idx1 = std::stoi(argv[2]);
     int target_idx2 = std::stoi(argv[3]);
     std::string pdb_id = (argc > 4) ? argv[4] : "";
+    std::string legacy_json_file = (argc > 5) ? argv[5] : "";
 
     std::cout << "Debug step parameters for bp_type_id calculation\n";
     std::cout << "Pair (" << target_idx1 << ", " << target_idx2 << ")\n";
@@ -48,6 +52,23 @@ int main(int argc, char* argv[]) {
     
     io::PdbParser parser;
     core::Structure structure = parser.parse_file(pdb_file);
+    
+    // Optionally fix residue indices from legacy JSON
+    if (!legacy_json_file.empty() && std::filesystem::exists(legacy_json_file)) {
+        std::cout << "Fixing residue indices from: " << legacy_json_file << "\n";
+        int fixed_count = io::fix_residue_indices_from_json(structure, legacy_json_file);
+        std::cout << "Fixed " << fixed_count << " residue indices\n";
+    } else if (legacy_json_file.empty()) {
+        // Try to auto-detect legacy JSON file
+        std::filesystem::path pdb_path(pdb_file);
+        std::string pdb_id_from_file = pdb_path.stem().string();
+        std::filesystem::path auto_json = std::filesystem::path("data/json_legacy/base_frame_calc") / (pdb_id_from_file + ".json");
+        if (std::filesystem::exists(auto_json)) {
+            std::cout << "Auto-detected legacy JSON: " << auto_json << "\n";
+            int fixed_count = io::fix_residue_indices_from_json(structure, auto_json.string());
+            std::cout << "Fixed " << fixed_count << " residue indices\n";
+        }
+    }
     
     // Build mapping from legacy_residue_idx to residue
     std::map<int, core::Residue*> residue_by_legacy_idx;
@@ -88,15 +109,30 @@ int main(int argc, char* argv[]) {
     std::cout << "Residue 1 (legacy_idx=" << target_idx1 << "):\n";
     std::cout << "  Name: " << res1->name() << "\n";
     std::cout << "  Type: " << static_cast<int>(res1->residue_type()) << "\n";
+    std::cout << "  Chain: " << res1->chain_id() << "\n";
+    std::cout << "  Seq: " << res1->seq_num() << "\n";
+    std::cout << "  Insertion: '" << res1->insertion() << "'\n";
+    std::cout << "  One-letter: " << res1->one_letter_code() << "\n";
+    std::cout << "  Num atoms: " << res1->num_atoms() << "\n";
     
     std::cout << "Residue 2 (legacy_idx=" << target_idx2 << "):\n";
     std::cout << "  Name: " << res2->name() << "\n";
     std::cout << "  Type: " << static_cast<int>(res2->residue_type()) << "\n";
+    std::cout << "  Chain: " << res2->chain_id() << "\n";
+    std::cout << "  Seq: " << res2->seq_num() << "\n";
+    std::cout << "  Insertion: '" << res2->insertion() << "'\n";
+    std::cout << "  One-letter: " << res2->one_letter_code() << "\n";
+    std::cout << "  Num atoms: " << res2->num_atoms() << "\n";
 
     // Step 3: Calculate frames
     print_separator("STEP 3: Calculate frames");
     
-    algorithms::BaseFrameCalculator calculator;
+    // Try resources/templates first, then data/templates
+    std::filesystem::path template_path = "resources/templates";
+    if (!std::filesystem::exists(template_path)) {
+        template_path = "data/templates";
+    }
+    algorithms::BaseFrameCalculator calculator(template_path.string());
     auto frame_result1 = calculator.calculate_frame(*res1);
     auto frame_result2 = calculator.calculate_frame(*res2);
     
@@ -106,6 +142,49 @@ int main(int argc, char* argv[]) {
     }
     
     std::cout << "Frames calculated successfully\n";
+    std::cout << "Frame 1 origin: [" << frame_result1.frame.origin().x() << ", "
+              << frame_result1.frame.origin().y() << ", "
+              << frame_result1.frame.origin().z() << "]\n";
+    std::cout << "Frame 1 RMS fit: " << frame_result1.rms_fit << "\n";
+    std::cout << "Frame 1 matched atoms (" << frame_result1.num_matched << "): ";
+    for (const auto& name : frame_result1.matched_atoms) {
+        std::cout << name << " ";
+    }
+    std::cout << "\n";
+    std::cout << "Frame 2 origin: [" << frame_result2.frame.origin().x() << ", "
+              << frame_result2.frame.origin().y() << ", "
+              << frame_result2.frame.origin().z() << "]\n";
+    std::cout << "Frame 2 RMS fit: " << frame_result2.rms_fit << "\n";
+    std::cout << "Frame 2 matched atoms (" << frame_result2.num_matched << "): ";
+    for (const auto& name : frame_result2.matched_atoms) {
+        std::cout << name << " ";
+    }
+    std::cout << "\n";
+    
+    // Calculate dorg from frame origins
+    auto dorg_vec = frame_result1.frame.origin() - frame_result2.frame.origin();
+    double dorg_calc = std::sqrt(dorg_vec.x()*dorg_vec.x() + 
+                                  dorg_vec.y()*dorg_vec.y() + 
+                                  dorg_vec.z()*dorg_vec.z());
+    std::cout << "Calculated dorg from frame origins: " << dorg_calc << "\n";
+    std::cout << "\n";
+    
+    // Show some atom coordinates for debugging
+    std::cout << "Residue 1 atoms (first 5):\n";
+    for (size_t i = 0; i < std::min(size_t(5), res1->atoms().size()); ++i) {
+        const auto& atom = res1->atoms()[i];
+        auto pos = atom.position();
+        std::cout << "  " << atom.name() << ": [" << pos.x() << ", " 
+                  << pos.y() << ", " << pos.z() << "]\n";
+    }
+    std::cout << "Residue 2 atoms (first 5):\n";
+    for (size_t i = 0; i < std::min(size_t(5), res2->atoms().size()); ++i) {
+        const auto& atom = res2->atoms()[i];
+        auto pos = atom.position();
+        std::cout << "  " << atom.name() << ": [" << pos.x() << ", " 
+                  << pos.y() << ", " << pos.z() << "]\n";
+    }
+    std::cout << "\n";
 
     // Step 4: Run validation
     print_separator("STEP 4: Run validation");

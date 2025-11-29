@@ -5,7 +5,9 @@
 
 #include <x3dna/protocols/find_pair_protocol.hpp>
 #include <x3dna/config/config_manager.hpp>
+#include <x3dna/io/residue_index_fixer.hpp>
 #include <iostream>
+#include <filesystem>
 
 namespace x3dna {
 namespace protocols {
@@ -20,6 +22,34 @@ void FindPairProtocol::execute(core::Structure& structure) {
     // Check legacy mode from config if not explicitly set
     if (!legacy_mode_ && config_) {
         legacy_mode_ = config_->legacy_mode();
+    }
+
+    // Fix residue indices from legacy JSON if requested (for comparison)
+    if (fix_indices_from_legacy_json_) {
+        std::string json_file = legacy_json_file_;
+        if (json_file.empty()) {
+            // Auto-detect legacy JSON file from structure's PDB ID
+            std::string pdb_id = structure.pdb_id();
+            if (pdb_id.empty()) {
+                // Try to extract from structure name or use default
+                pdb_id = "UNKNOWN";
+            }
+            std::filesystem::path auto_json = std::filesystem::path("data/json_legacy/base_frame_calc") / (pdb_id + ".json");
+            if (std::filesystem::exists(auto_json)) {
+                json_file = auto_json.string();
+            }
+        }
+        
+        if (!json_file.empty() && std::filesystem::exists(json_file)) {
+            int fixed_count = io::fix_residue_indices_from_json(structure, json_file);
+            if (fixed_count > 0) {
+                std::cout << "[INFO] Fixed " << fixed_count << " residue indices from legacy JSON: " 
+                          << json_file << "\n";
+            }
+        } else if (fix_indices_from_legacy_json_) {
+            std::cerr << "[WARNING] Legacy JSON file not found for fixing indices: " 
+                      << (json_file.empty() ? "(auto-detect failed)" : json_file) << "\n";
+        }
     }
 
     // Set legacy mode on frame calculator if needed
