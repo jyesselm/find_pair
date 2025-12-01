@@ -256,10 +256,15 @@ class JsonComparator:
                     records.append(calc)
         
         # If no records found and we have a file path, try split file format
+        # Try new structure first, then fall back to old structure
         if not records and json_file:
+            pdb_id = json_file.stem
+            base_dir = json_file.parent
+            
             for calc_type in ['bpstep_params', 'helical_params']:
-                split_file = json_file.parent / f"{json_file.stem}_{calc_type}.json"
-                if split_file.exists():
+                # Try new structure: <record_type>/<PDB_ID>.json
+                split_file = find_json_file(base_dir, pdb_id, calc_type)
+                if split_file and split_file.exists():
                     try:
                         split_data = self._load_json(split_file)
                         if isinstance(split_data, list):
@@ -267,6 +272,16 @@ class JsonComparator:
                             records.extend(split_data)
                     except Exception:
                         pass
+                else:
+                    # Fall back to old structure: <PDB_ID>_<record_type>.json
+                    split_file = base_dir / f"{pdb_id}_{calc_type}.json"
+                    if split_file.exists():
+                        try:
+                            split_data = self._load_json(split_file)
+                            if isinstance(split_data, list):
+                                records.extend(split_data)
+                        except Exception:
+                            pass
         
         return records
     

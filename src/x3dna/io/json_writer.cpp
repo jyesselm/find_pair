@@ -109,6 +109,8 @@ void JsonWriter::write_split_files(const std::filesystem::path& output_dir, bool
         {"distance_checks", "distance_checks"},
         {"hbond_list", "hbond_list"},
         {"find_bestpair_selection", "find_bestpair_selection"},
+        {"bpstep_params", "bpstep_params"},
+        {"helical_params", "helical_params"},
     };
     
     for (const auto& [calc_type, records] : split_records_) {
@@ -795,6 +797,19 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
                                         double dir_x, double dir_y, double dir_z,
                                         const std::array<double, 5>& rtn_val,
                                         const algorithms::ValidationParameters& params) {
+    // CRITICAL: Validation records must use 0-based indices (matching base_frame_calc)
+    // If we receive 1-based indices (>= 4000 for large PDBs), this is a bug
+    // For now, we'll log a warning but still record (to avoid breaking existing code)
+    // TODO: Fix all call sites to use 0-based indices
+    if (base_i >= 4000 || base_j >= 4000) {
+        // Likely 1-based indices - this should not happen
+        // Log warning for debugging (can be removed once all call sites are fixed)
+        #ifdef DEBUG_VALIDATION_INDICES
+        std::cerr << "[WARNING] record_pair_validation called with potentially 1-based indices: "
+                  << "base_i=" << base_i << ", base_j=" << base_j << "\n";
+        #endif
+    }
+    
     nlohmann::json record;
     record["type"] = "pair_validation";
     record["base_i"] = static_cast<long>(base_i);  // Legacy uses long

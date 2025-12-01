@@ -42,7 +42,43 @@ int fix_residue_indices_from_json(core::Structure& structure,
     }
     
     json legacy_data;
-    json_file >> legacy_data;
+    try {
+        json_file >> legacy_data;
+    } catch (const json::parse_error& e) {
+        // JSON file may be corrupted/incomplete (e.g., missing closing bracket)
+        // Try to read as string and fix common issues
+        json_file.clear();
+        json_file.seekg(0);
+        std::string content((std::istreambuf_iterator<char>(json_file)),
+                           std::istreambuf_iterator<char>());
+        
+        // Try to fix common issues: missing closing bracket
+        // Remove trailing whitespace
+        while (!content.empty() && (content.back() == ' ' || content.back() == '\n' || content.back() == '\r' || content.back() == '\t')) {
+            content.pop_back();
+        }
+        
+        // Remove trailing comma if present
+        while (!content.empty() && content.back() == ',') {
+            content.pop_back();
+            // Remove any whitespace after comma
+            while (!content.empty() && (content.back() == ' ' || content.back() == '\n' || content.back() == '\r' || content.back() == '\t')) {
+                content.pop_back();
+            }
+        }
+        
+        // Add closing bracket if array is not closed
+        if (!content.empty() && content[0] == '[' && content.back() != ']') {
+            content += "\n]";
+        }
+        
+        try {
+            legacy_data = json::parse(content);
+        } catch (const json::parse_error& e2) {
+            // Still can't parse - return error
+            return -3; // JSON parse error
+        }
+    }
     
     if (!legacy_data.is_array()) {
         return -2; // Not an array

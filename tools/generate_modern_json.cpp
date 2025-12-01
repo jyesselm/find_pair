@@ -268,19 +268,19 @@ int main(int argc, char* argv[]) {
 
                         // Record base_frame_calc
                         // Use legacy_residue_idx if available, otherwise use the counter
-                        // JsonWriter expects 0-based index, but legacy uses 1-based
+                        // IMPORTANT: Keep as 1-based to match legacy JSON output format
                         size_t record_idx = (legacy_residue_idx > 0) ? 
-                            static_cast<size_t>(legacy_residue_idx - 1) : 
-                            (residue_idx - 1);
+                            static_cast<size_t>(legacy_residue_idx) : 
+                            residue_idx;
                         writer.record_base_frame_calc(
-                            record_idx, // Convert 1-based to 0-based
+                            record_idx, // Keep 1-based to match legacy
                             base_type, frame_result.template_file, frame_result.rms_fit,
                             frame_result.matched_atoms, residue.name(), residue.chain_id(),
                             residue.seq_num(), residue.insertion());
 
                         // Record ls_fitting
                         writer.record_ls_fitting(
-                            record_idx, // Use same index as base_frame_calc
+                            record_idx, // Keep 1-based to match legacy
                             frame_result.num_matched, frame_result.rms_fit,
                             frame_result.rotation_matrix, frame_result.translation, residue.name(),
                             residue.chain_id(), residue.seq_num(), residue.insertion());
@@ -294,7 +294,7 @@ int main(int argc, char* argv[]) {
                         // TODO: Extract coordinates from matched atoms if needed
 
                         writer.record_frame_calc(
-                            record_idx, // Use same index as base_frame_calc
+                            record_idx, // Keep 1-based to match legacy
                             base_type, frame_result.template_file, frame_result.rms_fit,
                             standard_coords, experimental_coords, residue.name(),
                             residue.chain_id(), residue.seq_num(), residue.insertion());

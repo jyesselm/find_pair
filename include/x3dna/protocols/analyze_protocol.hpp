@@ -199,6 +199,15 @@ private:
      */
     core::Structure load_structure(const std::filesystem::path& pdb_file);
 
+    /**
+     * @brief Convert atom indices to residue indices in base pairs
+     * 
+     * Legacy input files may contain atom indices instead of residue indices.
+     * This method detects atom indices (values larger than residue count) and
+     * converts them to residue indices using the structure's atom-to-residue mapping.
+     */
+    void convert_atom_indices_to_residue_indices(const core::Structure& structure);
+
     // Algorithm components
     algorithms::BaseFrameCalculator frame_calculator_;
     algorithms::ParameterCalculator param_calculator_;
