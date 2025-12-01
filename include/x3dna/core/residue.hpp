@@ -148,17 +148,18 @@ public:
 
     /**
      * @brief Get one-letter code for this residue
-     * @return One-letter code (A, C, G, T, U for nucleotides)
+     * @return One-letter code (A, C, G, T, U for nucleotides, lowercase for modified)
      *
      * Recognizes standard nucleotide names:
      * - Single letter: A, C, G, T, U
      * - Three letter: ADE, CYT, GUA, THY, URA
      * - DNA format: DA, DC, DG, DT (may have leading/trailing spaces)
+     * - Modified nucleotides: PSU, 5MC, 5MU, H2U, A2M, etc.
      */
     char one_letter_code() const {
         std::string trimmed = trim_name();
 
-        // Single letter codes
+        // Standard nucleotides - uppercase
         if (trimmed == "A" || trimmed == "ADE" || trimmed == "DA")
             return 'A';
         if (trimmed == "C" || trimmed == "CYT" || trimmed == "DC")
@@ -170,28 +171,67 @@ public:
         if (trimmed == "U" || trimmed == "URA" || trimmed == "DU")
             return 'U';
 
+        // Modified nucleotides - return lowercase for parent base
+        // Pseudouridine (special case - P)
+        if (trimmed == "PSU")
+            return 'P';
+        
+        // Modified Adenine → 'a'
+        if (trimmed == "A2M" || trimmed == "1MA" || trimmed == "2MA" || 
+            trimmed == "OMA" || trimmed == "6MA" || trimmed == "MIA" ||
+            trimmed == "I6A" || trimmed == "T6A" || trimmed == "M6A")
+            return 'a';
+        
+        // Modified Cytosine → 'c'
+        if (trimmed == "5MC" || trimmed == "OMC" || trimmed == "S4C" ||
+            trimmed == "5IC" || trimmed == "5FC" || trimmed == "CBR")
+            return 'c';
+        
+        // Modified Guanine → 'g'
+        if (trimmed == "OMG" || trimmed == "1MG" || trimmed == "2MG" ||
+            trimmed == "7MG" || trimmed == "M2G" || trimmed == "YYG" ||
+            trimmed == "YG" || trimmed == "QUO")
+            return 'g';
+        
+        // Modified Uracil/Thymine → 't' or 'u'
+        if (trimmed == "5MU" || trimmed == "RT")  // Ribothymidine
+            return 't';
+        if (trimmed == "H2U" || trimmed == "DHU" || trimmed == "OMU" ||
+            trimmed == "4SU" || trimmed == "S4U" || trimmed == "5BU" ||
+            trimmed == "2MU" || trimmed == "UR3")
+            return 'u';
+
         return '?';
     }
 
     /**
      * @brief Check if this is a nucleotide
-     * @return True if nucleotide (A, C, G, T, U)
+     * @return True if nucleotide (A, C, G, T, U or modified a, c, g, t, u, P)
      */
     bool is_nucleotide() const {
         char code = one_letter_code();
-        return (code == 'A' || code == 'C' || code == 'G' || code == 'T' || code == 'U');
+        // Standard nucleotides
+        if (code == 'A' || code == 'C' || code == 'G' || code == 'T' || code == 'U')
+            return true;
+        // Modified nucleotides (lowercase) and Pseudouridine (P)
+        if (code == 'a' || code == 'c' || code == 'g' || code == 't' || code == 'u' || code == 'P')
+            return true;
+        return false;
     }
 
     /**
      * @brief Get RY classification (Purine=1, Pyrimidine=0)
-     * @return 1 for purines (A, G), 0 for pyrimidines (C, T, U), -1 for non-nucleotides
+     * @return 1 for purines (A, G, a, g), 0 for pyrimidines (C, T, U, c, t, u, P), -1 for non-nucleotides
      */
     int ry_classification() const {
         char code = one_letter_code();
-        if (code == 'A' || code == 'G') {
+        // Purines (includes modified adenine/guanine)
+        if (code == 'A' || code == 'G' || code == 'a' || code == 'g') {
             return 1; // Purine
         }
-        if (code == 'C' || code == 'T' || code == 'U') {
+        // Pyrimidines (includes modified cytosine/uracil/thymine and pseudouridine)
+        if (code == 'C' || code == 'T' || code == 'U' || 
+            code == 'c' || code == 't' || code == 'u' || code == 'P') {
             return 0; // Pyrimidine
         }
         return -1; // Not a nucleotide
@@ -202,6 +242,7 @@ public:
      */
     ResidueType residue_type() const {
         char code = one_letter_code();
+        // Standard nucleotides
         if (code == 'A')
             return ResidueType::ADENINE;
         if (code == 'C')
@@ -212,6 +253,20 @@ public:
             return ResidueType::THYMINE;
         if (code == 'U')
             return ResidueType::URACIL;
+        
+        // Modified nucleotides - map to parent base type
+        if (code == 'a')  // Modified adenine
+            return ResidueType::ADENINE;
+        if (code == 'c')  // Modified cytosine
+            return ResidueType::CYTOSINE;
+        if (code == 'g')  // Modified guanine
+            return ResidueType::GUANINE;
+        if (code == 't')  // Modified thymine (ribothymidine)
+            return ResidueType::THYMINE;
+        if (code == 'u')  // Modified uracil
+            return ResidueType::URACIL;
+        if (code == 'P')  // Pseudouridine
+            return ResidueType::PSEUDOURIDINE;
         
         // Check for water molecules and ions
         std::string res_name = name();

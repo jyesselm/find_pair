@@ -86,6 +86,19 @@ public:
     core::ReferenceFrame calculate_midstep_frame(const core::ReferenceFrame& frame1,
                                                   const core::ReferenceFrame& frame2);
 
+    /**
+     * @brief Calculate pair frame (middle frame between two bases in a base pair)
+     * @param frame1 First base reference frame
+     * @param frame2 Second base reference frame
+     * @return Middle frame for the base pair
+     * 
+     * This matches legacy cehs_average behavior:
+     * - Checks if z-axes are anti-parallel and reverses y/z if needed
+     * - Uses bpstep_par to compute the middle frame
+     */
+    core::ReferenceFrame calculate_pair_frame(const core::ReferenceFrame& frame1,
+                                               const core::ReferenceFrame& frame2);
+
 private:
     /**
      * @brief Core algorithm matching legacy bpstep_par

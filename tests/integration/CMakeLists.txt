@@ -92,7 +92,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VER
     target_link_libraries(test_json_generation PRIVATE c++fs)
 endif()
 
-gtest_discover_tests(test_json_generation)
+gtest_discover_tests(test_json_generation DISCOVERY_TIMEOUT 60)
 
 # Filtered JSON generation test (only problematic PDBs)
 add_executable(test_json_generation_filtered
@@ -116,7 +116,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VER
     target_link_libraries(test_json_generation_filtered PRIVATE c++fs)
 endif()
 
-gtest_discover_tests(test_json_generation_filtered)
+gtest_discover_tests(test_json_generation_filtered DISCOVERY_TIMEOUT 60)
 
 # Single PDB test tool (not a gtest, just a standalone tool)
 add_executable(test_single_pdb

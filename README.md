@@ -8,11 +8,148 @@ A modern C++ rewrite of the X3DNA v2.4 codebase with strong object-oriented desi
 
 **Current Status**: Modern code matches legacy code output exactly. See [docs/100_PERCENT_MATCH_PLAN.md](docs/100_PERCENT_MATCH_PLAN.md) for detailed status.
 
-## Testing & JSON Comparison
+---
+
+## Quick Start
+
+### 1. Build Both Legacy and Modern Code
+
+```bash
+# Build modern code (Release mode)
+make release
+
+# Build legacy code (Release mode)
+make org-release
+```
+
+### 2. Generate JSON Output Files
+
+```bash
+# Generate legacy JSON (reference output)
+python3 scripts/rebuild_json.py regenerate 1H4S --legacy-only
+
+# Generate modern JSON (to be compared against legacy)
+python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
+
+# Or generate both at once
+python3 scripts/rebuild_json.py regenerate 1H4S
+```
+
+### 3. Compare Outputs
+
+```bash
+# Compare a specific PDB
+python3 scripts/compare_json.py compare 1H4S
+
+# Compare with verbose output
+python3 scripts/compare_json.py compare 1H4S --verbose
+```
+
+---
+
+## Generating Output Files
+
+### Legacy JSON Output (Reference)
+
+The `org/` directory contains the original X3DNA code. Legacy output serves as the **reference** that modern code must match.
+
+**Location:** `data/json_legacy/`
+
+#### Method 1: Using Python Script (Recommended)
+
+```bash
+# Single PDB
+python3 scripts/rebuild_json.py regenerate 1H4S --legacy-only
+
+# Multiple PDB
+python3 scripts/rebuild_json.py regenerate 1H4S 2BNA 3DNA --legacy-only
+
+# Using test set
+python3 scripts/rebuild_json.py regenerate --test-set 100 --legacy-only
+
+# All available PDBs
+python3 scripts/rebuild_json.py regenerate --legacy-only
+```
+
+#### Method 2: Direct Executable
+
+```bash
+# From project root
+cd org
+./build/bin/find_pair_analyze ../data/pdb/1H4S.pdb
+```
+
+**Note:** Run from the `org/` directory as it uses relative paths for templates.
+
+---
+
+### Modern JSON Output
+
+Modern code output is compared against legacy output to verify correctness.
+
+**Location:** `data/json/`
+
+#### Method 1: Using Python Script (Recommended)
+
+```bash
+# Single PDB
+python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
+
+# Multiple PDBs
+python3 scripts/rebuild_json.py regenerate 1H4S 2BNA 3DNA --modern-only
+
+# Using test set
+python3 scripts/rebuild_json.py regenerate --test-set 100 --modern-only
+
+# All available PDBs
+python3 scripts/rebuild_json.py regenerate --modern-only
+```
+
+#### Method 2: Direct Executable
+
+```bash
+# From project root
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/
+```
+
+#### Method 3: Using find_pair_app
+
+```bash
+# Generate .inp file and ref_frames_modern.dat
+./build/find_pair_app data/pdb/1H4S.pdb output.inp
+```
+
+This creates:
+- `output.inp` - Input file for analyze_app
+- `ref_frames_modern.dat` - Reference frames in legacy-compatible format
+
+---
+
+### Regenerate Both Legacy and Modern
+
+```bash
+# Single PDB
+python3 scripts/rebuild_json.py regenerate 1H4S
+
+# Multiple PDBs
+python3 scripts/rebuild_json.py regenerate 1H4S 2BNA 3DNA
+
+# Using test set
+python3 scripts/rebuild_json.py regenerate --test-set 100
+
+# All available PDBs
+python3 scripts/rebuild_json.py regenerate
+```
+
+---
+
+## Comparing Outputs
+
+The primary comparison tool is `scripts/compare_json.py`. It compares modern JSON against legacy JSON to identify differences.
 
 **For complete testing documentation, see [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)**
 
-### Quick Comparison
+### Basic Comparison
 
 ```bash
 # Compare all available PDBs
@@ -22,14 +159,13 @@ python3 scripts/compare_json.py compare
 python3 scripts/compare_json.py compare 1H4S
 python3 scripts/compare_json.py compare 1H4S 2BNA 3DNA
 
-# Compare test set (10, 50, 100, 500, or 1000 PDBs)
+# Compare using test sets (10, 50, 100, 500, or 1000 PDBs)
 python3 scripts/compare_json.py compare --test-set 100
+```
 
-# Compare specific record types
-python3 scripts/compare_json.py atoms 1H4S      # Atoms only
-python3 scripts/compare_json.py frames 1H4S       # Frames only
-python3 scripts/compare_json.py ring-atoms 1H4S  # Ring atoms only
+### Comparison Options
 
+```bash
 # Verbose output with detailed differences
 python3 scripts/compare_json.py compare 1H4S --verbose
 
@@ -38,88 +174,135 @@ python3 scripts/compare_json.py compare --output report.md
 
 # Show only files with differences
 python3 scripts/compare_json.py compare --diff-only
+
+# Auto-regenerate missing JSON files
+python3 scripts/compare_json.py compare --regenerate
+
+# Custom thread count
+python3 scripts/compare_json.py compare --threads 4
 ```
 
-### Test Types
-
-1. **C++ Unit Tests** - Test individual classes and functions (`tests/unit/`)
-2. **C++ Integration Tests** - Test component interactions (`tests/integration/`)
-3. **JSON Regression Tests** - Compare modern JSON with legacy JSON (primary test method)
-
-The primary testing method is JSON regression testing, which ensures modern code output exactly matches legacy code output.
-
-## Building and Running Legacy Code
-
-The `org/` directory contains the original X3DNA code with JSON output support. This is the reference implementation that modern code must match exactly.
-
-### Building Legacy Code
-
-**Using Makefile (recommended):**
+### Compare Specific Record Types
 
 ```bash
-# Build in Release mode (default, optimized with -O3)
+python3 scripts/compare_json.py atoms 1H4S       # Atoms only
+python3 scripts/compare_json.py frames 1H4S      # Reference frames only
+python3 scripts/compare_json.py ring-atoms 1H4S  # Ring atoms only
+python3 scripts/compare_json.py steps 1H4S       # Step parameters only
+```
+
+### What Gets Compared
+
+| Record Type | Description |
+|-------------|-------------|
+| `pdb_atoms` | Atom records from PDB parsing |
+| `base_frame_calc` | Base frame calculation results |
+| `frame_calc` / `ref_frame` | Reference frame calculations |
+| `base_pair` | Base pair records |
+| `pair_validation` | Pair validation results |
+| `distance_checks` | Distance and geometric checks |
+| `hbond_list` | Hydrogen bond lists |
+| `find_bestpair_selection` | Selected base pairs |
+| `bpstep_params` | Step parameters (Shift, Slide, Rise, Tilt, Roll, Twist) |
+| `helical_params` | Helical parameters |
+
+See [docs/JSON_DATA_TYPES_AND_COMPARISONS.md](docs/JSON_DATA_TYPES_AND_COMPARISONS.md) for detailed information.
+
+---
+
+## Complete Workflow Example
+
+```bash
+# 1. Build both codebases
+make release
 make org-release
 
-# Build in Debug mode (with debug symbols, -g, -O0)
-make org-debug
+# 2. Generate JSON for a new PDB
+cp /path/to/new.pdb data/pdb/
+python3 scripts/rebuild_json.py regenerate new --legacy-only
+python3 scripts/rebuild_json.py regenerate new --modern-only
 
-# Build in RelWithDebInfo mode (optimized with debug symbols, -O2, -g)
-make org-relwithdebinfo
+# 3. Compare outputs
+python3 scripts/compare_json.py compare new --verbose
 
-# Clean build artifacts
-make org-clean
+# 4. If differences found, fix modern code and repeat
+#    ... edit src/x3dna/*.cpp ...
+make release
+python3 scripts/rebuild_json.py regenerate new --modern-only
+python3 scripts/compare_json.py compare new --verbose
 
-# Remove entire build directory
-make org-clean-all
+# 5. Once matching, validate against full test set
+python3 scripts/compare_json.py compare --test-set 100
 ```
 
-**Or manually with CMake:**
+---
+
+## Executables Reference
+
+### Modern Executables (`./build/`)
+
+| Executable | Purpose | Usage |
+|------------|---------|-------|
+| `find_pair_app` | Find base pairs (modern find_pair) | `./build/find_pair_app [--fix-indices] [--legacy-inp=FILE] data/pdb/1H4S.pdb output.inp` |
+| `analyze_app` | Calculate step parameters | `./build/analyze_app output.inp` |
+| `generate_modern_json` | Generate JSON for comparison | `./build/generate_modern_json data/pdb/1H4S.pdb data/json/` |
+
+### Legacy Executables (`org/build/bin/`)
+
+| Executable | Purpose | Usage |
+|------------|---------|-------|
+| `find_pair_original` | Original find_pair | `./build/bin/find_pair_original ../data/pdb/1H4S.pdb` |
+| `analyze_original` | Original analyze | `./build/bin/analyze_original 1H4S.inp` |
+| `find_pair_analyze` | Combined find_pair + JSON output | `./build/bin/find_pair_analyze ../data/pdb/1H4S.pdb` |
+
+### Comparison
+
+| Legacy | Modern | Output |
+|--------|--------|--------|
+| `find_pair_original` | `find_pair_app` | `.inp` file, `ref_frames.dat` |
+| `analyze_original` | `analyze_app` | Step parameters |
+| `find_pair_analyze` | `generate_modern_json` | JSON files |
+
+### Important: The `--fix-indices` Option
+
+**When comparing with legacy output, always use `--fix-indices`:**
 
 ```bash
-cd org
-mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
+./build/find_pair_app --fix-indices data/pdb/1H4S.pdb output.inp
 ```
 
-**Executables created in `org/build/bin/`:**
-- `find_pair_analyze` - Main executable that processes PDB files and generates JSON output
-- `find_pair_original` - Original find_pair executable
-- `analyze_original` - Original analyze executable
+**Why?** The modern and legacy code assign different indices to residues (off by 1). The `--fix-indices` option:
+- Reads the legacy JSON file (`data/json_legacy/base_frame_calc/<PDB>.json`)
+- Maps residues by their PDB properties (chain, seq_num, insertion code)
+- Assigns matching legacy indices to modern residues
 
-### Running Legacy Code
+**Without `--fix-indices`**: Base pairs will have different residue indices and appear non-matching even when they're the same physical pairs.
 
-To process a PDB file and generate legacy JSON output:
+### The `--legacy-inp` Option for Exact Frame Matching
+
+When generating `ref_frames_modern.dat`, the Y/Z axis orientation depends on residue ordering within pairs. Legacy's `find_pair` uses a variable ordering based on scan order, while modern consistently uses smaller-residue-first.
+
+**To match legacy's frame orientation exactly:**
 
 ```bash
-# From the org/ directory
-cd org
-./build/bin/find_pair_analyze ../data/pdb/1H4S.pdb
+# First generate legacy .inp and ref_frames.dat
+cd org && ./build/bin/find_pair_original ../data/pdb/1H4S.pdb && cd ..
+
+# Then generate modern with legacy ordering
+./build/find_pair_app --fix-indices --legacy-inp=1H4S.inp data/pdb/1H4S.pdb output.inp
 ```
 
-The JSON output will be written to `data/json_legacy/` in segmented format (one file per record type).
+This parses the legacy `.inp` file to determine which residue was "first" in each pair, then uses the same ordering for frame calculations. This achieves **100% match** on all axes (origin, x, y, z).
 
-**Note:** The executable should be run from the `org/` directory (or with the PDB path relative to the project root), as it may use relative paths for templates or other resources.
+**Without `--legacy-inp`**: Origin and X-axis will match 100%, but Y/Z axes may be flipped (180° rotation around X) for ~35% of pairs.
 
-### Generating Legacy JSON
+> **Note**: The base pair local parameters (Shear, Stretch, Stagger, Buckle, Propeller, Opening) calculated by `analyze` may also be affected by the Y/Z frame orientation difference. These parameters are not yet compared in JSON format. If exact matching is needed, use `--legacy-inp` to ensure consistent frame orientation.
 
-```bash
-# Generate legacy JSON for a single PDB
-cd org
-./build/bin/find_pair_analyze ../data/pdb/1H4S.pdb
+---
 
-# Or use the rebuild script
-python3 scripts/rebuild_json.py regenerate 1H4S --legacy-only
+## Building the Code
 
-# Generate for multiple PDBs
-python3 scripts/rebuild_json.py regenerate 1H4S 2BNA 3DNA --legacy-only
-```
-
-**Important:** Legacy code uses 1-based indexing, while modern code uses 0-based indexing. This is handled automatically in the comparison tools.
-
-## Quick Start
-
-### Building Modern Code
+### Modern Code
 
 **Using Makefile (recommended):**
 
@@ -161,10 +344,49 @@ make -j$(nproc)
 - `make format-check` - Check code formatting
 - `make compile_commands` - Generate `compile_commands.json` for IDE support
 
-### Running Tests
+---
+
+### Legacy Code
+
+**Using Makefile (recommended):**
 
 ```bash
-# Run all tests
+# Build in Release mode (default, optimized with -O3)
+make org-release
+
+# Build in Debug mode (with debug symbols, -g, -O0)
+make org-debug
+
+# Build in RelWithDebInfo mode (optimized with debug symbols, -O2, -g)
+make org-relwithdebinfo
+
+# Clean build artifacts
+make org-clean
+
+# Remove entire build directory
+make org-clean-all
+```
+
+**Or manually with CMake:**
+
+```bash
+cd org
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+```
+
+**Executables created in `org/build/bin/`:**
+- `find_pair_analyze` - Main executable that processes PDB files and generates JSON output
+- `find_pair_original` - Original find_pair executable
+- `analyze_original` - Original analyze executable
+
+---
+
+## Running Tests
+
+```bash
+# Run all C++ tests
 make test
 
 # Run tests with verbose output
@@ -179,15 +401,13 @@ cd build && ctest -R unit        # Unit tests only
 cd build && ctest -R integration # Integration tests only
 ```
 
-### Generating Modern JSON
+### Test Types
 
-```bash
-# Generate JSON for a single PDB
-./build/generate_modern_json data/pdb/1H4S.pdb data/json/
+1. **C++ Unit Tests** - Test individual classes and functions (`tests/unit/`)
+2. **C++ Integration Tests** - Test component interactions (`tests/integration/`)
+3. **JSON Regression Tests** - Compare modern JSON with legacy JSON (primary test method)
 
-# Or use the rebuild script
-python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
-```
+The primary testing method is JSON regression testing, which ensures modern code output exactly matches legacy code output.
 
 ## Development Workflow
 
@@ -195,7 +415,7 @@ python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
 
 1. **Edit modern code** (`src/x3dna/` or `include/x3dna/`)
 2. **Build**: `make release`
-3. **Generate modern JSON**: `./build/generate_modern_json data/pdb/<PDB>.pdb data/json/`
+3. **Generate modern JSON**: `python3 scripts/rebuild_json.py regenerate <PDB> --modern-only`
 4. **Compare with legacy**: `python3 scripts/compare_json.py compare <PDB>`
 5. **Fix differences** → Repeat until 100% match
 
@@ -208,98 +428,62 @@ python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
 
 See [docs/SIMPLIFIED_DEVELOPMENT.md](docs/SIMPLIFIED_DEVELOPMENT.md) for detailed development guidelines.
 
-## JSON Comparison and Rebuilding Tools
+---
 
-The project includes two main Python scripts for working with JSON files:
+## JSON Tools Reference
 
 ### `compare_json.py` - Compare JSON Files
 
-Compare legacy and modern JSON files to identify differences.
+The main tool for comparing legacy and modern JSON outputs.
 
-**Basic Usage:**
 ```bash
+# Basic usage
+python3 scripts/compare_json.py compare 1H4S
+
+# Compare multiple PDBs
+python3 scripts/compare_json.py compare 1H4S 2BNA 3DNA
+
 # Compare all available PDBs
 python3 scripts/compare_json.py compare
 
-# Compare specific PDB file(s)
-python3 scripts/compare_json.py compare 1H4S
-python3 scripts/compare_json.py compare 1H4S 2BNA 3DNA
-
-# Compare specific record types
-python3 scripts/compare_json.py atoms 1H4S      # Atoms only
-python3 scripts/compare_json.py frames 1H4S     # Frames only
-python3 scripts/compare_json.py ring-atoms 1H4S # Ring atoms only
-
 # Compare test set
 python3 scripts/compare_json.py compare --test-set 100
-```
 
-**Options:**
-```bash
-# Verbose output with detailed differences
-python3 scripts/compare_json.py compare --verbose
+# Options
+python3 scripts/compare_json.py compare --verbose      # Detailed differences
+python3 scripts/compare_json.py compare --diff-only    # Only show differences
+python3 scripts/compare_json.py compare --output report.md  # Save to file
+python3 scripts/compare_json.py compare --regenerate   # Auto-regenerate missing files
 
-# Save report to file
-python3 scripts/compare_json.py compare --output report.md
+# Compare specific record types
+python3 scripts/compare_json.py atoms 1H4S       # Atoms
+python3 scripts/compare_json.py frames 1H4S      # Reference frames
+python3 scripts/compare_json.py ring-atoms 1H4S  # Ring atoms
+python3 scripts/compare_json.py steps 1H4S       # Step parameters
 
-# Show only files with differences
-python3 scripts/compare_json.py compare --diff-only
-
-# Regenerate missing JSON files automatically
-python3 scripts/compare_json.py compare --regenerate
-
-# Custom thread count
-python3 scripts/compare_json.py compare --threads 4
-```
-
-**Test Sets:**
-```bash
-# Generate test sets of different sizes (10, 50, 100, 500, 1000)
+# Generate test sets
 python3 scripts/compare_json.py generate-test-sets
-
-# Regenerate test sets (overwrite existing)
-python3 scripts/compare_json.py generate-test-sets --force
+python3 scripts/compare_json.py generate-test-sets --force  # Overwrite existing
 ```
 
-### `rebuild_json.py` - Rebuild JSON Files
+### `rebuild_json.py` - Regenerate, Validate, and Clean JSON
 
-Regenerate, validate, and clean JSON files (both legacy and modern).
+Unified tool for managing JSON files.
 
-**Regenerate JSON Files:**
 ```bash
-# Regenerate all JSON files (legacy and modern)
-python3 scripts/rebuild_json.py regenerate
+# Regenerate JSON files
+python3 scripts/rebuild_json.py regenerate 1H4S              # Single PDB (both)
+python3 scripts/rebuild_json.py regenerate 1H4S --legacy-only   # Legacy only
+python3 scripts/rebuild_json.py regenerate 1H4S --modern-only   # Modern only
+python3 scripts/rebuild_json.py regenerate --test-set 100    # Test set
 
-# Regenerate only legacy JSON files
-python3 scripts/rebuild_json.py regenerate --legacy-only
-
-# Regenerate only modern JSON files
-python3 scripts/rebuild_json.py regenerate --modern-only
-
-# Regenerate specific PDB file(s)
-python3 scripts/rebuild_json.py regenerate 1H4S
-python3 scripts/rebuild_json.py regenerate 1H4S 2BNA 3DNA
-
-# Use test set
-python3 scripts/rebuild_json.py regenerate --test-set 100
-```
-
-**Validate JSON Files:**
-```bash
-# Validate all existing JSON files
+# Validate JSON files
 python3 scripts/rebuild_json.py validate
-
-# Validate specific directories
 python3 scripts/rebuild_json.py validate --legacy-dir data/json_legacy --modern-dir data/json
-```
 
-**Clean Invalid JSON Files:**
-```bash
-# Dry run (shows what would be removed)
-python3 scripts/rebuild_json.py clean
-
-# Actually remove invalid/empty files
-python3 scripts/rebuild_json.py clean --execute
+# Clean invalid/empty JSON files
+python3 scripts/rebuild_json.py clean           # Dry run
+python3 scripts/rebuild_json.py clean --execute # Actually remove files
 ```
 
 For more detailed documentation, see `scripts/README.md` and [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md).

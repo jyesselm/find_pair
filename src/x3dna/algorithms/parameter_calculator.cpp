@@ -383,5 +383,45 @@ ParameterCalculator::calculate_midstep_frame(const core::ReferenceFrame& frame1,
     return midstep_frame;
 }
 
+core::ReferenceFrame
+ParameterCalculator::calculate_pair_frame(const core::ReferenceFrame& frame1,
+                                          const core::ReferenceFrame& frame2) {
+    // This matches legacy cehs_average behavior for a 2-base pair
+    // Legacy code: 
+    //   1. Start with mst = frame1
+    //   2. For frame2: if z-axes anti-parallel, reverse y and z columns
+    //   3. Call bpstep_par(frame2_modified, frame1)
+    
+    // Get z-axes
+    geometry::Vector3D z1 = frame1.z_axis();
+    geometry::Vector3D z2 = frame2.z_axis();
+    
+    // Check if z-axes are anti-parallel (negative dot product)
+    double z_dot = z1.dot(z2);
+    
+    geometry::Matrix3D r2_modified = frame2.rotation();
+    
+    if (z_dot < 0.0) {
+        // Reverse y and z columns (legacy: reverse_y_z_columns)
+        // Column 1 (y-axis) and Column 2 (z-axis) are negated
+        r2_modified = geometry::Matrix3D(
+            r2_modified.at(0, 0), -r2_modified.at(0, 1), -r2_modified.at(0, 2),
+            r2_modified.at(1, 0), -r2_modified.at(1, 1), -r2_modified.at(1, 2),
+            r2_modified.at(2, 0), -r2_modified.at(2, 1), -r2_modified.at(2, 2)
+        );
+    }
+    
+    // Calculate midstep frame using bpstep_par
+    // Legacy order: bpstep_par(bi, org[ik], mst, morg, ...)
+    // where bi=frame2_modified, org[ik]=frame2.origin, mst=frame1, morg=frame1.origin
+    core::BasePairStepParameters params;
+    core::ReferenceFrame midstep_frame;
+    
+    bpstep_par_impl(r2_modified, frame2.origin(), frame1.rotation(), frame1.origin(), 
+                    params, midstep_frame);
+    
+    return midstep_frame;
+}
+
 } // namespace algorithms
 } // namespace x3dna

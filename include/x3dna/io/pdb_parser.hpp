@@ -218,6 +218,13 @@ private:
     bool is_water(const std::string& residue_name) const;
 
     /**
+     * @brief Check if residue name is a modified nucleotide
+     * @param residue_name Residue name from PDB
+     * @return True if residue is a known modified nucleotide (PSU, 5MC, A2M, etc.)
+     */
+    bool is_modified_nucleotide_name(const std::string& residue_name) const;
+
+    /**
      * @brief Normalize atom name (add leading space if needed for 4-char format)
      * @param name Atom name from PDB
      * @return Normalized atom name
