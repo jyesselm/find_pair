@@ -247,27 +247,33 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
 
                 // Create BasePair object (using 0-based indices for BasePair)
                 // Convert from legacy 1-based indices to 0-based by subtracting 1
-                // This matches the method used in validation_pair creation
-                BasePair pair(static_cast<size_t>(legacy_idx1) - 1,
-                              static_cast<size_t>(legacy_idx2) - 1, result1.bp_type);
+                // ALWAYS store smaller index first for consistency with legacy behavior
+                size_t idx_small = static_cast<size_t>(std::min(legacy_idx1, legacy_idx2)) - 1;
+                size_t idx_large = static_cast<size_t>(std::max(legacy_idx1, legacy_idx2)) - 1;
+                bool swapped = (legacy_idx1 > legacy_idx2);
+                
+                BasePair pair(idx_small, idx_large, result1.bp_type);
 
-                // Set frames if available
-                if (res1_ptr->reference_frame().has_value()) {
-                    pair.set_frame1(res1_ptr->reference_frame().value());
+                // Set frames - swap if we reordered the indices to maintain correct correspondence
+                const Residue* res_small = swapped ? res2_ptr : res1_ptr;
+                const Residue* res_large = swapped ? res1_ptr : res2_ptr;
+                
+                if (res_small && res_small->reference_frame().has_value()) {
+                    pair.set_frame1(res_small->reference_frame().value());
                 }
 
-                if (res2_ptr && res2_ptr->reference_frame().has_value()) {
-                    pair.set_frame2(res2_ptr->reference_frame().value());
+                if (res_large && res_large->reference_frame().has_value()) {
+                    pair.set_frame2(res_large->reference_frame().value());
                 }
 
                 // Set hydrogen bonds
                 pair.set_hydrogen_bonds(result1.hbonds);
 
-                // Determine bp_type string from residue names
+                // Determine bp_type string from residue names (smaller index base first)
                 std::string bp_type_str;
-                if (res1_ptr && res2_ptr) {
-                    char base1 = res1_ptr->one_letter_code();
-                    char base2 = res2_ptr->one_letter_code();
+                if (res_small && res_large) {
+                    char base1 = res_small->one_letter_code();
+                    char base2 = res_large->one_letter_code();
                     if (base1 != ' ' && base2 != ' ') {
                         bp_type_str = std::string(1, base1) + std::string(1, base2);
                         pair.set_bp_type(bp_type_str);
@@ -276,9 +282,8 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
 
                 base_pairs.push_back(pair);
 
-                // Store legacy indices for recording (from PDB parsing, NOT from JSON)
-                selected_pairs_legacy_idx.push_back(
-                    {static_cast<size_t>(legacy_idx1), static_cast<size_t>(legacy_idx2)});
+                // Store legacy indices for recording (smaller first for consistency)
+                selected_pairs_legacy_idx.push_back({idx_small + 1, idx_large + 1});
             }
         }
 
