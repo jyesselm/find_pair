@@ -32,6 +32,7 @@ struct FindPairOptions {
     bool legacy_mode = false;          // --legacy-mode flag
     bool fix_indices_from_legacy_json = false;  // --fix-indices flag
     std::string legacy_json_file = "";  // --fix-indices=FILE (auto-detected if empty)
+    std::string legacy_inp_file = "";   // --legacy-inp=FILE for pair ordering
 
     /**
      * @brief Check if any option is set

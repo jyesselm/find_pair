@@ -84,6 +84,8 @@ FindPairOptions CommandLineParser::parse_find_pair(int argc, char* argv[]) {
             } else if (arg.find("--fix-indices=") == 0) {
                 options.fix_indices_from_legacy_json = true;
                 options.legacy_json_file = extract_option_value(arg);
+            } else if (arg.find("--legacy-inp=") == 0) {
+                options.legacy_inp_file = extract_option_value(arg);
             } else if (arg.find("-m") == 0) {
                 // Map file option: -m or -m=filename
                 if (option_has_value(arg)) {

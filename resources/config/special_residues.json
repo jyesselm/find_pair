@@ -25,6 +25,90 @@
       "base_type": "I",
       "description": "Inosine (with leading space and D)"
     },
+    "5MC": {
+      "template": "Atomic_C.pdb",
+      "base_type": "c",
+      "parent_base": "C",
+      "description": "5-methylcytosine"
+    },
+    "5MU": {
+      "template": "Atomic_U.pdb",
+      "base_type": "t",
+      "parent_base": "U",
+      "description": "5-methyluridine (ribothymidine)"
+    },
+    "H2U": {
+      "template": "Atomic_U.pdb",
+      "base_type": "u",
+      "parent_base": "U",
+      "description": "Dihydrouridine"
+    },
+    "A2M": {
+      "template": "Atomic_A.pdb",
+      "base_type": "a",
+      "parent_base": "A",
+      "description": "N6-methyl-adenosine (2'-O-methyladenosine)"
+    },
+    "OMC": {
+      "template": "Atomic_C.pdb",
+      "base_type": "c",
+      "parent_base": "C",
+      "description": "2'-O-methylcytidine"
+    },
+    "OMU": {
+      "template": "Atomic_U.pdb",
+      "base_type": "u",
+      "parent_base": "U",
+      "description": "2'-O-methyluridine"
+    },
+    "OMG": {
+      "template": "Atomic_G.pdb",
+      "base_type": "g",
+      "parent_base": "G",
+      "description": "2'-O-methylguanosine"
+    },
+    "OMA": {
+      "template": "Atomic_A.pdb",
+      "base_type": "a",
+      "parent_base": "A",
+      "description": "2'-O-methyladenosine"
+    },
+    "1MA": {
+      "template": "Atomic_A.pdb",
+      "base_type": "a",
+      "parent_base": "A",
+      "description": "1-methyladenosine"
+    },
+    "2MA": {
+      "template": "Atomic_A.pdb",
+      "base_type": "a",
+      "parent_base": "A",
+      "description": "2-methyladenosine"
+    },
+    "M2G": {
+      "template": "Atomic_G.pdb",
+      "base_type": "g",
+      "parent_base": "G",
+      "description": "N2-methylguanosine"
+    },
+    "7MG": {
+      "template": "Atomic_G.pdb",
+      "base_type": "g",
+      "parent_base": "G",
+      "description": "7-methylguanosine"
+    },
+    "1MG": {
+      "template": "Atomic_G.pdb",
+      "base_type": "g",
+      "parent_base": "G",
+      "description": "1-methylguanosine"
+    },
+    "4SU": {
+      "template": "Atomic_U.pdb",
+      "base_type": "u",
+      "parent_base": "U",
+      "description": "4-thiouridine"
+    },
     "B8N": {
       "template": "Atomic.p.pdb",
       "base_type": "p",

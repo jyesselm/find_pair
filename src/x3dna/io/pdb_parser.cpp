@@ -319,6 +319,42 @@ bool PdbParser::is_water(const std::string& residue_name) const {
     return false;
 }
 
+bool PdbParser::is_modified_nucleotide_name(const std::string& residue_name) const {
+    // Trim the residue name
+    std::string trimmed = residue_name;
+    while (!trimmed.empty() && trimmed[0] == ' ') {
+        trimmed.erase(0, 1);
+    }
+    while (!trimmed.empty() && trimmed.back() == ' ') {
+        trimmed.pop_back();
+    }
+    
+    // Common modified nucleotides that appear as HETATM
+    // These should be auto-included even without -T flag
+    static const std::vector<std::string> modified_nucleotides = {
+        // Pseudouridine and variants
+        "PSU", "P5P", "PU",
+        // Modified Adenine
+        "A2M", "1MA", "2MA", "6MA", "OMA", "MIA", "I6A", "T6A", "M6A",
+        // Modified Cytosine
+        "5MC", "OMC", "S4C", "5IC", "5FC", "CBR",
+        // Modified Guanine
+        "OMG", "1MG", "2MG", "7MG", "M2G", "YYG", "YG", "QUO",
+        // Modified Uracil/Thymine
+        "5MU", "H2U", "DHU", "OMU", "4SU", "S4U", "5BU", "2MU", "UR3", "RT",
+        // Other common modified bases
+        "I", "DI"  // Inosine
+    };
+    
+    for (const auto& mod : modified_nucleotides) {
+        if (trimmed == mod) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 // Atom name normalization helpers
 std::string PdbParser::apply_atom_name_formatting_rules(const std::string& name) const {
     if (name.length() != 4) {
@@ -515,12 +551,17 @@ void PdbParser::process_hetatm_record(
     std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms,
     int& legacy_atom_idx, int& legacy_residue_idx,
     std::map<std::tuple<std::string, char, int, char>, int>& legacy_residue_idx_map) {
-    if (!include_hetatm_) {
-        return;
-    }
-
+    
     try {
         core::Atom atom = parse_hetatm_line(line, line_number);
+        
+        // Auto-include modified nucleotides even if include_hetatm_ is false
+        // Check if residue name is a known modified nucleotide
+        bool is_modified_nucleotide = is_modified_nucleotide_name(atom.residue_name());
+        
+        if (!include_hetatm_ && !is_modified_nucleotide) {
+            return;
+        }
         atom.set_model_number(model_number);
 
         // Check if water and should be skipped
