@@ -1,13 +1,28 @@
 # Documentation Index
 
-**Last Updated**: 2025-11-28  
+**Last Updated**: 2025-01-XX  
 **Status**: Consolidated and organized
 
 ---
 
-## 🎯 Primary Documents (Start Here)
+## 🎯 Start Here - Essential Documents
 
-### [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md) ⭐ **MAIN DOCUMENT**
+### [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) ⭐⭐⭐ **MAIN SUMMARY**
+**Complete project overview and essential information**
+- Project status and achievements
+- Architecture overview
+- Key components and data structures
+- Usage examples
+- **Use this for**: Quick overview, understanding the project, getting started
+
+### [CODE_FLOW.md](CODE_FLOW.md) ⭐⭐⭐ **CODE ARCHITECTURE**
+**Detailed code flow and architecture**
+- Complete workflow from input to output
+- Phase 1 (find_pair) and Phase 2 (analyze) flows
+- Algorithm details and data structures
+- **Use this for**: Understanding how the code works, debugging, development
+
+### [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md) ⭐ **STATUS DOCUMENT**
 **Single source of truth for match status and progress**
 - Current status: 97.8% perfect matches on primary output (312/319 PDBs)
 - 10-PDB test set: 100% perfect matches (10/10)
@@ -111,18 +126,21 @@
 - `archive/historical/superseded/` - Superseded by consolidated docs
 - `archive/historical/test_results/` - Old test results
 - `archive/historical/investigations/` - Historical investigations
+- `archive/historical/investigations_2025/` - 2025 investigation documents
+- `archive/historical/status_reports_2025/` - 2025 status reports
 - `archive/historical/old_plans/` - Old action plans
 - `archive/historical/completed_fixes/` - Completed fix documentation
 - `archive/historical/redundant/` - Redundant/duplicate docs
 
-**Total archived**: ~60 files  
-**Remaining in root**: ~15 essential files
+**Total archived**: ~80+ files  
+**Remaining in root**: ~20 essential files
 
 ### Key Archived Documents
 
 - Superseded validation docs → `archive/historical/superseded/`
 - Old test results → `archive/historical/test_results/`
-- Historical investigations → `archive/historical/investigations/`
+- Historical investigations → `archive/historical/investigations/` and `investigations_2025/`
+- Status reports → `archive/historical/status_reports_2025/`
 - Old plans/status → `archive/historical/old_plans/`
 - Completed fixes → `archive/historical/completed_fixes/`
 - Redundant docs → `archive/historical/redundant/`
@@ -136,7 +154,9 @@
 ### By Task
 
 **I want to...**
-- **See current status**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md) ⭐ **Start here**
+- **Get project overview**: [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) ⭐⭐⭐ **Start here**
+- **Understand code flow**: [CODE_FLOW.md](CODE_FLOW.md) ⭐⭐⭐ **Architecture**
+- **See current status**: [100_PERCENT_MATCH_STATUS.md](100_PERCENT_MATCH_STATUS.md) ⭐ **Status**
 - **Know what to do next**: [100_PERCENT_MATCH_STATUS.md#what-to-do-next](100_PERCENT_MATCH_STATUS.md#what-to-do-next) ⭐ **Next steps**
 - **See validation results**: [FIND_PAIR_VALIDATION_COMPREHENSIVE.md](FIND_PAIR_VALIDATION_COMPREHENSIVE.md)
 - **Understand base_pair recording**: [BASE_PAIR_RECORDING.md](BASE_PAIR_RECORDING.md)
@@ -168,6 +188,8 @@
 
 | Document | Status | Last Updated | Priority |
 |----------|--------|--------------|----------|
+| PROJECT_SUMMARY.md | ✅ Active | 2025-01-XX | ⭐⭐⭐ |
+| CODE_FLOW.md | ✅ Active | 2025-01-XX | ⭐⭐⭐ |
 | 100_PERCENT_MATCH_STATUS.md | ✅ Active | 2025-11-28 | ⭐⭐⭐ |
 | FIND_PAIR_VALIDATION_COMPREHENSIVE.md | ✅ Active | 2025-11-28 | ⭐⭐⭐ |
 | BASE_PAIR_RECORDING.md | ✅ Active | 2025-11-28 | ⭐⭐⭐ |

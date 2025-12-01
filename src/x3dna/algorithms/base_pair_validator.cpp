@@ -218,9 +218,19 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
     // Match legacy glyco_N logic exactly
     // RY[i] == 1 (purine): find N9
     // RY[i] == 0 (pyrimidine): find N1 (or C5 for P/p bases, but for dNN we use N1)
-
+    
+    // First check standard nucleotides by ResidueType
     ResidueType res_type = residue.residue_type();
     bool is_purine = (res_type == ResidueType::ADENINE || res_type == ResidueType::GUANINE);
+    
+    // For modified nucleotides (NONCANONICAL_RNA), check if N9 exists (purine marker)
+    // This handles cases like GTP (modified guanine) which should use N9
+    if (res_type == ResidueType::NONCANONICAL_RNA) {
+        auto n9 = residue.find_atom(" N9 ");
+        if (n9.has_value()) {
+            is_purine = true;  // Has N9, so it's a purine-like modified base
+        }
+    }
 
     if (is_purine) {
         // Purine: find N9

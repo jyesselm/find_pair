@@ -53,6 +53,8 @@ The `compare_json.py` script compares the following JSON record types:
 6. **`distance_checks`** - Distance and geometric checks
 7. **`hbond_list`** - Hydrogen bond lists
 8. **`find_bestpair_selection`** - Selected base pairs
+9. **`bpstep_params`** - Step parameters (Shift, Slide, Rise, Tilt, Roll, Twist) ⭐ **NEW**
+10. **`helical_params`** - Helical parameters (x_displacement, y_displacement, rise, inclination, tip, twist) ⭐ **NEW**
 
 See [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md) for detailed information about each record type and what is checked.
 
@@ -209,6 +211,10 @@ python3 scripts/compare_json.py ring-atoms 1H4S
 
 # Compare step parameters (frames are automatically verified first)
 python3 scripts/compare_json.py steps 1H4S
+
+# Note: Step parameter files are in split directories:
+#   - Modern: data/json/bpstep_params/<PDB_ID>.json
+#   - Legacy: data/json_legacy/bpstep_params/<PDB_ID>.json
 ```
 
 **Important**: When comparing step parameters, frames are automatically checked first since step parameters depend on frames. If frames don't match, step parameter comparisons may be unreliable.
@@ -257,6 +263,34 @@ After making changes:
 3. **Check for improvements**:
    - Match rate should increase
    - Differences should decrease
+
+---
+
+## Step Parameter Generation
+
+### Using analyze_app
+
+The `analyze_app` can work with both modern and legacy input files:
+
+**Modern input files** (residue indices):
+```bash
+# Generate input file with modern find_pair
+./build/find_pair_app --fix-indices data/pdb/1H4S.pdb /tmp/1H4S.inp
+
+# Generate step parameters
+./build/analyze_app /tmp/1H4S.inp
+```
+
+**Legacy input files** (atom indices):
+```bash
+# Use legacy-generated input file directly
+# Atom indices are automatically converted to residue indices
+./build/analyze_app 1H4S.inp
+```
+
+**Note**: Modern `analyze_app` automatically detects and converts atom indices to residue indices when processing legacy input files. You'll see a message like "Converted N atom indices to residue indices" if conversion occurs.
+
+**See**: [ATOM_INDEX_CONVERSION_FIX.md](ATOM_INDEX_CONVERSION_FIX.md) for technical details.
 
 ---
 
@@ -329,6 +363,14 @@ python3 scripts/compare_json.py generate-test-sets
 | `build/fix_residue_indices_from_json` | Fix indices standalone tool | Debugging residue index issues |
 | `build/check_residue_indices` | Check for duplicate indices | Verifying residue mapping |
 | `build/debug_bp_type_id_step_params` | Debug bp_type_id calculation | Debugging bp_type_id issues (auto-fixes indices) |
+
+### Step Parameter Tools
+
+| Tool | Purpose | When to Use |
+|------|---------|-------------|
+| `build/analyze_app` | Generate step parameters from input file | After find_pair generates input file |
+| `python3 scripts/compare_json.py steps` | Compare step parameters | Validating step parameter calculations |
+| **Note**: `analyze_app` automatically handles both modern (residue indices) and legacy (atom indices) input files |
 
 ### C++ Comparison Tools (Advanced)
 
@@ -484,6 +526,19 @@ python3 scripts/rebuild_json.py clean --execute
    - Try using `--fix-indices` option
    - Use `build/debug_frame_json` to compare frame calculations
 
+### Step Parameter Issues
+
+1. **"Calculated 0 step parameters"**:
+   - Check if input file has base pairs
+   - Verify frames are calculated (should happen automatically)
+   - If using legacy input file, atom indices should be automatically converted
+   - Check for conversion message: "Converted N atom indices to residue indices"
+
+2. **Step parameters don't match legacy**:
+   - Verify frames match first (step parameters depend on frames)
+   - Check if base pair selection matches (different pairs = different parameters)
+   - Use `python3 scripts/compare_json.py steps <PDB_ID> --verbose` for detailed comparison
+
 ### Performance Issues
 
 1. **Use caching**: Comparison results are cached by default
@@ -514,6 +569,7 @@ python3 scripts/rebuild_json.py clean --execute
 - [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md) - Detailed JSON record types and comparison checks
 - [LEGACY_TEST_TOOLS.md](LEGACY_TEST_TOOLS.md) - Legacy test tools documentation
 - [FIX_INDICES_OPTION.md](FIX_INDICES_OPTION.md) ⭐ **NEW** - Using --fix-indices option for comparison
+- [ATOM_INDEX_CONVERSION_FIX.md](ATOM_INDEX_CONVERSION_FIX.md) ⭐ **NEW** - Atom index conversion for legacy input files
 - [RESIDUE_INDEXING_COMPLETE.md](RESIDUE_INDEXING_COMPLETE.md) - Residue indexing solution details
 - [scripts/README.md](../scripts/README.md) - Scripts reference guide
 - [x3dna_json_compare/README.md](../x3dna_json_compare/README.md) - Comparison library API

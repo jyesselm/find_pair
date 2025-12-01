@@ -114,6 +114,18 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
                 std::make_pair(legacy_idx1, legacy_idx2) :
                 std::make_pair(legacy_idx2, legacy_idx1);
             phase1_validation_results[normalized_pair] = result;
+            
+            // DEBUG: Log validation for specific pair to trace bug
+            #ifdef DEBUG_PAIR_SELECTION
+            if ((legacy_idx1 == 3844 && legacy_idx2 == 3865) || 
+                (legacy_idx1 == 3865 && legacy_idx2 == 3844)) {
+                std::cerr << "[DEBUG] Phase 1 validation for (" << legacy_idx1 << ", " << legacy_idx2 
+                          << "): is_valid=" << result.is_valid 
+                          << ", d_v_check=" << result.d_v_check 
+                          << ", d_v=" << result.d_v 
+                          << ", overlap_check=" << result.overlap_check << "\n";
+            }
+            #endif
 
             // Calculate and store bp_type_id for consistency during selection
             // CRITICAL: Calculate bp_type_id once in Phase 1 and reuse during selection
@@ -211,9 +223,21 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
                     std::make_pair(legacy_idx2, legacy_idx1);
                 
                 auto phase1_check_it = phase1_validation_results.find(normalized_pair_check);
-                if (phase1_check_it == phase1_validation_results.end() || !phase1_check_it->second.is_valid) {
-                    // Pair was invalid in Phase 1 or not found - skip it
-                    // This should not happen if Phase 1 ran correctly, but safety check
+                if (phase1_check_it == phase1_validation_results.end()) {
+                    // Pair not found in Phase 1 - this should not happen, skip it
+                    std::cerr << "Warning: Pair (" << legacy_idx1 << ", " << legacy_idx2 
+                              << ") not found in Phase 1 validation results. Skipping.\n";
+                    continue;
+                }
+                
+                // CRITICAL: Ensure pair is valid before selecting
+                if (!phase1_check_it->second.is_valid) {
+                    // Pair was invalid in Phase 1 - must not select it
+                    // This is a safety check to prevent invalid pairs from being selected
+                    std::cerr << "Error: Attempted to select invalid pair (" << legacy_idx1 << ", " 
+                              << legacy_idx2 << "). is_valid=" << phase1_check_it->second.is_valid
+                              << ", d_v_check=" << phase1_check_it->second.d_v_check
+                              << ", d_v=" << phase1_check_it->second.d_v << "\n";
                     continue;
                 }
                 
@@ -410,6 +434,16 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             result = phase1_it->second;
             // Skip if invalid (this is the key fix - use Phase 1 result, not re-validate)
             if (!result.is_valid) {
+                // DEBUG: Log when invalid pair is being skipped (can help identify bugs)
+                #ifdef DEBUG_PAIR_SELECTION
+                if ((legacy_idx1 == 3844 && legacy_idx2 == 3865) || 
+                    (legacy_idx1 == 3865 && legacy_idx2 == 3844)) {
+                    std::cerr << "[DEBUG] Skipping invalid pair (" << legacy_idx1 << ", " << legacy_idx2 
+                              << "): is_valid=" << result.is_valid 
+                              << ", d_v_check=" << result.d_v_check 
+                              << ", d_v=" << result.d_v << "\n";
+                }
+                #endif
                 continue; // Pair was invalid in Phase 1, skip it
             }
         } else {
@@ -455,29 +489,10 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             }
 
             // Use adjusted quality_score for pair selection (matches legacy rtn_val[5])
-            // CRITICAL: When scores are equal, use residue index as tie-breaker to ensure
-            // deterministic selection that matches legacy (lower index wins when scores equal)
-            // Legacy uses < which means first encountered wins, but we need to ensure same
-            // pair is selected when scores are equal - use lower residue index as tie-breaker
-            const double TOLERANCE = 1.0e-10;  // Floating point tolerance for "equal" scores
-            bool is_better = false;
-            
-            if (adjusted_quality_score < best_score - TOLERANCE) {
-                // Clearly better score
-                is_better = true;
-            } else if (best_result.has_value() && 
-                      std::abs(adjusted_quality_score - best_score) <= TOLERANCE) {
-                // Scores are effectively equal - use residue index as tie-breaker
-                // Lower index wins (matches legacy behavior: first encountered in iteration order)
-                if (legacy_idx2 < best_result->first) {
-                    is_better = true;
-                }
-            } else if (!best_result.has_value()) {
-                // First valid pair found
-                is_better = true;
-            }
-            
-            if (is_better) {
+            // CRITICAL: Legacy uses strict < comparison (rtn_val[5] < ddmin)
+            // This means when scores are equal, the first encountered pair is kept
+            // We must match this exactly - no tie-breaking, just strict <
+            if (adjusted_quality_score < best_score) {
                 best_score = adjusted_quality_score;
                 best_result = std::make_pair(legacy_idx2, result);
             }

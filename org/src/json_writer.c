@@ -293,61 +293,71 @@ void json_writer_record_bpstep_params(long bp_idx1, long bp_idx2,
                                       double *pars,
                                       double *mst_org,
                                       double **mst_orien) {
+    FILE *type_file;
+    long is_first;
+    
     if (!json_writer_is_initialized()) return;
-    if (!json_file) return; /* Using split files - json_file is NULL */
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    /* Write to separate file for easier comparison (using split files) */
+    type_file = get_type_file_handle("bpstep_params", &is_first);
+    if (!type_file) return;
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"bpstep_params\",\n");
-    fprintf(json_file, "      \"bp_idx1\": %ld,\n", bp_idx1);
-    fprintf(json_file, "      \"bp_idx2\": %ld,\n", bp_idx2);
-    fprintf(json_file, "      \"params\": {\n");
-    fprintf(json_file, "        \"Shift\": %.6f,\n", pars[1]);
-    fprintf(json_file, "        \"Slide\": %.6f,\n", pars[2]);
-    fprintf(json_file, "        \"Rise\": %.6f,\n", pars[3]);
-    fprintf(json_file, "        \"Tilt\": %.6f,\n", pars[4]);
-    fprintf(json_file, "        \"Roll\": %.6f,\n", pars[5]);
-    fprintf(json_file, "        \"Twist\": %.6f\n", pars[6]);
-    fprintf(json_file, "      },\n");
-    fprintf(json_file, "      \"mst_org\": ");
-    json_write_double_array(json_file, &mst_org[1], 3);
-    fprintf(json_file, ",\n");
-    fprintf(json_file, "      \"mst_orien\": ");
-    json_write_matrix(json_file, mst_orien);
-    fprintf(json_file, "\n");
-    fprintf(json_file, "    }");
+    if (!is_first) fprintf(type_file, ",\n");
     
-    fflush(json_file);
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"bpstep_params\",\n");
+    fprintf(type_file, "      \"bp_idx1\": %ld,\n", bp_idx1);
+    fprintf(type_file, "      \"bp_idx2\": %ld,\n", bp_idx2);
+    fprintf(type_file, "      \"params\": {\n");
+    fprintf(type_file, "        \"Shift\": %.6f,\n", pars[1]);
+    fprintf(type_file, "        \"Slide\": %.6f,\n", pars[2]);
+    fprintf(type_file, "        \"Rise\": %.6f,\n", pars[3]);
+    fprintf(type_file, "        \"Tilt\": %.6f,\n", pars[4]);
+    fprintf(type_file, "        \"Roll\": %.6f,\n", pars[5]);
+    fprintf(type_file, "        \"Twist\": %.6f\n", pars[6]);
+    fprintf(type_file, "      },\n");
+    fprintf(type_file, "      \"mst_org\": ");
+    json_write_double_array(type_file, &mst_org[1], 3);
+    fprintf(type_file, ",\n");
+    fprintf(type_file, "      \"mst_orien\": ");
+    json_write_matrix(type_file, mst_orien);
+    fprintf(type_file, "\n");
+    fprintf(type_file, "    }");
+    
+    fflush(type_file);
 }
 
 void json_writer_record_helical_params(long bp_idx1, long bp_idx2,
                                        double *pars,
                                        double *mst_orgH,
                                        double **mst_orienH) {
+    FILE *type_file;
+    long is_first;
+    
     if (!json_writer_is_initialized()) return;
-    if (!json_file) return; /* Using split files - json_file is NULL */
     
-    if (!first_entry) fprintf(json_file, ",\n");
-    first_entry = FALSE;
+    /* Write to separate file for easier comparison (using split files) */
+    type_file = get_type_file_handle("helical_params", &is_first);
+    if (!type_file) return;
     
-    fprintf(json_file, "    {\n");
-    fprintf(json_file, "      \"type\": \"helical_params\",\n");
-    fprintf(json_file, "      \"bp_idx1\": %ld,\n", bp_idx1);
-    fprintf(json_file, "      \"bp_idx2\": %ld,\n", bp_idx2);
-    fprintf(json_file, "      \"params\": ");
-    json_write_double_array(json_file, &pars[1], 6);
-    fprintf(json_file, ",\n");
-    fprintf(json_file, "      \"mst_orgH\": ");
-    json_write_double_array(json_file, &mst_orgH[1], 3);
-    fprintf(json_file, ",\n");
-    fprintf(json_file, "      \"mst_orienH\": ");
-    json_write_matrix(json_file, mst_orienH);
-    fprintf(json_file, "\n");
-    fprintf(json_file, "    }");
+    if (!is_first) fprintf(type_file, ",\n");
     
-    fflush(json_file);
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"helical_params\",\n");
+    fprintf(type_file, "      \"bp_idx1\": %ld,\n", bp_idx1);
+    fprintf(type_file, "      \"bp_idx2\": %ld,\n", bp_idx2);
+    fprintf(type_file, "      \"params\": ");
+    json_write_double_array(type_file, &pars[1], 6);
+    fprintf(type_file, ",\n");
+    fprintf(type_file, "      \"mst_orgH\": ");
+    json_write_double_array(type_file, &mst_orgH[1], 3);
+    fprintf(type_file, ",\n");
+    fprintf(type_file, "      \"mst_orienH\": ");
+    json_write_matrix(type_file, mst_orienH);
+    fprintf(type_file, "\n");
+    fprintf(type_file, "    }");
+    
+    fflush(type_file);
 }
 
 void json_writer_record_base_pair(long i, long j, char *bp_type,

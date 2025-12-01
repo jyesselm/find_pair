@@ -6,8 +6,11 @@
 #include <x3dna/apps/command_line_parser.hpp>
 #include <x3dna/protocols/analyze_protocol.hpp>
 #include <x3dna/config/config_manager.hpp>
+#include <x3dna/io/input_file_parser.hpp>
+#include <x3dna/io/json_writer.hpp>
 #include <iostream>
 #include <iomanip>
+#include <filesystem>
 #include <stdexcept>
 #include <exception>
 
@@ -22,6 +25,13 @@ int main(int argc, char* argv[]) {
             config.set_legacy_mode(true);
         }
 
+        // Parse input file to get PDB file path for JSON writer
+        auto input_data = x3dna::io::InputFileParser::parse(options.input_file);
+        
+        // Create JSON writer (optional - only if we want JSON output)
+        // For now, we'll create it to enable step parameter recording
+        x3dna::io::JsonWriter json_writer(input_data.pdb_file);
+        
         // Create protocol
         x3dna::protocols::AnalyzeProtocol protocol;
         protocol.set_config_manager(config);
@@ -31,6 +41,7 @@ int main(int argc, char* argv[]) {
         protocol.set_step_start(options.step_start);
         protocol.set_step_size(options.step_size);
         protocol.set_legacy_mode(options.legacy_mode);
+        protocol.set_json_writer(&json_writer);
 
         // Execute protocol
         std::cout << "Analyzing input file: " << options.input_file << "\n";
@@ -76,6 +87,11 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        // Write JSON files to data/json directory
+        std::filesystem::path json_output_dir = "data/json";
+        std::filesystem::create_directories(json_output_dir);
+        json_writer.write_split_files(json_output_dir, true);
+        
         // TODO: Write output files (.par files, .outp file)
         std::cout << "\nDone!\n";
 

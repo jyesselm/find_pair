@@ -45,6 +45,19 @@ void FindPairProtocol::execute(core::Structure& structure) {
             if (fixed_count > 0) {
                 std::cout << "[INFO] Fixed " << fixed_count << " residue indices from legacy JSON: " 
                           << json_file << "\n";
+            } else if (fixed_count < 0) {
+                // Error codes: -1 = file open error, -2 = not array, -3 = parse error
+                std::cerr << "[WARNING] Failed to load legacy JSON for fixing indices: " << json_file;
+                if (fixed_count == -1) {
+                    std::cerr << " (file open error)\n";
+                } else if (fixed_count == -2) {
+                    std::cerr << " (not an array)\n";
+                } else if (fixed_count == -3) {
+                    std::cerr << " (JSON parse error - file may be corrupted)\n";
+                } else {
+                    std::cerr << " (error code: " << fixed_count << ")\n";
+                }
+                std::cerr << "[WARNING] Continuing without fixing indices...\n";
             }
         } else if (fix_indices_from_legacy_json_) {
             std::cerr << "[WARNING] Legacy JSON file not found for fixing indices: " 

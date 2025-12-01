@@ -468,7 +468,9 @@ def compare_single_pdb(
     if not has_legacy_data:
         # Check new structure: <record_type>/<PDB_ID>.json
         # Try essential record types (since pdb_atoms may have been deleted)
-        for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+        # Also include step parameter types for step comparisons
+        record_types_to_check = ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms", "bpstep_params", "helical_params"]
+        for record_type in record_types_to_check:
             legacy_file_check = find_json_file(legacy_dir, pdb_id, record_type)
             if legacy_file_check and legacy_file_check.exists():
                 has_legacy_data = True
@@ -489,7 +491,9 @@ def compare_single_pdb(
     if not has_modern_data:
         # Check new structure: <record_type>/<PDB_ID>.json
         # Try essential record types (since pdb_atoms may have been deleted)
-        for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+        # Also include step parameter types for step comparisons
+        record_types_to_check = ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms", "bpstep_params", "helical_params"]
+        for record_type in record_types_to_check:
             modern_file_check = find_json_file(modern_dir, pdb_id, record_type)
             if modern_file_check and modern_file_check.exists():
                 has_modern_data = True
@@ -1679,7 +1683,7 @@ def frames(verbose, diff_only, show_all, legacy_mode, output, threads, regenerat
 @click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def steps(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, pdb_ids):
+def steps(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, config, pdb_ids):
     """Compare step parameters (bpstep_params, helical_params). 
     
     IMPORTANT: Frames are verified first since step parameters depend on frames.
