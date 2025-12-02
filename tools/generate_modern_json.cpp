@@ -409,7 +409,9 @@ int main(int argc, char* argv[]) {
     }
     
     // Assign modern indices (0-based) - ONLY FOR NUCLEOTIDES
+    // Also verify that atom legacy indices match what we loaded from JSON
     int modern_idx = 0;
+    int mismatches = 0;
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
             // Only assign indices to nucleotides
@@ -420,6 +422,12 @@ int main(int argc, char* argv[]) {
             // Convert insertion char to string, handling space as empty (must match above)
             std::string insertion_str = (residue.insertion() == ' ') ? "" : std::string(1, residue.insertion());
             
+            // Get the legacy index assigned to atoms during parsing
+            int atom_legacy_idx = 0;
+            if (!residue.atoms().empty()) {
+                atom_legacy_idx = residue.atoms()[0].legacy_residue_idx();
+            }
+            
             // Find this residue in tracker
             for (size_t i = 0; i < tracker.size(); i++) {
                 const auto& rec = tracker.get_residues()[i];
@@ -427,11 +435,29 @@ int main(int argc, char* argv[]) {
                     rec.residue_seq == residue.seq_num() &&
                     rec.insertion == insertion_str) {
                     tracker.assign_modern_index(i, modern_idx);
+                    
+                    // CRITICAL: Verify atom's legacy index matches what we loaded from JSON
+                    if (atom_legacy_idx > 0 && rec.legacy_index > 0) {
+                        if (atom_legacy_idx != rec.legacy_index) {
+                            std::cerr << "WARNING: Legacy index mismatch for " 
+                                     << rec.chain_id << rec.residue_seq << rec.insertion
+                                     << " atom has " << atom_legacy_idx 
+                                     << " but JSON has " << rec.legacy_index << "\n";
+                            mismatches++;
+                        }
+                    }
+                    
                     modern_idx++;
                     break;
                 }
             }
         }
+    }
+    
+    if (mismatches > 0) {
+        std::cerr << "\n❌ CRITICAL: Found " << mismatches 
+                 << " mismatches between atom legacy indices and JSON legacy indices!\n";
+        std::cerr << "This means the modern code is assigning different legacy indices than the legacy code.\n";
     }
     
     // Load legacy indices from JSON
