@@ -2461,7 +2461,7 @@ pdb_id,num_residues_read,num_legacy,num_modern,num_filtered,match_status,notes
 6V4X,52,52,52,0,PASS,All indices match perfectly
 6V9B,52,52,52,0,PASS,All indices match perfectly
 6V9D,55,55,55,0,PASS,All indices match perfectly
-6V9Q,60,14,60,0,FAIL,Count mismatch
+6V9Q,60,60,60,0,PASS,All indices match perfectly
 6VBW,106,106,106,0,PASS,All indices match perfectly
 6VEM,16,16,16,0,PASS,All indices match perfectly
 6VFF,64,64,64,0,PASS,All indices match perfectly
