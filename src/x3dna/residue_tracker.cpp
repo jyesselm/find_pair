@@ -49,10 +49,15 @@ bool ResidueTracker::load_legacy_indices(const std::string& legacy_json_path) {
     // Check if this is array format or object format
     json records;
     if (j.is_array()) {
-        // Array format - each element is a record with "type" field
+        // Array format - could be records with "type" field or direct records
         records = json::array();
         for (const auto& item : j) {
+            // Check if has type field and it's base_frame_calc
             if (item.contains("type") && item["type"] == "base_frame_calc") {
+                records.push_back(item);
+            }
+            // Or if it has residue_idx field (legacy direct format)
+            else if (item.contains("residue_idx") && item.contains("base_type")) {
                 records.push_back(item);
             }
         }

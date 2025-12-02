@@ -13,6 +13,7 @@
 #include <x3dna/io/residue_index_fixer.hpp>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/algorithms/base_pair_finder.hpp>
+#include <x3dna/residue_tracker.hpp>
 
 using namespace x3dna::core;
 using namespace x3dna::io;
@@ -379,6 +380,76 @@ int main(int argc, char* argv[]) {
     }
     if (atom_match_failures > 0) {
         std::cout << "  Atom match failures: " << atom_match_failures << "\n";
+    }
+
+    // ========== Index Validation with ResidueTracker ==========
+    std::cout << "\n=== Residue Index Validation ===\n";
+    
+    x3dna::ResidueTracker tracker;
+    
+    // Populate tracker from structure
+    // Strategy: Iterate through residues in the structure and track them
+    // For now, we'll use the structure's residue order as the "read" order
+    for (const auto& chain : structure.chains()) {
+        for (const auto& residue : chain.residues()) {
+            tracker.add_residue(
+                std::string(1, residue.chain_id()),
+                residue.seq_num(),
+                std::string(1, residue.insertion()),
+                residue.name()
+            );
+        }
+    }
+    
+    // Assign modern indices (0-based)
+    int modern_idx = 0;
+    for (const auto& chain : structure.chains()) {
+        for (const auto& residue : chain.residues()) {
+            // Find this residue in tracker
+            for (size_t i = 0; i < tracker.size(); i++) {
+                const auto& rec = tracker.get_residues()[i];
+                if (rec.chain_id == std::string(1, residue.chain_id()) &&
+                    rec.residue_seq == residue.seq_num() &&
+                    rec.insertion == std::string(1, residue.insertion())) {
+                    tracker.assign_modern_index(i, modern_idx);
+                    modern_idx++;
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Load legacy indices from JSON
+    std::filesystem::path legacy_json_path = 
+        json_output_dir.parent_path() / "json_legacy" / "base_frame_calc" / (pdb_name + ".json");
+    
+    if (std::filesystem::exists(legacy_json_path)) {
+        std::cout << "Loading legacy indices from: " << legacy_json_path << "\n";
+        if (tracker.load_legacy_indices(legacy_json_path.string())) {
+            // Validate match
+            auto validation = tracker.validate();
+            std::cout << validation.to_string();
+            
+            // Export mapping
+            std::filesystem::path mapping_dir = json_output_dir.parent_path() / "index_mapping";
+            std::filesystem::create_directories(mapping_dir);
+            std::filesystem::path mapping_file = mapping_dir / (pdb_name + ".json");
+            tracker.export_mapping(mapping_file.string());
+            
+            // Abort if validation failed
+            if (!validation.success) {
+                std::cerr << "\n❌ FATAL: Index validation failed! Cannot proceed with comparison.\n";
+                std::cerr << "This PDB does not have matching indices with legacy code.\n";
+                std::cerr << "See mapping file for details: " << mapping_file << "\n";
+                return 1;
+            }
+        } else {
+            std::cout << "Warning: Could not load legacy indices from " << legacy_json_path << "\n";
+            std::cout << "Skipping index validation.\n";
+        }
+    } else {
+        std::cout << "Legacy JSON not found at: " << legacy_json_path << "\n";
+        std::cout << "Skipping index validation (legacy JSON needed for validation).\n";
     }
 
     return 0;
