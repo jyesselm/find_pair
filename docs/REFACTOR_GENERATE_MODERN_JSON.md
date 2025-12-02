@@ -36,11 +36,11 @@ JsonWriter is passed around and called from many places:
 
 ## Target Architecture
 
-### Simple Tool (50 lines max)
+### Simple Tool (~100 lines with proper output)
 
 ```cpp
 int main(int argc, char* argv[]) {
-    // 1. Parse arguments (just PDB file + output dir)
+    // 1. Parse arguments
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <pdb_file> <output_dir>\n";
         return 1;
@@ -49,27 +49,58 @@ int main(int argc, char* argv[]) {
     std::filesystem::path pdb_file = argv[1];
     std::filesystem::path output_dir = argv[2];
     
-    // 2. Parse PDB
-    PdbParser parser;
-    Structure structure = parser.parse_file(pdb_file);
+    // Validate input
+    if (!std::filesystem::exists(pdb_file)) {
+        std::cerr << "Error: PDB file not found: " << pdb_file << "\n";
+        return 1;
+    }
     
-    // 3. Write structure JSON
-    structure.write_json(output_dir);  // Object writes itself
+    std::filesystem::create_directories(output_dir);
+    std::string pdb_id = pdb_file.stem().string();
     
-    // 4. Run find_pair protocol
-    FindPairProtocol protocol(output_dir);
-    protocol.execute(structure);
+    std::cout << "Processing: " << pdb_id << "\n";
+    std::cout << "Input: " << pdb_file << "\n";
+    std::cout << "Output: " << output_dir << "\n\n";
     
-    // 5. Run analyze protocol (if we want step parameters)
-    // AnalyzeProtocol analyze(output_dir);
-    // analyze.execute(structure);
-    
-    std::cout << "Success!\n";
-    return 0;
+    try {
+        // 2. Parse PDB
+        std::cout << "Step 1: Parsing PDB...\n";
+        PdbParser parser;
+        Structure structure = parser.parse_file(pdb_file);
+        std::cout << "  ✅ Parsed " << structure.num_atoms() << " atoms, "
+                  << structure.num_residues() << " residues\n\n";
+        
+        // 3. Write atoms JSON
+        std::cout << "Step 2: Writing atoms...\n";
+        structure.write_atoms_json(output_dir);
+        std::cout << "  ✅ Wrote pdb_atoms/" << pdb_id << ".json\n\n";
+        
+        // 4. Run find_pair protocol (calculates frames, finds pairs, writes JSON)
+        std::cout << "Step 3: Running find_pair protocol...\n";
+        FindPairProtocol protocol(output_dir);
+        auto result = protocol.execute(structure);
+        std::cout << "  ✅ Calculated " << result.num_frames << " frames\n";
+        std::cout << "  ✅ Found " << result.num_pairs << " base pairs\n";
+        std::cout << "  ✅ Wrote frame JSON files\n";
+        std::cout << "  ✅ Wrote pair JSON files\n\n";
+        
+        // 5. Optional: Run analyze protocol for step parameters
+        // std::cout << "Step 4: Calculating step parameters...\n";
+        // AnalyzeProtocol analyze(output_dir);
+        // auto step_result = analyze.execute(structure);
+        // std::cout << "  ✅ Calculated " << step_result.num_steps << " step parameters\n\n";
+        
+        std::cout << "✅ Success! Generated all JSON for " << pdb_id << "\n";
+        return 0;
+        
+    } catch (const std::exception& e) {
+        std::cerr << "❌ Error: " << e.what() << "\n";
+        return 1;
+    }
 }
 ```
 
-**That's it!** ~30 lines. Everything else is in objects/protocols.
+**Result**: ~100 lines with clear output at each step, but all logic is in objects/protocols.
 
 ---
 
@@ -603,28 +634,45 @@ TEST(AtomTest, ToJson) {
 ### Before (Current - 626 lines)
 ```cpp
 // generate_modern_json.cpp - HUGE FILE
-// - Custom loops
-// - Flag parsing
-// - Index validation
+// - 500+ lines of custom logic
+// - Flag parsing (--legacy, --fix-indices, --only-paired)
+// - Custom residue iteration loops
+// - Custom pair finding logic
+// - Index validation code
+// - Duplicate --only-paired logic
 // - etc.
 ```
 
-### After (Target - 30 lines)
+### After (Target - ~100 lines with output)
 ```cpp
-// generate_modern_json.cpp - SIMPLE FILE
+// generate_modern_json.cpp - CLEAN FILE
 int main(int argc, char* argv[]) {
+    // Parse args, validate input
     auto [pdb_file, output_dir] = parse_args(argc, argv);
     
+    // Parse PDB
+    std::cout << "Parsing PDB...\n";
     Structure structure = PdbParser().parse_file(pdb_file);
+    std::cout << "  ✅ " << structure.num_atoms() << " atoms, " 
+              << structure.num_residues() << " residues\n\n";
+    
+    // Write atoms
+    std::cout << "Writing atoms...\n";
     structure.write_atoms_json(output_dir);
+    std::cout << "  ✅ Wrote pdb_atoms\n\n";
     
-    FindPairProtocol(output_dir).execute(structure);
+    // Run find_pair
+    std::cout << "Running find_pair...\n";
+    auto result = FindPairProtocol(output_dir).execute(structure);
+    std::cout << "  ✅ " << result.num_frames << " frames\n";
+    std::cout << "  ✅ " << result.num_pairs << " pairs\n\n";
     
+    std::cout << "✅ Success!\n";
     return 0;
 }
 ```
 
-**That's the goal!** Everything else is in objects/protocols where it belongs.
+**That's the goal!** ~100 lines with clear output, all logic in objects/protocols.
 
 ---
 
