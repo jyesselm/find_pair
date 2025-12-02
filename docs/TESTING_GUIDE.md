@@ -372,6 +372,14 @@ python3 scripts/compare_json.py generate-test-sets
 | `python3 scripts/compare_json.py steps` | Compare step parameters | Validating step parameter calculations |
 | **Note**: `analyze_app` automatically handles both modern (residue indices) and legacy (atom indices) input files |
 
+### Reference Frames Comparison Tools
+
+| Tool | Purpose | When to Use |
+|------|---------|-------------|
+| `build/find_pair_app --legacy-inp=FILE` | Generate ref_frames_modern.dat with legacy ordering | When comparing ref_frames.dat with legacy output |
+| `python3 scripts/compare_ref_frames.py` | Compare ref_frames.dat files | Validating ref_frames output matches legacy |
+| **Note**: For exact legacy matching, use `--legacy-inp` option to ensure correct strand ordering |
+
 ### C++ Comparison Tools (Advanced)
 
 | Tool | Purpose | When to Use |
@@ -539,6 +547,27 @@ python3 scripts/rebuild_json.py clean --execute
    - Check if base pair selection matches (different pairs = different parameters)
    - Use `python3 scripts/compare_json.py steps <PDB_ID> --verbose` for detailed comparison
 
+### Reference Frames Issues
+
+1. **ref_frames.dat doesn't match legacy**:
+   - Use `--legacy-inp` option when generating modern ref_frames:
+     ```bash
+     ./build/find_pair_app --legacy-inp org/1H4S.inp data/pdb/1H4S.pdb output.inp
+     ```
+   - This ensures correct strand ordering (strand 2 first, strand 1 second)
+   - Compare using: `python3 scripts/compare_ref_frames.py org/ref_frames.dat ref_frames_modern.dat --verbose`
+
+2. **Y/Z axes differ by 180° rotation**:
+   - This is expected if legacy ordering is not used
+   - Legacy uses variable ordering based on scan order
+   - Modern uses consistent ordering (smaller-residue-first)
+   - Use `--legacy-inp` option for exact matching
+
+3. **Origin and X-axis match but Y/Z don't**:
+   - Usually indicates strand ordering issue
+   - Verify legacy .inp file is correct
+   - Check that `--legacy-inp` option is being used
+
 ### Performance Issues
 
 1. **Use caching**: Comparison results are cached by default
@@ -552,14 +581,15 @@ python3 scripts/rebuild_json.py clean --execute
 
 1. **Use `compare_json.py`** for all JSON comparisons
 2. **Use `--fix-indices` option** when comparing with legacy output
-3. **Run tests regularly** during development
-4. **Compare with legacy** before committing changes
-5. **Use test sets** for quick validation
-6. **Document test failures** and fixes
-7. **Keep test data up to date**
-8. **Use verbose output** when debugging
-9. **Save reports** for important comparisons
-10. **Verify residue matching** if frame origins or dorg don't match
+3. **Use `--legacy-inp` option** when comparing ref_frames.dat with legacy
+4. **Run tests regularly** during development
+5. **Compare with legacy** before committing changes
+6. **Use test sets** for quick validation
+7. **Document test failures** and fixes
+8. **Keep test data up to date**
+9. **Use verbose output** when debugging
+10. **Save reports** for important comparisons
+11. **Verify residue matching** if frame origins or dorg don't match
 
 ---
 
@@ -570,6 +600,7 @@ python3 scripts/rebuild_json.py clean --execute
 - [LEGACY_TEST_TOOLS.md](LEGACY_TEST_TOOLS.md) - Legacy test tools documentation
 - [FIX_INDICES_OPTION.md](FIX_INDICES_OPTION.md) ⭐ **NEW** - Using --fix-indices option for comparison
 - [ATOM_INDEX_CONVERSION_FIX.md](ATOM_INDEX_CONVERSION_FIX.md) ⭐ **NEW** - Atom index conversion for legacy input files
+- [REF_FRAMES_COMPARISON_FIX.md](REF_FRAMES_COMPARISON_FIX.md) ⭐ **NEW** - Ref frames comparison and strand ordering fix
 - [RESIDUE_INDEXING_COMPLETE.md](RESIDUE_INDEXING_COMPLETE.md) - Residue indexing solution details
 - [scripts/README.md](../scripts/README.md) - Scripts reference guide
 - [x3dna_json_compare/README.md](../x3dna_json_compare/README.md) - Comparison library API

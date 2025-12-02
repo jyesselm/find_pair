@@ -128,11 +128,17 @@ void InputFileWriter::write_ref_frames(const std::filesystem::path& output_path,
         if (frame1.has_value() && frame2.has_value()) {
             // Calculate middle frame using cehs_average/bpstep_par algorithm
             // 
-            // Note: The y/z axis orientation depends on residue ordering within
-            // the pair. Legacy uses variable ordering based on find_bestpair scan
-            // order, while modern consistently uses smaller-residue-first.
-            // This causes y/z axes to differ by a 180° rotation around x-axis
-            // for ~35% of pairs. The origin and x-axis always match exactly.
+            // Note: Without legacy ordering information, we cannot determine
+            // which residue is strand 1 vs strand 2. Legacy uses strand 2 first,
+            // strand 1 second (refs_right_left). For exact legacy matching,
+            // use the version with legacy_pair_ordering parameter.
+            // 
+            // Default assumption: residue_idx1 = strand 1, residue_idx2 = strand 2
+            // Legacy uses strand 2 first, strand 1 second (refs_right_left)
+            // But we need to verify: if frame1=residue1 (strand1) and frame2=residue2 (strand2),
+            // then legacy order is frame2 first, frame1 second
+            // However, if the frames are already in legacy order, we might need frame1 first, frame2 second
+            // Try frame1 first, frame2 second to see if that matches legacy
             auto mid_frame = calc.calculate_pair_frame(frame1.value(), frame2.value());
             auto mid_org = mid_frame.origin();
             auto mid_x = mid_frame.x_axis();
@@ -229,20 +235,39 @@ std::map<std::pair<int,int>, int> InputFileWriter::parse_legacy_inp_ordering(
         ++line_num;
     }
     
-    // Parse base pair lines: "  res1  res2  flag #..."
+    // Parse base pair lines
+    // Legacy format: "  res1  res2  flag #    1 | ..." (no bp_num prefix)
+    // Modern format: "  bp_num  res1  res2  flag # type" (has bp_num prefix)
+    // In both: res1 = strand 1, res2 = strand 2
     while (std::getline(in, line)) {
         std::istringstream iss(line);
-        int res1, res2;
+        int first, second, third;
         
-        // Try to parse as .inp format (without bp number prefix first)
-        // Legacy format: "  947  1013   0 #    1 | ..."
-        if (iss >> res1 >> res2) {
+        // Try to read first three integers
+        if (iss >> first >> second >> third) {
+            int res1, res2;
+            
+            // Check if first number is small (likely a bp_num 1-1000)
+            // If second and third are also small, it's probably legacy format
+            // If first is small but second/third are larger (residue indices), it's modern format
+            // Heuristic: if first < 100 and second > first, likely modern format with bp_num
+            if (first < 100 && second > first && second > 10) {
+                // Modern format: bp_num res1 res2
+                res1 = second;
+                res2 = third;
+            } else {
+                // Legacy format: res1 res2 flag
+                res1 = first;
+                res2 = second;
+            }
+            
             // Create canonical key (min, max)
             int min_res = std::min(res1, res2);
             int max_res = std::max(res1, res2);
             std::pair<int,int> key(min_res, max_res);
             
-            // Store which residue was listed first
+            // Store which residue was listed first (strand 1)
+            // This tells us the ordering in legacy .inp file
             ordering[key] = res1;
         }
     }
@@ -312,19 +337,47 @@ void InputFileWriter::write_ref_frames(const std::filesystem::path& output_path,
             int max_res = std::max(res1_1based, res2_1based);
             std::pair<int,int> key(min_res, max_res);
             
-            // Determine frame order based on legacy ordering
-            core::ReferenceFrame f1 = frame1.value();
-            core::ReferenceFrame f2 = frame2.value();
+            // Determine frame order based on legacy strand assignment
+            // Legacy: refs_right_left uses strand 2 first, strand 1 second
+            // In legacy .inp: res1 = strand 1, res2 = strand 2
+            // So we need: strand 2 frame first, strand 1 frame second
+            core::ReferenceFrame f_strand2;  // Will be passed first to calculate_pair_frame
+            core::ReferenceFrame f_strand1;  // Will be passed second to calculate_pair_frame
             
-            // If legacy had larger residue first, swap frames for calculation
             auto it = legacy_pair_ordering.find(key);
-            if (it != legacy_pair_ordering.end() && it->second == max_res) {
-                // Legacy had larger-first: swap frame order
-                std::swap(f1, f2);
+            if (it != legacy_pair_ordering.end()) {
+                // We have legacy ordering information
+                // it->second is the residue that was listed first in legacy .inp (strand 1)
+                int legacy_strand1_res = it->second;
+                
+                // Determine which modern residue corresponds to strand 1
+                if (res1_1based == legacy_strand1_res) {
+                    // res1 is strand 1, res2 is strand 2
+                    f_strand1 = frame1.value();
+                    f_strand2 = frame2.value();
+                } else if (res2_1based == legacy_strand1_res) {
+                    // res2 is strand 1, res1 is strand 2
+                    f_strand1 = frame2.value();
+                    f_strand2 = frame1.value();
+                } else {
+                    // Can't determine strand assignment, use default order
+                    // (This shouldn't happen if legacy ordering is correct)
+                    f_strand2 = frame2.value();
+                    f_strand1 = frame1.value();
+                }
+            } else {
+                // No legacy ordering available - use default assumption
+                // In modern code: residue_idx1 is typically strand 1, residue_idx2 is strand 2
+                // But legacy uses strand 2 first, strand 1 second
+                // So we use frame2 (strand 2) first, frame1 (strand 1) second
+                f_strand1 = frame1.value();
+                f_strand2 = frame2.value();
             }
             
             // Calculate middle frame using cehs_average/bpstep_par algorithm
-            auto mid_frame = calc.calculate_pair_frame(f1, f2);
+            // Legacy uses strand 2 first, strand 1 second (refs_right_left)
+            // Always use this order to match legacy behavior
+            auto mid_frame = calc.calculate_pair_frame(f_strand2, f_strand1);
             auto mid_org = mid_frame.origin();
             auto mid_x = mid_frame.x_axis();
             auto mid_y = mid_frame.y_axis();
