@@ -237,11 +237,21 @@ nlohmann::json Residue::frame_to_json() const {
 // In src/x3dna/models/base_pair.cpp
 nlohmann::json BasePair::to_json() const {
     nlohmann::json j;
-    j["base_i"] = residue_idx1_ + 1;  // Convert to 1-based
-    j["base_j"] = residue_idx2_ + 1;
-    // ... write pair data
+    // Use stored legacy indices (already 1-based)
+    j["base_i"] = legacy_residue_idx1_;
+    j["base_j"] = legacy_residue_idx2_;
+    j["bp_type"] = bp_type_;
+    // ... write frame data, etc.
     return j;
 }
+```
+
+**Note**: BasePair should store legacy indices when created:
+```cpp
+// In BasePairFinder when creating pair:
+BasePair pair;
+pair.set_legacy_indices(res1.legacy_idx(), res2.legacy_idx());
+// Already 1-based, no conversion needed
 ```
 
 ### Step 2: Protocols Write Their Results

@@ -151,33 +151,46 @@ if (flag == "--fix-indices") {
 ### generate_modern_json (Pure Generation)
 
 ```cpp
-// Input: PDB file
+// Input: PDB file ONLY
 // Output: Modern JSON
-// Dependencies: PDB file, templates only
-// No legacy file reading!
+// Dependencies: PDB file, templates
+// NO legacy file reading!
 
 int main(int argc, char* argv[]) {
     auto [pdb_file, output_dir, stage] = parse_args(argc, argv);
     
     // Parse PDB (from file, not from legacy JSON)
+    // Legacy indices assigned during parsing (PDB file order = legacy order)
     Structure structure = PdbParser().parse_file(pdb_file);
     
     // Generate JSON based on stage
     if (stage == "atoms" || stage == "all") {
         structure.write_atoms_json(output_dir);
+        // Uses atom.legacy_atom_idx() for JSON output
     }
     
     if (is_findpair_stage(stage)) {
-        FindPairProtocol(output_dir, stage).execute(structure);
+        FindPairProtocol protocol(output_dir);
+        protocol.set_output_stage(stage);
+        protocol.execute(structure);
+        // Pairs store legacy indices when created
+        // BasePair::to_json() uses legacy_residue_idx1/2 (1-based)
     }
     
     // NO legacy file reading anywhere!
     // NO index validation!
     // NO comparison!
+    // Indices come from PDB file order, not from legacy JSON
     
     return 0;
 }
 ```
+
+**Key Points**:
+- **Indices from PDB file**: Parse in file order → assign sequential indices → matches legacy
+- **No conversion**: Objects store legacy indices directly (1-based)
+- **JSON writing**: Just write the stored legacy index, no math
+- **No dependencies**: Works without any legacy JSON files existing
 
 ### validate_indices (Separate Tool)
 
