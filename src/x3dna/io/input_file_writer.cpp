@@ -135,11 +135,9 @@ void InputFileWriter::write_ref_frames(const std::filesystem::path& output_path,
             // 
             // Default assumption: residue_idx1 = strand 1, residue_idx2 = strand 2
             // Legacy uses strand 2 first, strand 1 second (refs_right_left)
-            // But we need to verify: if frame1=residue1 (strand1) and frame2=residue2 (strand2),
-            // then legacy order is frame2 first, frame1 second
-            // However, if the frames are already in legacy order, we might need frame1 first, frame2 second
-            // Try frame1 first, frame2 second to see if that matches legacy
-            auto mid_frame = calc.calculate_pair_frame(frame1.value(), frame2.value());
+            // So we need: frame2 (strand 2) first, frame1 (strand 1) second
+            // This matches legacy refs_right_left() behavior
+            auto mid_frame = calc.calculate_pair_frame(frame2.value(), frame1.value());
             auto mid_org = mid_frame.origin();
             auto mid_x = mid_frame.x_axis();
             auto mid_y = mid_frame.y_axis();

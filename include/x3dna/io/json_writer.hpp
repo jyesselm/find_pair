@@ -262,6 +262,42 @@ public:
     void
     record_find_bestpair_selection(const std::vector<std::pair<size_t, size_t>>& selected_pairs);
 
+    /**
+     * @brief Record best partner candidates for debugging (all candidates considered)
+     * @param res_i Residue index (legacy 1-based)
+     * @param candidates Vector of candidate information: (res_j, is_eligible, score, bp_type_id)
+     * @param best_j Best partner residue index (legacy 1-based)
+     * @param best_score Best score
+     */
+    void record_best_partner_candidates(int res_i,
+                                        const std::vector<std::tuple<int, bool, double, int>>& candidates,
+                                        int best_j, double best_score);
+
+    /**
+     * @brief Record mutual best decision
+     * @param res_i First residue index (legacy 1-based)
+     * @param res_j Second residue index (legacy 1-based)
+     * @param best_j_for_i Best partner for res_i
+     * @param best_i_for_j Best partner for res_j
+     * @param is_mutual Whether they are mutual best
+     * @param was_selected Whether pair was selected
+     */
+    void record_mutual_best_decision(int res_i, int res_j,
+                                     int best_j_for_i, int best_i_for_j,
+                                     bool is_mutual, bool was_selected);
+
+    /**
+     * @brief Record iteration state after each find_bestpair iteration
+     * @param iteration_num Iteration number (1-based)
+     * @param num_matched Number of matched residues
+     * @param num_total Total number of residues
+     * @param matched_indices Vector indicating which residues are matched (size = num_total + 1, 1-based)
+     * @param pairs Vector of pairs found so far (each pair is (res_i, res_j) in legacy 1-based indices)
+     */
+    void record_iteration_state(int iteration_num, int num_matched, int num_total,
+                                const std::vector<bool>& matched_indices,
+                                const std::vector<std::pair<int, int>>& pairs);
+
 private:
     std::filesystem::path pdb_file_;
     std::string pdb_name_;

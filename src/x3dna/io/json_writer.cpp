@@ -111,6 +111,9 @@ void JsonWriter::write_split_files(const std::filesystem::path& output_dir, bool
         {"find_bestpair_selection", "find_bestpair_selection"},
         {"bpstep_params", "bpstep_params"},
         {"helical_params", "helical_params"},
+        {"best_partner_candidates", "best_partner_candidates"},
+        {"mutual_best_decision", "mutual_best_decisions"},
+        {"iteration_states", "iteration_states"},
     };
     
     for (const auto& [calc_type, records] : split_records_) {
@@ -946,6 +949,80 @@ void JsonWriter::record_find_bestpair_selection(const std::vector<std::pair<size
         pairs_array.push_back(nlohmann::json::array({pair.first, pair.second}));
     }
     record["pairs"] = pairs_array;
+    
+    add_calculation_record(record);
+}
+
+void JsonWriter::record_best_partner_candidates(int res_i,
+                                                 const std::vector<std::tuple<int, bool, double, int>>& candidates,
+                                                 int best_j, double best_score) {
+    nlohmann::json record;
+    record["type"] = "best_partner_candidates";
+    record["res_i"] = res_i;
+    record["num_candidates"] = candidates.size();
+    record["best_partner"] = best_j;
+    record["best_score"] = best_score;
+    
+    nlohmann::json candidates_array = nlohmann::json::array();
+    for (const auto& cand : candidates) {
+        int res_j = std::get<0>(cand);
+        bool is_eligible = std::get<1>(cand);
+        double score = std::get<2>(cand);
+        int bp_type_id = std::get<3>(cand);
+        
+        nlohmann::json cand_json;
+        cand_json["res_j"] = res_j;
+        cand_json["is_eligible"] = is_eligible ? 1 : 0;
+        cand_json["score"] = score;
+        cand_json["bp_type_id"] = bp_type_id;
+        cand_json["is_best"] = (res_j == best_j) ? 1 : 0;
+        
+        candidates_array.push_back(cand_json);
+    }
+    record["candidates"] = candidates_array;
+    
+    add_calculation_record(record);
+}
+
+void JsonWriter::record_mutual_best_decision(int res_i, int res_j,
+                                             int best_j_for_i, int best_i_for_j,
+                                             bool is_mutual, bool was_selected) {
+    nlohmann::json record;
+    record["type"] = "mutual_best_decision";
+    record["res1"] = res_i;
+    record["res2"] = res_j;
+    record["best_partner_for_res1"] = best_j_for_i;
+    record["best_partner_for_res2"] = best_i_for_j;
+    record["is_mutual"] = is_mutual ? 1 : 0;
+    record["was_selected"] = was_selected ? 1 : 0;
+    
+    add_calculation_record(record);
+}
+
+void JsonWriter::record_iteration_state(int iteration_num, int num_matched, int num_total,
+                                        const std::vector<bool>& matched_indices,
+                                        const std::vector<std::pair<int, int>>& pairs) {
+    nlohmann::json record;
+    record["type"] = "iteration_states";
+    record["iteration_num"] = iteration_num;
+    record["num_matched"] = num_matched;
+    record["num_total"] = num_total;
+    
+    // Collect pairs found in this iteration
+    nlohmann::json pairs_array = nlohmann::json::array();
+    for (const auto& pair : pairs) {
+        pairs_array.push_back(nlohmann::json::array({pair.first, pair.second}));
+    }
+    record["pairs_found_in_iteration"] = pairs_array;
+    
+    // Collect matched residues
+    nlohmann::json matched_array = nlohmann::json::array();
+    for (size_t i = 1; i < matched_indices.size() && i <= static_cast<size_t>(num_total); ++i) {
+        if (matched_indices[i]) {
+            matched_array.push_back(static_cast<int>(i));
+        }
+    }
+    record["matched_residues"] = matched_array;
     
     add_calculation_record(record);
 }

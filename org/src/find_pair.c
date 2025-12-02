@@ -756,12 +756,54 @@ static void best_pair(long i, long num_residue, long *RY, long **seidx, double *
 {
     double ddmin = XBIG, rtn_val[RTNNUM];
     long bpid, j, k, nout = PSTNUM - 1;
+    long num_candidates = 0;
+    long *candidate_j = NULL;
+    double *candidate_scores = NULL;
+    long *candidate_bp_type_ids = NULL;
+    long *is_eligible = NULL;
+    long max_candidates = num_residue; /* Worst case: all residues are candidates */
+    
     init_lvector(pair_stat, 1, nout, 0);
+    
+    /* Allocate arrays to collect candidates for JSON output */
+    if (json_writer_is_initialized() && max_candidates > 0) {
+        candidate_j = lvector(1, max_candidates);
+        candidate_scores = dvector(1, max_candidates);
+        candidate_bp_type_ids = lvector(1, max_candidates);
+        is_eligible = lvector(1, max_candidates);
+    }
+    
     for (j = 1; j <= num_residue; j++) {
-        if (j == i || RY[j] < 0 || matched_idx[j])
+        long eligible = 1;
+        if (j == i || RY[j] < 0 || matched_idx[j]) {
+            eligible = 0;
+            if (is_eligible) {
+                num_candidates++;
+                is_eligible[num_candidates] = 0;
+                candidate_j[num_candidates] = j;
+                candidate_scores[num_candidates] = XBIG;
+                candidate_bp_type_ids[num_candidates] = 0;
+            }
             continue;
+        }
+        
         check_pair(i, j, bseq, seidx, xyz, NC1xyz, orien, org, idx, AtomName, misc_pars,
                    rtn_val, &bpid, ring_atom, 0);
+        
+        /* Record candidate */
+        if (candidate_j) {
+            num_candidates++;
+            is_eligible[num_candidates] = 1;
+            candidate_j[num_candidates] = j;
+            if (bpid) {
+                candidate_scores[num_candidates] = rtn_val[5];
+                candidate_bp_type_ids[num_candidates] = bpid;
+            } else {
+                candidate_scores[num_candidates] = XBIG;
+                candidate_bp_type_ids[num_candidates] = 0;
+            }
+        }
+        
         if (bpid && rtn_val[5] < ddmin) {
             ddmin = rtn_val[5];
             pair_stat[1] = j;
@@ -770,6 +812,22 @@ static void best_pair(long i, long num_residue, long *RY, long **seidx, double *
                 pair_stat[2 + k] = lround(MFACTOR * rtn_val[k]);
         }
     }
+    
+    /* Record candidates for JSON output */
+    if (json_writer_is_initialized() && num_candidates > 0) {
+        json_writer_record_best_partner_candidates(i, num_candidates, 
+            candidate_j ? candidate_j + 1 : NULL,  /* Adjust for 1-based indexing in function */
+            candidate_scores ? candidate_scores + 1 : NULL,
+            candidate_bp_type_ids ? candidate_bp_type_ids + 1 : NULL,
+            is_eligible ? is_eligible + 1 : NULL,
+            pair_stat[1], ddmin < XBIG ? ddmin : 0.0);
+    }
+    
+    /* Free temporary arrays */
+    if (candidate_j) free_lvector(candidate_j, 1, max_candidates);
+    if (candidate_scores) free_dvector(candidate_scores, 1, max_candidates);
+    if (candidate_bp_type_ids) free_lvector(candidate_bp_type_ids, 1, max_candidates);
+    if (is_eligible) free_lvector(is_eligible, 1, max_candidates);
 }
 
 static long bp_coplanar(long i, double d, double d2, double *txyz, double *txyz2, long n,
@@ -1585,9 +1643,13 @@ static long find_bestpair(long nout, long **base_pairs, long num_residue, char *
     long i, j, num1 = 0, num2 = 1, num_bp = 0;
     long pair_istat[PSTNUM], pair_jstat[PSTNUM];
     long *matched_idx;
+    long iteration_num = 0;
+    long num_bp_start_iteration = 0;  /* Track num_bp at start of iteration */
     matched_idx = lvector(1, num_residue);
     while (num1 < num2) {
+        iteration_num++;
         num1 = num2;
+        num_bp_start_iteration = num_bp;  /* Remember how many pairs at start of iteration */
         for (i = 1; i <= num_residue; i++) {
             if (RY[i] < 0 || matched_idx[i])
                 continue;
@@ -1597,12 +1659,22 @@ static long find_bestpair(long nout, long **base_pairs, long num_residue, char *
                 best_pair(pair_istat[1], num_residue, RY, seidx, xyz, idx, NC1xyz,
                           matched_idx, orien, org, ring_atom, AtomName, bseq,
                           misc_pars, pair_jstat);
-                if (i == pair_jstat[1]) {
+                
+                /* Record mutual best decision */
+                long is_mutual = (i == pair_jstat[1]);
+                long was_selected = 0;
+                if (is_mutual) {
                     matched_idx[i] = 1;
                     matched_idx[pair_istat[1]] = 1;
                     base_pairs[++num_bp][1] = i;
                     for (j = 1; j <= nout; j++)
                         base_pairs[num_bp][j + 1] = pair_istat[j];
+                    was_selected = 1;
+                }
+                
+                if (json_writer_is_initialized()) {
+                    json_writer_record_mutual_best_decision(i, pair_istat[1], 
+                        pair_istat[1], pair_jstat[1], is_mutual, was_selected);
                 }
             }
         }
@@ -1610,6 +1682,32 @@ static long find_bestpair(long nout, long **base_pairs, long num_residue, char *
         for (i = 1; i <= num_residue; i++)
             if (matched_idx[i])
                 num2++;
+        
+        /* Record iteration state */
+        /* Calculate pairs found in this iteration: pairs added since start of iteration */
+        if (json_writer_is_initialized()) {
+            /* Build array of pairs found in THIS iteration only */
+            /* Allocate array of pointers for pairs in this iteration */
+            long **pairs_this_iteration = NULL;
+            long num_pairs_this_iteration = num_bp - num_bp_start_iteration;
+            long k;
+            
+            if (num_pairs_this_iteration > 0) {
+                pairs_this_iteration = (long **)malloc((num_pairs_this_iteration + 1) * sizeof(long *));
+                if (pairs_this_iteration) {
+                    for (k = 1; k <= num_pairs_this_iteration; k++) {
+                        pairs_this_iteration[k] = base_pairs[num_bp_start_iteration + k];
+                    }
+                }
+            }
+            
+            json_writer_record_iteration_state(iteration_num, num2, num_residue,
+                matched_idx, num_pairs_this_iteration, pairs_this_iteration);
+            
+            if (pairs_this_iteration) {
+                free(pairs_this_iteration);
+            }
+        }
     }
     free_lvector(matched_idx, 1, num_residue);
     return num_bp;
@@ -2107,7 +2205,16 @@ int find_pair_main(int argc, char *argv[])
     set_my_globals(argv[0]);
     fp_cmdline(argc, argv, &args);
     fprintf(stderr, "\nhandling file <%s>\n", args.pdbfile);
+    
+    /* Initialize JSON writer for debugging output */
+    json_writer_init(args.pdbfile);
+    json_writer_record_global_variables();
+    
     handle_str(&args);
+    
+    /* Finalize JSON writer */
+    json_writer_finalize();
+    
     clear_my_globals();
     print_used_time(time0);
     return 0;

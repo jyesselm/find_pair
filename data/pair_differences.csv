@@ -1,0 +1,14 @@
+pdb_id,pair_i,pair_j,diff_type,legacy_quality,modern_quality,notes
+3F2T,96,110,extra,0,0,bp_type=A?
+5V0O,9,34,extra,0,0,bp_type=??
+7O5H,745,747,missing,0,0,bp_type=AU
+7O5H,745,746,extra,0,0,bp_type=UA
+7VNV,86,92,missing,0,0,bp_type=AU
+7VNV,101,126,missing,0,0,bp_type=GA
+7VNV,92,101,extra,0,0,bp_type=AA
+8BYV,790,796,missing,0,0,bp_type=AU
+8BYV,796,1503,extra,0,0,bp_type=AU
+8TKK,107,108,missing,0,0,bp_type=GC
+8VPV,36,37,missing,0,0,bp_type=GC
+9CF3,25,27,missing,0,0,bp_type=UA
+9CF3,27,29,extra,0,0,bp_type=UA
