@@ -124,6 +124,19 @@ void json_writer_record_removed_atoms_summary(long num_removed);
 /* Record original base pair selection from find_bestpair (before reordering) */
 void json_writer_record_find_bestpair_selection(long num_bp, long **base_pairs);
 
+/* Record best partner finding for debugging - all candidates considered */
+void json_writer_record_best_partner_candidates(long res_i, long num_candidates, long *candidate_j,
+                                                 double *candidate_scores, long *candidate_bp_type_ids,
+                                                 long *is_eligible, long best_j, double best_score);
+
+/* Record mutual best match decision */
+void json_writer_record_mutual_best_decision(long res_i, long res_j, long best_j_for_i, 
+                                             long best_i_for_j, long is_mutual, long was_selected);
+
+/* Record iteration state after each find_bestpair iteration */
+void json_writer_record_iteration_state(long iteration_num, long num_matched, long num_total,
+                                        long *matched_indices, long num_pairs, long **pairs);
+
 /* Check if JSON writer is initialized */
 long json_writer_is_initialized(void);
 

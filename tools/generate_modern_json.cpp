@@ -464,30 +464,31 @@ int main(int argc, char* argv[]) {
 
         if (std::filesystem::exists(legacy_json_path)) {
             std::cout << "Loading legacy indices from: " << legacy_json_path << "\n";
-             if (tracker.load_legacy_indices(legacy_json_path.string())) {
-                 // Validate match
-                 auto validation = tracker.validate();
-                 std::cout << validation.to_string();
- 
-                 // ONLY export mapping if validation FAILED (for debugging)
-                 if (!validation.success) {
-                     std::filesystem::path mapping_dir = json_output_dir.parent_path() / "index_mapping";
-                     std::filesystem::create_directories(mapping_dir);
-                     std::filesystem::path mapping_file = mapping_dir / (pdb_name + ".json");
-                     tracker.export_mapping(mapping_file.string());
-                     
-                     std::cerr
-                         << "\n❌ FATAL: Index validation failed! Cannot proceed with comparison.\n";
-                     std::cerr << "This PDB does not have matching indices with legacy code.\n";
-                     std::cerr << "See mapping file for details: " << mapping_file << "\n";
-                     return 1;
-                 }
-                 // Success - no need to export mapping file
-             } else {
-                 std::cout << "Warning: Could not load legacy indices from " << legacy_json_path
-                           << "\n";
-                 std::cout << "Skipping index validation.\n";
-             }
+            if (tracker.load_legacy_indices(legacy_json_path.string())) {
+                // Validate match
+                auto validation = tracker.validate();
+                std::cout << validation.to_string();
+
+                // ONLY export mapping if validation FAILED (for debugging)
+                if (!validation.success) {
+                    std::filesystem::path mapping_dir =
+                        json_output_dir.parent_path() / "index_mapping";
+                    std::filesystem::create_directories(mapping_dir);
+                    std::filesystem::path mapping_file = mapping_dir / (pdb_name + ".json");
+                    tracker.export_mapping(mapping_file.string());
+
+                    std::cerr
+                        << "\n❌ FATAL: Index validation failed! Cannot proceed with comparison.\n";
+                    std::cerr << "This PDB does not have matching indices with legacy code.\n";
+                    std::cerr << "See mapping file for details: " << mapping_file << "\n";
+                    return 1;
+                }
+                // Success - no need to export mapping file
+            } else {
+                std::cout << "Warning: Could not load legacy indices from " << legacy_json_path
+                          << "\n";
+                std::cout << "Skipping index validation.\n";
+            }
         } else {
             std::cout << "Legacy JSON not found at: " << legacy_json_path << "\n";
             std::cout << "Skipping index validation (legacy JSON needed for validation).\n";

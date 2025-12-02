@@ -7,6 +7,7 @@
 #include <x3dna/protocols/find_pair_protocol.hpp>
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/io/input_file_writer.hpp>
+#include <x3dna/io/json_writer.hpp>
 #include <x3dna/config/config_manager.hpp>
 #include <iostream>
 #include <stdexcept>
@@ -35,6 +36,11 @@ int main(int argc, char* argv[]) {
         std::cout << "Parsing PDB file: " << options.pdb_file << "\n";
         auto structure = parser.parse_file(options.pdb_file);
 
+        // Create JSON writer for step-by-step debugging (if enabled)
+        std::unique_ptr<x3dna::io::JsonWriter> json_writer;
+        // Always enable JSON output for debugging
+        json_writer = std::make_unique<x3dna::io::JsonWriter>(options.pdb_file);
+
         // Create protocol
         x3dna::protocols::FindPairProtocol protocol;
         protocol.set_config_manager(config);
@@ -42,6 +48,9 @@ int main(int argc, char* argv[]) {
         protocol.set_find_all_pairs(options.find_all_pairs);
         protocol.set_divide_helices(options.divide_helices);
         protocol.set_legacy_mode(options.legacy_mode);
+        if (json_writer) {
+            protocol.set_json_writer(json_writer.get());
+        }
         if (options.fix_indices_from_legacy_json) {
             protocol.set_fix_indices_from_legacy_json(true, options.legacy_json_file);
         }
@@ -53,6 +62,13 @@ int main(int argc, char* argv[]) {
         // Get results
         const auto& base_pairs = protocol.base_pairs();
         std::cout << "Found " << base_pairs.size() << " base pairs\n";
+
+        // Write JSON output (if JsonWriter was enabled)
+        if (json_writer) {
+            std::filesystem::path json_output_dir = "data/json";
+            json_writer->write_to_file(json_output_dir, true);
+            std::cout << "JSON debug output written to " << json_output_dir << "\n";
+        }
 
         // Write output file (.inp format)
         if (!base_pairs.empty()) {

@@ -1679,3 +1679,119 @@ void json_writer_record_find_bestpair_selection(long num_bp, long **base_pairs) 
     
     fflush(type_file);
 }
+
+/* Record best partner candidates for debugging */
+void json_writer_record_best_partner_candidates(long res_i, long num_candidates, long *candidate_j,
+                                                 double *candidate_scores, long *candidate_bp_type_ids,
+                                                 long *is_eligible, long best_j, double best_score) {
+    FILE *type_file;
+    long is_first;
+    long i;
+    
+    if (!json_writer_is_initialized()) return;
+    
+    type_file = get_type_file_handle("best_partner_candidates", &is_first);
+    if (!type_file) return;
+    
+    if (!is_first) fprintf(type_file, ",\n");
+    
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"best_partner_candidates\",\n");
+    fprintf(type_file, "      \"res_i\": %ld,\n", res_i);
+    fprintf(type_file, "      \"num_candidates\": %ld,\n", num_candidates);
+    fprintf(type_file, "      \"best_partner\": %ld,\n", best_j);
+    fprintf(type_file, "      \"best_score\": %.6f,\n", best_score);
+    fprintf(type_file, "      \"candidates\": [\n");
+    
+    for (i = 0; i < num_candidates; i++) {
+        if (i > 0) fprintf(type_file, ",\n");
+        fprintf(type_file, "        {\n");
+        fprintf(type_file, "          \"res_j\": %ld,\n", candidate_j ? candidate_j[i] : 0);
+        fprintf(type_file, "          \"is_eligible\": %ld,\n", is_eligible ? is_eligible[i] : 0);
+        fprintf(type_file, "          \"score\": %.6f,\n", candidate_scores ? candidate_scores[i] : 0.0);
+        fprintf(type_file, "          \"bp_type_id\": %ld,\n", candidate_bp_type_ids ? candidate_bp_type_ids[i] : 0);
+        fprintf(type_file, "          \"is_best\": %ld\n", (candidate_j && candidate_j[i] == best_j) ? 1 : 0);
+        fprintf(type_file, "        }");
+    }
+    
+    fprintf(type_file, "\n      ]\n");
+    fprintf(type_file, "    }");
+    
+    fflush(type_file);
+}
+
+/* Record mutual best match decision */
+void json_writer_record_mutual_best_decision(long res_i, long res_j, long best_j_for_i, 
+                                             long best_i_for_j, long is_mutual, long was_selected) {
+    FILE *type_file;
+    long is_first;
+    
+    if (!json_writer_is_initialized()) return;
+    
+    type_file = get_type_file_handle("mutual_best_decisions", &is_first);
+    if (!type_file) return;
+    
+    if (!is_first) fprintf(type_file, ",\n");
+    
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"mutual_best_decision\",\n");
+    fprintf(type_file, "      \"res1\": %ld,\n", res_i);
+    fprintf(type_file, "      \"res2\": %ld,\n", res_j);
+    fprintf(type_file, "      \"best_partner_for_res1\": %ld,\n", best_j_for_i);
+    fprintf(type_file, "      \"best_partner_for_res2\": %ld,\n", best_i_for_j);
+    fprintf(type_file, "      \"is_mutual\": %ld,\n", is_mutual);
+    fprintf(type_file, "      \"was_selected\": %ld\n", was_selected);
+    fprintf(type_file, "    }");
+    
+    fflush(type_file);
+}
+
+/* Record iteration state after each find_bestpair iteration */
+void json_writer_record_iteration_state(long iteration_num, long num_matched, long num_total,
+                                        long *matched_indices, long num_pairs, long **pairs) {
+    FILE *type_file;
+    long is_first;
+    long i;
+    long pair_count;
+    
+    if (!json_writer_is_initialized()) return;
+    
+    type_file = get_type_file_handle("iteration_states", &is_first);
+    if (!type_file) return;
+    
+    if (!is_first) fprintf(type_file, ",\n");
+    
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"iteration_state\",\n");
+    fprintf(type_file, "      \"iteration_num\": %ld,\n", iteration_num);
+    fprintf(type_file, "      \"num_matched\": %ld,\n", num_matched);
+    fprintf(type_file, "      \"num_total\": %ld,\n", num_total);
+    
+    if (pairs && num_pairs > 0) {
+        fprintf(type_file, "      \"pairs_found_in_iteration\": [\n");
+        /* Print all pairs found in this iteration */
+        for (i = 1; i <= num_pairs; i++) {
+            if (i > 1) fprintf(type_file, ",\n");
+            fprintf(type_file, "        [%ld, %ld]", pairs[i][1], pairs[i][2]);
+        }
+        fprintf(type_file, "\n      ],\n");
+    } else {
+        fprintf(type_file, "      \"pairs_found_in_iteration\": [],\n");
+    }
+    
+    fprintf(type_file, "      \"matched_residues\": [");
+    if (matched_indices) {
+        long first = 1;
+        for (i = 1; i <= num_total; i++) {
+            if (matched_indices[i]) {
+                if (!first) fprintf(type_file, ", ");
+                fprintf(type_file, "%ld", i);
+                first = 0;
+            }
+        }
+    }
+    fprintf(type_file, "]\n");
+    fprintf(type_file, "    }");
+    
+    fflush(type_file);
+}
