@@ -21,7 +21,8 @@ using namespace x3dna::geometry;
 
 int main(int argc, char* argv[]) {
     if (argc < 3 || argc > 5) {
-        std::cerr << "Usage: " << argv[0] << " <input_pdb_file> <output_json_dir> [--legacy] [--fix-indices]\n";
+        std::cerr << "Usage: " << argv[0]
+                  << " <input_pdb_file> <output_json_dir> [--legacy] [--fix-indices]\n";
         std::cerr << "Example: " << argv[0] << " data/pdb/1ABC.pdb data/json\n";
         std::cerr << "Options:\n";
         std::cerr << "  --legacy       Exclude C4 atom from matching (matches legacy behavior)\n";
@@ -36,7 +37,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::filesystem::path pdb_file = argv[1];
-    std::filesystem::path json_output_dir = argv[2];  // Now expects a directory, not a file
+    std::filesystem::path json_output_dir = argv[2]; // Now expects a directory, not a file
 
     // Check for options
     bool legacy_mode = false;
@@ -64,7 +65,7 @@ int main(int argc, char* argv[]) {
     try {
         // Create output directory if needed
         std::filesystem::create_directories(json_output_dir);
-        
+
         // Extract PDB name from file
         std::string pdb_name = std::filesystem::path(pdb_file).stem().string();
 
@@ -78,18 +79,21 @@ int main(int argc, char* argv[]) {
 
         // Fix indices from legacy JSON if requested
         if (fix_indices) {
-            std::filesystem::path legacy_base_frame = 
-                json_output_dir.parent_path() / "json_legacy" / "base_frame_calc" / (pdb_name + ".json");
+            std::filesystem::path legacy_base_frame = json_output_dir.parent_path() /
+                                                      "json_legacy" / "base_frame_calc" /
+                                                      (pdb_name + ".json");
             if (std::filesystem::exists(legacy_base_frame)) {
-                int fixed = x3dna::io::fix_residue_indices_from_json(structure, legacy_base_frame.string());
+                int fixed =
+                    x3dna::io::fix_residue_indices_from_json(structure, legacy_base_frame.string());
                 if (fixed > 0) {
-                    std::cout << "[INFO] Fixed " << fixed << " residue indices from: " 
-                              << legacy_base_frame << "\n";
+                    std::cout << "[INFO] Fixed " << fixed
+                              << " residue indices from: " << legacy_base_frame << "\n";
                 } else {
-                    std::cerr << "[WARNING] Could not fix indices from: " << legacy_base_frame << "\n";
+                    std::cerr << "[WARNING] Could not fix indices from: " << legacy_base_frame
+                              << "\n";
                 }
             } else {
-                std::cerr << "[WARNING] Legacy JSON not found for --fix-indices: " 
+                std::cerr << "[WARNING] Legacy JSON not found for --fix-indices: "
                           << legacy_base_frame << "\n";
             }
         }
@@ -109,7 +113,7 @@ int main(int argc, char* argv[]) {
         // Note: Legacy indices are already set on atoms during PDB parsing
         // We do NOT load legacy indices from legacy JSON files - they are generated fresh
         writer.record_pdb_atoms(structure);
-        
+
         // Record residue indices (seidx) - maps residues to atom ranges
         writer.record_residue_indices(structure);
 
@@ -173,10 +177,8 @@ int main(int argc, char* argv[]) {
         calculator.calculate_all_frames(structure);
 
         // Record frame calculations for each residue
-        // Calculate frames directly for all nucleotide residues (don't rely on has_reference_frame
-        // check) Legacy residue_idx is 1-based and counts ALL residues (including amino acids,
-        // etc.)
-        size_t residue_idx = 1;
+        // CRITICAL: Must iterate in legacy index order (1, 2, 3, ...) to match legacy JSON
+        // Use residues_in_legacy_order() to get residues in PDB file order
         size_t frames_recorded = 0;
         size_t nucleotides_found = 0;
         size_t template_load_failures = 0;
@@ -188,179 +190,201 @@ int main(int argc, char* argv[]) {
         size_t ligand_count = 0;
         size_t unknown_count = 0;
 
-        for (auto& chain : structure.chains()) {
-            for (auto& residue : chain.residues()) {
-                // Check residue type
-                ResidueType res_type = residue.residue_type();
-                char one_letter = residue.one_letter_code();
+        // Get residues in legacy order (PDB file order)
+        std::vector<x3dna::core::Residue*> residues_in_order;
+        for (const auto* residue_ptr : structure.residues_in_legacy_order()) {
+            // Need non-const pointer for modification
+            residues_in_order.push_back(const_cast<x3dna::core::Residue*>(residue_ptr));
+        }
 
-                // Count by type
-                switch (res_type) {
-                    case ResidueType::WATER:
-                        water_count++;
-                        break;
-                    case ResidueType::ION:
-                        ion_count++;
-                        break;
-                    case ResidueType::NONCANONICAL_RNA:
-                        noncanonical_rna_count++;
-                        break;
-                    case ResidueType::UNKNOWN:
-                        unknown_count++;
-                        // DEBUG: Log unknown residues that look like nucleotides
-                        if (one_letter == 'A' || one_letter == 'C' || one_letter == 'G' ||
-                            one_letter == 'T' || one_letter == 'U') {
-                            std::cerr << "WARNING: Residue " << residue.name()
-                                      << " has one_letter_code=" << one_letter
-                                      << " but residue_type=UNKNOWN\n";
-                        }
-                        break;
-                    default:
-                        break;
-                }
+        for (auto* residue : residues_in_order) {
+            // Check residue type
+            ResidueType res_type = residue->residue_type();
+            char one_letter = residue->one_letter_code();
 
-                // Only process nucleotide residues
-                // Include standard nucleotides, modified nucleotides, and noncanonical RNA
-                bool is_nucleotide =
-                    (res_type != ResidueType::UNKNOWN && res_type != ResidueType::AMINO_ACID &&
-                     res_type != ResidueType::WATER && res_type != ResidueType::ION &&
-                     res_type != ResidueType::LIGAND);
-
-                // Check for modified nucleotides that have ring atoms but aren't in standard list
-                // (This is now handled by residue_type() returning NONCANONICAL_RNA, but keep for compatibility)
-                if (!is_nucleotide && res_type == ResidueType::UNKNOWN) {
-                    // Check for ring atoms (similar to legacy residue_ident)
-                    static const std::vector<std::string> common_ring_atoms = {
-                        " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
-                    int ring_atom_count = 0;
-                    for (const auto& atom_name : common_ring_atoms) {
-                        for (const auto& atom : residue.atoms()) {
-                            if (atom.name() == atom_name) {
-                                ring_atom_count++;
-                                break;
-                            }
-                        }
+            // Count by type
+            switch (res_type) {
+                case ResidueType::WATER:
+                    water_count++;
+                    break;
+                case ResidueType::ION:
+                    ion_count++;
+                    break;
+                case ResidueType::NONCANONICAL_RNA:
+                    noncanonical_rna_count++;
+                    break;
+                case ResidueType::UNKNOWN:
+                    unknown_count++;
+                    // DEBUG: Log unknown residues that look like nucleotides
+                    if (one_letter == 'A' || one_letter == 'C' || one_letter == 'G' ||
+                        one_letter == 'T' || one_letter == 'U') {
+                        std::cerr << "WARNING: Residue " << residue->name()
+                                  << " has one_letter_code=" << one_letter
+                                  << " but residue_type=UNKNOWN\n";
                     }
-                    // If has >= 3 ring atoms, treat as nucleotide (like legacy)
-                    if (ring_atom_count >= 3) {
-                        is_nucleotide = true;
-                    }
-                }
+                    break;
+                default:
+                    break;
+            }
 
-                if (is_nucleotide) {
-                    nucleotides_found++;
+            // Only process nucleotide residues
+            // Include standard nucleotides, modified nucleotides, and noncanonical RNA
+            bool is_nucleotide =
+                (res_type != ResidueType::UNKNOWN && res_type != ResidueType::AMINO_ACID &&
+                 res_type != ResidueType::WATER && res_type != ResidueType::ION &&
+                 res_type != ResidueType::LIGAND);
 
-                    // Get legacy_residue_idx from atoms (set during PDB parsing)
-                    // This matches what base_pair_finder uses
-                    int legacy_residue_idx = 0;
-                    if (!residue.atoms().empty()) {
-                        legacy_residue_idx = residue.atoms()[0].legacy_residue_idx();
-                    }
-
-                    // Calculate frame and set it on the residue (needed for find_pairs)
-                    FrameCalculationResult frame_result = calculator.calculate_frame(residue);
-
-                    if (frame_result.is_valid) {
-                        // CRITICAL: Store frame on residue (required for validation in find_pairs)
-                        residue.set_reference_frame(frame_result.frame);
-                        
-                        char base_type = residue.one_letter_code();
-
-                        // Record base_frame_calc
-                        // Use legacy_residue_idx if available, otherwise use the counter
-                        // IMPORTANT: Keep as 1-based to match legacy JSON output format
-                        size_t record_idx = (legacy_residue_idx > 0) ? 
-                            static_cast<size_t>(legacy_residue_idx) : 
-                            residue_idx;
-                        writer.record_base_frame_calc(
-                            record_idx, // Keep 1-based to match legacy
-                            base_type, frame_result.template_file, frame_result.rms_fit,
-                            frame_result.matched_atoms, residue.name(), residue.chain_id(),
-                            residue.seq_num(), residue.insertion());
-
-                        // Record ls_fitting
-                        writer.record_ls_fitting(
-                            record_idx, // Keep 1-based to match legacy
-                            frame_result.num_matched, frame_result.rms_fit,
-                            frame_result.rotation_matrix, frame_result.translation, residue.name(),
-                            residue.chain_id(), residue.seq_num(), residue.insertion());
-
-                        // Record frame_calc
-                        // Extract coordinates from matched atoms - we need to get them from the
-                        // frame result For now, use empty vectors since we don't have direct access
-                        // to matched atom coords The frame_calc record is less critical than
-                        // base_frame_calc and ls_fitting
-                        std::vector<Vector3D> standard_coords, experimental_coords;
-                        // TODO: Extract coordinates from matched atoms if needed
-
-                        writer.record_frame_calc(
-                            record_idx, // Keep 1-based to match legacy
-                            base_type, frame_result.template_file, frame_result.rms_fit,
-                            standard_coords, experimental_coords, residue.name(),
-                            residue.chain_id(), residue.seq_num(), residue.insertion());
-
-                        frames_recorded++;
-                    } else {
-                        // DEBUG: Log why it failed
-                        std::cerr << "Frame calculation failed for " << residue.name() << " "
-                                  << residue.chain_id() << ":" << residue.seq_num()
-                                  << " (type=" << static_cast<int>(res_type)
-                                  << ", one_letter=" << one_letter << ")\n";
-                        if (frame_result.template_file.empty()) {
-                            template_load_failures++;
-                        } else if (frame_result.num_matched < 3) {
-                            atom_match_failures++;
-                            std::cerr << "  Only matched " << frame_result.num_matched
-                                      << " atoms\n";
+            // Check for modified nucleotides that have ring atoms but aren't in standard list
+            // (This is now handled by residue_type() returning NONCANONICAL_RNA, but keep for
+            // compatibility)
+            if (!is_nucleotide && res_type == ResidueType::UNKNOWN) {
+                // Check for ring atoms (similar to legacy residue_ident)
+                static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
+                                                                           " N1 ", " C6 ", " C5 "};
+                int ring_atom_count = 0;
+                for (const auto& atom_name : common_ring_atoms) {
+                    for (const auto& atom : residue->atoms()) {
+                        if (atom.name() == atom_name) {
+                            ring_atom_count++;
+                            break;
                         }
                     }
                 }
+                // If has >= 3 ring atoms, treat as nucleotide (like legacy)
+                if (ring_atom_count >= 3) {
+                    is_nucleotide = true;
+                }
+            }
 
-                // Count all residues (to match legacy residue_idx behavior)
-                residue_idx++;
+            if (is_nucleotide) {
+                nucleotides_found++;
+
+                // Get legacy_residue_idx from atoms (set during PDB parsing)
+                // CRITICAL: Must use legacy_residue_idx, not a counter
+                // This ensures records are in legacy index order
+                int legacy_residue_idx = 0;
+                if (!residue->atoms().empty()) {
+                    legacy_residue_idx = residue->atoms()[0].legacy_residue_idx();
+                }
+
+                if (legacy_residue_idx <= 0) {
+                    std::cerr << "WARNING: Residue " << residue->name()
+                              << " has no legacy_residue_idx, skipping frame calculation\n";
+                    continue;
+                }
+
+                // Calculate frame and set it on the residue (needed for find_pairs)
+                FrameCalculationResult frame_result = calculator.calculate_frame(*residue);
+
+                if (frame_result.is_valid) {
+                    // CRITICAL: Store frame on residue (required for validation in find_pairs)
+                    residue->set_reference_frame(frame_result.frame);
+
+                    char base_type = residue->one_letter_code();
+
+                    // Record base_frame_calc
+                    // CRITICAL: Use legacy_residue_idx (1-based) to match legacy JSON order
+                    size_t record_idx = static_cast<size_t>(legacy_residue_idx);
+                    writer.record_base_frame_calc(
+                        record_idx, // legacy_residue_idx (1-based) - ensures correct order
+                        base_type, frame_result.template_file, frame_result.rms_fit,
+                        frame_result.matched_atoms, residue->name(), residue->chain_id(),
+                        residue->seq_num(), residue->insertion());
+
+                    // Record ls_fitting
+                    writer.record_ls_fitting(
+                        record_idx, // legacy_residue_idx (1-based) - ensures correct order
+                        frame_result.num_matched, frame_result.rms_fit,
+                        frame_result.rotation_matrix, frame_result.translation, residue->name(),
+                        residue->chain_id(), residue->seq_num(), residue->insertion());
+
+                    // Record frame_calc
+                    // Extract coordinates from matched atoms - we need to get them from the
+                    // frame result For now, use empty vectors since we don't have direct access
+                    // to matched atom coords The frame_calc record is less critical than
+                    // base_frame_calc and ls_fitting
+                    std::vector<Vector3D> standard_coords, experimental_coords;
+                    // TODO: Extract coordinates from matched atoms if needed
+
+                    writer.record_frame_calc(
+                        record_idx, // legacy_residue_idx (1-based) - ensures correct order
+                        base_type, frame_result.template_file, frame_result.rms_fit,
+                        standard_coords, experimental_coords, residue->name(), residue->chain_id(),
+                        residue->seq_num(), residue->insertion());
+
+                    frames_recorded++;
+                } else {
+                    // DEBUG: Log why it failed
+                    std::cerr << "Frame calculation failed for " << residue->name() << " "
+                              << residue->chain_id() << ":" << residue->seq_num()
+                              << " (type=" << static_cast<int>(res_type)
+                              << ", one_letter=" << one_letter << ")\n";
+                    if (frame_result.template_file.empty()) {
+                        template_load_failures++;
+                    } else if (frame_result.num_matched < 3) {
+                        atom_match_failures++;
+                        std::cerr << "  Only matched " << frame_result.num_matched << " atoms\n";
+                    }
+                }
             }
         }
 
-        // Find and record base pairs (with validation recording)
-        // Note: Legacy residue indices are already set on atoms during PDB parsing
-        BasePairFinder finder;
-        auto base_pairs = finder.find_pairs_with_recording(structure, &writer);
-        // Base pairs are already recorded via find_pairs_with_recording
-        // But we also record the final base_pair records
-        for (const auto& pair : base_pairs) {
-            writer.record_base_pair(pair);
-        }
-        std::cout << "  Base pairs found: " << base_pairs.size() << "\n";
-
-        // Write split JSON files to record-type-specific directories
-        writer.write_split_files(json_output_dir, true);
-
-        std::cout << "Successfully generated JSON files in: " << json_output_dir << "\n";
-        std::cout << "  Atoms: " << structure.num_atoms() << "\n";
-        std::cout << "  Total residues: " << residue_idx - 1 << "\n";
-        std::cout << "  Nucleotides found: " << nucleotides_found << "\n";
-        std::cout << "  Frames calculated: " << frames_recorded << "\n";
-        // Report residue type breakdown
-        size_t total_non_nucleotide = water_count + ion_count + noncanonical_rna_count + ligand_count + unknown_count;
-        if (total_non_nucleotide > 0) {
-            std::cout << "  Non-nucleotide residues: " << total_non_nucleotide;
-            if (water_count > 0) std::cout << " (water: " << water_count;
-            if (ion_count > 0) std::cout << (water_count > 0 ? ", ions: " : " (ions: ") << ion_count;
-            if (noncanonical_rna_count > 0) std::cout << (water_count > 0 || ion_count > 0 ? ", noncanonical RNA: " : " (noncanonical RNA: ") << noncanonical_rna_count;
-            if (ligand_count > 0) std::cout << (water_count > 0 || ion_count > 0 || noncanonical_rna_count > 0 ? ", ligands: " : " (ligands: ") << ligand_count;
-            if (unknown_count > 0) std::cout << (water_count > 0 || ion_count > 0 || noncanonical_rna_count > 0 || ligand_count > 0 ? ", other: " : " (other: ") << unknown_count;
-            std::cout << ")\n";
-        }
-        if (template_load_failures > 0) {
-            std::cout << "  Template load failures: " << template_load_failures << "\n";
-        }
-        if (atom_match_failures > 0) {
-            std::cout << "  Atom match failures: " << atom_match_failures << "\n";
-        }
-
-        return 0;
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
-        return 1;
+    // Find and record base pairs (with validation recording)
+    // Note: Legacy residue indices are already set on atoms during PDB parsing
+    BasePairFinder finder;
+    auto base_pairs = finder.find_pairs_with_recording(structure, &writer);
+    // Base pairs are already recorded via find_pairs_with_recording
+    // But we also record the final base_pair records
+    for (const auto& pair : base_pairs) {
+        writer.record_base_pair(pair);
     }
+    std::cout << "  Base pairs found: " << base_pairs.size() << "\n";
+
+    // Write split JSON files to record-type-specific directories
+    writer.write_split_files(json_output_dir, true);
+
+    std::cout << "Successfully generated JSON files in: " << json_output_dir << "\n";
+    std::cout << "  Atoms: " << structure.num_atoms() << "\n";
+    std::cout << "  Total residues: " << structure.num_residues() << "\n";
+    std::cout << "  Nucleotides found: " << nucleotides_found << "\n";
+    std::cout << "  Frames calculated: " << frames_recorded << "\n";
+    // Report residue type breakdown
+    size_t total_non_nucleotide =
+        water_count + ion_count + noncanonical_rna_count + ligand_count + unknown_count;
+    if (total_non_nucleotide > 0) {
+        std::cout << "  Non-nucleotide residues: " << total_non_nucleotide;
+        if (water_count > 0)
+            std::cout << " (water: " << water_count;
+        if (ion_count > 0)
+            std::cout << (water_count > 0 ? ", ions: " : " (ions: ") << ion_count;
+        if (noncanonical_rna_count > 0)
+            std::cout << (water_count > 0 || ion_count > 0 ? ", noncanonical RNA: "
+                                                           : " (noncanonical RNA: ")
+                      << noncanonical_rna_count;
+        if (ligand_count > 0)
+            std::cout << (water_count > 0 || ion_count > 0 || noncanonical_rna_count > 0
+                              ? ", ligands: "
+                              : " (ligands: ")
+                      << ligand_count;
+        if (unknown_count > 0)
+            std::cout << (water_count > 0 || ion_count > 0 || noncanonical_rna_count > 0 ||
+                                  ligand_count > 0
+                              ? ", other: "
+                              : " (other: ")
+                      << unknown_count;
+        std::cout << ")\n";
+    }
+    if (template_load_failures > 0) {
+        std::cout << "  Template load failures: " << template_load_failures << "\n";
+    }
+    if (atom_match_failures > 0) {
+        std::cout << "  Atom match failures: " << atom_match_failures << "\n";
+    }
+
+    return 0;
+}
+catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << "\n";
+    return 1;
+}
 }
