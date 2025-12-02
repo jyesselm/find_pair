@@ -35,23 +35,23 @@
 
 ### ✅ ALWAYS KEEP (Never Delete)
 ```
-data/json_legacy/          # Reference data - SACRED
 data/pdb/                  # Input PDB files
 resources/                 # Templates and configs
 ```
 
-### 🗑️ DELETE to Start Fresh
+### 🗑️ DELETE (Can Regenerate)
 ```
-data/json/                 # Modern JSON - regenerate from scratch
-data/validation_results/   # Old validation results - will regenerate
+data/json/                 # Modern JSON - delete, regenerate stage-by-stage
+data/json_legacy/          # Legacy JSON - delete, regenerate ONLY what we need per stage
+data/validation_results/   # Old validation results - delete, regenerate
 ```
 
-### ⚠️ ARCHIVE Before Deleting
-```
-# Move to archive rather than deleting
-mv data/json data/archive/json_before_clean_slate_$(date +%Y%m%d)
-mv data/validation_results data/archive/validation_results_before_clean_slate_$(date +%Y%m%d)
-```
+### Strategy: Generate Only What We Need
+- **Legacy JSON**: Generate only for current stage, only for current batch
+- **Modern JSON**: Generate only for current stage, only for current batch
+- **After batch passes**: Delete both legacy AND modern JSON for that batch
+- **After batch fails**: Keep modern/legacy JSON for failed PDBs (debugging)
+- **Result**: Minimal disk usage - only keep failures
 
 ---
 
@@ -225,23 +225,31 @@ writer.record_helical_params(helical);
 
 ## Implementation Plan
 
-### Step 1: Archive Existing Data ✅ DO FIRST
+### Step 1: Clean Slate - Delete Everything ✅ DO FIRST
+
 ```bash
-# Create archive directory
-mkdir -p data/archive/clean_slate_$(date +%Y%m%d_%H%M%S)
+# Delete modern JSON (can regenerate)
+rm -rf data/json/
 
-# Archive modern JSON (will regenerate)
-mv data/json data/archive/clean_slate_$(date +%Y%m%d_%H%M%S)/json_modern
+# Delete legacy JSON (can regenerate - saves HUGE space)
+rm -rf data/json_legacy/
 
-# Archive validation results (will regenerate)
-mv data/validation_results data/archive/clean_slate_$(date +%Y%m%d_%H%M%S)/validation_results
+# Delete old validation results
+rm -rf data/validation_results/
 
 # Create fresh directories
 mkdir -p data/json
+mkdir -p data/json_legacy
 mkdir -p data/validation_results
+
+echo "✅ Clean slate - ready to generate on-demand!"
 ```
 
-**DO NOT DELETE**: `data/json_legacy/` (this is our reference!)
+**Philosophy**: 
+- Don't pre-generate or keep everything
+- Generate ONLY what we need, WHEN we need it, for current batch/stage
+- Delete after successful validation (even legacy!)
+- Keep only: PDB files (inputs) + result JSONs (outcomes) + failure cases
 
 ---
 
@@ -273,25 +281,36 @@ Currently `generate_modern_json` outputs ALL JSON types. We need to add flags to
 ```python
 # Pseudo-code:
 for batch in batches_of_100(valid_pdbs):
-    # Generate modern JSON for this batch (current stage only)
+    # 1. Generate LEGACY JSON for this batch (current stage only)
+    generate_legacy_json_for_batch(batch, current_stage)
+    
+    # 2. Generate MODERN JSON for this batch (current stage only)
     generate_modern_json_for_batch(batch, current_stage)
     
-    # Validate
+    # 3. Validate
     results = validate_batch(batch, current_stage)
     
-    # Cleanup
+    # 4. Cleanup (AGGRESSIVE - delete everything that passed)
     for pdb in batch:
         if results[pdb].match:
-            # Perfect match - delete modern JSON to save space
+            # Perfect match - DELETE BOTH legacy and modern
+            delete_legacy_json(pdb, current_stage)
             delete_modern_json(pdb, current_stage)
+            # Record result only
         else:
-            # Mismatch - keep for debugging
+            # Mismatch - KEEP BOTH for debugging
+            keep_legacy_json(pdb, current_stage)
             keep_modern_json(pdb, current_stage)
             record_issue(pdb, results[pdb].issue)
     
-    # Update stage result file
+    # 5. Update stage result file (this is what we keep!)
     update_stage_results(current_stage, results)
 ```
+
+**Space Savings**:
+- Only keep JSON for failures
+- If 95% pass: Keep only ~200 PDBs × stage's JSON types
+- Massive space savings!
 
 ---
 
@@ -592,26 +611,47 @@ python3 scripts/batch_validation_workflow.py \
 
 ---
 
-## Space-Saving Strategy
+## Aggressive Space-Saving Strategy
 
-### Without Cleanup
-If we keep all modern JSON for all stages:
-- 4,123 PDBs × 10 JSON types × ~20KB = ~825MB
+### Without Cleanup (Old Approach)
+If we keep all legacy + modern JSON for all stages:
+- 4,123 PDBs × 10 types × 2 (legacy + modern) × ~20KB = **~1.6 GB**
 
-### With Cleanup
-Only keep failures:
-- If 5% fail: 206 PDBs × 10 types × ~20KB = ~41MB
+### With Aggressive Cleanup (New Approach)
+Only keep failures (delete BOTH legacy AND modern after successful validation):
+- If 5% fail: 206 PDBs × 10 types × 2 × ~20KB = **~82 MB**
 - **Saves ~95% of space!**
+- Result JSON files are tiny (~100KB each)
 
 ### What Gets Deleted
 ```bash
 # After batch validates successfully:
-# Delete modern JSON for successful PDBs
-rm data/json/base_frame_calc/100D.json  # If 100D passed
-rm data/json/frame_calc/100D.json       # If 100D passed
+# Delete BOTH legacy and modern JSON for successful PDBs
+rm data/json_legacy/base_frame_calc/100D.json  # If 100D passed
+rm data/json/base_frame_calc/100D.json         # If 100D passed
 
-# Keep legacy JSON always
-# Keep modern JSON only for failures
+# What we KEEP:
+# - PDB files (data/pdb/)
+# - Result JSON files (data/validation_results/*.json)
+# - JSON files for failures only (for debugging)
+```
+
+### On-Demand Generation
+```bash
+# For each batch:
+# 1. Generate legacy JSON for batch (current stage only)
+for pdb in batch; do
+  cd org && ./build/bin/find_pair_analyze ../data/pdb/${pdb}.pdb
+done
+
+# 2. Generate modern JSON for batch (current stage only)
+for pdb in batch; do
+  ./build/generate_modern_json --output-types=<stage> data/pdb/${pdb}.pdb data/json/
+done
+
+# 3. Validate
+# 4. Delete both if passed
+# 5. Keep both if failed
 ```
 
 ---
