@@ -1,0 +1,37 @@
+# Archive directories - exclude from AI context to save tokens
+docs/archive/
+scripts/archive/
+tools/archive/
+
+# Build artifacts - already in .gitignore but exclude from AI context
+build/
+cmake-build-*/
+CMakeFiles/
+Testing/
+
+# Generated data - large and regenerable
+data/pdb/
+data/json/
+data/json_legacy/
+data/.cache/
+
+# Python artifacts
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.egg-info/
+
+# IDE and temp files
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Large test results
+test_results/
+comparison_results_summary.json
+
