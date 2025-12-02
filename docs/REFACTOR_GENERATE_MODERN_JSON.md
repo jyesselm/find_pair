@@ -8,7 +8,15 @@
 
 ## Current Problems
 
-### Problem 1: Too Much Custom Logic (500+ lines)
+### Problem 1: Reads Legacy Files (Lines 86-105, 107-113, 584-618)
+`generate_modern_json.cpp` currently reads legacy JSON for:
+- PDB line caching (lines 107-113)
+- Fixing indices (lines 86-105)
+- Index validation (lines 584-618)
+
+**Should be**: NEVER read legacy files. Pure generation only. Comparison is separate.
+
+### Problem 2: Too Much Custom Logic (500+ lines)
 `generate_modern_json.cpp` currently has:
 - Custom residue iteration loops (lines 211-367)
 - Custom pair finding logic (lines 186-209, 380-438)
@@ -17,14 +25,14 @@
 
 **Should be**: Call protocols, let them do the work
 
-### Problem 2: Flags That Shouldn't Exist
+### Problem 3: Flags That Shouldn't Exist
 - `--legacy`: Should be default behavior (always match legacy)
-- `--fix-indices`: Should happen automatically
+- `--fix-indices`: **WRONG** - shouldn't compare during generation!
 - `--only-paired`: Not needed if we match legacy by default
 
-**Should be**: Tool has no flags, just runs production code
+**Should be**: Only `--stage` flag (for selective output)
 
-### Problem 3: JsonWriter Does Too Much
+### Problem 4: JsonWriter Does Too Much
 JsonWriter is passed around and called from many places:
 - Tool calls it directly (line 121, 124, etc.)
 - Protocol calls it
@@ -525,22 +533,55 @@ void FindPairProtocol::execute(Structure& structure) {
 }
 ```
 
-### Task 2: Remove --legacy Flag
+### Task 2: Remove ALL Legacy File Reading
+
+**Current problems**:
+1. Reads legacy JSON for PDB line caching (lines 107-113)
+2. Reads legacy JSON for index fixing (lines 86-105)
+3. Reads legacy JSON for index validation (lines 584-618)
+
+**Why this is wrong**:
+- Generation tool should ONLY generate
+- Comparison happens separately (in validation scripts)
+- Creates false dependency on legacy files
+- Can't generate modern JSON without legacy JSON (circular!)
+
+**Action**:
+```cpp
+// REMOVE all of this:
+if (fix_indices) {
+    // ... reads legacy JSON ...
+}
+
+std::filesystem::path legacy_json_file;
+// ... finds legacy JSON for PDB lines ...
+
+if (std::filesystem::exists(legacy_json_path)) {
+    // ... validates against legacy ...
+}
+
+// Tool should NEVER reference data/json_legacy/
+```
+
+**Result**: Pure generation, no legacy dependencies
+
+### Task 3: Remove --legacy Flag
 
 **Current**: Excludes C4 from matching  
 **Why remove**: Should ALWAYS match legacy (default behavior)  
 **Action**: Make legacy mode always on, remove flag
 
-### Task 3: Remove --fix-indices Flag
+### Task 4: Remove --fix-indices Flag
 
 **Current**: Loads legacy indices from JSON  
-**Why remove**: Indices should be correct from the start  
+**Why remove**: This is COMPARISON, not generation!  
 **Better approach**:
-- PdbParser assigns indices in PDB file order
-- Matches legacy by default
-- No need to "fix" later
+- PdbParser assigns indices correctly from start
+- Modern generates its JSON independently
+- Comparison script checks if indices match
+- No dependency during generation
 
-### Task 4: Remove --only-paired Flag
+### Task 5: Remove --only-paired Flag
 
 **Current**: Only record frames for paired residues  
 **Why remove**: Should match legacy by default  
@@ -703,13 +744,16 @@ TEST(AtomTest, ToJson) {
 ### Before (Current - 626 lines)
 ```cpp
 // generate_modern_json.cpp - HUGE FILE
-// - 500+ lines of custom logic
-// - Flags: --legacy, --fix-indices, --only-paired (unnecessary)
-// - Custom residue iteration loops
-// - Custom pair finding logic
-// - Index validation code
-// - Duplicate --only-paired logic
-// - No stage selection (always generates all 10 types)
+// Problems:
+// - Reads legacy JSON files (lines 86-105, 107-113, 584-618) ❌
+// - Compares with legacy during generation ❌
+// - 500+ lines of custom logic ❌
+// - Flags: --legacy, --fix-indices, --only-paired (unnecessary) ❌
+// - Custom residue iteration loops ❌
+// - Custom pair finding logic ❌
+// - Index validation code (should be in comparison) ❌
+// - Duplicate --only-paired logic ❌
+// - No stage selection (always generates all 10 types) ❌
 ```
 
 ### After (Target - ~120 lines with stage-aware output)
