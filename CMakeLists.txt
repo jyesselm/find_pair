@@ -85,97 +85,97 @@ if(BUILD_EXAMPLES)
     endif()
 endif()
 
-# Tools
+# Tools - Only build tools that exist
 add_executable(generate_modern_json tools/generate_modern_json.cpp)
 target_link_libraries(generate_modern_json PRIVATE x3dna)
-
-add_executable(test_overlap_calculation tools/test_overlap_calculation.cpp)
-target_link_libraries(test_overlap_calculation PRIVATE x3dna)
-
-add_executable(compare_pdb_parsing tools/compare_pdb_parsing.cpp)
-target_link_libraries(compare_pdb_parsing PRIVATE x3dna)
-
-add_executable(compare_residue_identification tools/compare_residue_identification.cpp)
-target_link_libraries(compare_residue_identification PRIVATE x3dna)
-
-add_executable(debug_frame_calculation tools/debug_frame_calculation.cpp)
-target_link_libraries(debug_frame_calculation PRIVATE x3dna)
-
-add_executable(compare_quality_scores tools/compare_quality_scores.cpp)
-target_link_libraries(compare_quality_scores PRIVATE x3dna)
-
-add_executable(compare_initial_hbonds tools/compare_initial_hbonds.cpp)
-target_link_libraries(compare_initial_hbonds PRIVATE x3dna)
-
-add_executable(compare_hbond_stages tools/compare_hbond_stages.cpp)
-target_link_libraries(compare_hbond_stages PRIVATE x3dna)
-
-add_executable(compare_atom_selection tools/compare_atom_selection.cpp)
-target_link_libraries(compare_atom_selection PRIVATE x3dna)
-
-add_executable(find_residue_mapping tools/find_residue_mapping.cpp)
-target_link_libraries(find_residue_mapping PRIVATE x3dna)
-
-add_executable(test_legacy_order tools/test_legacy_order.cpp)
-target_link_libraries(test_legacy_order PRIVATE x3dna)
-
-add_executable(generate_residue_ordering_json tools/generate_residue_ordering_json.cpp)
-target_link_libraries(generate_residue_ordering_json PRIVATE x3dna)
-
-add_executable(compare_residue_ordering tools/compare_residue_ordering.cpp)
-target_link_libraries(compare_residue_ordering PRIVATE x3dna)
-
-add_executable(compare_hbond_detection tools/compare_hbond_detection.cpp)
-target_link_libraries(compare_hbond_detection PRIVATE x3dna)
-
-
-add_executable(list_all_hbonds tools/list_all_hbonds.cpp)
-target_link_libraries(list_all_hbonds PRIVATE x3dna)
-
-add_executable(detect_hbonds_standalone tools/detect_hbonds_standalone.cpp)
-target_link_libraries(detect_hbonds_standalone PRIVATE x3dna)
-
-add_executable(debug_donor_acceptor tools/debug_donor_acceptor.cpp)
-target_link_libraries(debug_donor_acceptor PRIVATE x3dna)
-
-add_executable(debug_hbond_conflict_resolution tools/debug_hbond_conflict_resolution.cpp)
-target_link_libraries(debug_hbond_conflict_resolution PRIVATE x3dna)
-
-add_executable(debug_dorg_discrepancy tools/debug_dorg_discrepancy.cpp)
-target_link_libraries(debug_dorg_discrepancy PRIVATE x3dna)
-
-add_executable(debug_bp_type_id_step_params tools/debug_bp_type_id_step_params.cpp)
-target_link_libraries(debug_bp_type_id_step_params PRIVATE x3dna)
-
-add_executable(debug_frame_json tools/debug_frame_json.cpp)
-target_link_libraries(debug_frame_json PRIVATE x3dna)
 
 add_executable(check_residue_indices tools/check_residue_indices.cpp)
 target_link_libraries(check_residue_indices PRIVATE x3dna)
 
-add_executable(investigate_missing_pairs tools/investigate_missing_pairs.cpp)
-target_link_libraries(investigate_missing_pairs PRIVATE x3dna nlohmann_json)
-
-add_executable(test_residue_matching_by_pdb_props tools/test_residue_matching_by_pdb_props.cpp)
-target_link_libraries(test_residue_matching_by_pdb_props PRIVATE x3dna)
-
-add_executable(fix_residue_indices_from_json tools/fix_residue_indices_from_json.cpp)
-target_link_libraries(fix_residue_indices_from_json PRIVATE x3dna)
-
-add_executable(debug_direction_vectors tools/debug_direction_vectors.cpp)
-target_link_libraries(debug_direction_vectors PRIVATE x3dna)
-
-add_executable(debug_protocol_6v9q tools/debug_protocol_6v9q.cpp)
-target_link_libraries(debug_protocol_6v9q PRIVATE x3dna)
-
-add_executable(compare_validation_discrepancy tools/compare_validation_discrepancy.cpp)
-target_link_libraries(compare_validation_discrepancy PRIVATE x3dna)
-
-add_executable(compare_quality_score_components tools/compare_quality_score_components.cpp)
-target_link_libraries(compare_quality_score_components PRIVATE x3dna)
-
-add_executable(trace_pair_selection tools/trace_pair_selection.cpp)
-target_link_libraries(trace_pair_selection PRIVATE x3dna)
+# Commented out - tools archived or don't exist
+# add_executable(test_overlap_calculation tools/test_overlap_calculation.cpp)
+# target_link_libraries(test_overlap_calculation PRIVATE x3dna)
+# 
+# add_executable(compare_pdb_parsing tools/compare_pdb_parsing.cpp)
+# target_link_libraries(compare_pdb_parsing PRIVATE x3dna)
+# 
+# add_executable(compare_residue_identification tools/compare_residue_identification.cpp)
+# target_link_libraries(compare_residue_identification PRIVATE x3dna)
+# 
+# add_executable(debug_frame_calculation tools/debug_frame_calculation.cpp)
+# target_link_libraries(debug_frame_calculation PRIVATE x3dna)
+# 
+# add_executable(compare_quality_scores tools/compare_quality_scores.cpp)
+# target_link_libraries(compare_quality_scores PRIVATE x3dna)
+# 
+# add_executable(compare_initial_hbonds tools/compare_initial_hbonds.cpp)
+# target_link_libraries(compare_initial_hbonds PRIVATE x3dna)
+# 
+# add_executable(compare_hbond_stages tools/compare_hbond_stages.cpp)
+# target_link_libraries(compare_hbond_stages PRIVATE x3dna)
+# 
+# add_executable(compare_atom_selection tools/compare_atom_selection.cpp)
+# target_link_libraries(compare_atom_selection PRIVATE x3dna)
+# 
+# add_executable(find_residue_mapping tools/find_residue_mapping.cpp)
+# target_link_libraries(find_residue_mapping PRIVATE x3dna)
+# 
+# add_executable(test_legacy_order tools/test_legacy_order.cpp)
+# target_link_libraries(test_legacy_order PRIVATE x3dna)
+# 
+# add_executable(generate_residue_ordering_json tools/generate_residue_ordering_json.cpp)
+# target_link_libraries(generate_residue_ordering_json PRIVATE x3dna)
+# 
+# add_executable(compare_residue_ordering tools/compare_residue_ordering.cpp)
+# target_link_libraries(compare_residue_ordering PRIVATE x3dna)
+# 
+# add_executable(compare_hbond_detection tools/compare_hbond_detection.cpp)
+# target_link_libraries(compare_hbond_detection PRIVATE x3dna)
+# 
+# add_executable(list_all_hbonds tools/list_all_hbonds.cpp)
+# target_link_libraries(list_all_hbonds PRIVATE x3dna)
+# 
+# add_executable(detect_hbonds_standalone tools/detect_hbonds_standalone.cpp)
+# target_link_libraries(detect_hbonds_standalone PRIVATE x3dna)
+# 
+# add_executable(debug_donor_acceptor tools/debug_donor_acceptor.cpp)
+# target_link_libraries(debug_donor_acceptor PRIVATE x3dna)
+# 
+# add_executable(debug_hbond_conflict_resolution tools/debug_hbond_conflict_resolution.cpp)
+# target_link_libraries(debug_hbond_conflict_resolution PRIVATE x3dna)
+# 
+# add_executable(debug_dorg_discrepancy tools/debug_dorg_discrepancy.cpp)
+# target_link_libraries(debug_dorg_discrepancy PRIVATE x3dna)
+# 
+# add_executable(debug_bp_type_id_step_params tools/debug_bp_type_id_step_params.cpp)
+# target_link_libraries(debug_bp_type_id_step_params PRIVATE x3dna)
+# 
+# add_executable(debug_frame_json tools/debug_frame_json.cpp)
+# target_link_libraries(debug_frame_json PRIVATE x3dna)
+# 
+# add_executable(investigate_missing_pairs tools/investigate_missing_pairs.cpp)
+# target_link_libraries(investigate_missing_pairs PRIVATE x3dna nlohmann_json)
+# 
+# add_executable(test_residue_matching_by_pdb_props tools/test_residue_matching_by_pdb_props.cpp)
+# target_link_libraries(test_residue_matching_by_pdb_props PRIVATE x3dna)
+# 
+# add_executable(fix_residue_indices_from_json tools/fix_residue_indices_from_json.cpp)
+# target_link_libraries(fix_residue_indices_from_json PRIVATE x3dna)
+# 
+# add_executable(debug_direction_vectors tools/debug_direction_vectors.cpp)
+# target_link_libraries(debug_direction_vectors PRIVATE x3dna)
+# 
+# add_executable(debug_protocol_6v9q tools/debug_protocol_6v9q.cpp)
+# target_link_libraries(debug_protocol_6v9q PRIVATE x3dna)
+# 
+# add_executable(compare_validation_discrepancy tools/compare_validation_discrepancy.cpp)
+# target_link_libraries(compare_validation_discrepancy PRIVATE x3dna)
+# 
+# add_executable(compare_quality_score_components tools/compare_quality_score_components.cpp)
+# target_link_libraries(compare_quality_score_components PRIVATE x3dna)
+# 
+# add_executable(trace_pair_selection tools/trace_pair_selection.cpp)
+# target_link_libraries(trace_pair_selection PRIVATE x3dna)
 
 # Applications
 add_executable(find_pair_app apps/find_pair_app.cpp)
@@ -184,20 +184,21 @@ target_link_libraries(find_pair_app PRIVATE x3dna)
 add_executable(analyze_app apps/analyze_app.cpp)
 target_link_libraries(analyze_app PRIVATE x3dna)
 
-add_executable(compare_bp_type_id_calculation tools/compare_bp_type_id_calculation.cpp)
-target_link_libraries(compare_bp_type_id_calculation PRIVATE x3dna)
+# add_executable(compare_bp_type_id_calculation tools/compare_bp_type_id_calculation.cpp)
+# target_link_libraries(compare_bp_type_id_calculation PRIVATE x3dna)
 
-add_executable(compare_frames_and_step_params tools/compare_frames_and_step_params.cpp)
-target_link_libraries(compare_frames_and_step_params PRIVATE x3dna)
+# Commented out - tools don't exist yet
+# add_executable(compare_frames_and_step_params tools/compare_frames_and_step_params.cpp)
+# target_link_libraries(compare_frames_and_step_params PRIVATE x3dna)
 
-add_executable(verify_json_indices_order tools/verify_json_indices_order.cpp)
-target_link_libraries(verify_json_indices_order PRIVATE x3dna nlohmann_json)
+# add_executable(verify_json_indices_order tools/verify_json_indices_order.cpp)
+# target_link_libraries(verify_json_indices_order PRIVATE x3dna nlohmann_json)
 
-add_executable(test_bpstep_par_equivalence tools/test_bpstep_par_equivalence.cpp)
-target_link_libraries(test_bpstep_par_equivalence PRIVATE x3dna)
+# add_executable(test_bpstep_par_equivalence tools/test_bpstep_par_equivalence.cpp)
+# target_link_libraries(test_bpstep_par_equivalence PRIVATE x3dna)
 
-add_executable(analyze_validation_difference tools/analyze_validation_difference.cpp)
-target_link_libraries(analyze_validation_difference PRIVATE x3dna)
+# add_executable(analyze_validation_difference tools/analyze_validation_difference.cpp)
+# target_link_libraries(analyze_validation_difference PRIVATE x3dna)
 
 # Documentation
 if(BUILD_DOCS)

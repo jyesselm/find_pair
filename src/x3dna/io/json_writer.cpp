@@ -324,18 +324,17 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
             for (const auto& atom : residue.atoms()) {
                 nlohmann::json atom_json;
                 
-                // Use the atom's stored legacy_atom_idx (set when structure was created)
-                // This ensures modern atom_idx matches legacy atom_idx for direct comparison
+                // Use legacy_atom_idx for atom_idx to match legacy exactly (1-based)
                 int legacy_atom_idx = atom.legacy_atom_idx();
                 
                 if (legacy_atom_idx > 0) {
                     atom_json["atom_idx"] = legacy_atom_idx;
-                    atom_json["legacy_atom_idx"] = legacy_atom_idx;
                 } else {
-                    // For atoms not in legacy, use sequential indexing
+                    // Fallback for atoms without legacy mapping
                     atom_json["atom_idx"] = sequential_idx++;
-                    // No legacy_atom_idx for atoms not in legacy
                 }
+                
+                // Core fields (match legacy exactly)
                 atom_json["atom_name"] = atom.name();
                 atom_json["residue_name"] = atom.residue_name();
                 atom_json["chain_id"] = std::string(1, atom.chain_id());
@@ -348,30 +347,15 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
                 // Record type (A for ATOM, H for HETATM)
                 atom_json["record_type"] = std::string(1, atom.record_type());
 
-                // Additional metadata
-                if (atom.alt_loc() != ' ' && atom.alt_loc() != '\0') {
-                    atom_json["alt_loc"] = std::string(1, atom.alt_loc());
-                }
-                if (atom.insertion() != ' ' && atom.insertion() != '\0') {
-                    atom_json["insertion"] = std::string(1, atom.insertion());
-                }
+                // Optional metadata (only if present)
                 if (atom.line_number() > 0) {
                     atom_json["line_number"] = atom.line_number();
                     
-                    // Add PDB line for debugging (like org code)
+                    // Add PDB line for debugging (like legacy code)
                     std::string pdb_line = get_pdb_line(atom.line_number());
                     if (!pdb_line.empty()) {
                         atom_json["pdb_line"] = pdb_line;
                     }
-                }
-                if (atom.atom_serial() > 0) {
-                    atom_json["atom_serial"] = atom.atom_serial();
-                }
-                
-                // Use the atom's stored legacy_residue_idx (set when structure was created)
-                int legacy_residue_idx = atom.legacy_residue_idx();
-                if (legacy_residue_idx > 0) {
-                    atom_json["legacy_residue_idx"] = legacy_residue_idx;
                 }
 
                 atoms_array.push_back(atom_json);
@@ -381,12 +365,8 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
 
     record["atoms"] = atoms_array;
     
-    // Store in split_records_ for split file output
-    nlohmann::json split_record = record;
-    split_record.erase("type");
-    split_records_["pdb_atoms"] = nlohmann::json::array();
-    split_records_["pdb_atoms"].push_back(split_record);
-    
+    // add_calculation_record() will handle adding to split_records_
+    // No need to manually add here (was causing duplicates)
     add_calculation_record(record);
 }
 
