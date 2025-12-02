@@ -15,25 +15,65 @@ This document describes each type of JSON data record produced by the X3DNA find
 
 **Purpose**: Records all atoms parsed from the PDB file with their coordinates and metadata.
 
-**Fields**:
-- `type`: `"pdb_atoms"`
-- `atoms`: Array of atom records, each containing:
-  - `atom_idx`: Unique atom index (1-based, legacy format)
-  - `atom_name`: Atom name (e.g., " C1'", " N1 ")
-  - `xyz`: [x, y, z] coordinates
-  - `residue_name`: Residue name (e.g., "  G")
-  - `chain_id`: Chain identifier
-  - `residue_seq`: Residue sequence number
-  - `insertion`: Insertion code
-  - `legacy_atom_idx`: Legacy atom index for comparison
+**Legacy Fields**:
+```json
+{
+  "num_atoms": 56841,
+  "atoms": [
+    {
+      "atom_idx": 1,              // Atom index (1-based)
+      "line_number": 2541,        // Line in PDB file
+      "pdb_line": "ATOM ...",     // Original PDB line
+      "atom_name": " N  ",        // Atom name
+      "residue_name": "SER",      // Residue name
+      "chain_id": "A",            // Chain ID
+      "residue_seq": 4,           // Residue sequence number
+      "xyz": [32.018, 18.313, 144.851],  // Coordinates
+      "record_type": "A"          // Record type (A=ATOM, H=HETATM)
+    }
+  ]
+}
+```
+
+**Modern Fields**:
+```json
+{
+  "num_atoms": 56841,
+  "atoms": [
+    {
+      "atom_idx": 28,             // Internal modern index (0-based)
+      "atom_serial": 29,          // PDB serial number
+      "legacy_atom_idx": 29,      // For comparison with legacy.atom_idx
+      "legacy_residue_idx": 5,    // Residue's legacy index
+      "atom_name": " N  ",
+      "residue_name": "ALA",
+      "chain_id": "A",
+      "residue_seq": 8,
+      "xyz": [43.094, 16.241, 143.348],
+      "line_number": 2569,
+      "pdb_line": "ATOM ...",
+      "record_type": "A"
+    }
+  ]
+}
+```
+
+**Comparison Logic**:
+- Match atoms by position in array (same order)
+- Compare: `legacy.atom_idx` = `modern.legacy_atom_idx`
+- Compare: `legacy.atom_name` = `modern.atom_name`
+- Compare: `legacy.xyz` ≈ `modern.xyz` (within tolerance)
+- Compare: `legacy.residue_name` = `modern.residue_name`
+- Compare: `legacy.chain_id` = `modern.chain_id`
+- Compare: `legacy.residue_seq` = `modern.residue_seq`
 
 **Comparison Checks**:
-- ✅ **Count**: Total number of atoms must match
-- ✅ **Atom-by-atom**: Each atom's name, coordinates, and metadata must match
-- ✅ **Coordinates**: xyz values compared with tolerance (default 1e-6)
-- ✅ **Indices**: Legacy atom indices must match for corresponding atoms
+- ✅ **Count**: `num_atoms` must match
+- ✅ **Atom-by-atom**: Each atom's properties must match
+- ✅ **Coordinates**: xyz values compared with tolerance (1e-6)
+- ✅ **Index**: `legacy.atom_idx` = `modern.legacy_atom_idx`
 
-**Status**: ✅ **PERFECT MATCH** - 100% match (1,696,891/1,696,891 atoms in test_set_100)
+**Status**: ⚠️ **NOT VALIDATED** - Only 1 PDB has both (7EH2), which has duplicate record bug
 
 ---
 
