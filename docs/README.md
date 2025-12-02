@@ -20,6 +20,8 @@
 ### Core Guides
 - **[QUICK_START.md](QUICK_START.md)** - Quick start for new developers
 - **[TESTING_GUIDE.md](TESTING_GUIDE.md)** ⭐ - Complete testing and validation guide
+- **[VALIDATION_PROGRESS.md](VALIDATION_PROGRESS.md)** ⭐ **NEW** - Current validation status and progress
+- **[NEXT_STEPS.md](NEXT_STEPS.md)** ⭐ **NEW** - Immediate next steps toward 100% accuracy
 - **[BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)** - Build and compilation instructions
 - **[CODE_FLOW.md](CODE_FLOW.md)** - Detailed code flow and architecture
 
@@ -95,6 +97,8 @@ archive/
 
 **I want to...**
 - **Get started quickly**: [QUICK_START.md](QUICK_START.md)
+- **See current status**: [VALIDATION_PROGRESS.md](VALIDATION_PROGRESS.md) ⭐ **NEW**
+- **Know what to do next**: [NEXT_STEPS.md](NEXT_STEPS.md) ⭐ **NEW**
 - **Run tests/compare results**: [TESTING_GUIDE.md](TESTING_GUIDE.md) ⭐
 - **Build the project**: [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)
 - **Understand the code**: [CODE_FLOW.md](CODE_FLOW.md)
@@ -116,6 +120,8 @@ archive/
 - [modernization/](modernization/) - Design documentation
 
 **Testing & Validation:**
+- [VALIDATION_PROGRESS.md](VALIDATION_PROGRESS.md) ⭐ **NEW** - Current progress tracker
+- [NEXT_STEPS.md](NEXT_STEPS.md) ⭐ **NEW** - What to do next
 - [TESTING_GUIDE.md](TESTING_GUIDE.md) - Complete testing guide
 - [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md) - JSON comparison
 
@@ -129,6 +135,8 @@ archive/
 
 | Document | Status | Priority |
 |----------|--------|----------|
+| VALIDATION_PROGRESS.md | ✅ Active | ⭐⭐⭐ **NEW** |
+| NEXT_STEPS.md | ✅ Active | ⭐⭐⭐ **NEW** |
 | TESTING_GUIDE.md | ✅ Active | ⭐⭐⭐ |
 | QUICK_START.md | ✅ Active | ⭐⭐⭐ |
 | CODE_FLOW.md | 📚 Reference | ⭐⭐ |

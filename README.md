@@ -6,7 +6,7 @@ A modern C++ rewrite of the X3DNA v2.4 codebase with strong object-oriented desi
 
 ✅ **100% Match Achieved on Test Set!** - All 10 PDBs in test set show perfect matches across all comparison types.
 
-**Current Status**: Modern code matches legacy code output exactly. See [docs/100_PERCENT_MATCH_PLAN.md](docs/100_PERCENT_MATCH_PLAN.md) for detailed status.
+**Current Status**: Residue index matching complete. Running full validation. See [docs/VALIDATION_PROGRESS.md](docs/VALIDATION_PROGRESS.md) for detailed status and next steps.
 
 ---
 
