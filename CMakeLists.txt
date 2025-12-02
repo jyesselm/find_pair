@@ -38,6 +38,7 @@ add_library(x3dna
     src/x3dna/io/input_file_parser.cpp
     src/x3dna/io/input_file_writer.cpp
     src/x3dna/io/residue_index_fixer.cpp
+    src/x3dna/residue_tracker.cpp
     src/x3dna/core/structure_legacy_order.cpp
     src/x3dna/core/structure_legacy_order_impl.cpp
     src/x3dna/algorithms/standard_base_templates.cpp
@@ -188,6 +189,9 @@ target_link_libraries(compare_bp_type_id_calculation PRIVATE x3dna)
 
 add_executable(compare_frames_and_step_params tools/compare_frames_and_step_params.cpp)
 target_link_libraries(compare_frames_and_step_params PRIVATE x3dna)
+
+add_executable(verify_json_indices_order tools/verify_json_indices_order.cpp)
+target_link_libraries(verify_json_indices_order PRIVATE x3dna nlohmann_json)
 
 add_executable(test_bpstep_par_equivalence tools/test_bpstep_par_equivalence.cpp)
 target_link_libraries(test_bpstep_par_equivalence PRIVATE x3dna)
