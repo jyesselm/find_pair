@@ -1,0 +1,145 @@
+[
+  {
+    "chain_id": "P",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 10,
+    "modern_index": 0,
+    "read_index": 0,
+    "residue_name": "  A",
+    "residue_seq": 4
+  },
+  {
+    "chain_id": "P",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 11,
+    "modern_index": 1,
+    "read_index": 1,
+    "residue_name": "  A",
+    "residue_seq": 5
+  },
+  {
+    "chain_id": "P",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 12,
+    "modern_index": 2,
+    "read_index": 2,
+    "residue_name": "  U",
+    "residue_seq": 6
+  },
+  {
+    "chain_id": "P",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 13,
+    "modern_index": 3,
+    "read_index": 3,
+    "residue_name": "  U",
+    "residue_seq": 7
+  },
+  {
+    "chain_id": "P",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 14,
+    "modern_index": 4,
+    "read_index": 4,
+    "residue_name": "  U",
+    "residue_seq": 8
+  },
+  {
+    "chain_id": "P",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 550,
+    "modern_index": 5,
+    "read_index": 5,
+    "residue_name": "8B4",
+    "residue_seq": 602
+  },
+  {
+    "chain_id": "T",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 3,
+    "modern_index": 6,
+    "read_index": 6,
+    "residue_name": "  A",
+    "residue_seq": 3
+  },
+  {
+    "chain_id": "T",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 4,
+    "modern_index": 7,
+    "read_index": 7,
+    "residue_name": "  A",
+    "residue_seq": 4
+  },
+  {
+    "chain_id": "T",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 5,
+    "modern_index": 8,
+    "read_index": 8,
+    "residue_name": "  A",
+    "residue_seq": 5
+  },
+  {
+    "chain_id": "T",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 2,
+    "modern_index": 9,
+    "read_index": 9,
+    "residue_name": "  U",
+    "residue_seq": 2
+  },
+  {
+    "chain_id": "T",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 6,
+    "modern_index": 10,
+    "read_index": 10,
+    "residue_name": "  U",
+    "residue_seq": 6
+  },
+  {
+    "chain_id": "T",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 7,
+    "modern_index": 11,
+    "read_index": 11,
+    "residue_name": "  U",
+    "residue_seq": 7
+  },
+  {
+    "chain_id": "T",
+    "filter_reason": "",
+    "filtered": false,
+    "insertion": "",
+    "legacy_index": 8,
+    "modern_index": 12,
+    "read_index": 12,
+    "residue_name": "  U",
+    "residue_seq": 8
+  }
+]

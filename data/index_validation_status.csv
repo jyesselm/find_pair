@@ -1,0 +1,12 @@
+pdb_id,num_residues_read,num_legacy,num_modern,num_filtered,match_status,notes
+1H4S,69,69,69,0,PASS,All indices match perfectly
+1Q96,81,81,81,0,PASS,All indices match perfectly
+1VBY,73,73,73,0,PASS,All indices match perfectly
+3AVY,23,23,23,0,PASS,All indices match perfectly
+3G8T,615,615,615,0,PASS,All indices match perfectly - large structure
+3KNC,16,16,16,0,PASS,All indices match perfectly
+4AL5,16,16,16,0,PASS,All indices match perfectly
+5UJ2,13,13,13,0,PASS,All indices match perfectly
+6CAQ,1533,1533,1533,0,PASS,All indices match perfectly - very large structure
+6LTU,99,99,99,0,PASS,All indices match perfectly
+8J1J,151,151,151,0,PASS,All indices match perfectly
