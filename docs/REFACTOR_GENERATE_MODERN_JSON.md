@@ -36,18 +36,32 @@ JsonWriter is passed around and called from many places:
 
 ## Target Architecture
 
-### Simple Tool (~100 lines with proper output)
+### Simple Tool (~120 lines with stage-aware output)
 
 ```cpp
 int main(int argc, char* argv[]) {
     // 1. Parse arguments
-    if (argc != 3) {
-        std::cerr << "Usage: " << argv[0] << " <pdb_file> <output_dir>\n";
+    if (argc < 3 || argc > 4) {
+        std::cerr << "Usage: " << argv[0] << " <pdb_file> <output_dir> [--stage=STAGE]\n";
+        std::cerr << "Stages: atoms, frames, distances, hbonds, validation, selection, steps, helical, all\n";
+        std::cerr << "Default: all stages\n";
         return 1;
     }
     
     std::filesystem::path pdb_file = argv[1];
     std::filesystem::path output_dir = argv[2];
+    std::string stage = "all";
+    
+    // Parse --stage flag
+    if (argc == 4) {
+        std::string arg = argv[3];
+        if (arg.find("--stage=") == 0) {
+            stage = arg.substr(8);
+        } else {
+            std::cerr << "Error: Unknown option: " << arg << "\n";
+            return 1;
+        }
+    }
     
     // Validate input
     if (!std::filesystem::exists(pdb_file)) {
@@ -58,39 +72,78 @@ int main(int argc, char* argv[]) {
     std::filesystem::create_directories(output_dir);
     std::string pdb_id = pdb_file.stem().string();
     
-    std::cout << "Processing: " << pdb_id << "\n";
+    std::cout << "Processing: " << pdb_id << " (stage: " << stage << ")\n";
     std::cout << "Input: " << pdb_file << "\n";
     std::cout << "Output: " << output_dir << "\n\n";
     
     try {
-        // 2. Parse PDB
-        std::cout << "Step 1: Parsing PDB...\n";
+        // Parse PDB (always needed)
+        std::cout << "Parsing PDB...\n";
         PdbParser parser;
         Structure structure = parser.parse_file(pdb_file);
-        std::cout << "  ✅ Parsed " << structure.num_atoms() << " atoms, "
+        std::cout << "  ✅ " << structure.num_atoms() << " atoms, "
                   << structure.num_residues() << " residues\n\n";
         
-        // 3. Write atoms JSON
-        std::cout << "Step 2: Writing atoms...\n";
-        structure.write_atoms_json(output_dir);
-        std::cout << "  ✅ Wrote pdb_atoms/" << pdb_id << ".json\n\n";
+        // Stage 1: Atoms
+        if (stage == "atoms" || stage == "all") {
+            std::cout << "Stage 1: Writing atoms...\n";
+            structure.write_atoms_json(output_dir);
+            std::cout << "  ✅ pdb_atoms/" << pdb_id << ".json\n\n";
+        }
         
-        // 4. Run find_pair protocol (calculates frames, finds pairs, writes JSON)
-        std::cout << "Step 3: Running find_pair protocol...\n";
-        FindPairProtocol protocol(output_dir);
-        auto result = protocol.execute(structure);
-        std::cout << "  ✅ Calculated " << result.num_frames << " frames\n";
-        std::cout << "  ✅ Found " << result.num_pairs << " base pairs\n";
-        std::cout << "  ✅ Wrote frame JSON files\n";
-        std::cout << "  ✅ Wrote pair JSON files\n\n";
+        // Stages 2-6: find_pair (frames, distances, hbonds, validation, selection)
+        if (stage == "frames" || stage == "distances" || stage == "hbonds" || 
+            stage == "validation" || stage == "selection" || stage == "all") {
+            
+            std::cout << "Running find_pair protocol...\n";
+            FindPairProtocol protocol(output_dir);
+            protocol.set_output_stage(stage);  // Tell it which stage to output
+            auto result = protocol.execute(structure);
+            
+            if (stage == "frames" || stage == "all") {
+                std::cout << "  ✅ Stage 2 (frames): " << result.num_frames << " frames calculated\n";
+                std::cout << "     - base_frame_calc/" << pdb_id << ".json\n";
+                std::cout << "     - frame_calc/" << pdb_id << ".json\n";
+            }
+            if (stage == "distances" || stage == "all") {
+                std::cout << "  ✅ Stage 3 (distances): " << result.num_distances << " checks\n";
+                std::cout << "     - distance_checks/" << pdb_id << ".json\n";
+            }
+            if (stage == "hbonds" || stage == "all") {
+                std::cout << "  ✅ Stage 4 (hbonds): " << result.num_hbonds << " H-bonds\n";
+                std::cout << "     - hbond_list/" << pdb_id << ".json\n";
+            }
+            if (stage == "validation" || stage == "all") {
+                std::cout << "  ✅ Stage 5 (validation): " << result.num_validations << " validations\n";
+                std::cout << "     - pair_validation/" << pdb_id << ".json\n";
+            }
+            if (stage == "selection" || stage == "all") {
+                std::cout << "  ✅ Stage 6 (selection): " << result.num_pairs << " pairs selected\n";
+                std::cout << "     - find_bestpair_selection/" << pdb_id << ".json\n";
+                std::cout << "     - base_pair/" << pdb_id << ".json\n";
+            }
+            std::cout << "\n";
+        }
         
-        // 5. Optional: Run analyze protocol for step parameters
-        // std::cout << "Step 4: Calculating step parameters...\n";
-        // AnalyzeProtocol analyze(output_dir);
-        // auto step_result = analyze.execute(structure);
-        // std::cout << "  ✅ Calculated " << step_result.num_steps << " step parameters\n\n";
+        // Stages 7-8: analyze (step parameters, helical)
+        if (stage == "steps" || stage == "helical" || stage == "all") {
+            std::cout << "Running analyze protocol...\n";
+            AnalyzeProtocol analyze(output_dir);
+            analyze.set_output_stage(stage);  // Tell it which stage to output
+            auto step_result = analyze.execute(structure);
+            
+            if (stage == "steps" || stage == "all") {
+                std::cout << "  ✅ Stage 7 (steps): " << step_result.num_steps << " step parameters\n";
+                std::cout << "     - bpstep_params/" << pdb_id << ".json\n";
+            }
+            if (stage == "helical" || stage == "all") {
+                std::cout << "  ✅ Stage 8 (helical): " << step_result.num_helical << " helical params\n";
+                std::cout << "     - helical_params/" << pdb_id << ".json\n";
+            }
+            std::cout << "\n";
+        }
         
-        std::cout << "✅ Success! Generated all JSON for " << pdb_id << "\n";
+        std::cout << "✅ Success! Generated JSON for stage: " << stage << "\n";
         return 0;
         
     } catch (const std::exception& e) {
@@ -100,7 +153,12 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-**Result**: ~100 lines with clear output at each step, but all logic is in objects/protocols.
+**Key Features**:
+- `--stage=frames` → Only calculates & outputs frames
+- `--stage=selection` → Only finds pairs & outputs selection
+- `--stage=all` → All stages (default)
+- Each stage shows what it wrote
+- Protocols decide what to calculate based on stage
 
 ---
 
@@ -439,45 +497,56 @@ Once all objects write themselves:
 
 ## Specific Refactoring Tasks
 
-### Task 1: Remove --legacy Flag
+### Task 1: Add --stage Flag (Keep, Enhance)
 
-**Current behavior**: Excludes C4 from matching  
-**Analysis**: Should always match legacy  
-**Action**:
+**Purpose**: Control which JSON to output  
+**Usage**: `--stage=frames`, `--stage=selection`, `--stage=all`  
+**Benefit**: Only generate what we're testing (saves time/space)
+
+**Implementation**:
 ```cpp
-// In BaseFrameCalculator, make this default:
-set_legacy_mode(true);  // Always
+// Protocols need to know what to output
+protocol.set_output_stage(stage);
 
-// Remove flag from tools
-// Remove flag from protocol constructors
+// Inside protocol:
+void FindPairProtocol::execute(Structure& structure) {
+    // Always calculate (needed for downstream)
+    calculate_frames(structure);
+    auto pairs = find_pairs(structure);
+    
+    // But only WRITE what's requested
+    if (output_stage_ == "frames" || output_stage_ == "all") {
+        write_frame_json(structure);
+    }
+    if (output_stage_ == "selection" || output_stage_ == "all") {
+        write_selection_json(pairs);
+    }
+    // etc.
+}
 ```
 
-### Task 2: Remove --fix-indices Flag
+### Task 2: Remove --legacy Flag
 
-**Current behavior**: Loads legacy indices from JSON  
-**Analysis**: Why is this needed?  
-**Root cause**: Modern might assign indices differently  
-**Better solution**:
-```cpp
-// In PdbParser::parse_file()
-// Assign legacy indices in same order as legacy
-// Process atoms in PDB file order
-// Assign residue indices based on first atom appearance
-// No need to "fix" later
-```
+**Current**: Excludes C4 from matching  
+**Why remove**: Should ALWAYS match legacy (default behavior)  
+**Action**: Make legacy mode always on, remove flag
 
-**Action**:
-- Make PdbParser assign correct indices from the start
-- Remove fix_residue_indices_from_json() calls
-- Remove flag
+### Task 3: Remove --fix-indices Flag
 
-### Task 3: Remove --only-paired Flag
+**Current**: Loads legacy indices from JSON  
+**Why remove**: Indices should be correct from the start  
+**Better approach**:
+- PdbParser assigns indices in PDB file order
+- Matches legacy by default
+- No need to "fix" later
 
-**Current behavior**: Only record frames for paired residues  
-**Analysis**: Check what legacy does  
-**Action**:
-- Read legacy code to see if it records all or only paired
-- Make modern match by default
+### Task 4: Remove --only-paired Flag
+
+**Current**: Only record frames for paired residues  
+**Why remove**: Should match legacy by default  
+**Action**: 
+- Check what legacy does
+- Make that the default behavior
 - Remove flag
 
 ### Task 4: Move Iteration Logic to Protocol
@@ -635,44 +704,76 @@ TEST(AtomTest, ToJson) {
 ```cpp
 // generate_modern_json.cpp - HUGE FILE
 // - 500+ lines of custom logic
-// - Flag parsing (--legacy, --fix-indices, --only-paired)
+// - Flags: --legacy, --fix-indices, --only-paired (unnecessary)
 // - Custom residue iteration loops
 // - Custom pair finding logic
 // - Index validation code
 // - Duplicate --only-paired logic
-// - etc.
+// - No stage selection (always generates all 10 types)
 ```
 
-### After (Target - ~100 lines with output)
+### After (Target - ~120 lines with stage-aware output)
 ```cpp
-// generate_modern_json.cpp - CLEAN FILE
+// generate_modern_json.cpp - CLEAN, STAGE-AWARE FILE
 int main(int argc, char* argv[]) {
-    // Parse args, validate input
-    auto [pdb_file, output_dir] = parse_args(argc, argv);
+    // Parse args: pdb_file, output_dir, optional --stage
+    auto [pdb_file, output_dir, stage] = parse_args(argc, argv);
+    // stage: "atoms", "frames", "selection", "steps", "all"
     
-    // Parse PDB
+    std::cout << "Processing " << pdb_id << " (stage: " << stage << ")\n\n";
+    
+    // Parse PDB (always needed)
     std::cout << "Parsing PDB...\n";
     Structure structure = PdbParser().parse_file(pdb_file);
-    std::cout << "  ✅ " << structure.num_atoms() << " atoms, " 
-              << structure.num_residues() << " residues\n\n";
+    std::cout << "  ✅ " << structure.num_atoms() << " atoms\n\n";
     
-    // Write atoms
-    std::cout << "Writing atoms...\n";
-    structure.write_atoms_json(output_dir);
-    std::cout << "  ✅ Wrote pdb_atoms\n\n";
+    // Stage 1: Atoms (only if requested)
+    if (stage == "atoms" || stage == "all") {
+        std::cout << "Stage 1: Atoms...\n";
+        structure.write_atoms_json(output_dir);
+        std::cout << "  ✅ pdb_atoms/" << pdb_id << ".json\n\n";
+    }
     
-    // Run find_pair
-    std::cout << "Running find_pair...\n";
-    auto result = FindPairProtocol(output_dir).execute(structure);
-    std::cout << "  ✅ " << result.num_frames << " frames\n";
-    std::cout << "  ✅ " << result.num_pairs << " pairs\n\n";
+    // Stages 2-6: find_pair (only if requested)
+    if (is_findpair_stage(stage)) {
+        std::cout << "Running find_pair...\n";
+        FindPairProtocol protocol(output_dir);
+        protocol.set_output_stage(stage);  // Only output requested stage
+        auto result = protocol.execute(structure);
+        std::cout << "  ✅ " << result.summary() << "\n\n";
+    }
+    
+    // Stages 7-8: analyze (only if requested)
+    if (is_analyze_stage(stage)) {
+        std::cout << "Running analyze...\n";
+        AnalyzeProtocol analyze(output_dir);
+        analyze.set_output_stage(stage);  // Only output requested stage
+        auto result = analyze.execute(structure);
+        std::cout << "  ✅ " << result.summary() << "\n\n";
+    }
     
     std::cout << "✅ Success!\n";
     return 0;
 }
 ```
 
-**That's the goal!** ~100 lines with clear output, all logic in objects/protocols.
+**Usage Examples**:
+```bash
+# Only generate frames (Stage 2)
+./build/generate_modern_json data/pdb/1EHZ.pdb data/json --stage=frames
+
+# Only generate selection (Stage 6) - skips writing frames/distances/hbonds
+./build/generate_modern_json data/pdb/1EHZ.pdb data/json --stage=selection
+
+# Generate everything (default)
+./build/generate_modern_json data/pdb/1EHZ.pdb data/json --stage=all
+```
+
+**Benefits**:
+- Only calculate & write what's needed for current validation stage
+- Saves time (don't calculate unused stages)
+- Saves space (don't write unused JSON)
+- Clear what's being tested
 
 ---
 
