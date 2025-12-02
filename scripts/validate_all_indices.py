@@ -109,10 +109,12 @@ def check_index_validation(pdb_id: str, project_root: Path, clean: bool = False)
     
     try:
         # Run generate_modern_json (this does validation internally)
+        # Use --only-paired to match legacy behavior (only process paired residues)
         cmd = [
             str(project_root / "build" / "generate_modern_json"),
             str(pdb_file),
-            str(json_dir)
+            str(json_dir),
+            "--only-paired"
         ]
         
         output = subprocess.run(

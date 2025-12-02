@@ -8,6 +8,7 @@
 # - Use 8 parallel threads
 # - Process in batches of 100
 # - Clean up generated files for successful validations
+# - Use --only-paired mode to match legacy (only process paired residues)
 # - Stop on first failure for investigation
 #
 # Usage:
@@ -15,6 +16,10 @@
 #
 # To revalidate ALL PDBs (including those that passed):
 #   ./RUN_FULL_VALIDATION.sh --revalidate
+#
+# NOTE: Uses --only-paired mode which matches legacy behavior:
+#   Legacy only calculates reference frames for residues in base pairs.
+#   This ensures modern code matches legacy count exactly.
 #
 
 set -e  # Exit on error
