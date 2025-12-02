@@ -10,3 +10,4 @@ pdb_id,num_residues_read,num_legacy,num_modern,num_filtered,match_status,notes
 6CAQ,1533,1533,1533,0,PASS,All indices match perfectly - very large structure
 6LTU,99,99,99,0,PASS,All indices match perfectly
 8J1J,151,151,151,0,PASS,All indices match perfectly
+1TTT,230,230,230,1,PASS,All indices match - D:16 correctly filtered by both (RMSD check)
