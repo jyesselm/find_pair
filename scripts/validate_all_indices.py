@@ -164,11 +164,18 @@ def check_index_validation(pdb_id: str, project_root: Path, clean: bool = False)
                         except:
                             pass
                 
-                # Clean up if requested
-                if clean:
-                    mapping_file = project_root / "data" / "index_mapping" / f"{pdb_id}.json"
-                    if mapping_file.exists():
-                        mapping_file.unlink()
+                # AGGRESSIVE CLEANUP: Remove ALL generated files for this PDB
+                json_dir = project_root / "data" / "json"
+                for subdir in json_dir.glob("*"):
+                    if subdir.is_dir():
+                        pdb_file = subdir / f"{pdb_id}.json"
+                        if pdb_file.exists():
+                            pdb_file.unlink()
+                
+                # Remove mapping file (only keep for failures)
+                mapping_file = project_root / "data" / "index_mapping" / f"{pdb_id}.json"
+                if mapping_file.exists():
+                    mapping_file.unlink()
                 
                 return result
             else:
