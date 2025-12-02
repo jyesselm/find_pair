@@ -330,173 +330,172 @@ int main(int argc, char* argv[]) {
             }
         }
 
-    // Find and record base pairs (with validation recording)
-    // Note: Legacy residue indices are already set on atoms during PDB parsing
-    BasePairFinder finder;
-    auto base_pairs = finder.find_pairs_with_recording(structure, &writer);
-    // Base pairs are already recorded via find_pairs_with_recording
-    // But we also record the final base_pair records
-    for (const auto& pair : base_pairs) {
-        writer.record_base_pair(pair);
-    }
-    std::cout << "  Base pairs found: " << base_pairs.size() << "\n";
-
-    // Write split JSON files to record-type-specific directories
-    writer.write_split_files(json_output_dir, true);
-
-    std::cout << "Successfully generated JSON files in: " << json_output_dir << "\n";
-    std::cout << "  Atoms: " << structure.num_atoms() << "\n";
-    std::cout << "  Total residues: " << structure.num_residues() << "\n";
-    std::cout << "  Nucleotides found: " << nucleotides_found << "\n";
-    std::cout << "  Frames calculated: " << frames_recorded << "\n";
-    // Report residue type breakdown
-    size_t total_non_nucleotide =
-        water_count + ion_count + noncanonical_rna_count + ligand_count + unknown_count;
-    if (total_non_nucleotide > 0) {
-        std::cout << "  Non-nucleotide residues: " << total_non_nucleotide;
-        if (water_count > 0)
-            std::cout << " (water: " << water_count;
-        if (ion_count > 0)
-            std::cout << (water_count > 0 ? ", ions: " : " (ions: ") << ion_count;
-        if (noncanonical_rna_count > 0)
-            std::cout << (water_count > 0 || ion_count > 0 ? ", noncanonical RNA: "
-                                                           : " (noncanonical RNA: ")
-                      << noncanonical_rna_count;
-        if (ligand_count > 0)
-            std::cout << (water_count > 0 || ion_count > 0 || noncanonical_rna_count > 0
-                              ? ", ligands: "
-                              : " (ligands: ")
-                      << ligand_count;
-        if (unknown_count > 0)
-            std::cout << (water_count > 0 || ion_count > 0 || noncanonical_rna_count > 0 ||
-                                  ligand_count > 0
-                              ? ", other: "
-                              : " (other: ")
-                      << unknown_count;
-        std::cout << ")\n";
-    }
-    if (template_load_failures > 0) {
-        std::cout << "  Template load failures: " << template_load_failures << "\n";
-    }
-    if (atom_match_failures > 0) {
-        std::cout << "  Atom match failures: " << atom_match_failures << "\n";
-    }
-
-    // ========== Index Validation with ResidueTracker ==========
-    std::cout << "\n=== Residue Index Validation ===\n";
-    
-    x3dna::ResidueTracker tracker;
-    
-    // Populate tracker from structure - ONLY NUCLEOTIDES (residues with frames)
-    // Legacy only tracks nucleotides, so we must do the same
-    for (const auto& chain : structure.chains()) {
-        for (const auto& residue : chain.residues()) {
-            // Only track residues that have reference frames (nucleotides)
-            if (!residue.reference_frame().has_value()) {
-                continue;
-            }
-            
-            // Convert insertion char to string, handling space as empty
-            std::string insertion_str = (residue.insertion() == ' ') ? "" : std::string(1, residue.insertion());
-            
-            tracker.add_residue(
-                std::string(1, residue.chain_id()),
-                residue.seq_num(),
-                insertion_str,
-                residue.name()
-            );
+        // Find and record base pairs (with validation recording)
+        // Note: Legacy residue indices are already set on atoms during PDB parsing
+        BasePairFinder finder;
+        auto base_pairs = finder.find_pairs_with_recording(structure, &writer);
+        // Base pairs are already recorded via find_pairs_with_recording
+        // But we also record the final base_pair records
+        for (const auto& pair : base_pairs) {
+            writer.record_base_pair(pair);
         }
-    }
-    
-    // Assign modern indices (0-based) - ONLY FOR NUCLEOTIDES
-    // Also verify that atom legacy indices match what we loaded from JSON
-    int modern_idx = 0;
-    int mismatches = 0;
-    for (const auto& chain : structure.chains()) {
-        for (const auto& residue : chain.residues()) {
-            // Only assign indices to nucleotides
-            if (!residue.reference_frame().has_value()) {
-                continue;
+        std::cout << "  Base pairs found: " << base_pairs.size() << "\n";
+
+        // Write split JSON files to record-type-specific directories
+        writer.write_split_files(json_output_dir, true);
+
+        std::cout << "Successfully generated JSON files in: " << json_output_dir << "\n";
+        std::cout << "  Atoms: " << structure.num_atoms() << "\n";
+        std::cout << "  Total residues: " << structure.num_residues() << "\n";
+        std::cout << "  Nucleotides found: " << nucleotides_found << "\n";
+        std::cout << "  Frames calculated: " << frames_recorded << "\n";
+        // Report residue type breakdown
+        size_t total_non_nucleotide =
+            water_count + ion_count + noncanonical_rna_count + ligand_count + unknown_count;
+        if (total_non_nucleotide > 0) {
+            std::cout << "  Non-nucleotide residues: " << total_non_nucleotide;
+            if (water_count > 0)
+                std::cout << " (water: " << water_count;
+            if (ion_count > 0)
+                std::cout << (water_count > 0 ? ", ions: " : " (ions: ") << ion_count;
+            if (noncanonical_rna_count > 0)
+                std::cout << (water_count > 0 || ion_count > 0 ? ", noncanonical RNA: "
+                                                               : " (noncanonical RNA: ")
+                          << noncanonical_rna_count;
+            if (ligand_count > 0)
+                std::cout << (water_count > 0 || ion_count > 0 || noncanonical_rna_count > 0
+                                  ? ", ligands: "
+                                  : " (ligands: ")
+                          << ligand_count;
+            if (unknown_count > 0)
+                std::cout << (water_count > 0 || ion_count > 0 || noncanonical_rna_count > 0 ||
+                                      ligand_count > 0
+                                  ? ", other: "
+                                  : " (other: ")
+                          << unknown_count;
+            std::cout << ")\n";
+        }
+        if (template_load_failures > 0) {
+            std::cout << "  Template load failures: " << template_load_failures << "\n";
+        }
+        if (atom_match_failures > 0) {
+            std::cout << "  Atom match failures: " << atom_match_failures << "\n";
+        }
+
+        // ========== Index Validation with ResidueTracker ==========
+        std::cout << "\n=== Residue Index Validation ===\n";
+
+        x3dna::ResidueTracker tracker;
+
+        // Populate tracker from structure - ONLY NUCLEOTIDES (residues with frames)
+        // Legacy only tracks nucleotides, so we must do the same
+        for (const auto& chain : structure.chains()) {
+            for (const auto& residue : chain.residues()) {
+                // Only track residues that have reference frames (nucleotides)
+                if (!residue.reference_frame().has_value()) {
+                    continue;
+                }
+
+                // Convert insertion char to string, handling space as empty
+                std::string insertion_str =
+                    (residue.insertion() == ' ') ? "" : std::string(1, residue.insertion());
+
+                tracker.add_residue(std::string(1, residue.chain_id()), residue.seq_num(),
+                                    insertion_str, residue.name());
             }
-            
-            // Convert insertion char to string, handling space as empty (must match above)
-            std::string insertion_str = (residue.insertion() == ' ') ? "" : std::string(1, residue.insertion());
-            
-            // Get the legacy index assigned to atoms during parsing
-            int atom_legacy_idx = 0;
-            if (!residue.atoms().empty()) {
-                atom_legacy_idx = residue.atoms()[0].legacy_residue_idx();
-            }
-            
-            // Find this residue in tracker
-            for (size_t i = 0; i < tracker.size(); i++) {
-                const auto& rec = tracker.get_residues()[i];
-                if (rec.chain_id == std::string(1, residue.chain_id()) &&
-                    rec.residue_seq == residue.seq_num() &&
-                    rec.insertion == insertion_str) {
-                    tracker.assign_modern_index(i, modern_idx);
-                    
-                    // CRITICAL: Verify atom's legacy index matches what we loaded from JSON
-                    if (atom_legacy_idx > 0 && rec.legacy_index > 0) {
-                        if (atom_legacy_idx != rec.legacy_index) {
-                            std::cerr << "WARNING: Legacy index mismatch for " 
-                                     << rec.chain_id << rec.residue_seq << rec.insertion
-                                     << " atom has " << atom_legacy_idx 
-                                     << " but JSON has " << rec.legacy_index << "\n";
-                            mismatches++;
+        }
+
+        // Assign modern indices (0-based) - ONLY FOR NUCLEOTIDES
+        // Also verify that atom legacy indices match what we loaded from JSON
+        int modern_idx = 0;
+        int mismatches = 0;
+        for (const auto& chain : structure.chains()) {
+            for (const auto& residue : chain.residues()) {
+                // Only assign indices to nucleotides
+                if (!residue.reference_frame().has_value()) {
+                    continue;
+                }
+
+                // Convert insertion char to string, handling space as empty (must match above)
+                std::string insertion_str =
+                    (residue.insertion() == ' ') ? "" : std::string(1, residue.insertion());
+
+                // Get the legacy index assigned to atoms during parsing
+                int atom_legacy_idx = 0;
+                if (!residue.atoms().empty()) {
+                    atom_legacy_idx = residue.atoms()[0].legacy_residue_idx();
+                }
+
+                // Find this residue in tracker
+                for (size_t i = 0; i < tracker.size(); i++) {
+                    const auto& rec = tracker.get_residues()[i];
+                    if (rec.chain_id == std::string(1, residue.chain_id()) &&
+                        rec.residue_seq == residue.seq_num() && rec.insertion == insertion_str) {
+                        tracker.assign_modern_index(i, modern_idx);
+
+                        // CRITICAL: Verify atom's legacy index matches what we loaded from JSON
+                        if (atom_legacy_idx > 0 && rec.legacy_index > 0) {
+                            if (atom_legacy_idx != rec.legacy_index) {
+                                std::cerr << "WARNING: Legacy index mismatch for " << rec.chain_id
+                                          << rec.residue_seq << rec.insertion << " atom has "
+                                          << atom_legacy_idx << " but JSON has " << rec.legacy_index
+                                          << "\n";
+                                mismatches++;
+                            }
                         }
+
+                        modern_idx++;
+                        break;
                     }
-                    
-                    modern_idx++;
-                    break;
                 }
             }
         }
-    }
-    
-    if (mismatches > 0) {
-        std::cerr << "\n❌ CRITICAL: Found " << mismatches 
-                 << " mismatches between atom legacy indices and JSON legacy indices!\n";
-        std::cerr << "This means the modern code is assigning different legacy indices than the legacy code.\n";
-    }
-    
-    // Load legacy indices from JSON
-    std::filesystem::path legacy_json_path = 
-        json_output_dir.parent_path() / "json_legacy" / "base_frame_calc" / (pdb_name + ".json");
-    
-    if (std::filesystem::exists(legacy_json_path)) {
-        std::cout << "Loading legacy indices from: " << legacy_json_path << "\n";
-        if (tracker.load_legacy_indices(legacy_json_path.string())) {
-            // Validate match
-            auto validation = tracker.validate();
-            std::cout << validation.to_string();
-            
-            // Export mapping
-            std::filesystem::path mapping_dir = json_output_dir.parent_path() / "index_mapping";
-            std::filesystem::create_directories(mapping_dir);
-            std::filesystem::path mapping_file = mapping_dir / (pdb_name + ".json");
-            tracker.export_mapping(mapping_file.string());
-            
-            // Abort if validation failed
-            if (!validation.success) {
-                std::cerr << "\n❌ FATAL: Index validation failed! Cannot proceed with comparison.\n";
-                std::cerr << "This PDB does not have matching indices with legacy code.\n";
-                std::cerr << "See mapping file for details: " << mapping_file << "\n";
-                return 1;
-            }
-        } else {
-            std::cout << "Warning: Could not load legacy indices from " << legacy_json_path << "\n";
-            std::cout << "Skipping index validation.\n";
-        }
-    } else {
-        std::cout << "Legacy JSON not found at: " << legacy_json_path << "\n";
-        std::cout << "Skipping index validation (legacy JSON needed for validation).\n";
-    }
 
-    return 0;
-}
-catch (const std::exception& e) {
-    std::cerr << "Error: " << e.what() << "\n";
-    return 1;
-}
+        if (mismatches > 0) {
+            std::cerr << "\n❌ CRITICAL: Found " << mismatches
+                      << " mismatches between atom legacy indices and JSON legacy indices!\n";
+            std::cerr << "This means the modern code is assigning different legacy indices than "
+                         "the legacy code.\n";
+        }
+
+        // Load legacy indices from JSON
+        std::filesystem::path legacy_json_path = json_output_dir.parent_path() / "json_legacy" /
+                                                 "base_frame_calc" / (pdb_name + ".json");
+
+        if (std::filesystem::exists(legacy_json_path)) {
+            std::cout << "Loading legacy indices from: " << legacy_json_path << "\n";
+             if (tracker.load_legacy_indices(legacy_json_path.string())) {
+                 // Validate match
+                 auto validation = tracker.validate();
+                 std::cout << validation.to_string();
+ 
+                 // ONLY export mapping if validation FAILED (for debugging)
+                 if (!validation.success) {
+                     std::filesystem::path mapping_dir = json_output_dir.parent_path() / "index_mapping";
+                     std::filesystem::create_directories(mapping_dir);
+                     std::filesystem::path mapping_file = mapping_dir / (pdb_name + ".json");
+                     tracker.export_mapping(mapping_file.string());
+                     
+                     std::cerr
+                         << "\n❌ FATAL: Index validation failed! Cannot proceed with comparison.\n";
+                     std::cerr << "This PDB does not have matching indices with legacy code.\n";
+                     std::cerr << "See mapping file for details: " << mapping_file << "\n";
+                     return 1;
+                 }
+                 // Success - no need to export mapping file
+             } else {
+                 std::cout << "Warning: Could not load legacy indices from " << legacy_json_path
+                           << "\n";
+                 std::cout << "Skipping index validation.\n";
+             }
+        } else {
+            std::cout << "Legacy JSON not found at: " << legacy_json_path << "\n";
+            std::cout << "Skipping index validation (legacy JSON needed for validation).\n";
+        }
+
+        return 0;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << "\n";
+        return 1;
+    }
 }
