@@ -1,62 +1,41 @@
 # Documentation Index
 
-**Last Updated**: 2025-01-XX  
-**Status**: Organized and focused on current work
+**Last Updated**: December 2, 2025  
+**Status**: Cleaned up and focused on essential documentation
 
 ---
 
-## 🎯 Start Here - Current Work
+## 🎯 Start Here
 
-### [MATCHING_PLAN.md](MATCHING_PLAN.md) ⭐⭐⭐ **CURRENT WORK**
-**Plan to match legacy and modern results exactly**
-- Strategy 1: Create minimal test cases (2 consecutive base pairs)
-- Strategy 2: Break legacy code into smaller testable units
-- Strategy 3: Subdivide steps into finer-grained operations
-- Implementation plan with tools to create
-- **Use this for**: Understanding current approach to achieve exact matching
-
-### [TESTING_GUIDE.md](TESTING_GUIDE.md) ⭐⭐⭐ **TESTING REFERENCE**
-**Complete guide for testing and validation**
-- JSON comparison workflows using `compare_json.py`
-- Test types and execution
-- Troubleshooting guide
-- Step parameter comparison
-- Reference frames comparison
-- **Use this for**: How to test, compare, and validate results
+### New to the Project?
+1. **[QUICK_START.md](QUICK_START.md)** - Get up and running in 5 minutes
+2. **[../README.md](../README.md)** - Main project overview
+3. **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - How to test and compare results
+4. **[CODE_FLOW.md](CODE_FLOW.md)** - Understand the code architecture
 
 ---
 
-## 📚 Essential Reference Documents
+## 📚 Essential Documentation
 
-### Project Overview
-- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Complete project overview and status
-- **[CODE_FLOW.md](CODE_FLOW.md)** - Detailed code flow and architecture
-- **[QUICK_START.md](QUICK_START.md)** - Quick start guide for new developers
+### Core Guides
+- **[QUICK_START.md](QUICK_START.md)** - Quick start for new developers
+- **[TESTING_GUIDE.md](TESTING_GUIDE.md)** ⭐ - Complete testing and validation guide
 - **[BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)** - Build and compilation instructions
+- **[CODE_FLOW.md](CODE_FLOW.md)** - Detailed code flow and architecture
 
-### Data & JSON Structure
-- **[JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md)** - JSON structure, field meanings, comparison methodology
+### Reference Documentation
+- **[JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md)** - JSON structure and comparison methodology
 - **[DATA_STRUCTURE.md](DATA_STRUCTURE.md)** - Data directory structure and organization
-
-### Algorithm & Implementation Guides
 - **[ALGORITHM_CRITICAL_GUIDE.md](ALGORITHM_CRITICAL_GUIDE.md)** - Critical algorithm details and edge cases
-- **[STEP_PARAMETERS_IMPLEMENTATION.md](STEP_PARAMETERS_IMPLEMENTATION.md)** - Step parameters implementation
-
-### Residue Indexing & Legacy Matching
-- **[LEGACY_INDICES_GUIDE.md](LEGACY_INDICES_GUIDE.md)** - Guide to using legacy indices for accurate comparisons
-- **[FIX_INDICES_OPTION.md](FIX_INDICES_OPTION.md)** - Using `--fix-indices` option for legacy matching
-
-### Reference Frames
-- **[REF_FRAMES_NEXT_STEPS.md](REF_FRAMES_NEXT_STEPS.md)** - Next steps for ref_frames comparison
-- **[REF_FRAMES_DEBUGGING_APPROACH.md](REF_FRAMES_DEBUGGING_APPROACH.md)** - Systematic debugging approach
-- **[REF_FRAMES_COMPARISON_FIX.md](REF_FRAMES_COMPARISON_FIX.md)** - Fix documentation for ref_frames
-- **[REF_FRAMES_QUICK_START.md](REF_FRAMES_QUICK_START.md)** - Quick start for ref_frames debugging
 
 ---
 
 ## 📖 Legacy Code Reference
 
 ### [legacy/](legacy/) - Complete Legacy Code Documentation
+
+The `legacy/` folder contains comprehensive documentation of the original X3DNA code:
+
 - **[00_INDEX.md](legacy/00_INDEX.md)** - Navigation guide for all legacy docs
 - **[01_ARCHITECTURE.md](legacy/01_ARCHITECTURE.md)** - Program structure and flows
 - **[02_DATA_STRUCTURES.md](legacy/02_DATA_STRUCTURES.md)** - All data organization
@@ -64,39 +43,49 @@
 - **[04_ALGORITHMS.md](legacy/04_ALGORITHMS.md)** - Mathematical derivations and algorithms
 - **[10_JSON_STRUCTURE.md](legacy/10_JSON_STRUCTURE.md)** - Legacy JSON format reference
 
-**Use legacy docs for**: Understanding legacy code behavior, algorithm details, data structures
+**Use legacy docs for**: Understanding legacy code behavior, algorithm details, data structures, and ensuring modern code matches legacy output.
 
 ---
 
-## 📦 Archived Documents
+## 🏗️ Modernization Documentation
 
-Historical, outdated, and completed documentation has been moved to `archive/`:
+### [modernization/](modernization/) - Design and Implementation Plan
+
+The `modernization/` folder contains the stage-by-stage modernization plan:
+
+- **[README.md](modernization/README.md)** - Overview of modernization strategy
+- **[STAGE_00_SETUP.md](modernization/STAGE_00_SETUP.md)** through **[STAGE_10_POLISH.md](modernization/STAGE_10_POLISH.md)** - Detailed implementation stages
+- **[NAMING_CONVENTIONS.md](modernization/NAMING_CONVENTIONS.md)** - Code style and naming
+- **[TESTING_STRATEGY.md](modernization/TESTING_STRATEGY.md)** - Testing approach
+
+**Use modernization docs for**: Understanding design decisions, code organization, and the overall modernization approach.
+
+---
+
+## 📦 Archived Documentation
+
+Historical, debugging, and completed documentation has been moved to `archive/`:
 
 ### Archive Structure
-- `archive/status_docs/` - Old status documents and plans
-- `archive/historical_fixes/` - Completed fix documentation
-- `archive/old_debug/` - Old debug reports
-- `archive/historical/` - Historical investigations, test results, status reports
-  - `completed_fixes/` - Documentation of completed fixes
-  - `investigations/` - Historical investigations
-  - `investigations_2025/` - 2025 investigation documents
-  - `status_reports_2025/` - 2025 status reports
-  - `old_plans/` - Old action plans
-  - `redundant/` - Redundant/duplicate docs
-  - `superseded/` - Superseded documents
 
-### Recently Archived
-The following documents were archived to keep the main docs clean:
-- `100_PERCENT_MATCH_STATUS.md` → `archive/status_docs/`
-- `NEXT_STEPS.md` → `archive/status_docs/` (superseded by MATCHING_PLAN.md)
-- `MODERNIZATION_PLAN.md` → `archive/status_docs/` (modernization complete)
-- `FIND_PAIR_VALIDATION_COMPREHENSIVE.md` → `archive/status_docs/`
-- `COMPARISON_COVERAGE.md` → `archive/status_docs/`
-- `DEBUGGING_STRATEGIES.md` → `archive/status_docs/`
-- `CONFIGURATION_OPTIONS.md` → `archive/status_docs/`
-- `ATOM_INDEX_CONVERSION_FIX.md` → `archive/historical_fixes/`
-- `BASE_PAIR_RECORDING.md` → `archive/historical_fixes/`
-- `pdb_debug_reports/` → `archive/old_debug/`
+```
+archive/
+├── debugging_completed/     # Debugging docs from development
+│   ├── REF_FRAMES_*        # Frame comparison debugging
+│   ├── STEP_BY_STEP_*      # Implementation task docs
+│   ├── COMPARISON_*        # Comparison debugging
+│   ├── MATCHING_PLAN*      # Matching plan docs
+│   ├── INDEX/LEGACY guides # Index matching debugging
+│   └── Other debugging docs
+└── validation_completed/    # Completed validation reports
+    ├── VALIDATION_*.md
+    └── Investigation reports
+```
+
+**When to check archives:**
+- Need to understand how a specific issue was debugged
+- Looking for historical validation results
+- Reviewing completed implementation tasks
 
 ---
 
@@ -105,29 +94,34 @@ The following documents were archived to keep the main docs clean:
 ### By Task
 
 **I want to...**
-- **See current work plan**: [MATCHING_PLAN.md](MATCHING_PLAN.md) ⭐⭐⭐
-- **Run tests/compare results**: [TESTING_GUIDE.md](TESTING_GUIDE.md) ⭐⭐⭐
+- **Get started quickly**: [QUICK_START.md](QUICK_START.md)
+- **Run tests/compare results**: [TESTING_GUIDE.md](TESTING_GUIDE.md) ⭐
+- **Build the project**: [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)
 - **Understand the code**: [CODE_FLOW.md](CODE_FLOW.md)
-- **Get project overview**: [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)
-- **Match legacy indices**: [LEGACY_INDICES_GUIDE.md](LEGACY_INDICES_GUIDE.md)
-- **Use --fix-indices**: [FIX_INDICES_OPTION.md](FIX_INDICES_OPTION.md)
-- **Debug ref_frames**: [REF_FRAMES_NEXT_STEPS.md](REF_FRAMES_NEXT_STEPS.md)
 - **Understand JSON structure**: [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md)
 - **Understand legacy code**: [legacy/00_INDEX.md](legacy/00_INDEX.md)
+- **Understand modernization plan**: [modernization/README.md](modernization/README.md)
+- **See data organization**: [DATA_STRUCTURE.md](DATA_STRUCTURE.md)
 
 ### By Topic
 
-**Current Focus:**
-- **Matching Plan**: [MATCHING_PLAN.md](MATCHING_PLAN.md) - Current work to achieve exact matching
-- **Testing**: [TESTING_GUIDE.md](TESTING_GUIDE.md) - Testing and comparison workflows
-- **Ref Frames**: [REF_FRAMES_NEXT_STEPS.md](REF_FRAMES_NEXT_STEPS.md) - Reference frames debugging
+**Getting Started:**
+- [QUICK_START.md](QUICK_START.md) - Quick start guide
+- [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) - Build instructions
+- [../README.md](../README.md) - Main project overview
+
+**Development:**
+- [CODE_FLOW.md](CODE_FLOW.md) - Code architecture
+- [ALGORITHM_CRITICAL_GUIDE.md](ALGORITHM_CRITICAL_GUIDE.md) - Algorithm details
+- [modernization/](modernization/) - Design documentation
+
+**Testing & Validation:**
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Complete testing guide
+- [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md) - JSON comparison
 
 **Reference:**
-- **Residue Indexing**: [LEGACY_INDICES_GUIDE.md](LEGACY_INDICES_GUIDE.md), [FIX_INDICES_OPTION.md](FIX_INDICES_OPTION.md)
-- **Step Parameters**: [STEP_PARAMETERS_IMPLEMENTATION.md](STEP_PARAMETERS_IMPLEMENTATION.md)
-- **Algorithms**: [ALGORITHM_CRITICAL_GUIDE.md](ALGORITHM_CRITICAL_GUIDE.md)
-- **JSON Structure**: [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md)
-- **Legacy Code**: [legacy/](legacy/) - Complete legacy documentation
+- [legacy/](legacy/) - Legacy code documentation
+- [DATA_STRUCTURE.md](DATA_STRUCTURE.md) - Data organization
 
 ---
 
@@ -135,21 +129,35 @@ The following documents were archived to keep the main docs clean:
 
 | Document | Status | Priority |
 |----------|--------|----------|
-| MATCHING_PLAN.md | ✅ Active | ⭐⭐⭐ |
 | TESTING_GUIDE.md | ✅ Active | ⭐⭐⭐ |
-| REF_FRAMES_NEXT_STEPS.md | ✅ Active | ⭐⭐ |
-| LEGACY_INDICES_GUIDE.md | 📚 Reference | ⭐⭐ |
-| FIX_INDICES_OPTION.md | 📚 Reference | ⭐⭐ |
+| QUICK_START.md | ✅ Active | ⭐⭐⭐ |
 | CODE_FLOW.md | 📚 Reference | ⭐⭐ |
-| PROJECT_SUMMARY.md | 📚 Reference | ⭐⭐ |
+| BUILD_INSTRUCTIONS.md | 📚 Reference | ⭐⭐ |
 | JSON_DATA_TYPES_AND_COMPARISONS.md | 📚 Reference | ⭐⭐ |
+| ALGORITHM_CRITICAL_GUIDE.md | 📚 Reference | ⭐⭐ |
+| DATA_STRUCTURE.md | 📚 Reference | ⭐ |
+| legacy/ | 📚 Reference | ⭐⭐ |
+| modernization/ | 📚 Reference | ⭐ |
 
 **Legend:**
-- ✅ Active - Currently being used/updated
+- ✅ Active - Frequently used and updated
 - 📚 Reference - Technical reference documentation
-- ⭐⭐⭐ High priority
-- ⭐⭐ Medium priority
+- ⭐⭐⭐ High priority - Essential for daily work
+- ⭐⭐ Medium priority - Important reference material
+- ⭐ Low priority - Background/historical information
 
 ---
 
-*This documentation is organized to focus on current work (matching legacy and modern results) while keeping essential reference material easily accessible.*
+## Cleanup Notes
+
+**December 2, 2025**: Major cleanup performed to reduce clutter and improve organization:
+- Moved ~30 debugging/temporary docs to `archive/debugging_completed/`
+- Moved validation reports to `archive/validation_completed/`
+- Kept only 10 essential core documents
+- Preserved all legacy/ and modernization/ reference material
+
+See `../CLEANUP_SUMMARY.md` for complete details of what was archived.
+
+---
+
+*This documentation is organized to provide quick access to essential guides while keeping comprehensive reference material readily available.*

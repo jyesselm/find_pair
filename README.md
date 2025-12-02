@@ -492,42 +492,83 @@ For more detailed documentation, see `scripts/README.md` and [docs/TESTING_GUIDE
 
 ```
 find_pair_2/
+├── apps/                   # Main applications
+│   ├── find_pair_app.cpp   # Modern find_pair implementation
+│   └── analyze_app.cpp     # Modern analyze implementation
 ├── include/x3dna/          # Public headers (modern code)
 ├── src/x3dna/              # Implementation files (modern code)
 ├── org/                    # Legacy/original X3DNA code (reference)
 │   ├── src/                # Legacy C source files
 │   ├── include/            # Legacy headers
 │   └── build/              # Legacy build directory
-├── tools/                  # Standalone tools and utilities
-├── tests/                   # Test suite
-│   ├── unit/               # Unit tests
-│   ├── integration/        # Integration tests
-│   └── regression/         # Regression tests
-├── scripts/                 # Python scripts for JSON comparison/rebuilding
-├── data/                    # Data files
-│   ├── pdb/                # PDB structure files
-│   ├── templates/          # Template files for base frame calculation
-│   ├── json/               # Modern JSON output (segmented by record type)
-│   ├── json_legacy/        # Legacy JSON output (reference for comparison)
-│   └── test_sets/          # Test set definitions
-└── docs/                    # Documentation
-    ├── legacy/             # Legacy code documentation
-    └── modernization/      # Stage-by-stage modernization plan
+├── tools/                  # Standalone utility tools
+│   └── generate_modern_json.cpp  # Main JSON generation tool
+├── tests/                  # Test suite
+│   ├── unit/              # Unit tests
+│   └── integration/       # Integration tests
+├── scripts/                # Essential Python scripts
+│   ├── compare_json.py    # Main JSON comparison tool
+│   ├── rebuild_json.py    # JSON regeneration tool
+│   ├── download_pdbs.py   # PDB download utility
+│   └── cluster/           # Cluster computing scripts
+├── resources/              # Runtime resources
+│   ├── templates/         # Base frame templates (Atomic_*.pdb)
+│   ├── config/            # Configuration files
+│   └── test_sets/         # Test set definitions
+├── data/                   # Generated data and inputs
+│   ├── pdb/               # PDB structure files (inputs)
+│   ├── json/              # Modern JSON output
+│   └── json_legacy/       # Legacy JSON output (reference)
+├── docs/                   # Documentation
+│   ├── README.md          # Documentation index
+│   ├── QUICK_START.md     # Getting started guide
+│   ├── TESTING_GUIDE.md   # Testing and comparison guide
+│   ├── CODE_FLOW.md       # Architecture and code flow
+│   ├── legacy/            # Legacy code documentation
+│   ├── modernization/     # Modernization plan and stages
+│   └── archive/           # Archived debugging/completed docs
+└── x3dna_json_compare/     # Python comparison library
+    └── *.py               # Comparison modules
 ```
 
-## Directory Structure
+## Directory Organization
 
-### Resources Directory (Required Runtime Resources)
-- **`resources/templates/`** - Template files (Atomic_*.pdb) for base frame calculation
-- **`resources/config/`** - Configuration files (special_residues.json)
-- **`resources/test_sets/`** - Test set definitions (test_set_10.json, test_set_100.json, etc.)
+### Essential Directories
 
-### Data Directory (Test Inputs and Generated Outputs)
-- **`data/pdb/`** - PDB structure files (test inputs)
-- **`data/json/`** - Modern JSON output files (segmented by record type, generated)
-- **`data/json_legacy/`** - Legacy JSON output files (reference for comparison, generated)
+**Source Code:**
+- `apps/` - Main application entry points
+- `include/x3dna/`, `src/x3dna/` - Modern C++ library
+- `org/` - Legacy reference code (do not edit except for JSON output)
 
-See [docs/DATA_STRUCTURE.md](docs/DATA_STRUCTURE.md) for complete data directory documentation.
+**Resources (Runtime):**
+- `resources/templates/` - Base frame templates (Atomic_*.pdb)
+- `resources/config/` - Configuration files
+- `resources/test_sets/` - Test set definitions
+
+**Data (Generated):**
+- `data/pdb/` - Input PDB files
+- `data/json/` - Modern JSON output
+- `data/json_legacy/` - Legacy JSON output (reference)
+
+**Scripts & Tools:**
+- `scripts/` - Essential Python tools (compare_json.py, rebuild_json.py)
+- `tools/` - C++ utility programs
+- `x3dna_json_compare/` - Python comparison library
+
+**Testing:**
+- `tests/unit/` - Unit tests
+- `tests/integration/` - Integration tests
+
+**Documentation:**
+- `docs/` - All documentation (see [docs/README.md](docs/README.md))
+
+### Archive Directories
+
+Completed debugging work and temporary files are archived in:
+- `docs/archive/` - Archived documentation
+- `scripts/archive/` - Archived scripts
+- `tools/archive/` - Archived debugging tools
+- `data/archive/` - Archived result files
 
 ## Documentation
 
