@@ -1,0 +1,23 @@
+Checking frames for 3790 validated PDBs...
+
+  ❌ 1EHZ: LARGE diffs (org=0.0000, orien=1.9900)
+  Progress: 500/3790 - 0 perfect, 0 excellent
+  Progress: 1000/3790 - 0 perfect, 0 excellent
+  Progress: 1500/3790 - 0 perfect, 0 excellent
+  Progress: 2000/3790 - 0 perfect, 0 excellent
+  ❌ 7EH2: LARGE diffs (org=0.0000, orien=1.9586)
+  Progress: 2500/3790 - 0 perfect, 0 excellent
+  Progress: 3000/3790 - 0 perfect, 0 excellent
+  Progress: 3500/3790 - 0 perfect, 0 excellent
+
+============================================================
+FRAME VERIFICATION COMPLETE
+============================================================
+Total: 3790
+✅ Perfect (< 0.001 Å, < 0.0001): 0
+✅ Excellent (< 0.01 Å, < 0.001): 0
+⚠️  Acceptable (< 0.1 Å, < 0.01): 0
+❌ Failed: 2
+⏭️  Skipped: 3788
+
+❌ 2 PDBs have large frame differences
