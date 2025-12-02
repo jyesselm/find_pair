@@ -20,7 +20,10 @@
 ### Core Guides
 - **[QUICK_START.md](QUICK_START.md)** - Quick start for new developers
 - **[TESTING_GUIDE.md](TESTING_GUIDE.md)** ⭐ - Complete testing and validation guide
-- **[VALIDATION_PROGRESS.md](VALIDATION_PROGRESS.md)** ⭐ **NEW** - Current validation status and progress
+- **[TEST_SET_STATUS.md](TEST_SET_STATUS.md)** ⭐⭐⭐ **NEW** - Your 22-PDB test set status & next steps
+- **[CURRENT_VALIDATION_STATUS.md](CURRENT_VALIDATION_STATUS.md)** ⭐⭐ **NEW** - JSON inventory & where you are
+- **[STAGED_VALIDATION_PLAN.md](STAGED_VALIDATION_PLAN.md)** ⭐⭐ **NEW** - 8-stage validation roadmap
+- **[VALIDATION_PROGRESS.md](VALIDATION_PROGRESS.md)** ⭐ **NEW** - Overall validation progress tracker
 - **[NEXT_STEPS.md](NEXT_STEPS.md)** ⭐ **NEW** - Immediate next steps toward 100% accuracy
 - **[BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)** - Build and compilation instructions
 - **[CODE_FLOW.md](CODE_FLOW.md)** - Detailed code flow and architecture
