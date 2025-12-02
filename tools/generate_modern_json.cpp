@@ -387,30 +387,45 @@ int main(int argc, char* argv[]) {
     
     x3dna::ResidueTracker tracker;
     
-    // Populate tracker from structure
-    // Strategy: Iterate through residues in the structure and track them
-    // For now, we'll use the structure's residue order as the "read" order
+    // Populate tracker from structure - ONLY NUCLEOTIDES (residues with frames)
+    // Legacy only tracks nucleotides, so we must do the same
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
+            // Only track residues that have reference frames (nucleotides)
+            if (!residue.reference_frame().has_value()) {
+                continue;
+            }
+            
+            // Convert insertion char to string, handling space as empty
+            std::string insertion_str = (residue.insertion() == ' ') ? "" : std::string(1, residue.insertion());
+            
             tracker.add_residue(
                 std::string(1, residue.chain_id()),
                 residue.seq_num(),
-                std::string(1, residue.insertion()),
+                insertion_str,
                 residue.name()
             );
         }
     }
     
-    // Assign modern indices (0-based)
+    // Assign modern indices (0-based) - ONLY FOR NUCLEOTIDES
     int modern_idx = 0;
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
+            // Only assign indices to nucleotides
+            if (!residue.reference_frame().has_value()) {
+                continue;
+            }
+            
+            // Convert insertion char to string, handling space as empty (must match above)
+            std::string insertion_str = (residue.insertion() == ' ') ? "" : std::string(1, residue.insertion());
+            
             // Find this residue in tracker
             for (size_t i = 0; i < tracker.size(); i++) {
                 const auto& rec = tracker.get_residues()[i];
                 if (rec.chain_id == std::string(1, residue.chain_id()) &&
                     rec.residue_seq == residue.seq_num() &&
-                    rec.insertion == std::string(1, residue.insertion())) {
+                    rec.insertion == insertion_str) {
                     tracker.assign_modern_index(i, modern_idx);
                     modern_idx++;
                     break;
