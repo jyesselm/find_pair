@@ -18,10 +18,24 @@ python3 scripts/summarize_validation.py
 python3 scripts/analyze_index_mismatches.py
 ```
 
-### Validate all PDBs (full recheck)
+### Validate all remaining PDBs (auto-resume)
 
 ```bash
+# Tests only PDBs that haven't passed yet (auto-resumes)
 python3 scripts/validate_all_indices.py --threads 8
+```
+
+### Validate ALL PDBs (full recheck)
+
+```bash
+# Revalidates everything, including those that already passed
+python3 scripts/validate_all_indices.py --threads 8 --revalidate
+```
+
+### Keep generated files (don't clean up)
+
+```bash
+python3 scripts/validate_all_indices.py --no-clean
 ```
 
 ### Check a specific PDB

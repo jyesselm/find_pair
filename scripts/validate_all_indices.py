@@ -6,14 +6,34 @@ Tests ResidueTracker on all PDBs in batches, tracking results in CSV.
 Stops on first failure for investigation.
 Uses threading for parallel processing.
 
+Features:
+- Auto-resumes: skips PDBs that already passed, retests failures
+- Cleans up: removes generated JSON files after successful validation (default)
+- Parallel processing: uses multiple threads for speed
+
 Usage:
-    python3 scripts/validate_all_indices.py [--threads N] [--batch-size N] [--start-from PDB_ID]
+    # Validate all untested PDBs (auto-resume)
+    python3 scripts/validate_all_indices.py
+    
+    # Validate with custom settings
+    python3 scripts/validate_all_indices.py --threads 8 --batch-size 100
+    
+    # Resume from a specific PDB
+    python3 scripts/validate_all_indices.py --start-from 6V9Q
+    
+    # Revalidate all PDBs (including those that passed)
+    python3 scripts/validate_all_indices.py --revalidate
+    
+    # Keep generated files (don't clean up)
+    python3 scripts/validate_all_indices.py --no-clean
     
 Options:
     --threads N         Number of parallel threads (default: 4)
-    --batch-size N      Process N PDBs at a time (default: 20)
+    --batch-size N      Process N PDBs at a time (default: 50)
     --start-from PDB    Resume from this PDB ID
-    --clean             Remove generated JSON files after validation
+    --revalidate        Revalidate all PDBs, including those that already passed
+    --clean             Remove generated files after validation (default: True)
+    --no-clean          Keep generated files after validation
 """
 
 import sys
@@ -164,18 +184,19 @@ def check_index_validation(pdb_id: str, project_root: Path, clean: bool = False)
                         except:
                             pass
                 
-                # AGGRESSIVE CLEANUP: Remove ALL generated files for this PDB
-                json_dir = project_root / "data" / "json"
-                for subdir in json_dir.glob("*"):
-                    if subdir.is_dir():
-                        pdb_file = subdir / f"{pdb_id}.json"
-                        if pdb_file.exists():
-                            pdb_file.unlink()
-                
-                # Remove mapping file (only keep for failures)
-                mapping_file = project_root / "data" / "index_mapping" / f"{pdb_id}.json"
-                if mapping_file.exists():
-                    mapping_file.unlink()
+                # AGGRESSIVE CLEANUP: Remove ALL generated files for this PDB if clean flag is set
+                if clean:
+                    json_dir = project_root / "data" / "json"
+                    for subdir in json_dir.glob("*"):
+                        if subdir.is_dir():
+                            pdb_file = subdir / f"{pdb_id}.json"
+                            if pdb_file.exists():
+                                pdb_file.unlink()
+                    
+                    # Remove mapping file (only keep for failures)
+                    mapping_file = project_root / "data" / "index_mapping" / f"{pdb_id}.json"
+                    if mapping_file.exists():
+                        mapping_file.unlink()
                 
                 return result
             else:
@@ -311,8 +332,12 @@ def main():
                        help='Process N PDBs at a time (default: 50)')
     parser.add_argument('--start-from', type=str, default=None,
                        help='Resume from this PDB ID')
-    parser.add_argument('--clean', action='store_true',
-                       help='Remove generated files after successful validation')
+    parser.add_argument('--clean', action='store_true', default=True,
+                       help='Remove generated files after successful validation (default: True)')
+    parser.add_argument('--no-clean', dest='clean', action='store_false',
+                       help='Keep generated files after successful validation')
+    parser.add_argument('--revalidate', action='store_true',
+                       help='Revalidate all PDBs, including those that already passed')
     
     args = parser.parse_args()
     
@@ -336,10 +361,17 @@ def main():
         start_idx = all_pdb_ids.index(args.start_from) if args.start_from in all_pdb_ids else 0
         pdb_ids_to_test = all_pdb_ids[start_idx:]
         print(f"Starting from {args.start_from} ({len(pdb_ids_to_test)} PDBs remaining)")
+    elif args.revalidate:
+        pdb_ids_to_test = all_pdb_ids
+        print(f"Revalidating all {len(pdb_ids_to_test)} PDBs")
     else:
+        # Auto-resume: skip only those that PASSED, retest FAIL/SKIP/ERROR/TIMEOUT
         pdb_ids_to_test = [pdb for pdb in all_pdb_ids 
-                          if pdb not in status or status[pdb].get('status') not in ['PASS', 'FAIL']]
-        print(f"Testing {len(pdb_ids_to_test)} PDBs (skipping {len(all_pdb_ids) - len(pdb_ids_to_test)} already tested)")
+                          if pdb not in status or status[pdb].get('status') != 'PASS']
+        already_passed = len(all_pdb_ids) - len(pdb_ids_to_test)
+        print(f"Auto-resuming: {len(pdb_ids_to_test)} PDBs to test ({already_passed} already passed)")
+        if already_passed > 0:
+            print(f"  (Use --revalidate to retest all PDBs)")
     
     if not pdb_ids_to_test:
         print("All PDBs already tested!")
@@ -349,7 +381,8 @@ def main():
     total = len(pdb_ids_to_test)
     batch_size = args.batch_size
     
-    print(f"\nProcessing in batches of {batch_size} with {args.threads} threads...\n")
+    cleanup_msg = "cleaning up" if args.clean else "keeping"
+    print(f"\nProcessing in batches of {batch_size} with {args.threads} threads ({cleanup_msg} generated files)...\n")
     
     for batch_start in range(0, total, batch_size):
         batch_end = min(batch_start + batch_size, total)
