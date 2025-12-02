@@ -237,22 +237,48 @@ nlohmann::json Residue::frame_to_json() const {
 // In src/x3dna/models/base_pair.cpp
 nlohmann::json BasePair::to_json() const {
     nlohmann::json j;
-    // Use stored legacy indices (already 1-based)
+    
+    // Legacy basepair index (1-based, for tracking like legacy does)
+    j["basepair_idx"] = legacy_basepair_idx_;
+    
+    // Residue indices (already 1-based)
     j["base_i"] = legacy_residue_idx1_;
     j["base_j"] = legacy_residue_idx2_;
+    
+    // Pair data
     j["bp_type"] = bp_type_;
-    // ... write frame data, etc.
+    j["orien_i"] = frame1_.rotation_matrix_to_json();
+    j["orien_j"] = frame2_.rotation_matrix_to_json();
+    j["org_i"] = frame1_.origin_to_json();
+    j["org_j"] = frame2_.origin_to_json();
+    // ... etc.
+    
     return j;
 }
 ```
 
-**Note**: BasePair should store legacy indices when created:
+**Note**: BasePair stores THREE legacy indices:
 ```cpp
-// In BasePairFinder when creating pair:
+// In BasePair class:
+class BasePair {
+private:
+    // Modern indices (0-based, internal use)
+    size_t residue_idx1_;
+    size_t residue_idx2_;
+    
+    // Legacy indices (1-based, for JSON/comparison)
+    int legacy_basepair_idx_;     // Which base pair # (1, 2, 3...)
+    int legacy_residue_idx1_;     // Residue 1's legacy index
+    int legacy_residue_idx2_;     // Residue 2's legacy index
+};
+
+// When creating:
 BasePair pair;
-pair.set_legacy_indices(res1.legacy_idx(), res2.legacy_idx());
-// Already 1-based, no conversion needed
+pair.set_legacy_basepair_idx(basepair_counter++);  // 1-based
+pair.set_legacy_residue_indices(res1.legacy_idx(), res2.legacy_idx());
 ```
+
+**Why**: Track base pairs the same way legacy does (1-based indexing for everything in JSON)
 
 ### Step 2: Protocols Write Their Results
 
@@ -429,15 +455,19 @@ Once all objects write themselves:
 ### What Each Object Writes
 
 **Atom** (`to_json()`):
-- atom_idx, atom_name, residue_name, chain_id, residue_seq
+- atom_idx (uses legacy_atom_idx, 1-based)
+- atom_name, residue_name, chain_id, residue_seq
 - xyz, record_type, line_number
 
 **Residue** (`frame_to_json()`):
+- residue_idx (uses legacy_residue_idx, 1-based)
 - base_frame_calc: residue info + RMS + matched atoms
 - frame_calc: rotation matrix + origin
 
 **BasePair** (`to_json()`):
-- base_i, base_j, bp_type
+- basepair_idx (uses legacy_basepair_idx, 1-based)
+- base_i, base_j (uses legacy_residue_idx1/2, 1-based)
+- bp_type
 - orien_i, orien_j, org_i, org_j
 - H-bonds, validation results
 
