@@ -156,7 +156,7 @@ def generate_modern_frames(pdb_id: str, pdb_file: Path, output_dir: Path,
 
 def compare_frames_json(legacy_base_frame: Path, legacy_frame_calc: Path, legacy_ls_fitting: Path,
                        modern_base_frame: Path, modern_frame_calc: Path, modern_ls_fitting: Path,
-                       pdb_file: Path) -> Tuple[bool, Dict]:
+                       pdb_file: Path, project_root: Path) -> Tuple[bool, Dict]:
     """Compare legacy and modern frames JSON files."""
     try:
         # Load legacy JSON files
@@ -193,9 +193,25 @@ def compare_frames_json(legacy_base_frame: Path, legacy_frame_calc: Path, legacy
                     else:
                         modern_records.append(data)
         
+        # Load legacy atoms for atom_idx lookup (optional but helpful)
+        legacy_atoms = []
+        legacy_atoms_file = project_root / "data" / "json_legacy" / "pdb_atoms" / f"{pdb_file.stem}.json"
+        if legacy_atoms_file.exists():
+            try:
+                with open(legacy_atoms_file) as f:
+                    atoms_data = json.load(f)
+                    if isinstance(atoms_data, list) and len(atoms_data) > 0:
+                        # Legacy atoms JSON is a list with a single pdb_atoms record
+                        if isinstance(atoms_data[0], dict) and "atoms" in atoms_data[0]:
+                            legacy_atoms = atoms_data[0]["atoms"]
+                    elif isinstance(atoms_data, dict) and "atoms" in atoms_data:
+                        legacy_atoms = atoms_data["atoms"]
+            except Exception:
+                pass  # If we can't load atoms, comparison will still work
+        
         # Use the comparison module
         pdb_reader = PdbFileReader(pdb_file) if pdb_file.exists() else None
-        comparison_result = compare_frames(legacy_records, modern_records, pdb_file, pdb_reader)
+        comparison_result = compare_frames(legacy_records, modern_records, pdb_file, pdb_reader, legacy_atoms)
         
         if (comparison_result.missing_residues or 
             comparison_result.mismatched_calculations):
@@ -278,7 +294,7 @@ def process_pdb(pdb_id: str, pdb_file: str, output_dir: str,
             compare_ok, compare_result = compare_frames_json(
                 legacy_base_frame, legacy_frame_calc, legacy_ls_fitting,
                 modern_base_frame, modern_frame_calc, modern_ls_fitting,
-                pdb_file
+                pdb_file, project_root
             )
             result["compare_ok"] = compare_ok
             if compare_ok:
