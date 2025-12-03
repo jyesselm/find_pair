@@ -56,11 +56,13 @@ def test_pdb_detailed(pdb_id, legacy_exe, modern_exe):
         return {"status": "error", "reason": f"JSON decode error: {e}"}
     
     # Deduplicate legacy records (old legacy JSON has duplicates from ana_fncs.c)
+    # CRITICAL: Must include insertion code in key - C20 and C20A are different residues!
     if len(legacy) > len(modern):
         seen = set()
         unique_legacy = []
         for rec in legacy:
-            key = (rec.get('chain_id'), rec.get('residue_seq'), rec.get('residue_name', '').strip())
+            key = (rec.get('chain_id'), rec.get('residue_seq'), 
+                   rec.get('insertion', ' '), rec.get('residue_name', '').strip())
             if key not in seen:
                 seen.add(key)
                 unique_legacy.append(rec)

@@ -45,11 +45,12 @@ def compare_ls_fitting_json(legacy_file: Path, modern_file: Path,
         # Modern only generates once per residue (correct behavior)
         # So we need to deduplicate legacy records before comparing
         if len(legacy_records) > len(modern_records):
-            # Create unique records based on residue identifier
+            # Create unique records based on residue identifier (MUST include insertion code!)
             seen = set()
             unique_legacy = []
             for rec in legacy_records:
-                key = (rec.get('chain_id'), rec.get('residue_seq'), rec.get('residue_name', '').strip())
+                key = (rec.get('chain_id'), rec.get('residue_seq'), 
+                       rec.get('insertion', ' '), rec.get('residue_name', '').strip())
                 if key not in seen:
                     seen.add(key)
                     unique_legacy.append(rec)
