@@ -376,8 +376,8 @@ def main():
         # Process batch in parallel using processes (not threads)
         batch_results = []
         
-        # For legacy regeneration, use fewer processes to avoid system overload
-        effective_workers = min(num_threads, 5) if legacy_exe else num_threads
+        # Use 10 processes for residue_indices testing (faster than atoms)
+        effective_workers = min(num_threads, 10) if legacy_exe else num_threads
         
         with ProcessPoolExecutor(max_workers=effective_workers) as executor:
             futures = {
