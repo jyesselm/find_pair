@@ -1,5 +1,6 @@
 legacy is org/ code modern is src/ and include/
 use a centralized testing framework
+focus on easy to read function and clean not fancy
 all modern code must have legacy inds when required to compare to org code which is 1-index based so we can directly compare
 Keep functions short and focused. If a function does more than one thing, split it up. Aim for functions you can understand at a glance.
 Use RAII religiously.
@@ -7,4 +8,3 @@ Avoid raw pointers for ownership.
 perfer pass by const reference, Pass by rvalue reference (&&) 
 Minimal nesting no more than 3 levels
 functions shouldnt be longer than 50 lines (100 for special exceptions)
-perfer c++20 when possible

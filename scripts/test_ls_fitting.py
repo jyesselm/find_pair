@@ -312,30 +312,41 @@ def main():
     print(f"Output dir: {output_dir}")
     print()
     
-    result = test_single_pdb(
-        pdb_id, pdb_file, output_dir, legacy_exe, modern_exe, project_root
-    )
+    try:
+        result = test_single_pdb(
+            pdb_id, pdb_file, output_dir, legacy_exe, modern_exe, project_root
+        )
+        
+        # Print results
+        print(f"Results for {pdb_id}:")
+        print(f"  Legacy generation: {'✓' if result['legacy_ok'] else '✗'}")
+        print(f"  Modern generation: {'✓' if result['modern_ok'] else '✗'}")
+        print(f"  Comparison: {'✓' if result['compare_ok'] else '✗'}")
+        
+        if result.get("matched") is not None:
+            print(f"  Matched: {result['matched']}/{result.get('total', 0)} records")
+        
+        if result["errors"]:
+            print("\nErrors:")
+            for error in result["errors"]:
+                print(f"  - {error}")
+        
+        success = result["legacy_ok"] and result["modern_ok"] and result["compare_ok"]
+        
+        if success:
+            print("\n✓ All tests passed!")
+            return_code = 0
+        else:
+            print("\n✗ Some tests failed")
+            return_code = 1
+    finally:
+        # Clean up output directory
+        import shutil
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
+            print(f"\nCleaned up output directory: {output_dir}")
     
-    # Print results
-    print(f"Results for {pdb_id}:")
-    print(f"  Legacy generation: {'✓' if result['legacy_ok'] else '✗'}")
-    print(f"  Modern generation: {'✓' if result['modern_ok'] else '✗'}")
-    print(f"  Comparison: {'✓' if result['compare_ok'] else '✗'}")
-    
-    if result.get("matched") is not None:
-        print(f"  Matched: {result['matched']}/{result.get('total', 0)} records")
-    
-    if result["errors"]:
-        print("\nErrors:")
-        for error in result["errors"]:
-            print(f"  - {error}")
-    
-    if result["legacy_ok"] and result["modern_ok"] and result["compare_ok"]:
-        print("\n✓ All tests passed!")
-        return 0
-    else:
-        print("\n✗ Some tests failed")
-        return 1
+    return return_code
 
 if __name__ == "__main__":
     sys.exit(main())

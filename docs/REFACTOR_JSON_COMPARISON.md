@@ -103,42 +103,89 @@ class JsonRecord:
     
 @dataclass
 class AtomRecord(JsonRecord):
-    """Atom record with normalized fields."""
-    atom_idx: int
-    atom_name: str
-    residue_name: str
-    chain_id: str
-    residue_seq: int
-    insertion: str
-    xyz: Tuple[float, float, float]
-    # ... other fields
+    """Atom record with normalized fields - ALL REQUIRED."""
+    atom_idx: int  # REQUIRED: 1-based atom index
+    atom_name: str  # REQUIRED: e.g., " C1'"
+    residue_name: str  # REQUIRED: e.g., "  C"
+    chain_id: str  # REQUIRED: chain identifier
+    residue_seq: int  # REQUIRED: residue sequence number
+    insertion: str  # REQUIRED: insertion code (space if none)
+    xyz: Tuple[float, float, float]  # REQUIRED: coordinates
+    record_type: str  # REQUIRED: "ATOM" or "HETATM"
+    line_number: int  # REQUIRED: PDB file line number (> 0)
     
 @dataclass
 class FrameRecord(JsonRecord):
-    """Frame calculation record."""
-    residue_idx: int
-    legacy_residue_idx: Optional[int]
-    residue_name: str
-    chain_id: str
-    residue_seq: int
-    insertion: str
-    rms_fit: float
-    # ... other fields
+    """Frame calculation record - ALL REQUIRED FIELDS."""
+    residue_idx: int  # REQUIRED: residue index
+    legacy_residue_idx: int  # REQUIRED: legacy residue index (1-based)
+    residue_name: str  # REQUIRED: e.g., "  C"
+    chain_id: str  # REQUIRED: chain identifier
+    residue_seq: int  # REQUIRED: residue sequence number
+    insertion: str  # REQUIRED: insertion code (space if none)
+    rms_fit: float  # REQUIRED: RMS fit value
+    num_matched_atoms: int  # REQUIRED: number of matched atoms
+    matched_atoms: List[str]  # REQUIRED: list of matched atom names
+    template_file: str  # REQUIRED: path to template file used
+    base_type: str  # REQUIRED: one-letter code (A, C, G, T, U)
+    
+    # For ls_fitting records:
+    rotation_matrix: List[List[float]]  # REQUIRED for ls_fitting: 3x3 matrix
+    translation: List[float]  # REQUIRED for ls_fitting: 3D vector
+    num_points: int  # REQUIRED for ls_fitting: number of points used
+
+@dataclass
+class ResidueIndicesRecord(JsonRecord):
+    """Residue indices record - ALL REQUIRED."""
+    residue_idx: int  # REQUIRED: residue index
+    legacy_residue_idx: int  # REQUIRED: legacy residue index (1-based)
+    residue_name: str  # REQUIRED
+    chain_id: str  # REQUIRED
+    residue_seq: int  # REQUIRED
+    insertion: str  # REQUIRED
+    start_atom: int  # REQUIRED: first atom index (1-based)
+    end_atom: int  # REQUIRED: last atom index (1-based, inclusive)
+
+@dataclass
+class StepParametersRecord(JsonRecord):
+    """Base pair step parameters record - ALL REQUIRED."""
+    bp_idx1: int  # REQUIRED: first base pair index
+    bp_idx2: int  # REQUIRED: second base pair index
+    shift: float  # REQUIRED
+    slide: float  # REQUIRED
+    rise: float  # REQUIRED
+    tilt: float  # REQUIRED
+    roll: float  # REQUIRED
+    twist: float  # REQUIRED
 ```
 
 #### Comparison Result Models (`comparison_models.py`)
 ```python
 @dataclass
 class ComparisonResult:
-    """Unified comparison result."""
-    pdb_id: str
-    status: str  # "match", "mismatch", "error", "missing"
+    """Unified comparison result - ALL REQUIRED FIELDS."""
+    pdb_id: str  # REQUIRED: PDB identifier
+    status: str  # REQUIRED: "match", "mismatch", "error", "missing"
+    timestamp: float  # REQUIRED: comparison timestamp
+    
+    # Comparison results - one must be present
     atom_comparison: Optional[AtomComparison] = None
     frame_comparison: Optional[FrameComparison] = None
     step_comparison: Optional[StepComparison] = None
+    residue_indices_comparison: Optional[ResidueIndicesComparison] = None
     # ... other comparisons
-    errors: List[str] = field(default_factory=list)
-    timestamp: float = field(default_factory=time.time)
+    
+    errors: List[str] = field(default_factory=list)  # REQUIRED: list (may be empty)
+    
+    def __post_init__(self):
+        """Validate that at least one comparison is present."""
+        if not any([
+            self.atom_comparison,
+            self.frame_comparison,
+            self.step_comparison,
+            self.residue_indices_comparison,
+        ]):
+            raise ValueError("At least one comparison result must be provided")
     
     def is_match(self) -> bool:
         """Check if all comparisons match."""

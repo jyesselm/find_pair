@@ -328,23 +328,23 @@ def main():
     if not legacy_exe:
         print("⚠️  Legacy executable not found, will only test modern generation")
     
-    # Load valid PDBs list (prefer fast PDBs if available)
+    # Load valid PDBs list - MUST use valid_pdbs_fast.json
     fast_pdbs_file = project_root / "data" / "valid_pdbs_fast.json"
-    valid_pdbs_file = project_root / "data" / "valid_pdbs.json"
     
-    if fast_pdbs_file.exists():
-        with open(fast_pdbs_file) as f:
-            pdbs_data = json.load(f)
-            pdb_list = pdbs_data.get("valid_pdbs_with_atoms_and_frames", [])
-        print(f"📋 Using {fast_pdbs_file.name} ({len(pdb_list)} PDBs)")
-    elif valid_pdbs_file.exists():
-        with open(valid_pdbs_file) as f:
-            pdbs_data = json.load(f)
-            pdb_list = pdbs_data.get("valid_pdbs_with_atoms_and_frames", [])
-        print(f"📋 Using {valid_pdbs_file.name} ({len(pdb_list)} PDBs)")
-    else:
-        print("❌ No valid PDBs file found!")
+    if not fast_pdbs_file.exists():
+        print(f"❌ {fast_pdbs_file} not found!")
+        print("   This script requires valid_pdbs_fast.json for testing.")
         return 1
+    
+    with open(fast_pdbs_file) as f:
+        pdbs_data = json.load(f)
+        pdb_list = pdbs_data.get("valid_pdbs_with_atoms_and_frames", [])
+    
+    if not pdb_list:
+        print(f"❌ No PDBs found in {fast_pdbs_file.name}")
+        return 1
+    
+    print(f"📋 Using {fast_pdbs_file.name} ({len(pdb_list)} PDBs)")
     
     # Load existing results if any
     existing_results = {}
