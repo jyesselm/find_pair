@@ -133,17 +133,39 @@ public:
 
     /**
      * @brief Calculate frames and write JSON records
-     *
+     * 
      * This is the standard workflow for frame calculation:
      * 1. Auto-detect RNA vs DNA
      * 2. Calculate all frames
      * 3. Record frame JSON (base_frame_calc, ls_fitting, frame_calc)
-     *
+     * 
      * @param structure Structure to process
      * @param writer JsonWriter to record results
      * @return Number of frames calculated and recorded
      */
     size_t calculate_and_record_frames(core::Structure& structure, io::JsonWriter& writer);
+
+    /**
+     * @brief Calculate frames and record only ls_fitting JSON
+     * 
+     * Stage 3: Only records ls_fitting (least-squares fitting data)
+     * 
+     * @param structure Structure to process
+     * @param writer JsonWriter to record results
+     * @return Number of frames calculated and recorded
+     */
+    size_t calculate_and_record_ls_fitting(core::Structure& structure, io::JsonWriter& writer);
+
+    /**
+     * @brief Calculate frames and record only base_frame_calc and frame_calc JSON
+     * 
+     * Stage 4: Only records base_frame_calc and frame_calc (not ls_fitting)
+     * 
+     * @param structure Structure to process
+     * @param writer JsonWriter to record results
+     * @return Number of frames calculated and recorded
+     */
+    size_t calculate_and_record_frames_only(core::Structure& structure, io::JsonWriter& writer);
 
 private:
     mutable StandardBaseTemplates

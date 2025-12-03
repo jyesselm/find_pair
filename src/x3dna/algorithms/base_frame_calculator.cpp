@@ -590,5 +590,113 @@ size_t BaseFrameCalculator::calculate_and_record_frames(core::Structure& structu
     return frames_recorded;
 }
 
+size_t BaseFrameCalculator::calculate_and_record_ls_fitting(core::Structure& structure,
+                                                           io::JsonWriter& writer) {
+    // Auto-detect RNA vs DNA
+    bool is_rna = detect_rna(structure);
+    set_is_rna(is_rna);
+
+    // Calculate and record frames in one pass
+    // Get residues in legacy order (PDB file order)
+    auto residues = structure.residues_in_legacy_order();
+    size_t frames_recorded = 0;
+
+    for (const auto* residue_ptr : residues) {
+        auto* residue = const_cast<core::Residue*>(residue_ptr);
+
+        // Skip amino acids (calculate_frame handles other types including UNKNOWN)
+        if (residue->residue_type() == core::ResidueType::AMINO_ACID) {
+            continue;
+        }
+
+        // Calculate frame (stores frame on residue and returns full result)
+        FrameCalculationResult frame_result = calculate_frame(*residue);
+
+        if (!frame_result.is_valid) {
+            continue;
+        }
+
+        // Get legacy_residue_idx from atoms
+        int legacy_residue_idx = 0;
+        if (!residue->atoms().empty()) {
+            legacy_residue_idx = residue->atoms()[0].legacy_residue_idx();
+        }
+
+        if (legacy_residue_idx <= 0) {
+            continue;
+        }
+
+        size_t record_idx = static_cast<size_t>(legacy_residue_idx);
+
+        // Record ONLY ls_fitting
+        writer.record_ls_fitting(record_idx, frame_result.num_matched, frame_result.rms_fit,
+                                frame_result.rotation_matrix, frame_result.translation,
+                                residue->name(), residue->chain_id(), residue->seq_num(),
+                                residue->insertion());
+
+        frames_recorded++;
+    }
+
+    return frames_recorded;
+}
+
+size_t BaseFrameCalculator::calculate_and_record_frames_only(core::Structure& structure,
+                                                             io::JsonWriter& writer) {
+    // Auto-detect RNA vs DNA
+    bool is_rna = detect_rna(structure);
+    set_is_rna(is_rna);
+
+    // Calculate and record frames in one pass
+    // Get residues in legacy order (PDB file order)
+    auto residues = structure.residues_in_legacy_order();
+    size_t frames_recorded = 0;
+
+    for (const auto* residue_ptr : residues) {
+        auto* residue = const_cast<core::Residue*>(residue_ptr);
+
+        // Skip amino acids (calculate_frame handles other types including UNKNOWN)
+        if (residue->residue_type() == core::ResidueType::AMINO_ACID) {
+            continue;
+        }
+
+        // Calculate frame (stores frame on residue and returns full result)
+        FrameCalculationResult frame_result = calculate_frame(*residue);
+
+        if (!frame_result.is_valid) {
+            continue;
+        }
+
+        // Get legacy_residue_idx from atoms
+        int legacy_residue_idx = 0;
+        if (!residue->atoms().empty()) {
+            legacy_residue_idx = residue->atoms()[0].legacy_residue_idx();
+        }
+
+        if (legacy_residue_idx <= 0) {
+            continue;
+        }
+
+        char base_type = residue->one_letter_code();
+        size_t record_idx = static_cast<size_t>(legacy_residue_idx);
+
+        // Record base_frame_calc
+        writer.record_base_frame_calc(record_idx, base_type, frame_result.template_file,
+                                     frame_result.rms_fit, frame_result.matched_atoms,
+                                     residue->name(), residue->chain_id(), residue->seq_num(),
+                                     residue->insertion());
+
+        // Record frame_calc
+        std::vector<geometry::Vector3D> standard_coords, experimental_coords;
+        writer.record_frame_calc(record_idx, base_type, frame_result.template_file,
+                                frame_result.rms_fit, standard_coords, experimental_coords,
+                                residue->name(), residue->chain_id(), residue->seq_num(),
+                                residue->insertion());
+
+        frames_recorded++;
+    }
+
+    return frames_recorded;
+}
+
 } // namespace algorithms
 } // namespace x3dna
