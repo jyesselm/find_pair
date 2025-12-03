@@ -38,13 +38,13 @@ add_library(x3dna
     src/x3dna/io/input_file_parser.cpp
     src/x3dna/io/input_file_writer.cpp
     src/x3dna/io/residue_index_fixer.cpp
+    src/x3dna/io/frame_json_recorder.cpp
     src/x3dna/residue_tracker.cpp
     src/x3dna/core/structure_legacy_order.cpp
     src/x3dna/core/structure_legacy_order_impl.cpp
     src/x3dna/algorithms/standard_base_templates.cpp
     src/x3dna/algorithms/ring_atom_matcher.cpp
     src/x3dna/algorithms/base_frame_calculator.cpp
-    src/x3dna/algorithms/ls_fitting_calculator.cpp
     src/x3dna/algorithms/base_pair_validator.cpp
     src/x3dna/algorithms/base_pair_finder.cpp
     src/x3dna/algorithms/parameter_calculator.cpp

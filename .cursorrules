@@ -1,5 +1,6 @@
 legacy is org/ code modern is src/ and include/
 use a centralized testing framework
+all modern code must have legacy inds when required to compare to org code which is 1-index based so we can directly compare
 Keep functions short and focused. If a function does more than one thing, split it up. Aim for functions you can understand at a glance.
 Use RAII religiously.
 Avoid raw pointers for ownership.
