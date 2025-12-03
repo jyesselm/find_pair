@@ -1286,8 +1286,9 @@ void ref_frames(long ds, long num_bp, long **pair_num, char **bp_seq, long **sei
             json_writer_record_base_frame_calc(rnum, bp_seq[i][j], spdb, rms_fit[i][j], nmatch,
                                                  irna ? (char**)rRingAtom : (char**)RingAtom, RingAtom_num,
                                                  ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
-            json_writer_record_ls_fitting(rnum, nmatch, rms_fit[i][j], R, orgi,
-                                          ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
+            /* REMOVED: Duplicate ls_fitting call - already recorded in app_fncs.c base_info() */
+            /* json_writer_record_ls_fitting(rnum, nmatch, rms_fit[i][j], R, orgi,
+                                          ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]); */
             json_writer_record_frame_calc(rnum, bp_seq[i][j], spdb, rms_fit[i][j], nmatch,
                                            sRing_xyz, eRing_xyz,
                                            ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
