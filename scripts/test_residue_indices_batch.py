@@ -315,7 +315,7 @@ def main():
                         # Assume keys are PDB IDs
                         valid_pdb_ids = set(valid_data.keys())
         except Exception as e:
-            print(f"⚠️  Could not load valid_pdbs.json: {e}")
+            print(f"⚠️  Could not load {fast_pdbs_file.name}: {e}")
             print("   Will test all PDB files")
     
     # Get all PDB files, filtered by valid_pdbs if available
@@ -339,7 +339,7 @@ def main():
     print("Testing residue_indices JSON generation and comparison")
     print(f"  PDBs: {len(pdb_files)}")
     if valid_pdb_ids:
-        print(f"  (Filtered from {len(all_pdb_files)} total using {valid_pdbs_file.name})")
+        print(f"  (Filtered from {len(all_pdb_files)} total using {fast_pdbs_file.name})")
     print(f"  Batches: {total_batches} (batch size: {batch_size})")
     print(f"  Threads: {num_threads}")
     print(f"  Legacy exe: {'✅' if legacy_exe else '❌'} (using existing files)")
