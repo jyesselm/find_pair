@@ -1,0 +1,2714 @@
+{
+  "total_pdbs": 150,
+  "passed": 0,
+  "partial": 0,
+  "failed": 150,
+  "results": {
+    "all": [
+      {
+        "pdb_id": "161D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "100D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "165D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "168D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "157D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1A34",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1AQ4",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1AQ3",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1A9N",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1BNA",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1BR3",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1CSL",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1B7F",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1D87",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1ASY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1D4R",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1B23",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1C0A",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1D88",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1D96",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1D9H",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1ASZ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DFU",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DI2",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DNO",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DNT",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DDY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DK1",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DQF",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DNX",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DQH",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DUH",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EFO",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DRZ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DUQ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EC6",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DUL",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1E7K",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1E8O",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EGK",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EHZ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EVP",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EVV",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F1T",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EUY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1ET4",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EFW",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EUQ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EXD",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EIY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F27",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FIX",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FIR",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F7Y",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F7V",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FUF",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FEU",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F7U",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FXL",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F8V",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FFY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1G2E",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1G4Q",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FFZ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1G1X",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1H3E",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1GTS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1GTR",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1G59",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1GID",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1H4Q",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1HC8",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1H4S",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1HMH",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1HQ1",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I2X",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1GAX",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I7J",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I2Y",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I9V",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1HR2",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1ICG",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I9X",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I6U",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1ID9",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1IDW",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1IK5",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1IHA",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1HYS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1J7T",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JB8",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1J9H",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1J8G",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1J1U",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1H38",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1IL2",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JBR",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1J2B",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1IVS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I6H",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JID",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JZV",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KD3",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JBS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KD5",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1K9W",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JBT",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1K8W",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KD4",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KH6",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1L2X",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KUQ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KXK",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1L3D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1LC4",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1LNT",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1L9A",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1LNG",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MHK",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1L8V",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MME",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1M5P",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MFQ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MJI",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1M5O",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1M5K",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1M5V",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MWL",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MSY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MMS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MZP",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MSW",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N7A",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KOG",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N7B",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N1H",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N38",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N35",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N77",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N78",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NB7",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NLC",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NH3",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NTA",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NTB",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NBS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NYI",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NUJ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NUV",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1O0B",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      }
+    ],
+    "passed": [],
+    "partial": [],
+    "failed": [
+      {
+        "pdb_id": "161D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "100D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "165D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "168D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "157D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1A34",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1AQ4",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1AQ3",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1A9N",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1BNA",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1BR3",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1CSL",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1B7F",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1D87",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1ASY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1D4R",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1B23",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1C0A",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1D88",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1D96",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1D9H",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1ASZ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DFU",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DI2",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DNO",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DNT",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DDY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DK1",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DQF",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DNX",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DQH",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DUH",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EFO",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DRZ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DUQ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EC6",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1DUL",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1E7K",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1E8O",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EGK",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EHZ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EVP",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EVV",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F1T",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EUY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1ET4",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EFW",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EUQ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EXD",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1EIY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F27",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FIX",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FIR",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F7Y",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F7V",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FUF",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FEU",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F7U",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FXL",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1F8V",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FFY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1G2E",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1G4Q",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1FFZ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1G1X",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1H3E",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1GTS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1GTR",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1G59",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1GID",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1H4Q",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1HC8",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1H4S",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1HMH",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1HQ1",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I2X",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1GAX",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I7J",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I2Y",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I9V",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1HR2",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1ICG",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I9X",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I6U",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1ID9",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1IDW",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1IK5",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1IHA",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1HYS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1J7T",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JB8",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1J9H",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1J8G",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1J1U",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1H38",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1IL2",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JBR",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1J2B",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1IVS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1I6H",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JID",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JZV",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KD3",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JBS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KD5",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1K9W",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1JBT",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1K8W",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KD4",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KH6",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1L2X",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KUQ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KXK",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1L3D",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1LC4",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1LNT",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1L9A",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1LNG",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MHK",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1L8V",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MME",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1M5P",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MFQ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MJI",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1M5O",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1M5K",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1M5V",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MWL",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MSY",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MMS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MZP",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1MSW",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N7A",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1KOG",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N7B",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N1H",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N38",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N35",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N77",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1N78",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NB7",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NLC",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NH3",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NTA",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NTB",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NBS",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NYI",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NUJ",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1NUV",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      },
+      {
+        "pdb_id": "1O0B",
+        "legacy_ok": true,
+        "modern_ok": false,
+        "compare_ok": false,
+        "errors": [
+          "Modern: Modern ls_fitting JSON file not created"
+        ]
+      }
+    ]
+  }
+}

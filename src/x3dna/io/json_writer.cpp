@@ -105,7 +105,7 @@ void JsonWriter::write_split_files(const std::filesystem::path& output_dir,
         {"pdb_atoms", "pdb_atoms"},
         {"base_frame_calc", "base_frame_calc"},
         {"frame_calc", "frame_calc"},
-        {"ls_fitting", "frame_calc"}, // ls_fitting goes in frame_calc directory
+        {"ls_fitting", "ls_fitting"}, // ls_fitting has its own directory (matches legacy)
         {"base_pair", "base_pair"},
         {"pair_validation", "pair_validation"},
         {"distance_checks", "distance_checks"},
