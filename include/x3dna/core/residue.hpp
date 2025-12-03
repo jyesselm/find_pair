@@ -10,6 +10,7 @@
 #include <optional>
 #include <algorithm>
 #include <cctype>
+#include <limits>
 #include <nlohmann/json.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/core/reference_frame.hpp>
@@ -318,6 +319,37 @@ public:
         
         // Default to unknown (could be ligand or other molecule)
         return ResidueType::UNKNOWN;
+    }
+
+    /**
+     * @brief Get atom range for this residue (start_atom, end_atom)
+     * 
+     * Returns the minimum and maximum legacy_atom_idx values from all atoms
+     * in this residue. This is used for residue_indices JSON generation.
+     * 
+     * @return Pair of (start_atom, end_atom) legacy atom indices, or (0, 0) if no atoms
+     */
+    std::pair<int, int> atom_range() const {
+        if (atoms_.empty()) {
+            return {0, 0};
+        }
+        
+        int min_idx = std::numeric_limits<int>::max();
+        int max_idx = 0;
+        
+        for (const auto& atom : atoms_) {
+            int legacy_idx = atom.legacy_atom_idx();
+            if (legacy_idx > 0) {
+                min_idx = std::min(min_idx, legacy_idx);
+                max_idx = std::max(max_idx, legacy_idx);
+            }
+        }
+        
+        if (min_idx == std::numeric_limits<int>::max()) {
+            return {0, 0};
+        }
+        
+        return {min_idx, max_idx};
     }
 
     /**

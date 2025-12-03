@@ -371,91 +371,40 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
 }
 
 void JsonWriter::record_residue_indices(const core::Structure& structure) {
-    // Collect all atoms with their legacy atom indices, sorted by PDB line number
-    // This matches legacy's residue_idx function which processes atoms in PDB file order
-    struct AtomInfo {
-        const core::Atom* atom;
-        size_t line_number;
-        int legacy_atom_idx;
-        std::string residue_key; // ResName + ChainID + ResSeq + insertion for grouping
-    };
+    // Get residues in legacy order (PDB file order, grouped by ResName+ChainID+ResSeq+insertion)
+    auto residues = structure.residues_in_legacy_order();
     
-    std::vector<AtomInfo> atoms;
-    
-    // Collect all atoms from all chains and residues
-    for (const auto& chain : structure.chains()) {
-        for (const auto& residue : chain.residues()) {
-            for (const auto& atom : residue.atoms()) {
-                int legacy_atom_idx = atom.legacy_atom_idx();
-                if (legacy_atom_idx > 0) {
-                    // Create residue key matching legacy's grouping: ResName + ChainID + ResSeq + insertion
-                    std::string key = atom.residue_name() + 
-                                     std::string(1, atom.chain_id()) +
-                                     std::to_string(atom.residue_seq()) +
-                                     std::string(1, atom.insertion());
-                    
-                    atoms.push_back({&atom, atom.line_number(), legacy_atom_idx, key});
-                }
-            }
-        }
-    }
-    
-    if (atoms.empty()) {
+    if (residues.empty()) {
         return;
     }
-    
-    // Sort atoms by PDB line number (PDB file order)
-    std::sort(atoms.begin(), atoms.end(),
-              [](const AtomInfo& a, const AtomInfo& b) {
-                  return a.line_number < b.line_number;
-              });
-    
-    // Group consecutive atoms with the same residue key (matching legacy's residue_idx logic)
-    std::vector<std::pair<int, int>> residue_atom_ranges; // (start_atom, end_atom) for each residue
-    
-    if (atoms.empty()) {
-        return;
-    }
-    
-    // Process atoms in PDB file order, grouping by residue key
-    std::string current_residue_key = atoms[0].residue_key;
-    int current_residue_start = atoms[0].legacy_atom_idx;
-    int current_residue_end = atoms[0].legacy_atom_idx;
-    
-    for (size_t i = 1; i < atoms.size(); i++) {
-        if (atoms[i].residue_key == current_residue_key) {
-            // Same residue - extend the range
-            current_residue_end = std::max(current_residue_end, atoms[i].legacy_atom_idx);
-        } else {
-            // New residue - save previous and start new
-            residue_atom_ranges.push_back({current_residue_start, current_residue_end});
-            current_residue_key = atoms[i].residue_key;
-            current_residue_start = atoms[i].legacy_atom_idx;
-            current_residue_end = atoms[i].legacy_atom_idx;
-        }
-    }
-    
-    // Save the last residue
-    residue_atom_ranges.push_back({current_residue_start, current_residue_end});
-    
-    size_t num_residues = residue_atom_ranges.size();
     
     nlohmann::json record;
     record["type"] = "residue_indices";
-    record["num_residue"] = num_residues;
+    record["num_residue"] = residues.size();
     
     nlohmann::json seidx_array = nlohmann::json::array();
     
     // Build seidx array with 1-based residue indices
-    for (size_t i = 0; i < residue_atom_ranges.size(); i++) {
+    for (size_t i = 0; i < residues.size(); i++) {
+        const core::Residue* residue = residues[i];
+        
+        // Get atom range for this residue (start_atom, end_atom)
+        auto [start_atom, end_atom] = residue->atom_range();
+        
+        // Skip residues with no valid atom indices
+        if (start_atom == 0 && end_atom == 0) {
+            continue;
+        }
+        
         nlohmann::json entry;
         entry["residue_idx"] = static_cast<int>(i + 1); // 1-based residue index
-        entry["start_atom"] = residue_atom_ranges[i].first;
-        entry["end_atom"] = residue_atom_ranges[i].second;
+        entry["start_atom"] = start_atom;
+        entry["end_atom"] = end_atom;
         seidx_array.push_back(entry);
     }
     
     record["seidx"] = seidx_array;
+    record["num_residue"] = seidx_array.size(); // Update count after filtering
     
     add_calculation_record(record);
 }

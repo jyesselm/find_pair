@@ -1,10 +1,8 @@
-try to keep functions short under 50 lines 
-try to have not to have more than 3 levels of indentation in any function
-code found in org/ is the legacy code do not edit it other than to add json output and debug statements or to isolate function behavior
-legacy code uses 1-based indexing do not forget this 
-modern code uses 0-based indexing do not forget this
-do not keep creating new files when not necessary for code files keep building on existing files 
-modern code must exactly match legacy code for all calculations this is critical
-legacy code has its json files in data/json_legacy/ and modern code has its json files in data/json/
-the modern code must not use any of legacy code or load legacy json files other than for comparison purposes
-try to build with make rules where possible
+legacy is org/ code modern is src/ and include/
+use a centralized testing framework
+Keep functions short and focused. If a function does more than one thing, split it up. Aim for functions you can understand at a glance.
+Use RAII religiously.
+Avoid raw pointers for ownership.
+perfer pass by const reference, Pass by rvalue reference (&&) 
+Minimal nesting no more than 3 levels
+functions shouldnt be longer than 50 lines (100 for special exceptions)
