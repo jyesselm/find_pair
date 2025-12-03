@@ -17,6 +17,12 @@
 #include <x3dna/geometry/least_squares_fitter.hpp>
 
 namespace x3dna {
+namespace io {
+class JsonWriter; // Forward declaration
+} // namespace io
+} // namespace x3dna
+
+namespace x3dna {
 namespace algorithms {
 
 /**
@@ -117,6 +123,27 @@ public:
     bool legacy_mode() const {
         return legacy_mode_;
     }
+
+    /**
+     * @brief Detect if structure is RNA by checking for O2' atoms
+     * @param structure Structure to check
+     * @return True if RNA detected (O2' atoms found), false if DNA
+     */
+    static bool detect_rna(const core::Structure& structure);
+
+    /**
+     * @brief Calculate frames and write JSON records
+     * 
+     * This is the standard workflow for frame calculation:
+     * 1. Auto-detect RNA vs DNA
+     * 2. Calculate all frames
+     * 3. Record frame JSON (base_frame_calc, ls_fitting, frame_calc)
+     * 
+     * @param structure Structure to process
+     * @param writer JsonWriter to record results
+     * @return Number of frames calculated and recorded
+     */
+    size_t calculate_and_record_frames(core::Structure& structure, io::JsonWriter& writer);
 
 private:
     mutable StandardBaseTemplates
