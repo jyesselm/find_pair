@@ -341,6 +341,7 @@ bool PdbParser::is_modified_nucleotide_name(const std::string& residue_name) con
         // Modified Cytosine
         "5MC", "OMC", "S4C", "5IC", "5FC", "CBR",
         "CVC", // Cytidine derivative
+        "CM0", // Modified cytosine
         // Modified Guanine
         "OMG", "1MG", "2MG", "7MG", "M2G", "YYG", "YG", "QUO",
         // Modified Uracil/Thymine

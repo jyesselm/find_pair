@@ -898,9 +898,25 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
     std::vector<geometry::Vector3D> standard_coords;
     int nN = 0; // Count of nitrogen atoms (N1, N3, N7, N9)
     bool has_c1_prime = false;
+    
+    // CRITICAL FIX: First check if this is a purine (has BOTH N7 and C8)
+    // to avoid matching side-chain atoms like C8 in 2YR (which is connected to sulfur, not part of ring)
+    bool has_n7 = false;
+    bool has_c8 = false;
+    for (const auto& atom : residue.atoms()) {
+        if (atom.name() == " N7 ") has_n7 = true;
+        if (atom.name() == " C8 ") has_c8 = true;
+    }
+    bool is_purine = (has_n7 && has_c8);
 
     for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
         const char* atom_name = RING_ATOM_NAMES[i];
+        
+        // Skip purine-specific atoms (N7, C8, N9) for pyrimidines
+        // Indices: 6=N7, 7=C8, 8=N9
+        if (!is_purine && (i == 6 || i == 7 || i == 8)) {
+            continue;
+        }
 
         // Find this atom in residue
         for (const auto& atom : residue.atoms()) {
@@ -922,9 +938,10 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
         }
     }
 
-    // Check for C1' atom (required by legacy)
+    // Check for C1' or C1R atom (required by legacy)
+    // Some nucleotides like NMN use C1R instead of C1'
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " C1'") {
+        if (atom.name() == " C1'" || atom.name() == " C1R") {
             has_c1_prime = true;
             break;
         }
@@ -1022,8 +1039,13 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
 
         // Legacy logic: require >= 3 ring atoms, then do RMSD check
         if (ring_atom_count + kr >= 3) {
+            // Use strict threshold (0.2618) for all
+            double rmsd_threshold = NT_CUTOFF;
+
             auto rmsd_opt = check_nt_type_by_rmsd(residue);
-            if (rmsd_opt.has_value() && *rmsd_opt <= NT_CUTOFF) {
+            // Debug output disabled (can be re-enabled for debugging)
+
+            if (rmsd_opt.has_value() && *rmsd_opt <= rmsd_threshold) {
                 // RMSD check passed - it's a nucleotide
                 return true;
             }

@@ -43,9 +43,25 @@ std::optional<double> check_nt_type_by_rmsd(const core::Residue& residue) {
     std::vector<geometry::Vector3D> standard_coords;
     int nN = 0; // Count of nitrogen atoms (N1, N3, N7, N9)
     bool has_c1_prime = false;
+    
+    // CRITICAL FIX: First check if this is a purine (has BOTH N7 and C8)
+    // to avoid matching side-chain atoms like C8 in 2YR (which is connected to sulfur, not part of ring)
+    bool has_n7 = false;
+    bool has_c8 = false;
+    for (const auto& atom : residue.atoms()) {
+        if (atom.name() == " N7 ") has_n7 = true;
+        if (atom.name() == " C8 ") has_c8 = true;
+    }
+    bool is_purine = (has_n7 && has_c8);
 
     for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
         const char* atom_name = RING_ATOM_NAMES[i];
+        
+        // Skip purine-specific atoms (N7, C8, N9) for pyrimidines
+        // Indices: 6=N7, 7=C8, 8=N9
+        if (!is_purine && (i == 6 || i == 7 || i == 8)) {
+            continue;
+        }
 
         // Find this atom in residue
         for (const auto& atom : residue.atoms()) {
@@ -67,9 +83,10 @@ std::optional<double> check_nt_type_by_rmsd(const core::Residue& residue) {
         }
     }
 
-    // Check for C1' atom (required by legacy)
+    // Check for C1' or C1R atom (required by legacy)
+    // Some nucleotides like NMN use C1R instead of C1'
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " C1'") {
+        if (atom.name() == " C1'" || atom.name() == " C1R") {
             has_c1_prime = true;
             break;
         }
@@ -283,58 +300,14 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // CRITICAL: ALWAYS check RMSD for ALL residues with ring atoms (even standard nucleotides)
     // This matches legacy residue_ident() which does RMSD check for ALL residues
     // Legacy rejects residues where RMSD > NT_CUTOFF (0.2618), even standard A/C/G/T/U
-    //
-    // SPECIAL HANDLING for bases with known structural modifications (not distortions):
-    // - 70U: has S2 (sulfur) instead of O2 (oxygen) - legitimate structural variant
-    // - These have higher RMSD when compared to standard templates but are not distorted
-    //
-    // Whitelist of bases with non-standard ring structure (not warping/distortion)
-    static const std::vector<std::string> structural_variants = {
-        "70U",  // 2-thio-uridine (has S2 instead of O2)
-        // Add others as discovered
-    };
     
     if (has_ring_atoms) {
         auto rmsd_result = check_nt_type_by_rmsd(residue);
         
-        // Check if this is a known structural variant
-        std::string res_name_trim = res_name;
-        while (!res_name_trim.empty() && res_name_trim[0] == ' ')
-            res_name_trim.erase(0, 1);
-        while (!res_name_trim.empty() && res_name_trim.back() == ' ')
-            res_name_trim.pop_back();
+        // Use strict threshold (0.2618) for all bases
+        double rmsd_threshold = 0.2618;
         
-        bool is_structural_variant = false;
-        for (const auto& variant : structural_variants) {
-            if (res_name_trim == variant) {
-                is_structural_variant = true;
-                break;
-            }
-        }
-        
-        // Use strict threshold (0.2618) for normal bases (rejects distorted/warped bases)
-        // Use relaxed threshold (0.5) ONLY for known structural variants
-        double rmsd_threshold = is_structural_variant ? 0.5 : 0.2618;
-        
-        // Debug output for 1TTT residue 16 (check with trimmed name)
-        std::string res_name_debug = residue.name();
-        while (!res_name_debug.empty() && res_name_debug[0] == ' ')
-            res_name_debug.erase(0, 1);
-        while (!res_name_debug.empty() && res_name_debug.back() == ' ')
-            res_name_debug.pop_back();
-        if (res_name_debug == "H2U" && residue.chain_id() == 'D' && residue.seq_num() == 16) {
-            std::cerr << "[RMSD DEBUG] Residue 16 (H2U, Chain D): ";
-            if (rmsd_result.has_value()) {
-                std::cerr << "RMSD=" << *rmsd_result << ", threshold=" << rmsd_threshold << ", ";
-                if (*rmsd_result > rmsd_threshold) {
-                    std::cerr << "FAILED - will reject\n";
-                } else {
-                    std::cerr << "PASSED - will accept\n";
-                }
-            } else {
-                std::cerr << "Could not calculate RMSD - will reject\n";
-            }
-        }
+        // Debug output disabled (can be re-enabled for debugging)
         if (!rmsd_result.has_value() || *rmsd_result > rmsd_threshold) {
             // RMSD check failed with all atoms
             // Legacy's TWO-TRY approach: If has purine atoms, retry with ONLY pyrimidine atoms

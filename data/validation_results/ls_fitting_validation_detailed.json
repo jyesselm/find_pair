@@ -1,8 +1,8 @@
 {
   "pass": 860,
-  "fp_mismatch": 2693,
-  "count_mismatch": 47,
-  "error": 2,
+  "fp_mismatch": 2705,
+  "count_mismatch": 34,
+  "error": 3,
   "skip": 0,
   "count_mismatch_pdbs": [
     {
@@ -24,46 +24,22 @@
       "diff": 4
     },
     {
-      "pdb_id": "2XD0",
-      "legacy": 216,
-      "modern": 210,
-      "diff": 6
-    },
-    {
-      "pdb_id": "2XDD",
-      "legacy": 108,
-      "modern": 105,
-      "diff": 3
-    },
-    {
-      "pdb_id": "3PO2",
-      "legacy": 49,
-      "modern": 48,
-      "diff": 1
-    },
-    {
-      "pdb_id": "3PO3",
-      "legacy": 26,
-      "modern": 25,
-      "diff": 1
-    },
-    {
       "pdb_id": "4BY7",
       "legacy": 50,
-      "modern": 48,
-      "diff": 2
+      "modern": 49,
+      "diff": 1
     },
     {
       "pdb_id": "4E8K",
       "legacy": 395,
-      "modern": 394,
-      "diff": 1
+      "modern": 398,
+      "diff": -3
     },
     {
       "pdb_id": "4E8M",
       "legacy": 391,
-      "modern": 388,
-      "diff": 3
+      "modern": 390,
+      "diff": 1
     },
     {
       "pdb_id": "4E8N",
@@ -78,6 +54,12 @@
       "diff": 3
     },
     {
+      "pdb_id": "4E8R",
+      "legacy": 391,
+      "modern": 392,
+      "diff": -1
+    },
+    {
       "pdb_id": "4FAQ",
       "legacy": 397,
       "modern": 396,
@@ -86,20 +68,14 @@
     {
       "pdb_id": "4FAX",
       "legacy": 386,
-      "modern": 384,
-      "diff": 2
+      "modern": 385,
+      "diff": 1
     },
     {
       "pdb_id": "4KI4",
       "legacy": 33,
       "modern": 32,
       "diff": 1
-    },
-    {
-      "pdb_id": "4PJO",
-      "legacy": 234,
-      "modern": 232,
-      "diff": 2
     },
     {
       "pdb_id": "5EAO",
@@ -146,14 +122,14 @@
     {
       "pdb_id": "6T3N",
       "legacy": 393,
-      "modern": 391,
-      "diff": 2
+      "modern": 392,
+      "diff": 1
     },
     {
       "pdb_id": "6T3S",
       "legacy": 390,
-      "modern": 388,
-      "diff": 2
+      "modern": 389,
+      "diff": 1
     },
     {
       "pdb_id": "7K9D",
@@ -165,30 +141,6 @@
       "pdb_id": "7KKV",
       "legacy": 61,
       "modern": 60,
-      "diff": 1
-    },
-    {
-      "pdb_id": "7S36",
-      "legacy": 131,
-      "modern": 130,
-      "diff": 1
-    },
-    {
-      "pdb_id": "7S38",
-      "legacy": 139,
-      "modern": 138,
-      "diff": 1
-    },
-    {
-      "pdb_id": "7S3H",
-      "legacy": 76,
-      "modern": 75,
-      "diff": 1
-    },
-    {
-      "pdb_id": "8AS7",
-      "legacy": 39,
-      "modern": 38,
       "diff": 1
     },
     {
@@ -246,37 +198,7 @@
       "diff": 2
     },
     {
-      "pdb_id": "8UKQ",
-      "legacy": 46,
-      "modern": 45,
-      "diff": 1
-    },
-    {
-      "pdb_id": "8UKS",
-      "legacy": 47,
-      "modern": 46,
-      "diff": 1
-    },
-    {
-      "pdb_id": "9CJI",
-      "legacy": 67,
-      "modern": 66,
-      "diff": 1
-    },
-    {
-      "pdb_id": "9CJJ",
-      "legacy": 55,
-      "modern": 54,
-      "diff": 1
-    },
-    {
       "pdb_id": "9DRS",
-      "legacy": 143,
-      "modern": 142,
-      "diff": 1
-    },
-    {
-      "pdb_id": "9DRV",
       "legacy": 143,
       "modern": 142,
       "diff": 1
@@ -288,6 +210,6 @@
       "diff": 1
     }
   ],
-  "start_time": "2025-12-03T14:28:38.853692",
-  "end_time": "2025-12-03T14:37:09.818846"
+  "start_time": "2025-12-03T15:02:25.718464",
+  "end_time": "2025-12-03T15:11:39.481359"
 }
