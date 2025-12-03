@@ -287,3 +287,368 @@ size_t FrameJsonRecorder::record_ls_fitting(Structure& structure, JsonWriter& wr
 - ✅ Clear separation of concerns
 - ✅ Flexible and maintainable
 
+---
+
+# Extended Refactoring: All Algorithm Classes
+
+## Additional Problems Found
+
+### 1. BasePairFinder - Mixed Responsibilities
+
+**Current Issues:**
+- Has `find_pairs_with_recording()` method that mixes finding pairs with JSON recording
+- Takes `JsonWriter*` as optional parameter (nullptr to skip recording)
+- Recording logic embedded in algorithm code
+- Makes algorithm depend on `JsonWriter` (tight coupling)
+
+**Location:** `src/x3dna/algorithms/base_pair_finder.cpp` (lines 32-1060+)
+
+**Problem Pattern:**
+```cpp
+std::vector<BasePair> find_pairs_with_recording(Structure& structure, JsonWriter* writer) const {
+    // ... algorithm logic ...
+    if (writer) {
+        writer->record_pair_validation(...);
+        writer->record_distance_checks(...);
+        writer->record_hbond_list(...);
+        // ... more recording ...
+    }
+    // ... more algorithm logic ...
+}
+```
+
+### 2. generate_modern_json.cpp - Massive Code Duplication
+
+**Current Issues:**
+- **793 lines** - way too long (should be ~200-300 lines)
+- RNA detection duplicated in **3+ places**:
+  - Lines 286-297 (manual loop)
+  - Lines 203-209 (using LsFittingCalculator::detect_rna)
+  - Lines 236-241 (using BaseFrameCalculator::detect_rna)
+- Frame calculation/recording logic duplicated in **4+ places**:
+  - Lines 373-531 (old "all" stage logic)
+  - Lines 189-218 (Stage 3: ls_fitting)
+  - Lines 220-251 (Stage 4: frames)
+  - Lines 477-515 (duplicate frame recording)
+- Duplicate code for building `paired_legacy_indices` (lines 544-572 and 574-602)
+- Too many responsibilities:
+  - Parsing command-line arguments
+  - Loading PDB files
+  - Calculating frames
+  - Recording JSON
+  - Finding pairs
+  - Calculating parameters
+  - Writing files
+  - Index validation
+
+### 3. ParameterCalculator - Good Example! ✅
+
+**Status:** Clean separation
+- Only calculates parameters
+- No JSON recording
+- Pure algorithm class
+- **This is the model to follow!**
+
+### 4. JsonWriter - Too Many Responsibilities?
+
+**Current State:**
+- Has 17+ `record_*` methods
+- Each method knows how to format specific JSON types
+- This is actually OK - it's a writer, it should know how to write
+
+**Potential Issue:**
+- Algorithms shouldn't call `JsonWriter` directly
+- Should use recorder classes as intermediaries
+
+## Comprehensive Refactoring Plan
+
+### Principle: Clear Separation of Concerns
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Algorithms (Pure Calculation)                         │
+│  ├── BaseFrameCalculator                                │
+│  ├── BasePairFinder                                     │
+│  ├── ParameterCalculator ✅ (already clean)            │
+│  └── HydrogenBondFinder                                 │
+└─────────────────────────────────────────────────────────┘
+                        │
+                        │ uses
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│ Recorders (JSON Writing)                                │
+│  ├── FrameJsonRecorder                                  │
+│  ├── PairJsonRecorder                                   │
+│  ├── ParameterJsonRecorder                               │
+│  └── HydrogenBondJsonRecorder                           │
+└─────────────────────────────────────────────────────────┘
+                        │
+                        │ uses
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│ JsonWriter (Low-level JSON Writing)                    │
+│  └── record_*(...) methods                             │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Detailed Refactoring
+
+#### 1. BasePairFinder - Remove Recording
+
+**Current:**
+```cpp
+class BasePairFinder {
+    std::vector<BasePair> find_pairs_with_recording(Structure&, JsonWriter*);
+};
+```
+
+**Target:**
+```cpp
+class BasePairFinder {
+    // Pure algorithm - no JsonWriter dependency
+    std::vector<BasePair> find_pairs(Structure&);
+    
+    // Return validation results for recording
+    struct PairFindingResult {
+        std::vector<BasePair> pairs;
+        std::vector<ValidationResult> validations;
+        std::vector<DistanceCheck> distance_checks;
+        std::vector<HydrogenBond> hbonds;
+        // ... other data needed for JSON ...
+    };
+    
+    PairFindingResult find_pairs_with_details(Structure&);
+};
+```
+
+**New Recorder:**
+```cpp
+class PairJsonRecorder {
+public:
+    explicit PairJsonRecorder(BasePairFinder& finder);
+    
+    // Record all pair-related JSON
+    size_t record_all(Structure& structure, JsonWriter& writer);
+    
+    // Individual record methods
+    size_t record_pair_validation(Structure& structure, JsonWriter& writer);
+    size_t record_distance_checks(Structure& structure, JsonWriter& writer);
+    size_t record_hbond_list(Structure& structure, JsonWriter& writer);
+    size_t record_base_pairs(const std::vector<BasePair>& pairs, JsonWriter& writer);
+    
+private:
+    BasePairFinder& finder_;
+};
+```
+
+#### 2. ParameterCalculator - Add Recorder
+
+**Current:** ✅ Already clean (only calculates)
+
+**Add:**
+```cpp
+class ParameterJsonRecorder {
+public:
+    explicit ParameterJsonRecorder(ParameterCalculator& calculator);
+    
+    size_t record_bpstep_params(const std::vector<BasePair>& pairs, JsonWriter& writer);
+    size_t record_helical_params(const std::vector<BasePair>& pairs, JsonWriter& writer);
+    
+private:
+    ParameterCalculator& calculator_;
+};
+```
+
+#### 3. generate_modern_json.cpp - Massive Simplification
+
+**Current:** 793 lines with massive duplication
+
+**Target:** ~200-300 lines, clean and simple
+
+**Strategy:**
+1. Extract RNA detection to utility function
+2. Extract frame setup to helper function
+3. Use recorder classes instead of direct algorithm calls
+4. Remove all duplicate code
+
+**Before (Stage 3 - 30 lines):**
+```cpp
+// Stage 3: LS Fitting
+if (stage == "ls_fitting" || stage == "all") {
+    std::cout << "Stage 3: Writing ls_fitting...\n";
+    JsonWriter writer(pdb_file);
+    writer.record_residue_indices(structure);
+    
+    LsFittingCalculator calculator("data/templates");
+    calculator.set_legacy_mode(legacy_mode);
+    
+    bool is_rna = LsFittingCalculator::detect_rna(structure);
+    if (is_rna) {
+        std::cout << "Detected RNA structure (O2' atoms found)\n";
+    } else {
+        std::cout << "Detected DNA structure (no O2' atoms)\n";
+    }
+    
+    size_t records_count = calculator.calculate_and_record(structure, writer);
+    writer.write_split_files(json_output_dir, true);
+    std::cout << "  ✅ ls_fitting/" << pdb_name << ".json\n";
+    std::cout << "     " << records_count << " ls_fitting records calculated\n\n";
+}
+```
+
+**After (Stage 3 - 10 lines):**
+```cpp
+// Stage 3: LS Fitting
+if (stage == "ls_fitting" || stage == "all") {
+    auto [calculator, writer] = setup_frame_calculation(pdb_file, legacy_mode, structure);
+    FrameJsonRecorder recorder(calculator);
+    size_t count = recorder.record_ls_fitting(structure, writer);
+    writer.write_split_files(json_output_dir, true);
+    print_stage_result("ls_fitting", pdb_name, count);
+}
+```
+
+**Helper Functions:**
+```cpp
+// Utility: RNA detection (used everywhere)
+bool detect_rna_structure(const Structure& structure);
+
+// Helper: Setup frame calculation (used in stages 3, 4, and "all")
+std::pair<BaseFrameCalculator, JsonWriter> 
+setup_frame_calculation(const std::filesystem::path& pdb_file, 
+                       bool legacy_mode, 
+                       Structure& structure);
+
+// Helper: Print stage result
+void print_stage_result(const std::string& stage_name, 
+                       const std::string& pdb_name, 
+                       size_t count);
+```
+
+#### 4. Remove Duplicate Code Patterns
+
+**Pattern 1: RNA Detection**
+- **Current:** Duplicated in 3+ places
+- **Fix:** Single utility function `detect_rna_structure()`
+
+**Pattern 2: Frame Setup**
+- **Current:** Duplicated setup code (create calculator, set legacy mode, detect RNA)
+- **Fix:** `setup_frame_calculation()` helper function
+
+**Pattern 3: Iteration Logic**
+- **Current:** Duplicated in BaseFrameCalculator methods and LsFittingCalculator
+- **Fix:** Move to `FrameJsonRecorder::iterate_and_record()`
+
+**Pattern 4: paired_legacy_indices Building**
+- **Current:** Duplicated in lines 544-572 and 574-602
+- **Fix:** Extract to helper function `build_paired_indices()`
+
+## Complete Refactoring Checklist
+
+### Phase 1: Frame Calculators (Already Documented)
+- [ ] Create `FrameJsonRecorder`
+- [ ] Remove recording from `BaseFrameCalculator`
+- [ ] Remove `LsFittingCalculator`
+- [ ] Update `generate_modern_json.cpp` stages 3 & 4
+
+### Phase 2: Pair Finding
+- [ ] Refactor `BasePairFinder::find_pairs_with_recording()`
+  - Remove `JsonWriter*` parameter
+  - Return `PairFindingResult` with all data
+- [ ] Create `PairJsonRecorder` class
+- [ ] Update `generate_modern_json.cpp` to use recorder
+
+### Phase 3: Parameters
+- [ ] Create `ParameterJsonRecorder` class
+- [ ] Update `generate_modern_json.cpp` to use recorder
+
+### Phase 4: generate_modern_json.cpp Cleanup
+- [ ] Extract RNA detection to utility function
+- [ ] Extract frame setup to helper function
+- [ ] Extract `paired_legacy_indices` building to helper
+- [ ] Remove all duplicate code
+- [ ] Simplify stage implementations
+- [ ] Target: Reduce from 793 lines to ~200-300 lines
+
+### Phase 5: Hydrogen Bonds (Future)
+- [ ] Review `HydrogenBondFinder` for similar issues
+- [ ] Create `HydrogenBondJsonRecorder` if needed
+
+## File Structure After Complete Refactoring
+
+```
+include/x3dna/algorithms/
+  ├── base_frame_calculator.hpp      (algorithm only, ~150 lines)
+  ├── base_pair_finder.hpp            (algorithm only, remove recording)
+  ├── parameter_calculator.hpp        (already clean ✅)
+  
+include/x3dna/io/
+  ├── frame_json_recorder.hpp        (new, ~80 lines)
+  ├── pair_json_recorder.hpp          (new, ~100 lines)
+  ├── parameter_json_recorder.hpp    (new, ~60 lines)
+  ├── json_writer.hpp                 (unchanged, low-level writer)
+  
+src/x3dna/algorithms/
+  ├── base_frame_calculator.cpp      (algorithm only, ~500 lines)
+  ├── base_pair_finder.cpp            (algorithm only, remove ~200 lines)
+  
+src/x3dna/io/
+  ├── frame_json_recorder.cpp        (new, ~150 lines)
+  ├── pair_json_recorder.cpp          (new, ~200 lines)
+  ├── parameter_json_recorder.cpp    (new, ~100 lines)
+  
+tools/
+  ├── generate_modern_json.cpp        (simplified, ~200-300 lines, down from 793)
+  └── generate_modern_json_utils.cpp  (new, helper functions, ~100 lines)
+```
+
+## Benefits of Complete Refactoring
+
+1. **Clear Architecture:**
+   - Algorithms = pure calculation
+   - Recorders = JSON writing
+   - Tools = orchestration
+
+2. **No Duplication:**
+   - RNA detection: 1 function
+   - Frame setup: 1 function
+   - Iteration logic: in recorders
+   - paired_legacy_indices: 1 function
+
+3. **Maintainable:**
+   - `generate_modern_json.cpp` reduced from 793 to ~200-300 lines
+   - Each class has single responsibility
+   - Easy to test algorithms independently
+
+4. **Flexible:**
+   - Can use algorithms without JSON
+   - Can record JSON in different formats
+   - Can combine algorithms in different ways
+
+5. **Testable:**
+   - Test algorithms without JSON
+   - Test recorders with mock algorithms
+   - Test tools with mock recorders
+
+## Summary: Complete Refactoring
+
+**Current State:**
+- ❌ `BaseFrameCalculator` mixes calculation + recording
+- ❌ `LsFittingCalculator` is confusing wrapper
+- ❌ `BasePairFinder` has `find_pairs_with_recording()`
+- ❌ `generate_modern_json.cpp` is 793 lines with massive duplication
+- ❌ RNA detection duplicated 3+ times
+- ❌ Frame setup duplicated 4+ times
+- ❌ `paired_legacy_indices` building duplicated 2+ times
+
+**Target State:**
+- ✅ `BaseFrameCalculator` = pure algorithm
+- ✅ `BasePairFinder` = pure algorithm (no JsonWriter dependency)
+- ✅ `ParameterCalculator` = pure algorithm (already ✅)
+- ✅ `FrameJsonRecorder` = records frame JSON
+- ✅ `PairJsonRecorder` = records pair JSON
+- ✅ `ParameterJsonRecorder` = records parameter JSON
+- ✅ `generate_modern_json.cpp` = ~200-300 lines, clean orchestration
+- ✅ No duplication (utilities for common patterns)
+- ✅ Clear separation of concerns throughout
+
