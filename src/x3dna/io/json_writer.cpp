@@ -19,10 +19,10 @@ namespace io {
 constexpr double EMPTY_CRITERION = 1e-10;
 
 JsonWriter::JsonWriter(const std::filesystem::path& pdb_file,
-                       const std::filesystem::path& legacy_json_file) 
+                       const std::filesystem::path& legacy_json_file)
     : pdb_file_(pdb_file), legacy_mappings_loaded_(false) {
     initialize_json();
-    
+
     // Load legacy mappings if legacy JSON file is provided
     if (!legacy_json_file.empty() && std::filesystem::exists(legacy_json_file)) {
         load_legacy_mappings(legacy_json_file);
@@ -48,7 +48,7 @@ void JsonWriter::initialize_json() {
     split_note["_note"] = "Calculations are split into separate files: " + pdb_name_ + "_*.json";
     split_note["_split_files"] = true;
     json_["calculations"].push_back(split_note);
-    
+
     // Store metadata
     json_["metadata"] = nlohmann::json::object();
     json_["metadata"]["version"] = "Modern X3DNA C++ Implementation";
@@ -67,7 +67,7 @@ void JsonWriter::write_to_file(const std::filesystem::path& output_path, bool pr
         write_split_files(output_path, pretty_print);
         return;
     }
-    
+
     // If output_path is a file, treat parent as directory and write split files
     // (no main file - only split files in record-type directories)
     write_split_files(output_path.parent_path(), pretty_print);
@@ -75,14 +75,14 @@ void JsonWriter::write_to_file(const std::filesystem::path& output_path, bool pr
 
 void JsonWriter::add_calculation_record(const nlohmann::json& record) {
     json_["calculations"].push_back(record);
-    
+
     // Also store in split_records_ for split file output
     if (record.contains("type") && record["type"].is_string()) {
         std::string calc_type = record["type"];
         // Do NOT remove type field from record for split file (comparison script expects it)
         // nlohmann::json split_record = record;
         // split_record.erase("type"); // Removed - keep type field for comparison
-        
+
         if (split_records_.find(calc_type) == split_records_.end()) {
             split_records_[calc_type] = nlohmann::json::array();
         }
@@ -90,20 +90,22 @@ void JsonWriter::add_calculation_record(const nlohmann::json& record) {
     }
 }
 
-void JsonWriter::write_split_files(const std::filesystem::path& output_dir, bool pretty_print) const {
+void JsonWriter::write_split_files(const std::filesystem::path& output_dir,
+                                   bool pretty_print) const {
     if (split_records_.empty()) {
         std::cerr << "[JSON_WRITER] Warning: No split records to write (split_records_ is empty)\n";
         return;
     }
-    
-    std::cerr << "[JSON_WRITER] Writing " << split_records_.size() << " split files to " << output_dir << "\n";
-    
+
+    std::cerr << "[JSON_WRITER] Writing " << split_records_.size() << " split files to "
+              << output_dir << "\n";
+
     // Map record types to directory names
     std::map<std::string, std::string> type_to_dir = {
         {"pdb_atoms", "pdb_atoms"},
         {"base_frame_calc", "base_frame_calc"},
         {"frame_calc", "frame_calc"},
-        {"ls_fitting", "frame_calc"},  // ls_fitting goes in frame_calc directory
+        {"ls_fitting", "frame_calc"}, // ls_fitting goes in frame_calc directory
         {"base_pair", "base_pair"},
         {"pair_validation", "pair_validation"},
         {"distance_checks", "distance_checks"},
@@ -115,30 +117,32 @@ void JsonWriter::write_split_files(const std::filesystem::path& output_dir, bool
         {"mutual_best_decision", "mutual_best_decisions"},
         {"iteration_states", "iteration_states"},
     };
-    
+
     for (const auto& [calc_type, records] : split_records_) {
         // Get directory name for this record type
         std::string dir_name = type_to_dir.count(calc_type) ? type_to_dir[calc_type] : calc_type;
-        
+
         // Create record-type-specific directory
         std::filesystem::path record_dir = output_dir / dir_name;
         std::filesystem::create_directories(record_dir);
-        
+
         // Write file: <PDB_ID>.json in the record-type directory
         std::filesystem::path split_file = record_dir / (pdb_name_ + ".json");
         std::ofstream file(split_file);
         if (!file.is_open()) {
-            std::cerr << "[JSON_WRITER] Warning: Could not open split file for writing: " << split_file << "\n";
+            std::cerr << "[JSON_WRITER] Warning: Could not open split file for writing: "
+                      << split_file << "\n";
             continue;
         }
-        
+
         if (pretty_print) {
             file << records.dump(2);
         } else {
             file << records.dump();
         }
-        
-        std::cerr << "[JSON_WRITER] Wrote split file: " << split_file << " (" << records.size() << " entries)\n";
+
+        std::cerr << "[JSON_WRITER] Wrote split file: " << split_file << " (" << records.size()
+                  << " entries)\n";
     }
 }
 
@@ -146,24 +150,24 @@ void JsonWriter::load_pdb_lines() const {
     if (pdb_lines_loaded_) {
         return;
     }
-    
+
     std::ifstream file(pdb_file_);
     if (!file.is_open()) {
         pdb_lines_loaded_ = true; // Mark as loaded even if failed
         return;
     }
-    
+
     std::string line;
     while (std::getline(file, line)) {
         pdb_lines_.push_back(line);
     }
-    
+
     pdb_lines_loaded_ = true;
 }
 
 std::string JsonWriter::get_pdb_line(size_t line_number) const {
     load_pdb_lines();
-    
+
     // line_number is 1-based
     if (line_number > 0 && line_number <= pdb_lines_.size()) {
         return pdb_lines_[line_number - 1];
@@ -175,22 +179,23 @@ void JsonWriter::load_legacy_mappings(const std::filesystem::path& legacy_json_f
     if (legacy_mappings_loaded_) {
         return;
     }
-    
+
     try {
         std::ifstream file(legacy_json_file);
         if (!file.is_open()) {
-            std::cerr << "[JSON_WRITER] Warning: Could not open legacy JSON file: " << legacy_json_file << "\n";
+            std::cerr << "[JSON_WRITER] Warning: Could not open legacy JSON file: "
+                      << legacy_json_file << "\n";
             legacy_mappings_loaded_ = true;
             return;
         }
-        
+
         nlohmann::json legacy_data;
         file >> legacy_data;
-        
+
         // Extract atoms from legacy JSON (handle both split files and grouped format)
         nlohmann::json legacy_atoms;
         nlohmann::json calculations = legacy_data.value("calculations", nlohmann::json::object());
-        
+
         if (calculations.is_object()) {
             // Grouped format: calculations is a dict
             auto pdb_atoms_group = calculations.value("pdb_atoms", nlohmann::json::array());
@@ -206,10 +211,11 @@ void JsonWriter::load_legacy_mappings(const std::filesystem::path& legacy_json_f
                 }
             }
         }
-        
+
         // Try split file if not found in main file
         if (legacy_atoms.empty()) {
-            std::filesystem::path split_file = legacy_json_file.parent_path() / 
+            std::filesystem::path split_file =
+                legacy_json_file.parent_path() /
                 (legacy_json_file.stem().string() + "_pdb_atoms.json");
             if (std::filesystem::exists(split_file)) {
                 std::ifstream split_stream(split_file);
@@ -222,11 +228,12 @@ void JsonWriter::load_legacy_mappings(const std::filesystem::path& legacy_json_f
                 }
             }
         }
-        
+
         // Build atom index mapping
         for (const auto& atom : legacy_atoms) {
-            if (!atom.is_object()) continue;
-            
+            if (!atom.is_object())
+                continue;
+
             std::string chain_id_str = atom.value("chain_id", std::string(""));
             char chain_id = chain_id_str.empty() ? ' ' : chain_id_str[0];
             int residue_seq = atom.value("residue_seq", 0);
@@ -234,12 +241,13 @@ void JsonWriter::load_legacy_mappings(const std::filesystem::path& legacy_json_f
             char insertion = insertion_str.empty() ? ' ' : insertion_str[0];
             std::string atom_name = atom.value("atom_name", std::string(""));
             int atom_idx = atom.value("atom_idx", 0);
-            
+
             if (atom_idx > 0 && !atom_name.empty()) {
-                legacy_atom_idx_map_[std::make_tuple(chain_id, residue_seq, insertion, atom_name)] = atom_idx;
+                legacy_atom_idx_map_[std::make_tuple(chain_id, residue_seq, insertion, atom_name)] =
+                    atom_idx;
             }
         }
-        
+
         // Build residue index mapping from atoms
         // Legacy residue indices are assigned sequentially as residues are encountered
         // We infer residue boundaries by detecting changes in (chain_id, residue_seq, insertion)
@@ -247,35 +255,37 @@ void JsonWriter::load_legacy_mappings(const std::filesystem::path& legacy_json_f
         char last_chain_id = '\0';
         int last_residue_seq = 0;
         char last_insertion = '\0';
-        
+
         for (const auto& atom : legacy_atoms) {
-            if (!atom.is_object()) continue;
-            
+            if (!atom.is_object())
+                continue;
+
             std::string chain_id_str = atom.value("chain_id", std::string(""));
             char chain_id = chain_id_str.empty() ? ' ' : chain_id_str[0];
             int residue_seq = atom.value("residue_seq", 0);
             std::string insertion_str = atom.value("insertion", std::string(" "));
             char insertion = insertion_str.empty() ? ' ' : insertion_str[0];
-            
+
             // Check if this is a new residue (different from previous)
-            if (residue_seq != last_residue_seq || chain_id != last_chain_id || insertion != last_insertion) {
+            if (residue_seq != last_residue_seq || chain_id != last_chain_id ||
+                insertion != last_insertion) {
                 // New residue - add to mapping
                 auto key = std::make_tuple(chain_id, residue_seq, insertion);
                 if (legacy_residue_idx_map_.find(key) == legacy_residue_idx_map_.end()) {
                     legacy_residue_idx_map_[key] = residue_idx;
                     residue_idx++;
                 }
-                
+
                 last_chain_id = chain_id;
                 last_residue_seq = residue_seq;
                 last_insertion = insertion;
             }
         }
-        
-        std::cerr << "[JSON_WRITER] Loaded " << legacy_atom_idx_map_.size() 
-                  << " legacy atom indices and " << legacy_residue_idx_map_.size() 
+
+        std::cerr << "[JSON_WRITER] Loaded " << legacy_atom_idx_map_.size()
+                  << " legacy atom indices and " << legacy_residue_idx_map_.size()
                   << " legacy residue indices\n";
-        
+
         legacy_mappings_loaded_ = true;
     } catch (const std::exception& e) {
         std::cerr << "[JSON_WRITER] Error loading legacy mappings: " << e.what() << "\n";
@@ -283,7 +293,8 @@ void JsonWriter::load_legacy_mappings(const std::filesystem::path& legacy_json_f
     }
 }
 
-int JsonWriter::get_legacy_atom_idx(char chain_id, int residue_seq, char insertion, const std::string& atom_name) const {
+int JsonWriter::get_legacy_atom_idx(char chain_id, int residue_seq, char insertion,
+                                    const std::string& atom_name) const {
     auto key = std::make_tuple(chain_id, residue_seq, insertion, atom_name);
     auto it = legacy_atom_idx_map_.find(key);
     if (it != legacy_atom_idx_map_.end()) {
@@ -323,17 +334,17 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
         for (const auto& residue : chain.residues()) {
             for (const auto& atom : residue.atoms()) {
                 nlohmann::json atom_json;
-                
+
                 // Use legacy_atom_idx for atom_idx to match legacy exactly (1-based)
                 int legacy_atom_idx = atom.legacy_atom_idx();
-                
+
                 if (legacy_atom_idx > 0) {
                     atom_json["atom_idx"] = legacy_atom_idx;
                 } else {
                     // Fallback for atoms without legacy mapping
                     atom_json["atom_idx"] = sequential_idx++;
                 }
-                
+
                 // Core fields (match legacy exactly)
                 atom_json["atom_name"] = atom.name();
                 atom_json["residue_name"] = atom.residue_name();
@@ -350,7 +361,7 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
                 // Optional metadata (only if present)
                 if (atom.line_number() > 0) {
                     atom_json["line_number"] = atom.line_number();
-                    
+
                     // Add PDB line for debugging (like legacy code)
                     std::string pdb_line = get_pdb_line(atom.line_number());
                     if (!pdb_line.empty()) {
@@ -364,7 +375,7 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
     }
 
     record["atoms"] = atoms_array;
-    
+
     // add_calculation_record() will handle adding to split_records_
     // No need to manually add here (was causing duplicates)
     add_calculation_record(record);
@@ -373,39 +384,39 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
 void JsonWriter::record_residue_indices(const core::Structure& structure) {
     // Get residues in legacy order (PDB file order, grouped by ResName+ChainID+ResSeq+insertion)
     auto residues = structure.residues_in_legacy_order();
-    
+
     if (residues.empty()) {
         return;
     }
-    
+
     nlohmann::json record;
     record["type"] = "residue_indices";
     record["num_residue"] = residues.size();
-    
+
     nlohmann::json seidx_array = nlohmann::json::array();
-    
+
     // Build seidx array with 1-based residue indices
     for (size_t i = 0; i < residues.size(); i++) {
         const core::Residue* residue = residues[i];
-        
+
         // Get atom range for this residue (start_atom, end_atom)
         auto [start_atom, end_atom] = residue->atom_range();
-        
+
         // Skip residues with no valid atom indices
         if (start_atom == 0 && end_atom == 0) {
             continue;
         }
-        
+
         nlohmann::json entry;
         entry["residue_idx"] = static_cast<int>(i + 1); // 1-based residue index
         entry["start_atom"] = start_atom;
         entry["end_atom"] = end_atom;
         seidx_array.push_back(entry);
     }
-    
+
     record["seidx"] = seidx_array;
     record["num_residue"] = seidx_array.size(); // Update count after filtering
-    
+
     add_calculation_record(record);
 }
 
@@ -418,12 +429,13 @@ void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
     nlohmann::json record;
     record["type"] = "base_frame_calc";
     record["residue_idx"] = residue_idx;
-    
+
     // Add legacy residue index if available
     // First try to get from map (for backward compatibility)
     int legacy_residue_idx = get_legacy_residue_idx(chain_id, residue_seq, insertion);
-    // If not found in map and residue_idx is in reasonable range, assume it's already legacy_residue_idx (0-based)
-    // Legacy residue indices are typically 1-based, so if residue_idx < 1000, it might be legacy_residue_idx - 1
+    // If not found in map and residue_idx is in reasonable range, assume it's already
+    // legacy_residue_idx (0-based) Legacy residue indices are typically 1-based, so if residue_idx
+    // < 1000, it might be legacy_residue_idx - 1
     if (legacy_residue_idx <= 0 && residue_idx > 0 && residue_idx < 10000) {
         // The residue_idx passed might already be legacy_residue_idx (0-based)
         // Convert back to 1-based for legacy_residue_idx field
@@ -432,7 +444,7 @@ void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
     if (legacy_residue_idx > 0) {
         record["legacy_residue_idx"] = legacy_residue_idx;
     }
-    
+
     record["base_type"] = std::string(1, base_type);
 
     // Add residue identification information (matching legacy format)
@@ -467,7 +479,7 @@ void JsonWriter::record_ls_fitting(size_t residue_idx, size_t num_points, double
     nlohmann::json record;
     record["type"] = "ls_fitting";
     record["residue_idx"] = residue_idx;
-    
+
     // Add legacy residue index if available
     int legacy_residue_idx = get_legacy_residue_idx(chain_id, residue_seq, insertion);
     if (legacy_residue_idx > 0) {
@@ -519,7 +531,7 @@ void JsonWriter::record_frame_calc(size_t residue_idx, char base_type,
     nlohmann::json record;
     record["type"] = "frame_calc";
     record["residue_idx"] = residue_idx;
-    
+
     // Add legacy residue index if available
     int legacy_residue_idx = get_legacy_residue_idx(chain_id, residue_seq, insertion);
     if (legacy_residue_idx > 0) {
@@ -569,42 +581,42 @@ void JsonWriter::record_base_pair(const core::BasePair& pair) {
     // BasePair stores 0-based indices, but legacy uses 1-based
     size_t base_i = pair.residue_idx1() + 1; // Convert to 1-based
     size_t base_j = pair.residue_idx2() + 1; // Convert to 1-based
-    
+
     // Normalize pair key to avoid duplicates (always use (min, max) order)
-    std::pair<size_t, size_t> pair_key = (base_i < base_j) ? 
-        std::make_pair(base_i, base_j) : std::make_pair(base_j, base_i);
-    
+    std::pair<size_t, size_t> pair_key =
+        (base_i < base_j) ? std::make_pair(base_i, base_j) : std::make_pair(base_j, base_i);
+
     // Check if this pair has already been recorded
     if (recorded_base_pairs_.find(pair_key) != recorded_base_pairs_.end()) {
         // Skip duplicate - already recorded this pair
         return;
     }
-    
+
     // Mark as recorded
     recorded_base_pairs_.insert(pair_key);
-    
+
     // Create a mutable copy to assign index
     core::BasePair pair_with_idx = pair;
     pair_with_idx.set_basepair_idx(basepair_idx_counter_++);
-    
+
     // Assign hbond indices
     std::vector<core::hydrogen_bond> hbonds = pair_with_idx.hydrogen_bonds();
     for (size_t i = 0; i < hbonds.size(); ++i) {
         hbonds[i].hbond_idx = hbond_idx_counter_++;
     }
     pair_with_idx.set_hydrogen_bonds(hbonds);
-    
+
     // Use BasePair's to_json_legacy() to ensure exact format match with legacy JSON
     // This ensures base_i, base_j, orien_i, orien_j, org_i, org_j, dir_xyz format
     nlohmann::json record = pair_with_idx.to_json_legacy();
-    
+
     // Note: to_json_legacy() already sets "type" = "base_pair", "base_i", "base_j", "bp_type",
     // "orien_i", "orien_j", "org_i", "org_j", "dir_xyz", "basepair_idx", and "hbonds" if present
-    
+
     // Set the indices (already converted above)
     record["base_i"] = static_cast<long>(base_i);
     record["base_j"] = static_cast<long>(base_j);
-    
+
     add_calculation_record(record);
 }
 
@@ -734,19 +746,19 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
     // For now, we'll log a warning but still record (to avoid breaking existing code)
     // TODO: Fix all call sites to use 0-based indices
     if (base_i >= 4000 || base_j >= 4000) {
-        // Likely 1-based indices - this should not happen
-        // Log warning for debugging (can be removed once all call sites are fixed)
-        #ifdef DEBUG_VALIDATION_INDICES
+// Likely 1-based indices - this should not happen
+// Log warning for debugging (can be removed once all call sites are fixed)
+#ifdef DEBUG_VALIDATION_INDICES
         std::cerr << "[WARNING] record_pair_validation called with potentially 1-based indices: "
                   << "base_i=" << base_i << ", base_j=" << base_j << "\n";
-        #endif
+#endif
     }
-    
+
     nlohmann::json record;
     record["type"] = "pair_validation";
-    record["base_i"] = static_cast<long>(base_i);  // Legacy uses long
+    record["base_i"] = static_cast<long>(base_i); // Legacy uses long
     record["base_j"] = static_cast<long>(base_j);
-    record["is_valid"] = static_cast<long>(is_valid ? 1 : 0);  // Legacy uses long
+    record["is_valid"] = static_cast<long>(is_valid ? 1 : 0); // Legacy uses long
     record["bp_type_id"] = static_cast<long>(bp_type_id);
 
     // Direction vectors (nested object, matches legacy format)
@@ -768,9 +780,11 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
 
     // Validation checks (nested object, matches legacy format)
     nlohmann::json validation_checks;
-    validation_checks["distance_check"] = (rtn_val[0] >= params.min_dorg && rtn_val[0] <= params.max_dorg);
+    validation_checks["distance_check"] =
+        (rtn_val[0] >= params.min_dorg && rtn_val[0] <= params.max_dorg);
     validation_checks["d_v_check"] = (rtn_val[1] >= params.min_dv && rtn_val[1] <= params.max_dv);
-    validation_checks["plane_angle_check"] = (rtn_val[2] >= params.min_plane_angle && rtn_val[2] <= params.max_plane_angle);
+    validation_checks["plane_angle_check"] =
+        (rtn_val[2] >= params.min_plane_angle && rtn_val[2] <= params.max_plane_angle);
     validation_checks["dNN_check"] = (rtn_val[3] >= params.min_dNN && rtn_val[3] <= params.max_dNN);
     record["validation_checks"] = validation_checks;
 
@@ -789,12 +803,11 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
     add_calculation_record(record);
 }
 
-void JsonWriter::record_distance_checks(size_t base_i, size_t base_j,
-                                        double dorg, double dNN, double plane_angle, double d_v,
-                                        double overlap_area) {
+void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dorg, double dNN,
+                                        double plane_angle, double d_v, double overlap_area) {
     nlohmann::json record;
     record["type"] = "distance_checks";
-    record["base_i"] = static_cast<long>(base_i);  // Legacy uses long
+    record["base_i"] = static_cast<long>(base_i); // Legacy uses long
     record["base_j"] = static_cast<long>(base_j);
 
     // Values (nested object, matches legacy format)
@@ -827,12 +840,14 @@ void JsonWriter::record_hbond_list(size_t base_i, size_t base_j,
         hbond_json["acceptor_atom"] = hbond.acceptor_atom;
         hbond_json["distance"] = format_double(hbond.distance);
         hbond_json["type"] = std::string(1, hbond.type);
-        // Use existing hbond_idx if set (for legacy comparison), otherwise use 1-based per-pair indexing
-        // Legacy: records ALL H-bonds (including type=' ') with sequential hbond_idx starting at 1
+        // Use existing hbond_idx if set (for legacy comparison), otherwise use 1-based per-pair
+        // indexing Legacy: records ALL H-bonds (including type=' ') with sequential hbond_idx
+        // starting at 1
         if (hbond.hbond_idx.has_value()) {
             hbond_json["hbond_idx"] = static_cast<long>(hbond.hbond_idx.value());
         } else {
-            hbond_json["hbond_idx"] = static_cast<long>(i + 1); // 1-based per-pair indexing (matches legacy)
+            hbond_json["hbond_idx"] =
+                static_cast<long>(i + 1); // 1-based per-pair indexing (matches legacy)
         }
         hbonds_array.push_back(hbond_json);
     }
@@ -868,54 +883,54 @@ nlohmann::json JsonWriter::format_double(double value) {
     return nlohmann::json(std::round(value * 1000000.0) / 1000000.0);
 }
 
-void JsonWriter::record_find_bestpair_selection(const std::vector<std::pair<size_t, size_t>>& selected_pairs) {
+void JsonWriter::record_find_bestpair_selection(
+    const std::vector<std::pair<size_t, size_t>>& selected_pairs) {
     nlohmann::json record;
     record["type"] = "find_bestpair_selection";
     record["num_bp"] = selected_pairs.size();
-    
+
     nlohmann::json pairs_array = nlohmann::json::array();
     for (const auto& pair : selected_pairs) {
         pairs_array.push_back(nlohmann::json::array({pair.first, pair.second}));
     }
     record["pairs"] = pairs_array;
-    
+
     add_calculation_record(record);
 }
 
-void JsonWriter::record_best_partner_candidates(int res_i,
-                                                 const std::vector<std::tuple<int, bool, double, int>>& candidates,
-                                                 int best_j, double best_score) {
+void JsonWriter::record_best_partner_candidates(
+    int res_i, const std::vector<std::tuple<int, bool, double, int>>& candidates, int best_j,
+    double best_score) {
     nlohmann::json record;
     record["type"] = "best_partner_candidates";
     record["res_i"] = res_i;
     record["num_candidates"] = candidates.size();
     record["best_partner"] = best_j;
     record["best_score"] = best_score;
-    
+
     nlohmann::json candidates_array = nlohmann::json::array();
     for (const auto& cand : candidates) {
         int res_j = std::get<0>(cand);
         bool is_eligible = std::get<1>(cand);
         double score = std::get<2>(cand);
         int bp_type_id = std::get<3>(cand);
-        
+
         nlohmann::json cand_json;
         cand_json["res_j"] = res_j;
         cand_json["is_eligible"] = is_eligible ? 1 : 0;
         cand_json["score"] = score;
         cand_json["bp_type_id"] = bp_type_id;
         cand_json["is_best"] = (res_j == best_j) ? 1 : 0;
-        
+
         candidates_array.push_back(cand_json);
     }
     record["candidates"] = candidates_array;
-    
+
     add_calculation_record(record);
 }
 
-void JsonWriter::record_mutual_best_decision(int res_i, int res_j,
-                                             int best_j_for_i, int best_i_for_j,
-                                             bool is_mutual, bool was_selected) {
+void JsonWriter::record_mutual_best_decision(int res_i, int res_j, int best_j_for_i,
+                                             int best_i_for_j, bool is_mutual, bool was_selected) {
     nlohmann::json record;
     record["type"] = "mutual_best_decision";
     record["res1"] = res_i;
@@ -924,7 +939,7 @@ void JsonWriter::record_mutual_best_decision(int res_i, int res_j,
     record["best_partner_for_res2"] = best_i_for_j;
     record["is_mutual"] = is_mutual ? 1 : 0;
     record["was_selected"] = was_selected ? 1 : 0;
-    
+
     add_calculation_record(record);
 }
 
@@ -936,14 +951,14 @@ void JsonWriter::record_iteration_state(int iteration_num, int num_matched, int 
     record["iteration_num"] = iteration_num;
     record["num_matched"] = num_matched;
     record["num_total"] = num_total;
-    
+
     // Collect pairs found in this iteration
     nlohmann::json pairs_array = nlohmann::json::array();
     for (const auto& pair : pairs) {
         pairs_array.push_back(nlohmann::json::array({pair.first, pair.second}));
     }
     record["pairs_found_in_iteration"] = pairs_array;
-    
+
     // Collect matched residues
     nlohmann::json matched_array = nlohmann::json::array();
     for (size_t i = 1; i < matched_indices.size() && i <= static_cast<size_t>(num_total); ++i) {
@@ -952,7 +967,7 @@ void JsonWriter::record_iteration_state(int iteration_num, int num_matched, int 
         }
     }
     record["matched_residues"] = matched_array;
-    
+
     add_calculation_record(record);
 }
 

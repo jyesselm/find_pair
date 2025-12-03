@@ -6,3 +6,4 @@ Avoid raw pointers for ownership.
 perfer pass by const reference, Pass by rvalue reference (&&) 
 Minimal nesting no more than 3 levels
 functions shouldnt be longer than 50 lines (100 for special exceptions)
+perfer c++20 when possible
