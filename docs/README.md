@@ -125,8 +125,9 @@ archive/
 **Testing & Validation:**
 - [VALIDATION_PROGRESS.md](VALIDATION_PROGRESS.md) ⭐ **NEW** - Current progress tracker
 - [NEXT_STEPS.md](NEXT_STEPS.md) ⭐ **NEW** - What to do next
-- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Complete testing guide
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Complete testing guide (includes pytest)
 - [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md) - JSON comparison
+- [../tests_python/README.md](../tests_python/README.md) - Python tests with pytest
 
 **Reference:**
 - [legacy/](legacy/) - Legacy code documentation

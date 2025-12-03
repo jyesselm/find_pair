@@ -28,9 +28,29 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
+    "pytest-timeout>=2.0",
     "black>=22.0",
     "flake8>=5.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests_python"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+]
+markers = [
+    "integration: Integration tests that require executables and data files",
+    "slow: Tests that take a long time to run",
+    "requires_legacy: Tests that require legacy executable",
+    "requires_modern: Tests that require modern executable",
+]
+timeout = 300
+timeout_method = "thread"
 
 [tool.setuptools]
 packages = ["x3dna_json_compare"]

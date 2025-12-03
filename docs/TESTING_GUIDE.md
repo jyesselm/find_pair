@@ -73,7 +73,75 @@ See [x3dna_json_compare/README.md](../x3dna_json_compare/README.md) for API docu
 
 ## Test Types
 
-### 1. C++ Unit Tests
+### 1. Python Integration Tests (pytest)
+
+**Location**: `tests_python/integration/`
+
+**Purpose**: Test JSON generation and comparison workflows
+
+**Framework**: pytest
+
+**Run**:
+```bash
+# All Python tests
+pytest tests_python/
+
+# Only integration tests
+pytest tests_python/integration/
+
+# Specific test file
+pytest tests_python/integration/test_atoms_batch.py
+
+# With verbose output
+pytest tests_python/ -v
+
+# Exclude slow tests
+pytest tests_python/ -m "not slow"
+```
+
+**Or run as standalone scripts:**
+```bash
+# Test atoms JSON generation
+python tests_python/integration/test_atoms_batch.py
+
+# Test residue indices
+python tests_python/integration/test_residue_indices_batch.py
+
+# Test ls_fitting
+python tests_python/integration/test_ls_fitting.py
+
+# Test frames
+python tests_python/integration/test_frames_batch.py
+```
+
+**Key Test Files**:
+- `test_atoms_batch.py` - Batch testing of atoms JSON generation and comparison
+- `test_residue_indices_batch.py` - Batch testing of residue indices JSON
+- `test_ls_fitting.py` - LS fitting JSON generation and comparison
+- `test_frames_batch.py` - Batch testing of frames JSON (base_frame_calc, frame_calc, ls_fitting)
+
+**Requirements**:
+- Python 3.8+
+- pytest (install with `pip install -e ".[dev]"`)
+- Built executables in `build/` and `org/build/bin/`
+- PDB files in `data/pdb/`
+- Legacy JSON files in `data/json_legacy/` (optional, will be generated if missing)
+
+**Shared Fixtures** (from `tests_python/conftest.py`):
+- `project_root_path` - Project root directory
+- `executables` - Legacy and modern executables
+- `temp_output_dir` - Temporary output directory for test files
+- `valid_pdbs_fast` - List of valid PDB IDs from `valid_pdbs_fast.json`
+
+**Test Markers**:
+- `@pytest.mark.integration` - Integration tests
+- `@pytest.mark.slow` - Tests that take a long time
+- `@pytest.mark.requires_legacy` - Requires legacy executable
+- `@pytest.mark.requires_modern` - Requires modern executable
+
+See [tests_python/README.md](../tests_python/README.md) for complete pytest documentation.
+
+### 2. C++ Unit Tests
 
 **Location**: `tests/unit/`
 
@@ -100,7 +168,7 @@ cd build && ctest
 - `test_base_pair_finder.cpp` - Base pair finding tests
 - `test_base_pair_validator.cpp` - Validation tests
 
-### 2. C++ Integration Tests
+### 3. C++ Integration Tests
 
 **Location**: `tests/integration/`
 
@@ -122,7 +190,7 @@ cd build && ctest -R integration
 - `test_base_pair_integration.cpp` - Base pair finding integration
 - `test_frame_calculation_legacy.cpp` - Frame calculation comparison
 
-### 3. JSON Regression Tests
+### 4. JSON Regression Tests
 
 **Location**: Python scripts using `compare_json.py`
 
@@ -147,7 +215,7 @@ python3 scripts/compare_json.py compare 1H4S 2BNA
 - Rotation matrices: < 0.0001 per element
 - RMS fit: < 0.001
 
-### 4. Legacy Test Tools
+### 5. Legacy Test Tools
 
 **Location**: `org/src/test_*.c`
 
@@ -334,6 +402,36 @@ python3 scripts/compare_json.py generate-test-sets
 **Purpose**: List of PDBs that have valid JSON files for both legacy and modern
 
 ---
+
+## Python Tools Reference
+
+### Utility Tools (in `tools/`)
+
+| Tool | Purpose | Usage |
+|------|---------|-------|
+| `tools/download_pdbs.py` | Download PDB files from RCSB | `python tools/download_pdbs.py --test-set 100` |
+| `tools/find_slow_pdbs.py` | Identify PDBs that take >30s to process | `python tools/find_slow_pdbs.py` |
+
+**Download PDBs:**
+```bash
+# Download PDBs from test set
+python tools/download_pdbs.py --test-set 100
+
+# Download specific PDB IDs
+python tools/download_pdbs.py 1H4S 2BNA 3DNA
+
+# Download from file containing PDB IDs
+python tools/download_pdbs.py --from-file pdb_list.txt
+```
+
+**Find Slow PDBs:**
+```bash
+# Identify PDBs that take more than 30 seconds to generate legacy output
+python tools/find_slow_pdbs.py
+
+# Output: data/slow_pdbs.json
+# These PDBs can be excluded from batch testing to avoid timeouts
+```
 
 ## Comparison Tools Reference
 

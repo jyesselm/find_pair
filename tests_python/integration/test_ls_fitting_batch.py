@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Dict, List
 from datetime import datetime
 import argparse
+from multiprocessing import Pool, cpu_count
+from functools import partial
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -20,15 +22,58 @@ from tests_python.integration.test_ls_fitting import test_single_pdb
 from scripts.test_utils import find_executables, load_valid_pdbs_fast
 
 
+def test_single_pdb_wrapper(args):
+    """Wrapper for test_single_pdb to work with multiprocessing.Pool.map"""
+    pdb_id, output_dir, legacy_exe, modern_exe, project_root, index, total = args
+    
+    pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
+    
+    if not pdb_file.exists():
+        print(f"[{index}/{total}] {pdb_id}: SKIP (PDB file not found)", flush=True)
+        return pdb_id, {"status": "skip", "error": "PDB file not found"}
+    
+    try:
+        result = test_single_pdb(
+            pdb_id, pdb_file, output_dir, 
+            legacy_exe, modern_exe, project_root
+        )
+        
+        if result["compare_ok"]:
+            print(f"[{index}/{total}] {pdb_id}: PASS ({result.get('matched', 0)}/{result.get('total', 0)} matched)", flush=True)
+            return pdb_id, {
+                "status": "pass",
+                "matched": result.get("matched", 0),
+                "total": result.get("total", 0)
+            }
+        else:
+            error_msg = "; ".join(result.get("errors", ["Unknown error"]))
+            print(f"[{index}/{total}] {pdb_id}: FAIL - {error_msg}", flush=True)
+            return pdb_id, {
+                "status": "fail",
+                "errors": result.get("errors", []),
+                "matched": result.get("matched", 0),
+                "total": result.get("total", 0)
+            }
+            
+    except Exception as e:
+        print(f"[{index}/{total}] {pdb_id}: ERROR - {str(e)}", flush=True)
+        return pdb_id, {"status": "error", "error": str(e)}
+
+
 def run_batch_test(pdb_ids: List[str], output_dir: Path, 
                    legacy_exe: Path, modern_exe: Path, 
-                   project_root: Path, max_pdbs: int = None) -> Dict:
-    """Run ls_fitting tests on a batch of PDBs."""
+                   project_root: Path, max_pdbs: int = None,
+                   num_workers: int = None) -> Dict:
+    """Run ls_fitting tests on a batch of PDBs in parallel."""
     
     if max_pdbs:
         pdb_ids = pdb_ids[:max_pdbs]
     
+    if num_workers is None:
+        num_workers = min(cpu_count(), 20)  # Default to CPU count or 20, whichever is smaller
+    
     print(f"Testing ls_fitting for {len(pdb_ids)} PDBs...")
+    print(f"Using {num_workers} parallel workers")
     print(f"Output directory: {output_dir}")
     print()
     
@@ -39,46 +84,29 @@ def run_batch_test(pdb_ids: List[str], output_dir: Path,
         "errors": 0,
         "pdb_results": {},
         "start_time": datetime.now().isoformat(),
+        "num_workers": num_workers,
     }
     
-    for i, pdb_id in enumerate(pdb_ids, 1):
-        pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
+    # Prepare arguments for parallel processing
+    args_list = [
+        (pdb_id, output_dir, legacy_exe, modern_exe, project_root, i+1, len(pdb_ids))
+        for i, pdb_id in enumerate(pdb_ids)
+    ]
+    
+    # Run tests in parallel
+    with Pool(processes=num_workers) as pool:
+        pdb_results = pool.map(test_single_pdb_wrapper, args_list)
+    
+    # Aggregate results
+    for pdb_id, result in pdb_results:
+        results["pdb_results"][pdb_id] = result
         
-        if not pdb_file.exists():
-            print(f"[{i}/{len(pdb_ids)}] {pdb_id}: SKIP (PDB file not found)")
+        if result["status"] == "pass":
+            results["passed"] += 1
+        elif result["status"] == "fail":
+            results["failed"] += 1
+        else:  # skip or error
             results["errors"] += 1
-            results["pdb_results"][pdb_id] = {"status": "skip", "error": "PDB file not found"}
-            continue
-        
-        try:
-            result = test_single_pdb(
-                pdb_id, pdb_file, output_dir, 
-                legacy_exe, modern_exe, project_root
-            )
-            
-            if result["compare_ok"]:
-                print(f"[{i}/{len(pdb_ids)}] {pdb_id}: PASS ({result.get('matched', 0)}/{result.get('total', 0)} matched)")
-                results["passed"] += 1
-                results["pdb_results"][pdb_id] = {
-                    "status": "pass",
-                    "matched": result.get("matched", 0),
-                    "total": result.get("total", 0)
-                }
-            else:
-                error_msg = "; ".join(result.get("errors", ["Unknown error"]))
-                print(f"[{i}/{len(pdb_ids)}] {pdb_id}: FAIL - {error_msg}")
-                results["failed"] += 1
-                results["pdb_results"][pdb_id] = {
-                    "status": "fail",
-                    "errors": result.get("errors", []),
-                    "matched": result.get("matched", 0),
-                    "total": result.get("total", 0)
-                }
-                
-        except Exception as e:
-            print(f"[{i}/{len(pdb_ids)}] {pdb_id}: ERROR - {str(e)}")
-            results["errors"] += 1
-            results["pdb_results"][pdb_id] = {"status": "error", "error": str(e)}
     
     results["end_time"] = datetime.now().isoformat()
     return results
@@ -116,6 +144,8 @@ def main():
     parser.add_argument("--output", type=str, 
                         default="data/validation_results/ls_fitting_batch_results.json",
                         help="Output file for results")
+    parser.add_argument("--workers", type=int, default=20,
+                        help="Number of parallel workers (default: 20)")
     args = parser.parse_args()
     
     # Setup
@@ -144,7 +174,8 @@ def main():
     # Run batch test
     results = run_batch_test(
         pdb_ids, output_dir, legacy_exe, modern_exe, 
-        project_root, max_pdbs=args.max_pdbs
+        project_root, max_pdbs=args.max_pdbs,
+        num_workers=args.workers
     )
     
     # Print summary

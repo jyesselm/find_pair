@@ -41,6 +41,20 @@ def compare_ls_fitting_json(legacy_file: Path, modern_file: Path,
         legacy_records = legacy_data if isinstance(legacy_data, list) else [legacy_data]
         modern_records = modern_data if isinstance(modern_data, list) else [modern_data]
         
+        # NOTE: Legacy generates duplicate ls_fitting records (called from both app_fncs.c and ana_fncs.c)
+        # Modern only generates once per residue (correct behavior)
+        # So we need to deduplicate legacy records before comparing
+        if len(legacy_records) > len(modern_records):
+            # Create unique records based on residue identifier
+            seen = set()
+            unique_legacy = []
+            for rec in legacy_records:
+                key = (rec.get('chain_id'), rec.get('residue_seq'), rec.get('residue_name', '').strip())
+                if key not in seen:
+                    seen.add(key)
+                    unique_legacy.append(rec)
+            legacy_records = unique_legacy
+        
         # Add type field to records for comparison function
         legacy_ls_records = []
         for r in legacy_records:

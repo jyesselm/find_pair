@@ -8,3 +8,5 @@ Avoid raw pointers for ownership.
 perfer pass by const reference, Pass by rvalue reference (&&) 
 Minimal nesting no more than 3 levels
 functions shouldnt be longer than 50 lines (100 for special exceptions)
+
+Python testing: All Python tests must use pytest. Test files go in tests_python/ with integration/ and unit/ subdirectories. Use pytest fixtures from conftest.py. Run tests with `pytest tests_python/`. Tools like download_pdbs.py and find_slow_pdbs.py belong in tools/, not scripts/.

@@ -10,44 +10,306 @@ A modern C++ rewrite of the X3DNA v2.4 codebase with strong object-oriented desi
 
 ---
 
-## Quick Start
+## Getting Started
 
-### 1. Build Both Legacy and Modern Code
+### Initial Setup
 
+1. **Install Dependencies**
+   ```bash
+   # Install Python dependencies (including pytest)
+   pip install -e ".[dev]"
+   ```
+
+2. **Build Both Legacy and Modern Code**
+   ```bash
+   # Build modern code (Release mode)
+   make release
+
+   # Build legacy code (Release mode)
+   make org-release
+   ```
+
+3. **Download Test PDBs (Optional)**
+   ```bash
+   # Download PDBs from test set
+   python tools/download_pdbs.py --test-set 100
+
+   # Or download specific PDBs
+   python tools/download_pdbs.py 1H4S 2BNA 3DNA
+   ```
+
+### Running Tests by Stage
+
+Validation is done in **10 stages**, each testing a specific aspect of the code. Work through stages sequentially, validating each before moving to the next.
+
+#### Stage 1: Atom Parsing ✅ **COMPLETE**
+
+**Status**: ✅ Validated - 3602/3602 PDBs (100% pass rate)
+
+**What it tests**: PDB file parsing and atom extraction
+
+**Run tests**:
 ```bash
-# Build modern code (Release mode)
-make release
+# Using pytest (recommended)
+pytest tests_python/integration/test_atoms_batch.py
 
-# Build legacy code (Release mode)
-make org-release
+# Or run as standalone script
+python tests_python/integration/test_atoms_batch.py
+
+# Or compare specific PDB
+python3 scripts/compare_json.py atoms 1H4S
 ```
 
-### 2. Generate JSON Output Files
-
+**Generate JSON** (if needed):
 ```bash
-# Generate legacy JSON (reference output)
-python3 scripts/rebuild_json.py regenerate 1H4S --legacy-only
-
-# Generate modern JSON (to be compared against legacy)
-python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
-
-# Or generate both at once
-python3 scripts/rebuild_json.py regenerate 1H4S
-```
-
-### 3. Compare Outputs
-
-```bash
-# Compare a specific PDB
-python3 scripts/compare_json.py compare 1H4S
-
-# Compare with verbose output
-python3 scripts/compare_json.py compare 1H4S --verbose
+# Generate atoms JSON for a PDB
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=atoms
 ```
 
 ---
 
-## Generating Output Files
+#### Stage 2: Residue Indices ✅ **COMPLETE**
+
+**Status**: ✅ Validated
+
+**What it tests**: Mapping of residues to atom ranges (seidx)
+
+**Run tests**:
+```bash
+# Using pytest
+pytest tests_python/integration/test_residue_indices_batch.py
+
+# Or run as standalone script
+python tests_python/integration/test_residue_indices_batch.py
+```
+
+**Generate JSON**:
+```bash
+# Generate residue_indices JSON
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=residue_indices
+```
+
+---
+
+#### Stage 3: LS Fitting ✅ **COMPLETE**
+
+**Status**: ✅ Validated
+
+**What it tests**: Least-squares fitting for frame calculation
+
+**Run tests**:
+```bash
+# Using pytest
+pytest tests_python/integration/test_ls_fitting.py
+
+# Or run as standalone script
+python tests_python/integration/test_ls_fitting.py
+```
+
+**Generate JSON**:
+```bash
+# Generate ls_fitting JSON
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=ls_fitting
+```
+
+---
+
+#### Stage 4: Reference Frames ✅ **COMPLETE**
+
+**Status**: ✅ Validated
+
+**What it tests**: Reference frame calculations (base_frame_calc, frame_calc)
+
+**Run tests**:
+```bash
+# Using pytest
+pytest tests_python/integration/test_frames_batch.py
+
+# Or run as standalone script
+python tests_python/integration/test_frames_batch.py
+
+# Or compare specific PDB
+python3 scripts/compare_json.py frames 1H4S
+```
+
+**Generate JSON**:
+```bash
+# Generate frames JSON (base_frame_calc + frame_calc, but not ls_fitting)
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=frames
+```
+
+---
+
+#### Stage 5: Distance Checks ⏳ **TODO**
+
+**Status**: ⏳ Not yet validated
+
+**What it tests**: Geometric distance and angle calculations (dorg, dNN, plane_angle, d_v, overlap_area)
+
+**Run tests** (when implemented):
+```bash
+# Compare distance checks
+python3 scripts/compare_json.py distance-checks 1H4S
+```
+
+**Generate JSON**:
+```bash
+# Generate distance_checks JSON (when stage is implemented)
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=distances
+```
+
+---
+
+#### Stage 6: Hydrogen Bonds ⏳ **TODO**
+
+**Status**: ⏳ Not yet validated
+
+**What it tests**: H-bond detection and conflict resolution
+
+**Run tests** (when implemented):
+```bash
+# Compare H-bonds
+python3 scripts/compare_json.py hbonds 1H4S
+```
+
+**Generate JSON**:
+```bash
+# Generate hbond_list JSON (when stage is implemented)
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=hbonds
+```
+
+---
+
+#### Stage 7: Pair Validation ⏳ **TODO**
+
+**Status**: ⏳ Not yet validated
+
+**What it tests**: Validation logic (which pairs pass/fail geometric checks)
+
+**Run tests** (when implemented):
+```bash
+# Compare pair validation
+python3 scripts/compare_json.py validation 1H4S
+```
+
+**Generate JSON**:
+```bash
+# Generate pair_validation JSON (when stage is implemented)
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=validation
+```
+
+---
+
+#### Stage 8: Base Pair Selection ⏳ **TODO** ⭐ **CRITICAL**
+
+**Status**: ⏳ Not yet validated
+
+**What it tests**: Final selected base pairs (THE PRIMARY OUTPUT)
+
+**Run tests** (when implemented):
+```bash
+# Compare base pairs
+python3 scripts/compare_json.py pairs 1H4S
+```
+
+**Generate JSON**:
+```bash
+# Generate base_pair and find_bestpair_selection JSON (when stage is implemented)
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=selection
+```
+
+---
+
+#### Stage 9: Step Parameters ⏳ **TODO**
+
+**Status**: ⏳ Not yet validated
+
+**What it tests**: Step parameter calculations (Shift, Slide, Rise, Tilt, Roll, Twist)
+
+**Run tests**:
+```bash
+# Compare step parameters
+python3 scripts/compare_json.py steps 1H4S
+```
+
+**Generate JSON**:
+```bash
+# Generate bpstep_params JSON
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=steps
+```
+
+---
+
+#### Stage 10: Helical Parameters ⏳ **TODO**
+
+**Status**: ⏳ Not yet validated
+
+**What it tests**: Helical parameter calculations
+
+**Run tests** (when implemented):
+```bash
+# Compare helical parameters
+python3 scripts/compare_json.py helical 1H4S
+```
+
+**Generate JSON**:
+```bash
+# Generate helical_params JSON (when stage is implemented)
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=helical
+```
+
+---
+
+### Quick Test Workflow
+
+**For a single PDB**:
+```bash
+# 1. Generate modern JSON for current stage
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=<stage_name>
+
+# 2. Compare with legacy
+python3 scripts/compare_json.py <stage_command> 1H4S --verbose
+
+# 3. Fix any issues and repeat
+```
+
+**For batch testing**:
+```bash
+# Run pytest tests (recommended)
+pytest tests_python/integration/test_<stage>_batch.py
+
+# Or run standalone test script
+python tests_python/integration/test_<stage>_batch.py
+```
+
+**For all available PDBs**:
+```bash
+# Compare all PDBs for a specific stage
+python3 scripts/compare_json.py <stage_command> --test-set 100
+```
+
+### Stage Status Summary
+
+| Stage | Name | Status | Test Command |
+|-------|------|--------|--------------|
+| 1 | Atoms | ✅ Complete | `pytest tests_python/integration/test_atoms_batch.py` |
+| 2 | Residue Indices | ✅ Complete | `pytest tests_python/integration/test_residue_indices_batch.py` |
+| 3 | LS Fitting | ✅ Complete | `pytest tests_python/integration/test_ls_fitting.py` |
+| 4 | Frames | ✅ Complete | `pytest tests_python/integration/test_frames_batch.py` |
+| 5 | Distance Checks | ⏳ TODO | `python3 scripts/compare_json.py distance-checks <PDB>` |
+| 6 | H-Bonds | ⏳ TODO | `python3 scripts/compare_json.py hbonds <PDB>` |
+| 7 | Pair Validation | ⏳ TODO | `python3 scripts/compare_json.py validation <PDB>` |
+| 8 | Base Pair Selection | ⏳ TODO ⭐ | `python3 scripts/compare_json.py pairs <PDB>` |
+| 9 | Step Parameters | ⏳ TODO | `python3 scripts/compare_json.py steps <PDB>` |
+| 10 | Helical Parameters | ⏳ TODO | `python3 scripts/compare_json.py helical <PDB>` |
+
+See [docs/STAGED_VALIDATION_PLAN.md](docs/STAGED_VALIDATION_PLAN.md) for detailed stage information.
+
+---
+
+## Generating JSON Output Files
+
+**Note**: For staged validation, only generate JSON for the stage you're currently working on. See "Running Tests by Stage" above for stage-specific commands.
 
 ### Legacy JSON Output (Reference)
 
@@ -89,10 +351,26 @@ Modern code output is compared against legacy output to verify correctness.
 
 **Location:** `data/json/`
 
-#### Method 1: Using Python Script (Recommended)
+**Important**: Use `--stage=<stage_name>` to generate only the JSON types needed for the current validation stage.
+
+#### Method 1: Using Direct Executable (Recommended for Staged Validation)
 
 ```bash
-# Single PDB
+# Generate specific stage JSON
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=atoms
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=residue_indices
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=ls_fitting
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=frames
+./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=all  # All stages
+
+# Available stages: atoms, residue_indices, ls_fitting, frames, distances, hbonds, 
+#                   validation, selection, steps, helical, all
+```
+
+#### Method 2: Using Python Script
+
+```bash
+# Single PDB (all stages)
 python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
 
 # Multiple PDBs
@@ -100,16 +378,6 @@ python3 scripts/rebuild_json.py regenerate 1H4S 2BNA 3DNA --modern-only
 
 # Using test set
 python3 scripts/rebuild_json.py regenerate --test-set 100 --modern-only
-
-# All available PDBs
-python3 scripts/rebuild_json.py regenerate --modern-only
-```
-
-#### Method 2: Direct Executable
-
-```bash
-# From project root
-./build/generate_modern_json data/pdb/1H4S.pdb data/json/
 ```
 
 #### Method 3: Using find_pair_app
@@ -148,6 +416,8 @@ python3 scripts/rebuild_json.py regenerate
 The primary comparison tool is `scripts/compare_json.py`. It compares modern JSON against legacy JSON to identify differences.
 
 **For complete testing documentation, see [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)**
+
+**For staged validation, use stage-specific comparison commands** (see "Running Tests by Stage" above).
 
 ### Basic Comparison
 
@@ -385,6 +655,8 @@ make -j$(nproc)
 
 ## Running Tests
 
+### C++ Tests
+
 ```bash
 # Run all C++ tests
 make test
@@ -401,11 +673,53 @@ cd build && ctest -R unit        # Unit tests only
 cd build && ctest -R integration # Integration tests only
 ```
 
+### Python Tests (pytest)
+
+**All Python tests use pytest and are located in `tests_python/`.**
+
+```bash
+# Install pytest (if not already installed)
+pip install -e ".[dev]"
+
+# Run all Python tests
+pytest tests_python/
+
+# Run only integration tests
+pytest tests_python/integration/
+
+# Run a specific test file
+pytest tests_python/integration/test_atoms_batch.py
+
+# Run with verbose output
+pytest tests_python/ -v
+
+# Run only fast tests (exclude slow markers)
+pytest tests_python/ -m "not slow"
+```
+
+**Test scripts can also be run standalone:**
+```bash
+# Test atoms JSON generation
+python tests_python/integration/test_atoms_batch.py
+
+# Test residue indices
+python tests_python/integration/test_residue_indices_batch.py
+
+# Test ls_fitting
+python tests_python/integration/test_ls_fitting.py
+
+# Test frames
+python tests_python/integration/test_frames_batch.py
+```
+
+See [tests_python/README.md](tests_python/README.md) for detailed pytest documentation.
+
 ### Test Types
 
 1. **C++ Unit Tests** - Test individual classes and functions (`tests/unit/`)
 2. **C++ Integration Tests** - Test component interactions (`tests/integration/`)
-3. **JSON Regression Tests** - Compare modern JSON with legacy JSON (primary test method)
+3. **Python Integration Tests** - JSON generation and comparison tests (`tests_python/integration/`)
+4. **JSON Regression Tests** - Compare modern JSON with legacy JSON (primary test method)
 
 The primary testing method is JSON regression testing, which ensures modern code output exactly matches legacy code output.
 
@@ -551,13 +865,17 @@ find_pair_2/
 - `data/json_legacy/` - Legacy JSON output (reference)
 
 **Scripts & Tools:**
-- `scripts/` - Essential Python tools (compare_json.py, rebuild_json.py)
-- `tools/` - C++ utility programs
+- `scripts/` - Essential Python tools (compare_json.py, rebuild_json.py, test_utils.py)
+- `tools/` - Utility programs (C++ tools and Python tools like download_pdbs.py, find_slow_pdbs.py)
 - `x3dna_json_compare/` - Python comparison library
 
 **Testing:**
-- `tests/unit/` - Unit tests
-- `tests/integration/` - Integration tests
+- `tests/unit/` - C++ unit tests
+- `tests/integration/` - C++ integration tests
+- `tests_python/` - Python tests (pytest)
+  - `tests_python/integration/` - Integration tests for JSON generation/comparison
+  - `tests_python/unit/` - Unit tests for utility functions
+  - `tests_python/conftest.py` - Shared pytest fixtures
 
 **Documentation:**
 - `docs/` - All documentation (see [docs/README.md](docs/README.md))
