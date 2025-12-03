@@ -44,6 +44,7 @@ add_library(x3dna
     src/x3dna/algorithms/standard_base_templates.cpp
     src/x3dna/algorithms/ring_atom_matcher.cpp
     src/x3dna/algorithms/base_frame_calculator.cpp
+    src/x3dna/algorithms/ls_fitting_calculator.cpp
     src/x3dna/algorithms/base_pair_validator.cpp
     src/x3dna/algorithms/base_pair_finder.cpp
     src/x3dna/algorithms/parameter_calculator.cpp
