@@ -449,17 +449,18 @@ def main():
     if not legacy_exe:
         print("⚠️  Legacy executable not found, will only test modern generation")
     
-    # Load valid PDBs list (prefer fast PDBs if available)
+    # Load valid PDBs list - MUST use valid_pdbs_fast.json
     fast_pdbs_file = project_root / "data" / "valid_pdbs_fast.json"
-    valid_pdbs_file = project_root / "data" / "valid_pdbs.json"
     
-    # Prefer fast PDBs file if it exists (excludes slow PDBs)
-    if fast_pdbs_file.exists():
-        valid_pdbs_file = fast_pdbs_file
-        print(f"  Using fast PDBs file (excludes slow PDBs): {fast_pdbs_file.name}")
+    if not fast_pdbs_file.exists():
+        print(f"❌ {fast_pdbs_file} not found!")
+        print("   This script requires valid_pdbs_fast.json for testing.")
+        return 1
+    
+    print(f"  Using {fast_pdbs_file.name} (excludes slow PDBs)")
     
     valid_pdb_ids = set()
-    if valid_pdbs_file.exists():
+    try:
         try:
             with open(valid_pdbs_file) as f:
                 valid_data = json.load(f)
