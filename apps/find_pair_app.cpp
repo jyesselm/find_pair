@@ -75,45 +75,33 @@ int main(int argc, char* argv[]) {
             // Use the original PDB file path (as provided on command line)
             // Convert to string to preserve relative paths
             std::string pdb_file_str = options.pdb_file.string();
-            x3dna::io::InputFileWriter::write(
-                options.output_file,
-                std::filesystem::path(pdb_file_str),
-                base_pairs,
-                2,  // duplex_number
-                1   // flags (explicit bp numbering)
+            x3dna::io::InputFileWriter::write(options.output_file,
+                                              std::filesystem::path(pdb_file_str), base_pairs,
+                                              2, // duplex_number
+                                              1  // flags (explicit bp numbering)
             );
             std::cout << "Output file written: " << options.output_file << "\n";
 
             // Write ref_frames_modern.dat
             if (!options.legacy_inp_file.empty()) {
                 // Use legacy pair ordering for exact frame matching
-                auto legacy_ordering = x3dna::io::InputFileWriter::parse_legacy_inp_ordering(
-                    options.legacy_inp_file);
+                auto legacy_ordering =
+                    x3dna::io::InputFileWriter::parse_legacy_inp_ordering(options.legacy_inp_file);
                 if (!legacy_ordering.empty()) {
                     x3dna::io::InputFileWriter::write_ref_frames(
-                        "ref_frames_modern.dat",
-                        base_pairs,
-                        structure,
-                        legacy_ordering
-                    );
+                        "ref_frames_modern.dat", base_pairs, structure, legacy_ordering);
                     std::cout << "Reference frames written: ref_frames_modern.dat "
                               << "(using legacy ordering from " << options.legacy_inp_file << ")\n";
                 } else {
-                    std::cerr << "[WARNING] Could not parse legacy inp file: " 
+                    std::cerr << "[WARNING] Could not parse legacy inp file: "
                               << options.legacy_inp_file << "\n";
-                    x3dna::io::InputFileWriter::write_ref_frames(
-                        "ref_frames_modern.dat",
-                        base_pairs,
-                        structure
-                    );
+                    x3dna::io::InputFileWriter::write_ref_frames("ref_frames_modern.dat",
+                                                                 base_pairs, structure);
                     std::cout << "Reference frames written: ref_frames_modern.dat\n";
                 }
             } else {
-                x3dna::io::InputFileWriter::write_ref_frames(
-                    "ref_frames_modern.dat",
-                    base_pairs,
-                    structure
-                );
+                x3dna::io::InputFileWriter::write_ref_frames("ref_frames_modern.dat", base_pairs,
+                                                             structure);
                 std::cout << "Reference frames written: ref_frames_modern.dat\n";
             }
         } else {
@@ -131,4 +119,3 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 }
-

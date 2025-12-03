@@ -41,7 +41,7 @@ protected:
         EXPECT_EQ(s1.num_atoms(), s2.num_atoms()) << "Atom count mismatch";
         EXPECT_EQ(s1.num_residues(), s2.num_residues()) << "Residue count mismatch";
         EXPECT_EQ(s1.num_chains(), s2.num_chains()) << "Chain count mismatch";
-        
+
         // Compare atoms (first 20 for performance)
         std::vector<Atom> atoms1, atoms2;
         for (const auto& chain : s1.chains()) {
@@ -58,10 +58,10 @@ protected:
                 }
             }
         }
-        
-        size_t num_to_compare = std::min(static_cast<size_t>(20), 
-                                         std::min(atoms1.size(), atoms2.size()));
-        
+
+        size_t num_to_compare =
+            std::min(static_cast<size_t>(20), std::min(atoms1.size(), atoms2.size()));
+
         for (size_t i = 0; i < num_to_compare; ++i) {
             SCOPED_TRACE("Atom index " + std::to_string(i));
             EXPECT_EQ(atoms1[i].name(), atoms2[i].name());
@@ -81,37 +81,37 @@ TEST_F(IOIntegrationTest, PdbRoundTrip) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     // Parse PDB file
     PdbParser parser;
     Structure original = parser.parse_file(pair.pdb_file);
-    
+
     if (original.num_atoms() == 0) {
         GTEST_SKIP() << "Original structure has no atoms - cannot test round-trip";
     }
-    
+
     // Write to temporary PDB file
     std::filesystem::path temp_pdb = std::filesystem::temp_directory_path() / "test_roundtrip.pdb";
-    
+
     try {
         PdbWriter writer;
         writer.write_file(original, temp_pdb);
-        
+
         // Verify file was created
         if (!std::filesystem::exists(temp_pdb)) {
             GTEST_SKIP() << "PDB file was not written";
         }
-        
+
         // Parse the written PDB file
         Structure restored = parser.parse_file(temp_pdb);
-        
+
         // Basic verification: restored structure should have some atoms
         // Note: PdbWriter might not write all chains/atoms (known limitation)
         // So we just verify that we can write and read, not exact matching
         EXPECT_GT(restored.num_atoms(), 0) << "Restored structure has no atoms";
         EXPECT_GT(restored.num_residues(), 0) << "Restored structure has no residues";
         EXPECT_GT(restored.num_chains(), 0) << "Restored structure has no chains";
-        
+
         // Clean up
         std::filesystem::remove(temp_pdb);
     } catch (const std::exception& e) {
@@ -132,19 +132,19 @@ TEST_F(IOIntegrationTest, PdbJsonRoundTrip) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     // Parse PDB file
     PdbParser parser;
     Structure original = parser.parse_file(pair.pdb_file);
-    
+
     EXPECT_GT(original.num_atoms(), 0) << "Original structure has no atoms";
-    
+
     // Export to JSON (using Structure's to_json_legacy)
     auto json = original.to_json_legacy();
-    
+
     // Load back from JSON
     Structure restored = Structure::from_json_legacy(json);
-    
+
     // Compare structures
     compare_structures(original, restored, 1e-6);
 }
@@ -158,48 +158,48 @@ TEST_F(IOIntegrationTest, LegacyJsonRoundTrip) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     try {
         // Load legacy JSON
         auto legacy_json = load_legacy_json(pair.json_file);
-        
+
         // Parse Structure from legacy JSON using JsonReader
         JsonReader reader;
         Structure structure = reader.read_structure_legacy(legacy_json);
-        
+
         if (structure.num_atoms() == 0) {
             GTEST_SKIP() << "Structure from JSON has no atoms - cannot test round-trip";
         }
-        
+
         // Export back to JSON using JsonWriter
         JsonWriter writer(pair.pdb_file);
         writer.record_pdb_atoms(structure);
         auto our_json = writer.json();
-        
+
         // Verify JSON structure
         EXPECT_TRUE(our_json.contains("calculations"));
         EXPECT_TRUE(our_json["calculations"].is_array());
-        
+
         // Find pdb_atoms records in both
         auto legacy_atoms = find_records_by_type(legacy_json, "pdb_atoms");
         auto our_atoms = find_records_by_type(our_json, "pdb_atoms");
-        
+
         if (!legacy_atoms.empty() && !our_atoms.empty()) {
             const auto& legacy_record = legacy_atoms[0];
             const auto& our_record = our_atoms[0];
-            
+
             // Compare atom counts
             if (legacy_record.contains("num_atoms") && our_record.contains("num_atoms")) {
                 long legacy_count = 0;
                 long our_count = 0;
-                
+
                 if (legacy_record["num_atoms"].is_number_integer()) {
                     legacy_count = legacy_record["num_atoms"].get<long>();
                 }
                 if (our_record["num_atoms"].is_number_integer()) {
                     our_count = our_record["num_atoms"].get<long>();
                 }
-                
+
                 if (legacy_count > 0 && our_count > 0) {
                     EXPECT_EQ(our_count, legacy_count) << "Atom count mismatch in JSON round-trip";
                 }
@@ -220,42 +220,42 @@ TEST_F(IOIntegrationTest, PdbToJsonMatchesLegacy) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     // Load legacy JSON
     auto legacy_json = load_legacy_json(pair.json_file);
-    
+
     // Parse PDB and export to JSON
     PdbParser parser;
     Structure structure = parser.parse_file(pair.pdb_file);
-    
+
     JsonWriter writer(pair.pdb_file);
     writer.record_pdb_atoms(structure);
     auto our_json = writer.json();
-    
+
     // Compare pdb_atoms records
     auto legacy_atoms = find_records_by_type(legacy_json, "pdb_atoms");
     auto our_atoms = find_records_by_type(our_json, "pdb_atoms");
-    
+
     if (!legacy_atoms.empty() && !our_atoms.empty()) {
         const auto& legacy_record = legacy_atoms[0];
         const auto& our_record = our_atoms[0];
-        
+
         // Verify record type
         EXPECT_EQ(our_record["type"], "pdb_atoms");
         EXPECT_EQ(legacy_record["type"], "pdb_atoms");
-        
+
         // Compare atom counts if available
         if (legacy_record.contains("num_atoms") && our_record.contains("num_atoms")) {
             long legacy_count = 0;
             long our_count = 0;
-            
+
             if (legacy_record["num_atoms"].is_number_integer()) {
                 legacy_count = legacy_record["num_atoms"].get<long>();
             }
             if (our_record["num_atoms"].is_number_integer()) {
                 our_count = our_record["num_atoms"].get<long>();
             }
-            
+
             if (legacy_count > 0 && our_count > 0) {
                 EXPECT_EQ(our_count, legacy_count) << "Atom count mismatch";
             }
@@ -273,18 +273,18 @@ TEST_F(IOIntegrationTest, JsonReadingWithRealFiles) {
 
     // Test with first 5 pairs
     size_t num_to_test = std::min(static_cast<size_t>(5), pairs_.size());
-    
+
     for (size_t i = 0; i < num_to_test; ++i) {
         const auto& pair = pairs_[i];
-        
+
         try {
             // Load legacy JSON
             auto legacy_json = load_legacy_json(pair.json_file);
-            
+
             // Parse Structure from JSON
             JsonReader reader;
             Structure structure = reader.read_structure_legacy(legacy_json);
-            
+
             // Verify structure was created (some JSON files might not have valid structures)
             // Only verify if structure has data
             if (structure.num_atoms() > 0) {
@@ -311,28 +311,28 @@ TEST_F(IOIntegrationTest, JsonWritingWithRealFiles) {
 
     // Test with first 5 pairs
     size_t num_to_test = std::min(static_cast<size_t>(5), pairs_.size());
-    
+
     for (size_t i = 0; i < num_to_test; ++i) {
         const auto& pair = pairs_[i];
-        
+
         try {
             // Parse PDB file
             PdbParser parser;
             Structure structure = parser.parse_file(pair.pdb_file);
-            
+
             // Write to JSON
             JsonWriter writer(pair.pdb_file);
             writer.record_pdb_atoms(structure);
             auto json = writer.json();
-            
+
             // Verify JSON structure
             EXPECT_TRUE(json.contains("pdb_file") || json.contains("pdb_name"));
             EXPECT_TRUE(json.contains("calculations"));
             EXPECT_TRUE(json["calculations"].is_array());
-            
+
             // Verify pdb_atoms record exists
             auto atoms_records = find_records_by_type(json, "pdb_atoms");
-            EXPECT_GT(atoms_records.size(), 0) 
+            EXPECT_GT(atoms_records.size(), 0)
                 << "No pdb_atoms record in JSON for " << pair.pdb_name;
         } catch (const std::exception& e) {
             // Some PDB files might not be parseable - that's okay
@@ -349,31 +349,30 @@ TEST_F(IOIntegrationTest, DataIntegrityRoundTrips) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     // Parse PDB
     PdbParser parser;
     Structure original = parser.parse_file(pair.pdb_file);
-    
+
     size_t original_atom_count = original.num_atoms();
     size_t original_residue_count = original.num_residues();
     size_t original_chain_count = original.num_chains();
-    
+
     // Round-trip 1: PDB → JSON → Structure
     auto json = original.to_json_legacy();
     Structure from_json = Structure::from_json_legacy(json);
-    
+
     EXPECT_EQ(from_json.num_atoms(), original_atom_count);
     EXPECT_EQ(from_json.num_residues(), original_residue_count);
     EXPECT_EQ(from_json.num_chains(), original_chain_count);
-    
+
     // Round-trip 2: Structure → JSON → Structure
     auto json2 = from_json.to_json_legacy();
     Structure from_json2 = Structure::from_json_legacy(json2);
-    
+
     EXPECT_EQ(from_json2.num_atoms(), original_atom_count);
     EXPECT_EQ(from_json2.num_residues(), original_residue_count);
     EXPECT_EQ(from_json2.num_chains(), original_chain_count);
 }
 
 } // namespace x3dna::test
-

@@ -19,28 +19,28 @@ namespace apps {
 struct FindPairOptions {
     std::filesystem::path pdb_file;
     std::filesystem::path output_file;
-    bool single_strand = false;        // -S or -1 flag
-    bool find_all_pairs = false;       // -P flag
-    bool divide_helices = false;       // -D flag
-    bool curves = false;               // -C flag
-    bool curves_plus = false;          // -c+ flag
-    bool hetatm = false;               // -T flag
-    bool detailed = false;             // -Z flag
-    bool waters = false;               // -W flag
-    bool hjb = false;                  // -hjb flag
-    std::string map_file;              // -m flag
-    bool legacy_mode = false;          // --legacy-mode flag
-    bool fix_indices_from_legacy_json = false;  // --fix-indices flag
-    std::string legacy_json_file = "";  // --fix-indices=FILE (auto-detected if empty)
-    std::string legacy_inp_file = "";   // --legacy-inp=FILE for pair ordering
+    bool single_strand = false;                // -S or -1 flag
+    bool find_all_pairs = false;               // -P flag
+    bool divide_helices = false;               // -D flag
+    bool curves = false;                       // -C flag
+    bool curves_plus = false;                  // -c+ flag
+    bool hetatm = false;                       // -T flag
+    bool detailed = false;                     // -Z flag
+    bool waters = false;                       // -W flag
+    bool hjb = false;                          // -hjb flag
+    std::string map_file;                      // -m flag
+    bool legacy_mode = false;                  // --legacy-mode flag
+    bool fix_indices_from_legacy_json = false; // --fix-indices flag
+    std::string legacy_json_file = "";         // --fix-indices=FILE (auto-detected if empty)
+    std::string legacy_inp_file = "";          // --legacy-inp=FILE for pair ordering
 
     /**
      * @brief Check if any option is set
      */
     bool has_options() const {
-        return single_strand || find_all_pairs || divide_helices || curves ||
-               curves_plus || hetatm || detailed || waters || hjb ||
-               !map_file.empty() || legacy_mode || fix_indices_from_legacy_json;
+        return single_strand || find_all_pairs || divide_helices || curves || curves_plus ||
+               hetatm || detailed || waters || hjb || !map_file.empty() || legacy_mode ||
+               fix_indices_from_legacy_json;
     }
 };
 
@@ -49,19 +49,19 @@ struct FindPairOptions {
  * @brief Command-line options for analyze application
  */
 struct AnalyzeOptions {
-    std::filesystem::path input_file;  // .inp file
-    bool calculate_torsions = false;   // -t flag
-    std::string torsion_file;          // -t=filename
-    bool bz = true;                    // -bz flag (default: true)
-    bool ring = false;                 // -ri flag
-    bool simple_pars = true;           // -si flag (default: true)
-    bool abi = false;                  // -abi flag
-    bool circular = false;             // -circ flag
-    bool icnt = false;                 // -C flag
-    bool waters = false;               // -W flag
-    size_t step_start = 1;             // -S=step,start
-    size_t step_size = 1;              // -S=step,start
-    bool legacy_mode = false;          // --legacy-mode flag
+    std::filesystem::path input_file; // .inp file
+    bool calculate_torsions = false;  // -t flag
+    std::string torsion_file;         // -t=filename
+    bool bz = true;                   // -bz flag (default: true)
+    bool ring = false;                // -ri flag
+    bool simple_pars = true;          // -si flag (default: true)
+    bool abi = false;                 // -abi flag
+    bool circular = false;            // -circ flag
+    bool icnt = false;                // -C flag
+    bool waters = false;              // -W flag
+    size_t step_start = 1;            // -S=step,start
+    size_t step_size = 1;             // -S=step,start
+    bool legacy_mode = false;         // --legacy-mode flag
 };
 
 /**
@@ -122,4 +122,3 @@ private:
 
 } // namespace apps
 } // namespace x3dna
-

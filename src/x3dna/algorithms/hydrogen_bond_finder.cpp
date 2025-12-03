@@ -73,7 +73,7 @@ DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(
     // Step 3: Validate H-bonds (matches legacy validate_hbonds)
     // Only processes H-bonds with positive distance (conflicts marked by negative distance)
     result.after_validation = result.after_conflict_resolution;
-    
+
     // Get base types for H-bond validation
     // For modified nucleotides, one_letter_code() returns '?' but we need the actual base type
     // Legacy uses lowercase letters (a, c, g, t, u) for modified nucleotides, which get
@@ -81,7 +81,7 @@ DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(
     // Use get_base_type_for_hbond() to handle modified nucleotides correctly
     char base1 = get_base_type_for_hbond(res1);
     char base2 = get_base_type_for_hbond(res2);
-    
+
     validate_hbonds(result.after_validation, base1, base2);
 
     // Step 4: Filter to only H-bonds with type != ' ' for final_hbonds (used for counting)
@@ -305,12 +305,12 @@ char HydrogenBondFinder::get_base_type_for_hbond(const core::Residue& residue) {
     // Matches legacy behavior: uses one_letter_code() if available, otherwise uses residue_type()
     // Legacy assigns lowercase letters (a, c, g, t, u) to modified nucleotides, which get
     // converted to uppercase in donor_acceptor via toupper()
-    
+
     char code = residue.one_letter_code();
     if (code != '?') {
         return code; // Standard nucleotide or already determined
     }
-    
+
     // For modified nucleotides, use residue_type() to determine base type
     // This matches legacy's get_seq() behavior for modified nucleotides
     core::ResidueType res_type = residue.residue_type();
@@ -350,27 +350,33 @@ char HydrogenBondFinder::get_base_type_for_hbond(const core::Residue& residue) {
                     }
                 }
             }
-            
+
             if (has_purine) {
                 // Check for G vs A
                 bool has_o6 = false, has_n6 = false;
                 for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == " O6 ") has_o6 = true;
-                    if (atom.name() == " N6 ") has_n6 = true;
+                    if (atom.name() == " O6 ")
+                        has_o6 = true;
+                    if (atom.name() == " N6 ")
+                        has_n6 = true;
                 }
                 return (has_o6 || (!has_n6)) ? 'G' : 'A';
             } else if (has_pyrimidine) {
                 // Check for C vs T vs U
                 bool has_n4 = false, has_c5m = false;
                 for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == " N4 ") has_n4 = true;
-                    if (atom.name() == " C5M" || atom.name() == " C7 ") has_c5m = true;
+                    if (atom.name() == " N4 ")
+                        has_n4 = true;
+                    if (atom.name() == " C5M" || atom.name() == " C7 ")
+                        has_c5m = true;
                 }
-                if (has_n4) return 'C';
-                if (has_c5m) return 'T';
+                if (has_n4)
+                    return 'C';
+                if (has_c5m)
+                    return 'T';
                 return 'U'; // Default for pyrimidines
             }
-            
+
             return '?'; // Cannot determine
     }
 }

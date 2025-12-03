@@ -25,7 +25,7 @@ protected:
     void SetUp() override {
         // Try to use test set first (test_set_10 by default)
         pairs_ = test_data_discovery::discover_pairs_from_test_set(10);
-        
+
         // Filter to only pairs with pdb_atoms records
         if (!pairs_.empty()) {
             std::vector<pdb_json_pair> filtered_pairs;
@@ -36,11 +36,11 @@ protected:
             }
             pairs_ = filtered_pairs;
         }
-        
+
         // Fall back to all pairs if test set is empty
         if (pairs_.empty()) {
             pairs_ = test_data_discovery::discover_pairs();
-            
+
             // Filter to only pairs with pdb_atoms records
             if (!pairs_.empty()) {
                 std::vector<pdb_json_pair> filtered_pairs;

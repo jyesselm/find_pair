@@ -201,7 +201,7 @@ private:
 
     /**
      * @brief Convert atom indices to residue indices in base pairs
-     * 
+     *
      * Legacy input files may contain atom indices instead of residue indices.
      * This method detects atom indices (values larger than residue count) and
      * converts them to residue indices using the structure's atom-to-residue mapping.
@@ -217,9 +217,9 @@ private:
     bool calculate_torsions_ = false;
     bool simple_parameters_ = false;
     bool circular_structure_ = false;
-    size_t step_start_ = 1;  // 1-based (matches legacy -S option)
-    size_t step_size_ = 1;   // 1-based (matches legacy -S option)
-    bool legacy_mode_ = false;  // Legacy compatibility mode
+    size_t step_start_ = 1;    // 1-based (matches legacy -S option)
+    size_t step_size_ = 1;     // 1-based (matches legacy -S option)
+    bool legacy_mode_ = false; // Legacy compatibility mode
 
     // Results
     std::vector<core::BasePair> base_pairs_;
@@ -235,4 +235,3 @@ private:
 
 } // namespace protocols
 } // namespace x3dna
-

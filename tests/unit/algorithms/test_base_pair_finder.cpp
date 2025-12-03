@@ -22,7 +22,7 @@ protected:
     void SetUp() override {
         finder_ = std::make_unique<BasePairFinder>();
     }
-    
+
     std::unique_ptr<BasePairFinder> finder_;
 };
 
@@ -30,7 +30,7 @@ protected:
 TEST_F(BasePairFinderTest, EmptyStructure) {
     Structure structure;
     auto pairs = finder_->find_pairs(structure);
-    
+
     EXPECT_EQ(pairs.size(), 0);
 }
 
@@ -39,18 +39,18 @@ TEST_F(BasePairFinderTest, SingleResidue) {
     Structure structure;
     Chain chain('A');
     Residue residue("  A", 'A', 1);
-    
+
     // Add frame
     Matrix3D rot = Matrix3D::identity();
     Vector3D org(0.0, 0.0, 0.0);
     residue.set_reference_frame(ReferenceFrame(rot, org));
-    
+
     chain.add_residue(residue);
     structure.add_chain(chain);
-    
+
     auto pairs = finder_->find_pairs(structure);
-    
-    EXPECT_EQ(pairs.size(), 0);  // Can't pair with itself
+
+    EXPECT_EQ(pairs.size(), 0); // Can't pair with itself
 }
 
 // Test with real PDB file (if available)
@@ -59,25 +59,25 @@ TEST_F(BasePairFinderTest, RealPdbFile) {
     if (!std::filesystem::exists(test_pdb)) {
         GTEST_SKIP() << "Test PDB file not found: " << test_pdb;
     }
-    
+
     // Parse PDB
     PdbParser parser;
     Structure structure = parser.parse_file(test_pdb);
-    
+
     if (structure.num_atoms() == 0) {
         GTEST_SKIP() << "PDB file has no atoms";
     }
-    
+
     // Calculate frames
     BaseFrameCalculator calculator("data/templates");
     calculator.calculate_all_frames(structure);
-    
+
     // Find pairs
     auto pairs = finder_->find_pairs(structure);
-    
+
     // Should find at least some pairs (or none if structure doesn't have pairs)
     EXPECT_GE(pairs.size(), 0);
-    
+
     // If pairs found, verify they have frames
     for (const auto& pair : pairs) {
         if (pair.frame1().has_value() && pair.frame2().has_value()) {
@@ -90,7 +90,7 @@ TEST_F(BasePairFinderTest, RealPdbFile) {
 TEST_F(BasePairFinderTest, StrategySetting) {
     finder_->set_strategy(PairFindingStrategy::BEST_PAIR);
     EXPECT_EQ(finder_->strategy(), PairFindingStrategy::BEST_PAIR);
-    
+
     finder_->set_strategy(PairFindingStrategy::ALL_PAIRS);
     EXPECT_EQ(finder_->strategy(), PairFindingStrategy::ALL_PAIRS);
 }
@@ -99,10 +99,9 @@ TEST_F(BasePairFinderTest, StrategySetting) {
 TEST_F(BasePairFinderTest, ParameterSetting) {
     ValidationParameters params = ValidationParameters::defaults();
     params.max_dorg = 5.0;
-    
+
     finder_->set_parameters(params);
-    
+
     const auto& retrieved_params = finder_->parameters();
     EXPECT_EQ(retrieved_params.max_dorg, 5.0);
 }
-

@@ -90,16 +90,16 @@ public:
      */
     static std::set<std::string> load_test_set(const std::filesystem::path& test_set_file) {
         std::set<std::string> pdb_ids;
-        
+
         if (!std::filesystem::exists(test_set_file)) {
             return pdb_ids;
         }
-        
+
         try {
             std::ifstream file(test_set_file);
             nlohmann::json json;
             file >> json;
-            
+
             if (json.contains("pdb_ids") && json["pdb_ids"].is_array()) {
                 for (const auto& id : json["pdb_ids"]) {
                     if (id.is_string()) {
@@ -110,7 +110,7 @@ public:
         } catch (const std::exception&) {
             // If parsing fails, return empty set
         }
-        
+
         return pdb_ids;
     }
 
@@ -128,31 +128,32 @@ public:
                                  const std::filesystem::path& json_dir = "data/json_legacy",
                                  const std::filesystem::path& test_sets_dir = "data/test_sets") {
         std::vector<pdb_json_pair> pairs;
-        
+
         // Load test set
-        std::filesystem::path test_set_file = test_sets_dir / ("test_set_" + std::to_string(test_set_size) + ".json");
+        std::filesystem::path test_set_file =
+            test_sets_dir / ("test_set_" + std::to_string(test_set_size) + ".json");
         std::set<std::string> test_set_pdb_ids = load_test_set(test_set_file);
-        
+
         if (test_set_pdb_ids.empty()) {
             return pairs;
         }
-        
+
         if (!std::filesystem::exists(pdb_dir) || !std::filesystem::exists(json_dir)) {
             return pairs;
         }
-        
+
         // Iterate through test set PDB IDs
         for (const std::string& pdb_name : test_set_pdb_ids) {
             std::filesystem::path pdb_file = pdb_dir / (pdb_name + ".pdb");
             std::filesystem::path json_file = json_dir / (pdb_name + ".json");
             std::filesystem::path globals_file = json_dir / (pdb_name + "_globals.json");
-            
+
             // Check if both PDB and JSON files exist
             if (std::filesystem::exists(pdb_file) && std::filesystem::exists(json_file)) {
                 pairs.push_back({pdb_file, json_file, globals_file, pdb_name});
             }
         }
-        
+
         return pairs;
     }
 
@@ -165,17 +166,18 @@ public:
         if (!std::filesystem::exists(json_file)) {
             return false;
         }
-        
+
         try {
             std::ifstream file(json_file);
             nlohmann::json json;
             file >> json;
-            
+
             if (!json.contains("calculations") || !json["calculations"].is_array()) {
                 return false;
             }
-            
-            // Look for pdb_atoms record (atoms array is optional - some legacy JSONs have split files)
+
+            // Look for pdb_atoms record (atoms array is optional - some legacy JSONs have split
+            // files)
             for (const auto& calc : json["calculations"]) {
                 if (calc.contains("type") && calc["type"] == "pdb_atoms") {
                     return true;
@@ -184,7 +186,7 @@ public:
         } catch (const std::exception&) {
             return false;
         }
-        
+
         return false;
     }
 };

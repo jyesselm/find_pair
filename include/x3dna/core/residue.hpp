@@ -32,12 +32,12 @@ enum class ResidueType {
     THYMINE = 4,
     URACIL = 5,
     // Extended types for better classification
-    NONCANONICAL_RNA = 6,  // Modified nucleotides with ring atoms
-    WATER = 7,             // Water molecules (HOH, WAT)
-    ION = 8,               // Ions (MG, NA, CL, etc.)
-    LIGAND = 9,            // Other small molecules/ligands
-    PSEUDOURIDINE = 10,    // Pseudouridine (PSU) - C1' bonded to C5 instead of N1
-    INOSINE = 11           // Inosine (I)
+    NONCANONICAL_RNA = 6, // Modified nucleotides with ring atoms
+    WATER = 7,            // Water molecules (HOH, WAT)
+    ION = 8,              // Ions (MG, NA, CL, etc.)
+    LIGAND = 9,           // Other small molecules/ligands
+    PSEUDOURIDINE = 10,   // Pseudouridine (PSU) - C1' bonded to C5 instead of N1
+    INOSINE = 11          // Inosine (I)
 };
 
 /**
@@ -176,30 +176,28 @@ public:
         // Pseudouridine (special case - P)
         if (trimmed == "PSU")
             return 'P';
-        
+
         // Modified Adenine → 'a'
-        if (trimmed == "A2M" || trimmed == "1MA" || trimmed == "2MA" || 
-            trimmed == "OMA" || trimmed == "6MA" || trimmed == "MIA" ||
-            trimmed == "I6A" || trimmed == "T6A" || trimmed == "M6A")
+        if (trimmed == "A2M" || trimmed == "1MA" || trimmed == "2MA" || trimmed == "OMA" ||
+            trimmed == "6MA" || trimmed == "MIA" || trimmed == "I6A" || trimmed == "T6A" ||
+            trimmed == "M6A")
             return 'a';
-        
+
         // Modified Cytosine → 'c'
-        if (trimmed == "5MC" || trimmed == "OMC" || trimmed == "S4C" ||
-            trimmed == "5IC" || trimmed == "5FC" || trimmed == "CBR")
+        if (trimmed == "5MC" || trimmed == "OMC" || trimmed == "S4C" || trimmed == "5IC" ||
+            trimmed == "5FC" || trimmed == "CBR")
             return 'c';
-        
+
         // Modified Guanine → 'g'
-        if (trimmed == "OMG" || trimmed == "1MG" || trimmed == "2MG" ||
-            trimmed == "7MG" || trimmed == "M2G" || trimmed == "YYG" ||
-            trimmed == "YG" || trimmed == "QUO")
+        if (trimmed == "OMG" || trimmed == "1MG" || trimmed == "2MG" || trimmed == "7MG" ||
+            trimmed == "M2G" || trimmed == "YYG" || trimmed == "YG" || trimmed == "QUO")
             return 'g';
-        
+
         // Modified Uracil/Thymine → 't' or 'u'
-        if (trimmed == "5MU" || trimmed == "RT")  // Ribothymidine
+        if (trimmed == "5MU" || trimmed == "RT") // Ribothymidine
             return 't';
-        if (trimmed == "H2U" || trimmed == "DHU" || trimmed == "OMU" ||
-            trimmed == "4SU" || trimmed == "S4U" || trimmed == "5BU" ||
-            trimmed == "2MU" || trimmed == "UR3")
+        if (trimmed == "H2U" || trimmed == "DHU" || trimmed == "OMU" || trimmed == "4SU" ||
+            trimmed == "S4U" || trimmed == "5BU" || trimmed == "2MU" || trimmed == "UR3")
             return 'u';
 
         return '?';
@@ -222,7 +220,8 @@ public:
 
     /**
      * @brief Get RY classification (Purine=1, Pyrimidine=0)
-     * @return 1 for purines (A, G, a, g), 0 for pyrimidines (C, T, U, c, t, u, P), -1 for non-nucleotides
+     * @return 1 for purines (A, G, a, g), 0 for pyrimidines (C, T, U, c, t, u, P), -1 for
+     * non-nucleotides
      */
     int ry_classification() const {
         char code = one_letter_code();
@@ -231,8 +230,8 @@ public:
             return 1; // Purine
         }
         // Pyrimidines (includes modified cytosine/uracil/thymine and pseudouridine)
-        if (code == 'C' || code == 'T' || code == 'U' || 
-            code == 'c' || code == 't' || code == 'u' || code == 'P') {
+        if (code == 'C' || code == 'T' || code == 'U' || code == 'c' || code == 't' ||
+            code == 'u' || code == 'P') {
             return 0; // Pyrimidine
         }
         return -1; // Not a nucleotide
@@ -254,21 +253,21 @@ public:
             return ResidueType::THYMINE;
         if (code == 'U')
             return ResidueType::URACIL;
-        
+
         // Modified nucleotides - map to parent base type
-        if (code == 'a')  // Modified adenine
+        if (code == 'a') // Modified adenine
             return ResidueType::ADENINE;
-        if (code == 'c')  // Modified cytosine
+        if (code == 'c') // Modified cytosine
             return ResidueType::CYTOSINE;
-        if (code == 'g')  // Modified guanine
+        if (code == 'g') // Modified guanine
             return ResidueType::GUANINE;
-        if (code == 't')  // Modified thymine (ribothymidine)
+        if (code == 't') // Modified thymine (ribothymidine)
             return ResidueType::THYMINE;
-        if (code == 'u')  // Modified uracil
+        if (code == 'u') // Modified uracil
             return ResidueType::URACIL;
-        if (code == 'P')  // Pseudouridine
+        if (code == 'P') // Pseudouridine
             return ResidueType::PSEUDOURIDINE;
-        
+
         // Check for water molecules and ions
         std::string res_name = name();
         // Remove leading/trailing spaces for comparison
@@ -279,13 +278,13 @@ public:
         while (!res_name_trimmed.empty() && res_name_trimmed.back() == ' ') {
             res_name_trimmed.pop_back();
         }
-        
+
         // Check for water molecules (case-insensitive)
-        if (res_name_trimmed == "HOH" || res_name_trimmed == "WAT" || 
-            res_name_trimmed == "hoh" || res_name_trimmed == "wat") {
+        if (res_name_trimmed == "HOH" || res_name_trimmed == "WAT" || res_name_trimmed == "hoh" ||
+            res_name_trimmed == "wat") {
             return ResidueType::WATER;
         }
-        
+
         // Check for common ions (case-insensitive, common PDB ion names)
         std::string res_upper = res_name_trimmed;
         std::transform(res_upper.begin(), res_upper.end(), res_upper.begin(), ::toupper);
@@ -295,12 +294,13 @@ public:
             res_upper == "SR" || res_upper == "BA" || res_upper == "RB" || res_upper == "CS") {
             return ResidueType::ION;
         }
-        
+
         // Check for noncanonical RNA (modified nucleotides with ring atoms)
         // This will be refined by checking for ring atoms in frame calculation
         if (code == '?') {
             // Check if it has ring atoms (indicates modified nucleotide)
-            static const std::vector<std::string> ring_atoms = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
+            static const std::vector<std::string> ring_atoms = {" C4 ", " N3 ", " C2 ",
+                                                                " N1 ", " C6 ", " C5 "};
             int ring_count = 0;
             for (const auto& atom : atoms()) {
                 for (const auto& ring_atom : ring_atoms) {
@@ -316,27 +316,27 @@ public:
             // Could be amino acid or ligand
             return ResidueType::UNKNOWN;
         }
-        
+
         // Default to unknown (could be ligand or other molecule)
         return ResidueType::UNKNOWN;
     }
 
     /**
      * @brief Get atom range for this residue (start_atom, end_atom)
-     * 
+     *
      * Returns the minimum and maximum legacy_atom_idx values from all atoms
      * in this residue. This is used for residue_indices JSON generation.
-     * 
+     *
      * @return Pair of (start_atom, end_atom) legacy atom indices, or (0, 0) if no atoms
      */
     std::pair<int, int> atom_range() const {
         if (atoms_.empty()) {
             return {0, 0};
         }
-        
+
         int min_idx = std::numeric_limits<int>::max();
         int max_idx = 0;
-        
+
         for (const auto& atom : atoms_) {
             int legacy_idx = atom.legacy_atom_idx();
             if (legacy_idx > 0) {
@@ -344,11 +344,11 @@ public:
                 max_idx = std::max(max_idx, legacy_idx);
             }
         }
-        
+
         if (min_idx == std::numeric_limits<int>::max()) {
             return {0, 0};
         }
-        
+
         return {min_idx, max_idx};
     }
 

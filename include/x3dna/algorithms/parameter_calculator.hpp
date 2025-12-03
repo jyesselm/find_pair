@@ -36,7 +36,7 @@ public:
      * @brief Calculate step parameters for a single base pair (for bp_type_id calculation)
      * @param pair Base pair
      * @return BasePairStepParameters structure
-     * 
+     *
      * This matches legacy: bpstep_par(r2, org[j], r1, org[i], ...)
      * where r2/org[j] is frame2 and r1/org[i] is frame1
      */
@@ -48,8 +48,9 @@ public:
      * @param frame2 Second reference frame
      * @return BasePairStepParameters structure
      */
-    core::BasePairStepParameters calculate_step_parameters(const core::ReferenceFrame& frame1,
-                                                           const core::ReferenceFrame& frame2) const;
+    core::BasePairStepParameters
+    calculate_step_parameters(const core::ReferenceFrame& frame1,
+                              const core::ReferenceFrame& frame2) const;
 
     /**
      * @brief Calculate helical parameters from two base pairs
@@ -74,8 +75,8 @@ public:
      * @param pairs Vector of base pairs
      * @return Vector of step parameters (one per consecutive pair)
      */
-    std::vector<core::BasePairStepParameters> calculate_all_step_parameters(
-        const std::vector<core::BasePair>& pairs);
+    std::vector<core::BasePairStepParameters>
+    calculate_all_step_parameters(const std::vector<core::BasePair>& pairs);
 
     /**
      * @brief Calculate midstep reference frame
@@ -84,20 +85,20 @@ public:
      * @return Midstep reference frame
      */
     core::ReferenceFrame calculate_midstep_frame(const core::ReferenceFrame& frame1,
-                                                  const core::ReferenceFrame& frame2);
+                                                 const core::ReferenceFrame& frame2);
 
     /**
      * @brief Calculate pair frame (middle frame between two bases in a base pair)
      * @param frame1 First base reference frame
      * @param frame2 Second base reference frame
      * @return Middle frame for the base pair
-     * 
+     *
      * This matches legacy cehs_average behavior:
      * - Checks if z-axes are anti-parallel and reverses y/z if needed
      * - Uses bpstep_par to compute the middle frame
      */
     core::ReferenceFrame calculate_pair_frame(const core::ReferenceFrame& frame1,
-                                               const core::ReferenceFrame& frame2);
+                                              const core::ReferenceFrame& frame2);
 
 private:
     /**
@@ -131,4 +132,3 @@ private:
 
 } // namespace algorithms
 } // namespace x3dna
-

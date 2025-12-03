@@ -27,11 +27,11 @@ int main(int argc, char* argv[]) {
 
         // Parse input file to get PDB file path for JSON writer
         auto input_data = x3dna::io::InputFileParser::parse(options.input_file);
-        
+
         // Create JSON writer (optional - only if we want JSON output)
         // For now, we'll create it to enable step parameter recording
         x3dna::io::JsonWriter json_writer(input_data.pdb_file);
-        
+
         // Create protocol
         x3dna::protocols::AnalyzeProtocol protocol;
         protocol.set_config_manager(config);
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
         // Get results
         const auto& step_params = protocol.step_parameters();
         const auto& helical_params = protocol.helical_parameters();
-        
+
         std::cout << "Calculated " << step_params.size() << " step parameters\n";
         std::cout << "Calculated " << helical_params.size() << " helical parameters\n";
 
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
         std::filesystem::path json_output_dir = "data/json";
         std::filesystem::create_directories(json_output_dir);
         json_writer.write_split_files(json_output_dir, true);
-        
+
         // TODO: Write output files (.par files, .outp file)
         std::cout << "\nDone!\n";
 
@@ -104,4 +104,3 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 }
-

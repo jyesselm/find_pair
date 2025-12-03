@@ -218,9 +218,10 @@ ParameterCalculator::calculate_step_parameters_for_pair(const core::BasePair& pa
 core::HelicalParameters
 ParameterCalculator::calculate_helical_parameters(const core::BasePair& pair1,
                                                   const core::BasePair& pair2) {
-    if (!pair1.frame1().has_value() || !pair1.frame2().has_value() ||
-        !pair2.frame1().has_value() || !pair2.frame2().has_value()) {
-        throw std::runtime_error("Base pairs must have reference frames for helical parameter calculation");
+    if (!pair1.frame1().has_value() || !pair1.frame2().has_value() || !pair2.frame1().has_value() ||
+        !pair2.frame2().has_value()) {
+        throw std::runtime_error(
+            "Base pairs must have reference frames for helical parameter calculation");
     }
 
     // Use frame1 from each pair (matching legacy refs_i_j behavior)
@@ -229,9 +230,9 @@ ParameterCalculator::calculate_helical_parameters(const core::BasePair& pair1,
 
 core::HelicalParameters
 ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFrame& frame1,
-                                                      const core::ReferenceFrame& frame2) {
+                                                       const core::ReferenceFrame& frame2) {
     core::HelicalParameters params;
-    
+
     // Get rotation matrices and origins
     const geometry::Matrix3D& rot1 = frame1.rotation();
     const geometry::Vector3D& org1 = frame1.origin();
@@ -242,7 +243,8 @@ ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFram
     // rot[i][j] in legacy = rot.at(i-1, j-1) in modern
     // Columns: 0=x, 1=y, 2=z
 
-    // Calculate axis_h from cross product of (rot2 x-axis - rot1 x-axis) and (rot2 y-axis - rot1 y-axis)
+    // Calculate axis_h from cross product of (rot2 x-axis - rot1 x-axis) and (rot2 y-axis - rot1
+    // y-axis)
     geometry::Vector3D x1 = rot1.column(0); // rot1 x-axis
     geometry::Vector3D y1 = rot1.column(1); // rot1 y-axis
     geometry::Vector3D z1 = rot1.column(2); // rot1 z-axis
@@ -293,16 +295,17 @@ ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFram
     // Sum of x and y axes from rotated frames
     geometry::Vector3D h_x = rot1_h.column(0) + rot2_h.column(0);
     geometry::Vector3D h_y = rot1_h.column(1) + rot2_h.column(1);
-    
+
     // Normalize
     double h_x_len = h_x.length();
     double h_y_len = h_y.length();
-    if (h_x_len > XEPS) h_x = h_x / h_x_len;
-    if (h_y_len > XEPS) h_y = h_y / h_y_len;
+    if (h_x_len > XEPS)
+        h_x = h_x / h_x_len;
+    if (h_y_len > XEPS)
+        h_y = h_y / h_y_len;
 
     // Build helical midstep orientation matrix
     geometry::Matrix3D mst_orienH = x_y_z_2_mtx(h_x, h_y, axis_h);
-    
 
     // Calculate h-Twist (pars[6]): angle between y-axes of rotated frames around axis_h
     geometry::Vector3D y1_h = rot1_h.column(1); // rot1_h y-axis (column 2 in 1-based)
@@ -323,11 +326,11 @@ ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFram
     // Calculate X-disp and Y-disp (pars[1] and pars[2])
     // Project displacement onto helical frame
     geometry::Vector3D t1_proj = org_diff - (params.rise * axis_h);
-    
+
     // Calculate org1_h and org2_h on helical axis
     constexpr double HTWIST0 = 0.05; // Threshold for small twist angle (matches legacy)
     geometry::Vector3D org1_h, org2_h;
-    
+
     if (std::abs(params.twist) < HTWIST0) {
         // Small twist: use midpoint
         org1_h = org1 + 0.5 * t1_proj;
@@ -337,20 +340,20 @@ ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFram
         double AD_mag = 0.5 * t1_proj.length() / std::sin(deg2rad(params.twist / 2.0));
         org1_h = org1 + AD_mag * AD_axis;
     }
-    
+
     org2_h = org1_h + params.rise * axis_h;
-    
+
     // Update helical midstep origin now that we have org1_h and org2_h
     geometry::Vector3D mst_orgH = (org1_h + org2_h) * 0.5;
     params.midstep_frame = core::ReferenceFrame(mst_orienH, mst_orgH);
 
     // Calculate X-disp and Y-disp from org1_h to org1
     geometry::Vector3D disp = org1_h - org1;
-    
+
     // Project onto rotated frame axes
     geometry::Vector3D rot1_h_x = rot1_h.column(0);
     geometry::Vector3D rot1_h_y = rot1_h.column(1);
-    
+
     params.x_displacement = disp.dot(rot1_h_x);
     params.y_displacement = disp.dot(rot1_h_y);
 
@@ -383,43 +386,41 @@ ParameterCalculator::calculate_midstep_frame(const core::ReferenceFrame& frame1,
     return midstep_frame;
 }
 
-core::ReferenceFrame
-ParameterCalculator::calculate_pair_frame(const core::ReferenceFrame& frame1,
-                                          const core::ReferenceFrame& frame2) {
+core::ReferenceFrame ParameterCalculator::calculate_pair_frame(const core::ReferenceFrame& frame1,
+                                                               const core::ReferenceFrame& frame2) {
     // This matches legacy cehs_average behavior for a 2-base pair
-    // Legacy code: 
+    // Legacy code:
     //   1. Start with mst = frame1
     //   2. For frame2: if z-axes anti-parallel, reverse y and z columns
     //   3. Call bpstep_par(frame2_modified, frame1)
-    
+
     // Get z-axes
     geometry::Vector3D z1 = frame1.z_axis();
     geometry::Vector3D z2 = frame2.z_axis();
-    
+
     // Check if z-axes are anti-parallel (negative dot product)
     double z_dot = z1.dot(z2);
-    
+
     geometry::Matrix3D r2_modified = frame2.rotation();
-    
+
     if (z_dot < 0.0) {
         // Reverse y and z columns (legacy: reverse_y_z_columns)
         // Column 1 (y-axis) and Column 2 (z-axis) are negated
-        r2_modified = geometry::Matrix3D(
-            r2_modified.at(0, 0), -r2_modified.at(0, 1), -r2_modified.at(0, 2),
-            r2_modified.at(1, 0), -r2_modified.at(1, 1), -r2_modified.at(1, 2),
-            r2_modified.at(2, 0), -r2_modified.at(2, 1), -r2_modified.at(2, 2)
-        );
+        r2_modified =
+            geometry::Matrix3D(r2_modified.at(0, 0), -r2_modified.at(0, 1), -r2_modified.at(0, 2),
+                               r2_modified.at(1, 0), -r2_modified.at(1, 1), -r2_modified.at(1, 2),
+                               r2_modified.at(2, 0), -r2_modified.at(2, 1), -r2_modified.at(2, 2));
     }
-    
+
     // Calculate midstep frame using bpstep_par
     // Legacy order: bpstep_par(bi, org[ik], mst, morg, ...)
     // where bi=frame2_modified, org[ik]=frame2.origin, mst=frame1, morg=frame1.origin
     core::BasePairStepParameters params;
     core::ReferenceFrame midstep_frame;
-    
-    bpstep_par_impl(r2_modified, frame2.origin(), frame1.rotation(), frame1.origin(), 
-                    params, midstep_frame);
-    
+
+    bpstep_par_impl(r2_modified, frame2.origin(), frame1.rotation(), frame1.origin(), params,
+                    midstep_frame);
+
     return midstep_frame;
 }
 

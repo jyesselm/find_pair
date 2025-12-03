@@ -281,29 +281,29 @@ public:
      */
     nlohmann::json to_json() const {
         nlohmann::json j;
-        
+
         // Use legacy_atom_idx for atom_idx to match legacy exactly (1-based)
         // Always include atom_idx (atoms should have legacy_atom_idx set during parsing)
         int legacy_atom_idx = legacy_atom_idx_;
         j["atom_idx"] = legacy_atom_idx > 0 ? legacy_atom_idx : 0;
-        
+
         // Core fields (match legacy exactly)
         j["atom_name"] = name_;
         j["residue_name"] = residue_name_;
         j["chain_id"] = (chain_id_ == '\0' || chain_id_ == ' ') ? "" : std::string(1, chain_id_);
         j["residue_seq"] = residue_seq_;
-        
+
         // Coordinates
         j["xyz"] = nlohmann::json::array({position_.x(), position_.y(), position_.z()});
-        
+
         // Record type (A for ATOM, H for HETATM)
         j["record_type"] = std::string(1, record_type_);
-        
+
         // Optional metadata (only if present)
         if (line_number_ > 0) {
             j["line_number"] = line_number_;
         }
-        
+
         return j;
     }
 

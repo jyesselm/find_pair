@@ -179,9 +179,8 @@ public:
      * @param output_dir Output directory for JSON files
      * @return Number of frames written
      */
-    size_t write_frames_json(core::Structure& structure, 
-                            const std::filesystem::path& pdb_file,
-                            const std::filesystem::path& output_dir);
+    size_t write_frames_json(core::Structure& structure, const std::filesystem::path& pdb_file,
+                             const std::filesystem::path& output_dir);
 
     /**
      * @brief Get frame calculator (for configuration)
@@ -232,14 +231,14 @@ private:
     bool divide_helices_ = false;
     bool legacy_mode_ = false;
     bool fix_indices_from_legacy_json_ = false;
-    std::string legacy_json_file_ = "";  // Legacy compatibility mode
+    std::string legacy_json_file_ = ""; // Legacy compatibility mode
 
     // Results
     std::vector<core::BasePair> base_pairs_;
 
     // Output directory for JSON files (Phase 2 refactor)
     std::filesystem::path output_dir_;
-    
+
     // Output stage (controls which JSON to write)
     std::string output_stage_ = "all";
 
@@ -250,4 +249,3 @@ private:
 
 } // namespace protocols
 } // namespace x3dna
-

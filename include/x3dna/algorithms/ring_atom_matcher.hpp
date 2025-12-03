@@ -27,9 +27,9 @@ struct MatchedAtoms {
     size_t num_matched = 0;               // Number of matched atom pairs
 
     bool is_valid() const {
-        // Check that we have matching experimental/standard vectors with at least 3 matched atoms for fitting
-        return experimental.size() == standard.size() && 
-               experimental.size() == atom_names.size() &&
+        // Check that we have matching experimental/standard vectors with at least 3 matched atoms
+        // for fitting
+        return experimental.size() == standard.size() && experimental.size() == atom_names.size() &&
                experimental.size() == num_matched &&
                num_matched >= 3; // Minimum 3 atoms required for fitting
     }

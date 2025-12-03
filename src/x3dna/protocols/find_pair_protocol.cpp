@@ -17,11 +17,8 @@ namespace protocols {
 
 FindPairProtocol::FindPairProtocol(const std::filesystem::path& template_path,
                                    const std::filesystem::path& output_dir)
-    : frame_calculator_(template_path)
-    , pair_finder_(algorithms::ValidationParameters::defaults())
-    , output_dir_(output_dir)
-{
-}
+    : frame_calculator_(template_path), pair_finder_(algorithms::ValidationParameters::defaults()),
+      output_dir_(output_dir) {}
 
 void FindPairProtocol::execute(core::Structure& structure) {
     // Check legacy mode from config if not explicitly set
@@ -39,20 +36,22 @@ void FindPairProtocol::execute(core::Structure& structure) {
                 // Try to extract from structure name or use default
                 pdb_id = "UNKNOWN";
             }
-            std::filesystem::path auto_json = std::filesystem::path("data/json_legacy/base_frame_calc") / (pdb_id + ".json");
+            std::filesystem::path auto_json =
+                std::filesystem::path("data/json_legacy/base_frame_calc") / (pdb_id + ".json");
             if (std::filesystem::exists(auto_json)) {
                 json_file = auto_json.string();
             }
         }
-        
+
         if (!json_file.empty() && std::filesystem::exists(json_file)) {
             int fixed_count = io::fix_residue_indices_from_json(structure, json_file);
             if (fixed_count > 0) {
-                std::cout << "[INFO] Fixed " << fixed_count << " residue indices from legacy JSON: " 
-                          << json_file << "\n";
+                std::cout << "[INFO] Fixed " << fixed_count
+                          << " residue indices from legacy JSON: " << json_file << "\n";
             } else if (fixed_count < 0) {
                 // Error codes: -1 = file open error, -2 = not array, -3 = parse error
-                std::cerr << "[WARNING] Failed to load legacy JSON for fixing indices: " << json_file;
+                std::cerr << "[WARNING] Failed to load legacy JSON for fixing indices: "
+                          << json_file;
                 if (fixed_count == -1) {
                     std::cerr << " (file open error)\n";
                 } else if (fixed_count == -2) {
@@ -65,7 +64,7 @@ void FindPairProtocol::execute(core::Structure& structure) {
                 std::cerr << "[WARNING] Continuing without fixing indices...\n";
             }
         } else if (fix_indices_from_legacy_json_) {
-            std::cerr << "[WARNING] Legacy JSON file not found for fixing indices: " 
+            std::cerr << "[WARNING] Legacy JSON file not found for fixing indices: "
                       << (json_file.empty() ? "(auto-detect failed)" : json_file) << "\n";
         }
     }
@@ -76,7 +75,7 @@ void FindPairProtocol::execute(core::Structure& structure) {
 
     // Step 1: Calculate frames for all residues
     calculate_frames(structure);
-    
+
     // Write frames JSON if requested
     // Note: pdb_file should be passed separately or constructed from PDB ID
     // For now, construct from PDB ID (caller should use write_frames_json directly)
@@ -104,9 +103,11 @@ void FindPairProtocol::calculate_frames(core::Structure& structure) {
                     break;
                 }
             }
-            if (is_rna) break;
+            if (is_rna)
+                break;
         }
-        if (is_rna) break;
+        if (is_rna)
+            break;
     }
 
     frame_calculator_.set_is_rna(is_rna);
@@ -179,38 +180,38 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure,
     if (std::filesystem::exists(legacy_file)) {
         legacy_json_file = legacy_file;
     }
-    
+
     io::JsonWriter writer(pdb_file, legacy_json_file);
-    
+
     // Record residue indices (needed for frames)
     writer.record_residue_indices(structure);
-    
+
     // Set legacy mode on frame calculator
     frame_calculator_.set_legacy_mode(legacy_mode_);
-    
+
     // Record frame calculations for each residue in legacy order
     size_t frames_recorded = 0;
-    
+
     // Get residues in legacy order (PDB file order)
     std::vector<core::Residue*> residues_in_order;
     for (const auto* residue_ptr : structure.residues_in_legacy_order()) {
         residues_in_order.push_back(const_cast<core::Residue*>(residue_ptr));
     }
-    
+
     for (auto* residue : residues_in_order) {
         // Check residue type
         core::ResidueType res_type = residue->residue_type();
-        
+
         // Only process nucleotide residues
         bool is_nucleotide =
             (res_type != core::ResidueType::UNKNOWN && res_type != core::ResidueType::AMINO_ACID &&
              res_type != core::ResidueType::WATER && res_type != core::ResidueType::ION &&
              res_type != core::ResidueType::LIGAND);
-        
+
         // Check for modified nucleotides that have ring atoms
         if (!is_nucleotide && res_type == core::ResidueType::UNKNOWN) {
-            static const std::vector<std::string> common_ring_atoms = {
-                " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
+            static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
+                                                                       " N1 ", " C6 ", " C5 "};
             int ring_atom_count = 0;
             for (const auto& atom_name : common_ring_atoms) {
                 for (const auto& atom : residue->atoms()) {
@@ -224,18 +225,18 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure,
                 is_nucleotide = true;
             }
         }
-        
+
         if (is_nucleotide) {
             // Get legacy_residue_idx from atoms
             int legacy_residue_idx = 0;
             if (!residue->atoms().empty()) {
                 legacy_residue_idx = residue->atoms()[0].legacy_residue_idx();
             }
-            
+
             if (legacy_residue_idx <= 0) {
                 continue;
             }
-            
+
             // Calculate frame if not already calculated
             if (!residue->reference_frame().has_value()) {
                 auto frame_result = frame_calculator_.calculate_frame(*residue);
@@ -245,42 +246,42 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure,
                     continue;
                 }
             }
-            
+
             // Get frame calculation result (we need to recalculate to get matched atoms, etc.)
             auto frame_result = frame_calculator_.calculate_frame(*residue);
             if (!frame_result.is_valid) {
                 continue;
             }
-            
+
             char base_type = residue->one_letter_code();
             size_t record_idx = static_cast<size_t>(legacy_residue_idx);
-            
+
             // Record base_frame_calc
-            writer.record_base_frame_calc(
-                record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
-                frame_result.matched_atoms, residue->name(), residue->chain_id(),
-                residue->seq_num(), residue->insertion());
-            
+            writer.record_base_frame_calc(record_idx, base_type, frame_result.template_file,
+                                          frame_result.rms_fit, frame_result.matched_atoms,
+                                          residue->name(), residue->chain_id(), residue->seq_num(),
+                                          residue->insertion());
+
             // Record ls_fitting
-            writer.record_ls_fitting(
-                record_idx, frame_result.num_matched, frame_result.rms_fit,
-                frame_result.rotation_matrix, frame_result.translation, residue->name(),
-                residue->chain_id(), residue->seq_num(), residue->insertion());
-            
+            writer.record_ls_fitting(record_idx, frame_result.num_matched, frame_result.rms_fit,
+                                     frame_result.rotation_matrix, frame_result.translation,
+                                     residue->name(), residue->chain_id(), residue->seq_num(),
+                                     residue->insertion());
+
             // Record frame_calc
             std::vector<geometry::Vector3D> standard_coords, experimental_coords;
-            writer.record_frame_calc(
-                record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
-                standard_coords, experimental_coords, residue->name(),
-                residue->chain_id(), residue->seq_num(), residue->insertion());
-            
+            writer.record_frame_calc(record_idx, base_type, frame_result.template_file,
+                                     frame_result.rms_fit, standard_coords, experimental_coords,
+                                     residue->name(), residue->chain_id(), residue->seq_num(),
+                                     residue->insertion());
+
             frames_recorded++;
         }
     }
-    
+
     // Write split JSON files
     writer.write_split_files(output_dir, true);
-    
+
     return frames_recorded;
 }
 
@@ -291,4 +292,3 @@ void FindPairProtocol::reorder_pairs(core::Structure& /* structure */) {
 
 } // namespace protocols
 } // namespace x3dna
-

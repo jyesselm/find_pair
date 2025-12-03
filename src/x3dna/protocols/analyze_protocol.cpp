@@ -16,9 +16,7 @@ namespace x3dna {
 namespace protocols {
 
 AnalyzeProtocol::AnalyzeProtocol(const std::filesystem::path& template_path)
-    : frame_calculator_(template_path)
-{
-}
+    : frame_calculator_(template_path) {}
 
 void AnalyzeProtocol::execute(const std::filesystem::path& input_file) {
     // Step 1: Parse .inp file
@@ -57,7 +55,7 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
     bool need_recalculate = false;
     size_t frames_found = 0;
     size_t frames_missing = 0;
-    
+
     // First pass: check which frames exist
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
@@ -69,7 +67,7 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
             }
         }
     }
-    
+
     // Store original frames for verification if they exist
     std::map<int, core::ReferenceFrame> original_frames;
     if (frames_found > 0) {
@@ -84,7 +82,7 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
             }
         }
     }
-    
+
     if (need_recalculate) {
         // Some frames are missing, recalculate all frames
         // Detect RNA by checking for O2' atoms
@@ -97,14 +95,16 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
                         break;
                     }
                 }
-                if (is_rna) break;
+                if (is_rna)
+                    break;
             }
-            if (is_rna) break;
+            if (is_rna)
+                break;
         }
 
         frame_calculator_.set_is_rna(is_rna);
         frame_calculator_.calculate_all_frames(structure);
-        
+
         if (frames_found > 0) {
             std::cout << "Recalculated " << frames_missing << " missing frames "
                       << "(reused " << frames_found << " existing frames from find_pair)\n";
@@ -121,7 +121,7 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
         size_t frames_verified = 0;
         size_t frames_differ = 0;
         const double tolerance = 1e-6;
-        
+
         for (const auto& chain : structure.chains()) {
             for (const auto& residue : chain.residues()) {
                 if (residue.reference_frame().has_value()) {
@@ -137,13 +137,13 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
                                 continue;
                             }
                             const auto& current = current_frame_opt.value();
-                            
+
                             // Compare origins
                             auto org_diff = current.origin() - original.origin();
-                            double org_dist = std::sqrt(org_diff.x() * org_diff.x() + 
-                                                       org_diff.y() * org_diff.y() + 
-                                                       org_diff.z() * org_diff.z());
-                            
+                            double org_dist = std::sqrt(org_diff.x() * org_diff.x() +
+                                                        org_diff.y() * org_diff.y() +
+                                                        org_diff.z() * org_diff.z());
+
                             // Compare rotation matrices (element-wise)
                             const auto& rot_orig = original.rotation();
                             const auto& rot_curr = current.rotation();
@@ -156,15 +156,18 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
                                     }
                                 }
                             }
-                            
+
                             if (org_dist < tolerance && max_rot_diff < tolerance) {
                                 frames_verified++;
                             } else {
                                 frames_differ++;
-                                if (frames_differ <= 5) {  // Report first 5 differences
-                                    std::cerr << "Warning: Frame mismatch for residue " << legacy_idx << "\n";
-                                    std::cerr << "  Origin diff: " << org_dist << " (tolerance: " << tolerance << ")\n";
-                                    std::cerr << "  Rotation max diff: " << max_rot_diff << " (tolerance: " << tolerance << ")\n";
+                                if (frames_differ <= 5) { // Report first 5 differences
+                                    std::cerr << "Warning: Frame mismatch for residue "
+                                              << legacy_idx << "\n";
+                                    std::cerr << "  Origin diff: " << org_dist
+                                              << " (tolerance: " << tolerance << ")\n";
+                                    std::cerr << "  Rotation max diff: " << max_rot_diff
+                                              << " (tolerance: " << tolerance << ")\n";
                                 }
                             }
                         }
@@ -172,7 +175,7 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
                 }
             }
         }
-        
+
         if (frames_verified > 0) {
             std::cout << "Verified " << frames_verified << " frames match find_pair phase";
             if (frames_differ > 0) {
@@ -217,9 +220,9 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
     // Determine range of pairs to process (based on -S option)
     // step_start_ and step_size_ are 1-based (matching legacy)
     // Legacy: for (j = istart; j <= nbpm1; j += istep) where j is 1-based base pair index
-    size_t start_idx = (step_start_ > 0) ? (step_start_ - 1) : 0;  // Convert to 0-based
+    size_t start_idx = (step_start_ > 0) ? (step_start_ - 1) : 0; // Convert to 0-based
     if (start_idx >= base_pairs_.size()) {
-        return;  // Start index out of range
+        return; // Start index out of range
     }
 
     // Calculate parameters for consecutive pairs
@@ -232,7 +235,7 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         // Verify both pairs have frames
         if (!pair1.frame1().has_value() || !pair1.frame2().has_value() ||
             !pair2.frame1().has_value() || !pair2.frame2().has_value()) {
-            continue;  // Skip pairs without frames
+            continue; // Skip pairs without frames
         }
 
         // Legacy get_parameters() uses refs_i_j(j, j+1, orien[i], org[i], r1, o1, r2, o2)
@@ -241,7 +244,7 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         // For duplex 2: uses strand 2 frames (pair_num[2][j])
         // Modern uses frame1() from each pair, which should be strand 1 (first residue)
         // This matches legacy duplex 1 behavior
-        
+
         // Use frame1() from each pair (matching legacy strand 1 frames)
         // Note: Legacy get_parameters() does NOT apply frame reversals
         // (Frame reversals are only in analyze.c Rotmat path, not get_parameters path)
@@ -255,8 +258,8 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         // Record to JSON if writer provided
         // Use 1-based base pair indices (matching legacy: j, j+1 where j is 1-based)
         if (json_writer_) {
-            size_t bp_idx1 = i + 1;  // Convert 0-based vector index to 1-based base pair index
-            size_t bp_idx2 = i + 2;  // Next pair index (1-based)
+            size_t bp_idx1 = i + 1; // Convert 0-based vector index to 1-based base pair index
+            size_t bp_idx2 = i + 2; // Next pair index (1-based)
             json_writer_->record_bpstep_params(bp_idx1, bp_idx2, step_params);
         }
 
@@ -267,8 +270,8 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         // Record to JSON if writer provided
         // Use 1-based base pair indices (matching legacy: j, j+1 where j is 1-based)
         if (json_writer_) {
-            size_t bp_idx1 = i + 1;  // Convert 0-based vector index to 1-based base pair index
-            size_t bp_idx2 = i + 2;  // Next pair index (1-based)
+            size_t bp_idx1 = i + 1; // Convert 0-based vector index to 1-based base pair index
+            size_t bp_idx2 = i + 2; // Next pair index (1-based)
             json_writer_->record_helical_params(bp_idx1, bp_idx2, helical_params);
         }
     }
@@ -285,8 +288,8 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
 
             // Record to JSON if writer provided
             if (json_writer_) {
-                size_t bp_idx1 = base_pairs_.size();  // Last pair (1-based)
-                size_t bp_idx2 = 1;  // First pair (1-based)
+                size_t bp_idx1 = base_pairs_.size(); // Last pair (1-based)
+                size_t bp_idx2 = 1;                  // First pair (1-based)
                 json_writer_->record_bpstep_params(bp_idx1, bp_idx2, step_params);
             }
 
@@ -295,8 +298,8 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
 
             // Record to JSON if writer provided
             if (json_writer_) {
-                size_t bp_idx1 = base_pairs_.size();  // Last pair (1-based)
-                size_t bp_idx2 = 1;  // First pair (1-based)
+                size_t bp_idx1 = base_pairs_.size(); // Last pair (1-based)
+                size_t bp_idx2 = 1;                  // First pair (1-based)
                 json_writer_->record_helical_params(bp_idx1, bp_idx2, helical_params);
             }
         }
@@ -320,15 +323,15 @@ void AnalyzeProtocol::convert_atom_indices_to_residue_indices(const core::Struct
     // Build map from atom index to residue index
     // Legacy atom indices are 1-based, stored in atom.legacy_atom_idx()
     std::map<int, int> atom_idx_to_residue_idx;
-    
+
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
             // Get legacy residue index for this residue
             int legacy_residue_idx = structure.get_legacy_idx_for_residue(&residue);
             if (legacy_residue_idx == 0) {
-                continue;  // Residue not found in legacy order
+                continue; // Residue not found in legacy order
             }
-            
+
             // Map all atoms in this residue to the residue index
             for (const auto& atom : residue.atoms()) {
                 int legacy_atom_idx = atom.legacy_atom_idx();
@@ -351,15 +354,15 @@ void AnalyzeProtocol::convert_atom_indices_to_residue_indices(const core::Struct
     for (auto& pair : base_pairs_) {
         size_t idx1 = pair.residue_idx1();
         size_t idx2 = pair.residue_idx2();
-        
+
         // Convert from 0-based to 1-based for comparison
         int idx1_1based = static_cast<int>(idx1 + 1);
         int idx2_1based = static_cast<int>(idx2 + 1);
-        
+
         // Check if indices are likely atom indices (larger than residue count)
         bool idx1_is_atom = (idx1_1based > static_cast<int>(num_residues));
         bool idx2_is_atom = (idx2_1based > static_cast<int>(num_residues));
-        
+
         if (idx1_is_atom) {
             auto it = atom_idx_to_residue_idx.find(idx1_1based);
             if (it != atom_idx_to_residue_idx.end() && it->second > 0) {
@@ -368,7 +371,7 @@ void AnalyzeProtocol::convert_atom_indices_to_residue_indices(const core::Struct
                 converted_count++;
             }
         }
-        
+
         if (idx2_is_atom) {
             auto it = atom_idx_to_residue_idx.find(idx2_1based);
             if (it != atom_idx_to_residue_idx.end() && it->second > 0) {
@@ -378,7 +381,7 @@ void AnalyzeProtocol::convert_atom_indices_to_residue_indices(const core::Struct
             }
         }
     }
-    
+
     if (converted_count > 0) {
         std::cout << "Converted " << converted_count << " atom indices to residue indices\n";
     }
@@ -386,4 +389,3 @@ void AnalyzeProtocol::convert_atom_indices_to_residue_indices(const core::Struct
 
 } // namespace protocols
 } // namespace x3dna
-

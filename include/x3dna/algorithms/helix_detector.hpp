@@ -144,11 +144,11 @@ private:
      * @param pair_index Index of pair to analyze
      * @return Vector of neighbor indices (within helix_break distance)
      */
-    std::vector<size_t> find_neighbors(const std::vector<core::BasePair>& pairs, size_t pair_index) const;
+    std::vector<size_t> find_neighbors(const std::vector<core::BasePair>& pairs,
+                                       size_t pair_index) const;
 
     double helix_break_distance_; // Distance threshold for helix breaks (Angstroms)
 };
 
 } // namespace algorithms
 } // namespace x3dna
-

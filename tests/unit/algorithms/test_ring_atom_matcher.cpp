@@ -127,7 +127,8 @@ TEST_F(RingAtomMatcherTest, MatchRNAAtoms) {
             break;
         }
     }
-    EXPECT_FALSE(has_c1_prime) << "C1' should not be in matched atoms (it's a sugar atom, not a ring atom)";
+    EXPECT_FALSE(has_c1_prime)
+        << "C1' should not be in matched atoms (it's a sugar atom, not a ring atom)";
 }
 
 // Test with missing atoms
@@ -160,7 +161,8 @@ TEST_F(RingAtomMatcherTest, GetRingAtomNames) {
             break;
         }
     }
-    EXPECT_FALSE(has_c1_prime) << "C1' should not be in ring atom names (it's a sugar atom, not a ring atom)";
+    EXPECT_FALSE(has_c1_prime)
+        << "C1' should not be in ring atom names (it's a sugar atom, not a ring atom)";
 
     // Pyrimidine
     auto pyrimidine_names = RingAtomMatcher::get_ring_atom_names(ResidueType::CYTOSINE);
@@ -173,5 +175,6 @@ TEST_F(RingAtomMatcherTest, GetRingAtomNames) {
             break;
         }
     }
-    EXPECT_FALSE(has_c1_prime) << "C1' should not be in ring atom names (it's a sugar atom, not a ring atom)";
+    EXPECT_FALSE(has_c1_prime)
+        << "C1' should not be in ring atom names (it's a sugar atom, not a ring atom)";
 }

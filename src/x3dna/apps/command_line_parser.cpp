@@ -281,4 +281,3 @@ bool CommandLineParser::option_has_value(const std::string& arg) {
 
 } // namespace apps
 } // namespace x3dna
-

@@ -90,20 +90,21 @@ public:
      * @param atom_idx_map Map from (chain_id, residue_seq, insertion, atom_name) -> legacy_atom_idx
      * @param residue_idx_map Map from (chain_id, residue_seq, insertion) -> legacy_residue_idx
      */
-    void set_legacy_indices(
-        const std::map<std::tuple<char, int, char, std::string>, int>& atom_idx_map,
-        const std::map<std::tuple<char, int, char>, int>& residue_idx_map) {
+    void
+    set_legacy_indices(const std::map<std::tuple<char, int, char, std::string>, int>& atom_idx_map,
+                       const std::map<std::tuple<char, int, char>, int>& residue_idx_map) {
         for (auto& chain : chains_) {
             for (auto& residue : chain.residues()) {
                 char chain_id = residue.chain_id();
                 int residue_seq = residue.seq_num();
                 char insertion = residue.insertion();
-                
+
                 // Get legacy residue index for this residue
                 auto residue_key = std::make_tuple(chain_id, residue_seq, insertion);
                 auto residue_it = residue_idx_map.find(residue_key);
-                int legacy_residue_idx = (residue_it != residue_idx_map.end()) ? residue_it->second : 0;
-                
+                int legacy_residue_idx =
+                    (residue_it != residue_idx_map.end()) ? residue_it->second : 0;
+
                 // Set legacy indices on all atoms in this residue
                 for (auto& atom : residue.atoms()) {
                     auto atom_key = std::make_tuple(chain_id, residue_seq, insertion, atom.name());
@@ -151,24 +152,24 @@ public:
 
     /**
      * @brief Get all residues in legacy order (PDB file order)
-     * 
+     *
      * Returns residues in the same order as legacy's residue_idx() function:
      * - Processes atoms in PDB file order (by line_number)
      * - Groups by (ResName, ChainID, ResSeq, insertion)
      * - Returns unique residues in order they first appear
-     * 
+     *
      * This matches the legacy residue indexing used throughout the codebase.
-     * 
+     *
      * @return Vector of residue pointers in legacy order (non-owning)
      */
     std::vector<const Residue*> residues_in_legacy_order() const;
 
     /**
      * @brief Get residue by legacy index (1-based)
-     * 
+     *
      * Finds the residue that would be at the given legacy index when counting
      * in legacy order (PDB file order).
-     * 
+     *
      * @param legacy_idx Legacy residue index (1-based)
      * @return Pointer to residue, or nullptr if not found
      */
@@ -176,10 +177,10 @@ public:
 
     /**
      * @brief Get legacy index for a residue
-     * 
+     *
      * Returns the legacy index (1-based) for the given residue when counting
      * in legacy order (PDB file order).
-     * 
+     *
      * @param residue The residue to find the index for
      * @return Legacy residue index (1-based), or 0 if not found
      */
@@ -288,15 +289,15 @@ public:
         nlohmann::json record;
         record["num_atoms"] = num_atoms();
         record["atoms"] = nlohmann::json::array();
-        
+
         for (const auto& chain : chains_) {
             for (const auto& residue : chain.residues()) {
                 for (const auto& atom : residue.atoms()) {
-                    record["atoms"].push_back(atom.to_json());  // Atom writes itself
+                    record["atoms"].push_back(atom.to_json()); // Atom writes itself
                 }
             }
         }
-        
+
         // Write file
         std::filesystem::path file = output_dir / "pdb_atoms" / (pdb_id_ + ".json");
         std::filesystem::create_directories(file.parent_path());

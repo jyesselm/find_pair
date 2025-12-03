@@ -137,8 +137,8 @@ TEST_F(JsonWriterTest, RecordBasePair) {
         if (record.contains("type") && record["type"] == "base_pair") {
             found = true;
             // Legacy format uses base_i and base_j (1-based indices)
-            EXPECT_EQ(record["base_i"], 1);  // 0-based + 1 = 1-based
-            EXPECT_EQ(record["base_j"], 2);  // 1-based + 1 = 2-based
+            EXPECT_EQ(record["base_i"], 1); // 0-based + 1 = 1-based
+            EXPECT_EQ(record["base_j"], 2); // 1-based + 1 = 2-based
             EXPECT_EQ(record["bp_type"], "CG");
             EXPECT_TRUE(record.contains("orien_i"));
             EXPECT_TRUE(record.contains("orien_j"));
@@ -189,7 +189,7 @@ TEST_F(JsonWriterTest, WriteToFile) {
     EXPECT_TRUE(read_json.is_array());
     EXPECT_GT(read_json.size(), 0);
     EXPECT_EQ(read_json[0]["type"], "base_frame_calc");
-    
+
     // Clean up
     std::filesystem::remove_all(output_dir);
 }

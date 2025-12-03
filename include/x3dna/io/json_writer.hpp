@@ -269,9 +269,9 @@ public:
      * @param best_j Best partner residue index (legacy 1-based)
      * @param best_score Best score
      */
-    void record_best_partner_candidates(int res_i,
-                                        const std::vector<std::tuple<int, bool, double, int>>& candidates,
-                                        int best_j, double best_score);
+    void record_best_partner_candidates(
+        int res_i, const std::vector<std::tuple<int, bool, double, int>>& candidates, int best_j,
+        double best_score);
 
     /**
      * @brief Record mutual best decision
@@ -282,8 +282,7 @@ public:
      * @param is_mutual Whether they are mutual best
      * @param was_selected Whether pair was selected
      */
-    void record_mutual_best_decision(int res_i, int res_j,
-                                     int best_j_for_i, int best_i_for_j,
+    void record_mutual_best_decision(int res_i, int res_j, int best_j_for_i, int best_i_for_j,
                                      bool is_mutual, bool was_selected);
 
     /**
@@ -291,8 +290,10 @@ public:
      * @param iteration_num Iteration number (1-based)
      * @param num_matched Number of matched residues
      * @param num_total Total number of residues
-     * @param matched_indices Vector indicating which residues are matched (size = num_total + 1, 1-based)
-     * @param pairs Vector of pairs found so far (each pair is (res_i, res_j) in legacy 1-based indices)
+     * @param matched_indices Vector indicating which residues are matched (size = num_total + 1,
+     * 1-based)
+     * @param pairs Vector of pairs found so far (each pair is (res_i, res_j) in legacy 1-based
+     * indices)
      */
     void record_iteration_state(int iteration_num, int num_matched, int num_total,
                                 const std::vector<bool>& matched_indices,
@@ -320,7 +321,7 @@ private:
     // Index counters for tracking basepairs and hbonds
     size_t basepair_idx_counter_ = 0;
     size_t hbond_idx_counter_ = 0;
-    
+
     // Track recorded base pairs to avoid duplicates (normalized by (min, max))
     std::set<std::pair<size_t, size_t>> recorded_base_pairs_;
 

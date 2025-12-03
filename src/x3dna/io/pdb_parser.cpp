@@ -328,7 +328,7 @@ bool PdbParser::is_modified_nucleotide_name(const std::string& residue_name) con
     while (!trimmed.empty() && trimmed.back() == ' ') {
         trimmed.pop_back();
     }
-    
+
     // Common modified nucleotides that appear as HETATM
     // These should be auto-included even without -T flag
     static const std::vector<std::string> modified_nucleotides = {
@@ -343,15 +343,15 @@ bool PdbParser::is_modified_nucleotide_name(const std::string& residue_name) con
         // Modified Uracil/Thymine
         "5MU", "H2U", "DHU", "OMU", "4SU", "S4U", "5BU", "2MU", "UR3", "RT",
         // Other common modified bases
-        "I", "DI"  // Inosine
+        "I", "DI" // Inosine
     };
-    
+
     for (const auto& mod : modified_nucleotides) {
         if (trimmed == mod) {
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -526,10 +526,10 @@ void PdbParser::process_atom_record(
             atom.set_legacy_atom_idx(legacy_atom_idx++);
 
             // Assign legacy residue index (1-based) - assign new index when residue changes
-            // CRITICAL: Legacy groups by (ResName, ChainID, ResSeq, insertion) - must include ResName!
-            // Legacy code: sprintf(bidx, "%3s%c%4ld%c", ResName, ChainID, ResSeq, iCode)
-            auto residue_key =
-                std::make_tuple(atom.residue_name(), atom.chain_id(), atom.residue_seq(), atom.insertion());
+            // CRITICAL: Legacy groups by (ResName, ChainID, ResSeq, insertion) - must include
+            // ResName! Legacy code: sprintf(bidx, "%3s%c%4ld%c", ResName, ChainID, ResSeq, iCode)
+            auto residue_key = std::make_tuple(atom.residue_name(), atom.chain_id(),
+                                               atom.residue_seq(), atom.insertion());
             auto residue_it = legacy_residue_idx_map.find(residue_key);
             if (residue_it == legacy_residue_idx_map.end()) {
                 // New residue - assign next residue index
@@ -537,9 +537,11 @@ void PdbParser::process_atom_record(
             }
             atom.set_legacy_residue_idx(legacy_residue_idx_map[residue_key]);
 
-            // Use (residue_name, chain_id, residue_seq, insertion_code) as key to match legacy behavior
-            // Legacy uses ResName + ChainID + ResSeq + iCode to identify residues
-            residue_atoms[{atom.residue_name(), atom.chain_id(), atom.residue_seq(), atom.insertion()}].push_back(atom);
+            // Use (residue_name, chain_id, residue_seq, insertion_code) as key to match legacy
+            // behavior Legacy uses ResName + ChainID + ResSeq + iCode to identify residues
+            residue_atoms[{atom.residue_name(), atom.chain_id(), atom.residue_seq(),
+                           atom.insertion()}]
+                .push_back(atom);
         }
     } catch (const ParseError&) {
         // Skip malformed lines
@@ -551,14 +553,14 @@ void PdbParser::process_hetatm_record(
     std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms,
     int& legacy_atom_idx, int& legacy_residue_idx,
     std::map<std::tuple<std::string, char, int, char>, int>& legacy_residue_idx_map) {
-    
+
     try {
         core::Atom atom = parse_hetatm_line(line, line_number);
-        
+
         // Auto-include modified nucleotides even if include_hetatm_ is false
         // Check if residue name is a known modified nucleotide
         bool is_modified_nucleotide = is_modified_nucleotide_name(atom.residue_name());
-        
+
         if (!include_hetatm_ && !is_modified_nucleotide) {
             return;
         }
@@ -577,10 +579,10 @@ void PdbParser::process_hetatm_record(
             atom.set_legacy_atom_idx(legacy_atom_idx++);
 
             // Assign legacy residue index (1-based) - assign new index when residue changes
-            // CRITICAL: Legacy groups by (ResName, ChainID, ResSeq, insertion) - must include ResName!
-            // Legacy code: sprintf(bidx, "%3s%c%4ld%c", ResName, ChainID, ResSeq, iCode)
-            auto residue_key =
-                std::make_tuple(atom.residue_name(), atom.chain_id(), atom.residue_seq(), atom.insertion());
+            // CRITICAL: Legacy groups by (ResName, ChainID, ResSeq, insertion) - must include
+            // ResName! Legacy code: sprintf(bidx, "%3s%c%4ld%c", ResName, ChainID, ResSeq, iCode)
+            auto residue_key = std::make_tuple(atom.residue_name(), atom.chain_id(),
+                                               atom.residue_seq(), atom.insertion());
             auto residue_it = legacy_residue_idx_map.find(residue_key);
             if (residue_it == legacy_residue_idx_map.end()) {
                 // New residue - assign next residue index
@@ -588,9 +590,11 @@ void PdbParser::process_hetatm_record(
             }
             atom.set_legacy_residue_idx(legacy_residue_idx_map[residue_key]);
 
-            // Use (residue_name, chain_id, residue_seq, insertion_code) as key to match legacy behavior
-            // Legacy uses ResName + ChainID + ResSeq + iCode to identify residues
-            residue_atoms[{atom.residue_name(), atom.chain_id(), atom.residue_seq(), atom.insertion()}].push_back(atom);
+            // Use (residue_name, chain_id, residue_seq, insertion_code) as key to match legacy
+            // behavior Legacy uses ResName + ChainID + ResSeq + iCode to identify residues
+            residue_atoms[{atom.residue_name(), atom.chain_id(), atom.residue_seq(),
+                           atom.insertion()}]
+                .push_back(atom);
         }
     } catch (const ParseError&) {
         // Skip malformed lines
@@ -627,7 +631,8 @@ bool PdbParser::handle_end_record(const std::string& line, bool all_models) {
 // Structure building - optimized for speed
 core::Structure PdbParser::build_structure_from_residues(
     const std::string& pdb_id,
-    const std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms) const {
+    const std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>&
+        residue_atoms) const {
 
     core::Structure structure(pdb_id);
     std::map<char, core::Chain> chains;
@@ -661,8 +666,9 @@ core::Structure PdbParser::build_structure_from_residues(
 
 // Main parsing implementation - optimized for speed
 core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& pdb_id) {
-    // Key: (residue_name, chain_id, residue_seq, insertion_code) - matches legacy residue identification
-    // Legacy groups by (ResName, ChainID, ResSeq, insertion) - sprintf(bidx, "%3s%c%4ld%c", ...)
+    // Key: (residue_name, chain_id, residue_seq, insertion_code) - matches legacy residue
+    // identification Legacy groups by (ResName, ChainID, ResSeq, insertion) - sprintf(bidx,
+    // "%3s%c%4ld%c", ...)
     std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>> residue_atoms;
     size_t line_number = 0;
     std::string line;

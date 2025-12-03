@@ -22,7 +22,7 @@ struct ParameterThresholds {
     double min_dv = 0.0;
     double max_dv = 2.5;
     double min_dNN = 4.5;
-    double max_dNN = 1e18;  // XBIG
+    double max_dNN = 1e18; // XBIG
 
     // Angle constraints
     double min_plane_angle = 0.0;
@@ -32,7 +32,7 @@ struct ParameterThresholds {
     int min_base_hb = 1;
     double hb_lower = 1.8;
     double hb_dist1 = 4.0;
-    double hb_dist2 = 0.0;  // CRITICAL: Must be 0.0 for exact legacy match
+    double hb_dist2 = 0.0; // CRITICAL: Must be 0.0 for exact legacy match
 
     // H-bond atom list (default ".O.N" - matches legacy default)
     std::string hb_atoms = ".O.N";
@@ -69,24 +69,42 @@ public:
     void set_defaults();
 
     // Parameter thresholds
-    const ParameterThresholds& thresholds() const { return thresholds_; }
-    ParameterThresholds& thresholds() { return thresholds_; }
+    const ParameterThresholds& thresholds() const {
+        return thresholds_;
+    }
+    ParameterThresholds& thresholds() {
+        return thresholds_;
+    }
 
     // Paths
     void set_x3dna_home(const std::filesystem::path& path);
-    std::filesystem::path x3dna_home() const { return x3dna_home_; }
+    std::filesystem::path x3dna_home() const {
+        return x3dna_home_;
+    }
     std::filesystem::path standard_base_path() const;
 
     // Options
-    bool include_hetatm() const { return include_hetatm_; }
-    void set_include_hetatm(bool value) { include_hetatm_ = value; }
-    bool include_waters() const { return include_waters_; }
-    void set_include_waters(bool value) { include_waters_ = value; }
+    bool include_hetatm() const {
+        return include_hetatm_;
+    }
+    void set_include_hetatm(bool value) {
+        include_hetatm_ = value;
+    }
+    bool include_waters() const {
+        return include_waters_;
+    }
+    void set_include_waters(bool value) {
+        include_waters_ = value;
+    }
 
     // Legacy mode (for exact compatibility with legacy code)
     // When enabled, breaks some OOP principles for exact matching
-    bool legacy_mode() const { return legacy_mode_; }
-    void set_legacy_mode(bool value) { legacy_mode_ = value; }
+    bool legacy_mode() const {
+        return legacy_mode_;
+    }
+    void set_legacy_mode(bool value) {
+        legacy_mode_ = value;
+    }
 
     // Delete copy and move
     ConfigManager(const ConfigManager&) = delete;
@@ -102,9 +120,8 @@ private:
     std::filesystem::path x3dna_home_;
     bool include_hetatm_ = false;
     bool include_waters_ = false;
-    bool legacy_mode_ = false;  // Enable legacy compatibility mode
+    bool legacy_mode_ = false; // Enable legacy compatibility mode
 };
 
 } // namespace config
 } // namespace x3dna
-

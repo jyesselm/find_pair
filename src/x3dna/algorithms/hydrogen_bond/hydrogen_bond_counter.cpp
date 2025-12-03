@@ -25,8 +25,9 @@ static bool should_debug_good_hb_atoms() {
     return enabled;
 }
 
-bool HydrogenBondCounter::within_limits(const geometry::Vector3D& pos1, const geometry::Vector3D& pos2,
-                                        double lower, double upper) {
+bool HydrogenBondCounter::within_limits(const geometry::Vector3D& pos1,
+                                        const geometry::Vector3D& pos2, double lower,
+                                        double upper) {
     geometry::Vector3D diff = pos1 - pos2;
     double dist = diff.length();
     return (dist >= lower && dist <= upper);
@@ -43,8 +44,8 @@ bool HydrogenBondCounter::good_hb_atoms(const std::string& atom1, const std::str
 
 void HydrogenBondCounter::count_simple(const core::Residue& res1, const core::Residue& res2,
                                        double hb_lower, double hb_dist1,
-                                       const std::string& hb_atoms,
-                                       int& num_base_hb, int& num_o2_hb) {
+                                       const std::string& hb_atoms, int& num_base_hb,
+                                       int& num_o2_hb) {
     // Matches legacy check_pair H-bond counting (lines 4605-4614 in cmn_fncs.c)
     // Counts H-bonds BEFORE validation - this is the key difference
 
@@ -106,4 +107,3 @@ void HydrogenBondCounter::count_simple(const core::Residue& res1, const core::Re
 } // namespace hydrogen_bond
 } // namespace algorithms
 } // namespace x3dna
-

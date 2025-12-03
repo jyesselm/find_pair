@@ -15,90 +15,87 @@ namespace x3dna {
 namespace algorithms {
 
 namespace {
-    // Standard nucleotide ring geometry (from legacy xyz_ring array)
-    // Matches RA_LIST order: " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "
-    constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
-        {{-1.265,  3.177,  0.000}},  // C4
-        {{-2.342,  2.364,  0.001}},  // N3
-        {{-1.999,  1.087,  0.000}},  // C2
-        {{-0.700,  0.641,  0.000}},  // N1
-        {{ 0.424,  1.460,  0.000}},  // C6
-        {{ 0.071,  2.833,  0.000}},  // C5
-        {{ 0.870,  3.969,  0.000}},  // N7 (purine)
-        {{ 0.023,  4.962,  0.000}},  // C8 (purine)
-        {{-1.289,  4.551,  0.000}},  // N9 (purine)
-    }};
-    
-    // Legacy RA_LIST order for ring atoms
-    constexpr std::array<const char*, 9> RING_ATOM_NAMES = {
-        " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "
-    };
-    
-    /**
-     * @brief Check nucleotide type by RMSD (matches legacy check_nt_type_by_rmsd)
-     * @param residue Residue to check
-     * @return RMSD value if calculable, or nullopt if not enough atoms
-     */
-    std::optional<double> check_nt_type_by_rmsd(const core::Residue& residue) {
-        // Find ring atoms in residue
-        std::vector<geometry::Vector3D> experimental_coords;
-        std::vector<geometry::Vector3D> standard_coords;
-        int nN = 0;  // Count of nitrogen atoms (N1, N3, N7, N9)
-        bool has_c1_prime = false;
-        
-        for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
-            const char* atom_name = RING_ATOM_NAMES[i];
-            
-            // Find this atom in residue
-            for (const auto& atom : residue.atoms()) {
-                if (atom.name() == atom_name) {
-                    const auto& pos = atom.position();
-                    experimental_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
-                    
-                    // Use corresponding standard geometry
-                    standard_coords.push_back(geometry::Vector3D(
-                        STANDARD_RING_GEOMETRY[i][0],
-                        STANDARD_RING_GEOMETRY[i][1],
-                        STANDARD_RING_GEOMETRY[i][2]
-                    ));
-                    
-                    // Count nitrogen atoms (indices 1=N3, 3=N1, 6=N7, 8=N9)
-                    if (i == 1 || i == 3 || i == 6 || i == 8) {
-                        nN++;
-                    }
-                    break;
-                }
-            }
-        }
-        
-        // Check for C1' atom (required by legacy)
+// Standard nucleotide ring geometry (from legacy xyz_ring array)
+// Matches RA_LIST order: " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "
+constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
+    {{-1.265, 3.177, 0.000}}, // C4
+    {{-2.342, 2.364, 0.001}}, // N3
+    {{-1.999, 1.087, 0.000}}, // C2
+    {{-0.700, 0.641, 0.000}}, // N1
+    {{0.424, 1.460, 0.000}},  // C6
+    {{0.071, 2.833, 0.000}},  // C5
+    {{0.870, 3.969, 0.000}},  // N7 (purine)
+    {{0.023, 4.962, 0.000}},  // C8 (purine)
+    {{-1.289, 4.551, 0.000}}, // N9 (purine)
+}};
+
+// Legacy RA_LIST order for ring atoms
+constexpr std::array<const char*, 9> RING_ATOM_NAMES = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
+                                                        " C5 ", " N7 ", " C8 ", " N9 "};
+
+/**
+ * @brief Check nucleotide type by RMSD (matches legacy check_nt_type_by_rmsd)
+ * @param residue Residue to check
+ * @return RMSD value if calculable, or nullopt if not enough atoms
+ */
+std::optional<double> check_nt_type_by_rmsd(const core::Residue& residue) {
+    // Find ring atoms in residue
+    std::vector<geometry::Vector3D> experimental_coords;
+    std::vector<geometry::Vector3D> standard_coords;
+    int nN = 0; // Count of nitrogen atoms (N1, N3, N7, N9)
+    bool has_c1_prime = false;
+
+    for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
+        const char* atom_name = RING_ATOM_NAMES[i];
+
+        // Find this atom in residue
         for (const auto& atom : residue.atoms()) {
-            if (atom.name() == " C1'") {
-                has_c1_prime = true;
+            if (atom.name() == atom_name) {
+                const auto& pos = atom.position();
+                experimental_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
+
+                // Use corresponding standard geometry
+                standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0],
+                                                             STANDARD_RING_GEOMETRY[i][1],
+                                                             STANDARD_RING_GEOMETRY[i][2]));
+
+                // Count nitrogen atoms (indices 1=N3, 3=N1, 6=N7, 8=N9)
+                if (i == 1 || i == 3 || i == 6 || i == 8) {
+                    nN++;
+                }
                 break;
             }
         }
-        
-        // Legacy requires: (!nN && !C1_prime) -> return DUMMY
-        if (nN == 0 && !has_c1_prime) {
-            return std::nullopt;
-        }
-        
-        // Need at least 3 atoms for RMSD calculation
-        if (experimental_coords.size() < 3) {
-            return std::nullopt;
-        }
-        
-        // Perform least-squares fitting (matches legacy ls_fitting)
-        geometry::LeastSquaresFitter fitter;
-        try {
-            auto fit_result = fitter.fit(standard_coords, experimental_coords);
-            return fit_result.rms;
-        } catch (const std::exception&) {
-            return std::nullopt;
+    }
+
+    // Check for C1' atom (required by legacy)
+    for (const auto& atom : residue.atoms()) {
+        if (atom.name() == " C1'") {
+            has_c1_prime = true;
+            break;
         }
     }
+
+    // Legacy requires: (!nN && !C1_prime) -> return DUMMY
+    if (nN == 0 && !has_c1_prime) {
+        return std::nullopt;
+    }
+
+    // Need at least 3 atoms for RMSD calculation
+    if (experimental_coords.size() < 3) {
+        return std::nullopt;
+    }
+
+    // Perform least-squares fitting (matches legacy ls_fitting)
+    geometry::LeastSquaresFitter fitter;
+    try {
+        auto fit_result = fitter.fit(standard_coords, experimental_coords);
+        return fit_result.rms;
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
 }
+} // namespace
 
 BaseFrameCalculator::BaseFrameCalculator(const std::filesystem::path& template_path)
     : templates_(template_path) {}
@@ -127,16 +124,17 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // Get residue type
     core::ResidueType residue_type = residue.residue_type();
     std::string res_name = residue.name();
-    while (!res_name.empty() && res_name[0] == ' ') res_name.erase(0, 1);
-    while (!res_name.empty() && res_name.back() == ' ') res_name.pop_back();
-    
+    while (!res_name.empty() && res_name[0] == ' ')
+        res_name.erase(0, 1);
+    while (!res_name.empty() && res_name.back() == ' ')
+        res_name.pop_back();
+
     // Check if this is a modified nucleotide not in NT_LIST (requires RMSD check)
-    // Legacy: All residues not in NT_LIST go through RMSD check, even if they're recognized as nucleotides
-    // Standard NT_LIST: A, C, G, T, U, PSU (pseudouridine), I (inosine)
-    // H2U is NOT in NT_LIST, so it needs RMSD check regardless of residue_type
+    // Legacy: All residues not in NT_LIST go through RMSD check, even if they're recognized as
+    // nucleotides Standard NT_LIST: A, C, G, T, U, PSU (pseudouridine), I (inosine) H2U is NOT in
+    // NT_LIST, so it needs RMSD check regardless of residue_type
     static const std::vector<std::string> NT_LIST = {
-        "A", "C", "G", "T", "U", "PSU", "P5P", "PU", "I", "DI", "ADP", "GDP", "CDP", "UDP", "TDP"
-    };
+        "A", "C", "G", "T", "U", "PSU", "P5P", "PU", "I", "DI", "ADP", "GDP", "CDP", "UDP", "TDP"};
     bool is_in_nt_list = false;
     std::string res_upper = res_name;
     for (char& c : res_upper) {
@@ -152,15 +150,15 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
             break;
         }
     }
-    bool needs_rmsd_check = !is_in_nt_list;  // All non-NT_LIST residues need RMSD check
-    
+    bool needs_rmsd_check = !is_in_nt_list; // All non-NT_LIST residues need RMSD check
+
 // DEBUG: Log residue info (can be enabled with -DDEBUG_FRAME_CALC)
 #ifdef DEBUG_FRAME_CALC
     std::cerr << "DEBUG: Calculating frame for residue: " << residue.name() << " "
               << residue.chain_id() << ":" << residue.seq_num()
               << " (type=" << static_cast<int>(residue_type)
-              << ", one_letter=" << residue.one_letter_code() 
-              << ", needs_rmsd=" << needs_rmsd_check << ")\n";
+              << ", one_letter=" << residue.one_letter_code() << ", needs_rmsd=" << needs_rmsd_check
+              << ")\n";
 #endif
 
     // Check if valid nucleotide
@@ -234,7 +232,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                                                                        " N1 ", " C6 ", " C5 "};
             static const std::vector<std::string> purine_ring_atoms = {" N7 ", " C8 ", " N9 "};
             static const std::vector<std::string> nitrogen_atoms = {" N1 ", " N3 "};
-            
+
             for (const auto& atom_name : common_ring_atoms) {
                 for (const auto& atom : residue.atoms()) {
                     if (atom.name() == atom_name) {
@@ -243,7 +241,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                     }
                 }
             }
-            
+
             for (const auto& atom_name : purine_ring_atoms) {
                 for (const auto& atom : residue.atoms()) {
                     if (atom.name() == atom_name) {
@@ -252,7 +250,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                     }
                 }
             }
-            
+
             bool has_nitrogen = false;
             for (const auto& atom_name : nitrogen_atoms) {
                 for (const auto& atom : residue.atoms()) {
@@ -265,14 +263,14 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                     break;
                 }
             }
-            
+
             has_ring_atoms = (ring_atom_count >= 3 && has_nitrogen);
         } else {
             // Standard nucleotide in NT_LIST - accept without RMSD check
             has_ring_atoms = true;
         }
     }
-    
+
     // CRITICAL: ALWAYS check RMSD for ALL residues with ring atoms (even standard nucleotides)
     // This matches legacy residue_ident() which does RMSD check for ALL residues
     // Legacy rejects residues where RMSD > NT_CUTOFF (0.2618), even standard A/C/G/T/U
@@ -281,8 +279,10 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         auto rmsd_result = check_nt_type_by_rmsd(residue);
         // Debug output for 1TTT residue 16 (check with trimmed name)
         std::string res_name_debug = residue.name();
-        while (!res_name_debug.empty() && res_name_debug[0] == ' ') res_name_debug.erase(0, 1);
-        while (!res_name_debug.empty() && res_name_debug.back() == ' ') res_name_debug.pop_back();
+        while (!res_name_debug.empty() && res_name_debug[0] == ' ')
+            res_name_debug.erase(0, 1);
+        while (!res_name_debug.empty() && res_name_debug.back() == ' ')
+            res_name_debug.pop_back();
         if (res_name_debug == "H2U" && residue.chain_id() == 'D' && residue.seq_num() == 16) {
             std::cerr << "[RMSD DEBUG] Residue 16 (H2U, Chain D): ";
             if (rmsd_result.has_value()) {
@@ -300,7 +300,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
             // RMSD check failed - reject this residue (matches legacy behavior)
             // This correctly rejects distorted residues like H2U residue 16 in 1TTT
 #ifdef DEBUG_FRAME_CALC
-            std::cerr << "DEBUG: RMSD check failed (rmsd=" 
+            std::cerr << "DEBUG: RMSD check failed (rmsd="
                       << (rmsd_result.has_value() ? std::to_string(*rmsd_result) : "N/A")
                       << ") - rejecting residue\n";
 #endif
@@ -314,8 +314,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // If no ring atoms, cannot calculate frame
     if (!has_ring_atoms) {
 #ifdef DEBUG_FRAME_CALC
-        std::cerr << "DEBUG: Skipping - not a nucleotide (type="
-                  << static_cast<int>(residue_type) << ", no ring atoms)\n";
+        std::cerr << "DEBUG: Skipping - not a nucleotide (type=" << static_cast<int>(residue_type)
+                  << ", no ring atoms)\n";
 #endif
         return result; // Cannot calculate frame for non-nucleotides
     }
@@ -341,8 +341,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // Otherwise, determine type from atoms
     if (residue_type == core::ResidueType::UNKNOWN ||
         residue_type == core::ResidueType::AMINO_ACID ||
-        residue_type == core::ResidueType::NONCANONICAL_RNA ||
-        needs_rmsd_check) {
+        residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check) {
         // Determine type from atoms
         if (has_ring_atoms) {
             if (has_purine_atoms) {
@@ -363,7 +362,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                 // Determine pyrimidine type (C vs T vs U vs P) by checking for characteristic atoms
                 bool has_n4 = false, has_c5m = false;
                 bool is_pseudouridine = false;
-                
+
                 // Check for characteristic atoms
                 for (const auto& atom : residue.atoms()) {
                     if (atom.name() == " N4 ")
@@ -371,13 +370,13 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                     if (atom.name() == " C5M" || atom.name() == " C7 ")
                         has_c5m = true;
                 }
-                
+
                 // Check for pseudouridine (PSU): C1' bonded to C5 instead of N1
                 // Legacy: p1p2_dist(xyz[c1p], xyz[c5]) <= 2.0 && p1p2_dist(xyz[c1p], xyz[n1]) > 2.0
                 auto c1p_opt = residue.find_atom(" C1'");
                 auto n1_opt = residue.find_atom(" N1 ");
                 auto c5_opt = residue.find_atom(" C5 ");
-                
+
                 if (c1p_opt.has_value() && n1_opt.has_value() && c5_opt.has_value()) {
                     double dist_c1p_n1 = (c1p_opt->position() - n1_opt->position()).length();
                     double dist_c1p_c5 = (c1p_opt->position() - c5_opt->position()).length();
@@ -390,7 +389,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
 #endif
                     }
                 }
-                
+
                 // Assign type based on detection
                 if (is_pseudouridine) {
                     residue_type = core::ResidueType::PSEUDOURIDINE;
@@ -494,7 +493,7 @@ void BaseFrameCalculator::calculate_all_frames(core::Structure& structure) {
         // Need non-const pointer for modification
         residues_in_order.push_back(const_cast<core::Residue*>(residue_ptr));
     }
-    
+
     // Iterate through residues in legacy order, calculating frames
     // Note: We don't skip UNKNOWN residues here because calculate_frame_impl
     // has logic to detect modified nucleotides by ring atoms (like XGR, XCR, etc.)
@@ -519,8 +518,7 @@ void BaseFrameCalculator::set_template_path(const std::filesystem::path& templat
 bool BaseFrameCalculator::detect_rna(const core::Structure& structure) {
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
-            if (residue.find_atom(" O2'").has_value() ||
-                residue.find_atom(" O2*").has_value()) {
+            if (residue.find_atom(" O2'").has_value() || residue.find_atom(" O2*").has_value()) {
                 return true;
             }
         }
@@ -533,62 +531,62 @@ size_t BaseFrameCalculator::calculate_and_record_frames(core::Structure& structu
     // Auto-detect RNA vs DNA
     bool is_rna = detect_rna(structure);
     set_is_rna(is_rna);
-    
+
     // Calculate and record frames in one pass
     // Get residues in legacy order (PDB file order)
     auto residues = structure.residues_in_legacy_order();
     size_t frames_recorded = 0;
-    
+
     for (const auto* residue_ptr : residues) {
         auto* residue = const_cast<core::Residue*>(residue_ptr);
-        
+
         // Skip amino acids (calculate_frame handles other types including UNKNOWN)
         if (residue->residue_type() == core::ResidueType::AMINO_ACID) {
             continue;
         }
-        
+
         // Calculate frame (stores frame on residue and returns full result)
         FrameCalculationResult frame_result = calculate_frame(*residue);
-        
+
         if (!frame_result.is_valid) {
             continue;
         }
-        
+
         // Get legacy_residue_idx from atoms
         int legacy_residue_idx = 0;
         if (!residue->atoms().empty()) {
             legacy_residue_idx = residue->atoms()[0].legacy_residue_idx();
         }
-        
+
         if (legacy_residue_idx <= 0) {
             continue;
         }
-        
+
         char base_type = residue->one_letter_code();
         size_t record_idx = static_cast<size_t>(legacy_residue_idx);
-        
+
         // Record base_frame_calc
-        writer.record_base_frame_calc(
-            record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
-            frame_result.matched_atoms, residue->name(), residue->chain_id(),
-            residue->seq_num(), residue->insertion());
-        
+        writer.record_base_frame_calc(record_idx, base_type, frame_result.template_file,
+                                      frame_result.rms_fit, frame_result.matched_atoms,
+                                      residue->name(), residue->chain_id(), residue->seq_num(),
+                                      residue->insertion());
+
         // Record ls_fitting
-        writer.record_ls_fitting(
-            record_idx, frame_result.num_matched, frame_result.rms_fit,
-            frame_result.rotation_matrix, frame_result.translation, residue->name(),
-            residue->chain_id(), residue->seq_num(), residue->insertion());
-        
+        writer.record_ls_fitting(record_idx, frame_result.num_matched, frame_result.rms_fit,
+                                 frame_result.rotation_matrix, frame_result.translation,
+                                 residue->name(), residue->chain_id(), residue->seq_num(),
+                                 residue->insertion());
+
         // Record frame_calc
         std::vector<geometry::Vector3D> standard_coords, experimental_coords;
-        writer.record_frame_calc(
-            record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
-            standard_coords, experimental_coords, residue->name(),
-            residue->chain_id(), residue->seq_num(), residue->insertion());
-        
+        writer.record_frame_calc(record_idx, base_type, frame_result.template_file,
+                                 frame_result.rms_fit, standard_coords, experimental_coords,
+                                 residue->name(), residue->chain_id(), residue->seq_num(),
+                                 residue->insertion());
+
         frames_recorded++;
     }
-    
+
     return frames_recorded;
 }
 

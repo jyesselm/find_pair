@@ -133,12 +133,12 @@ public:
 
     /**
      * @brief Calculate frames and write JSON records
-     * 
+     *
      * This is the standard workflow for frame calculation:
      * 1. Auto-detect RNA vs DNA
      * 2. Calculate all frames
      * 3. Record frame JSON (base_frame_calc, ls_fitting, frame_calc)
-     * 
+     *
      * @param structure Structure to process
      * @param writer JsonWriter to record results
      * @return Number of frames calculated and recorded

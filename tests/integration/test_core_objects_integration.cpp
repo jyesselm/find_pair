@@ -61,36 +61,37 @@ protected:
      * @brief Compare Structure hierarchy with legacy JSON
      */
     void compare_structure_with_legacy(const Structure& structure,
-                                      const nlohmann::json& pdb_atoms_record,
-                                      double tolerance = 1e-6) {
+                                       const nlohmann::json& pdb_atoms_record,
+                                       double tolerance = 1e-6) {
         // Compare atom count - handle both int and long types
         long expected_atom_count = 0;
         if (pdb_atoms_record.contains("num_atoms")) {
             if (pdb_atoms_record["num_atoms"].is_number_integer()) {
                 expected_atom_count = pdb_atoms_record["num_atoms"].get<long>();
             } else if (pdb_atoms_record["num_atoms"].is_number_unsigned()) {
-                expected_atom_count = static_cast<long>(pdb_atoms_record["num_atoms"].get<unsigned long>());
+                expected_atom_count =
+                    static_cast<long>(pdb_atoms_record["num_atoms"].get<unsigned long>());
             }
         }
-        
+
         // If num_atoms is not present or invalid, use atoms array size
-        if (expected_atom_count == 0 && pdb_atoms_record.contains("atoms") && 
+        if (expected_atom_count == 0 && pdb_atoms_record.contains("atoms") &&
             pdb_atoms_record["atoms"].is_array()) {
             expected_atom_count = static_cast<long>(pdb_atoms_record["atoms"].size());
         }
-        
+
         // Only compare if expected count is reasonable (not zero and not absurdly large)
         // Some legacy JSON files may have incorrect num_atoms values
         if (expected_atom_count > 0 && expected_atom_count < 1000000) {
             EXPECT_EQ(static_cast<long>(structure.num_atoms()), expected_atom_count)
-                << "Atom count mismatch: structure has " << structure.num_atoms() 
-                << ", JSON has " << expected_atom_count;
+                << "Atom count mismatch: structure has " << structure.num_atoms() << ", JSON has "
+                << expected_atom_count;
         } else if (expected_atom_count > 0) {
             // If num_atoms in JSON seems wrong, use atoms array size instead
             if (pdb_atoms_record.contains("atoms") && pdb_atoms_record["atoms"].is_array()) {
                 expected_atom_count = static_cast<long>(pdb_atoms_record["atoms"].size());
                 EXPECT_EQ(static_cast<long>(structure.num_atoms()), expected_atom_count)
-                    << "Atom count mismatch (using atoms array size): structure has " 
+                    << "Atom count mismatch (using atoms array size): structure has "
                     << structure.num_atoms() << ", JSON array has " << expected_atom_count;
             }
         }
@@ -100,7 +101,8 @@ protected:
         // if atoms array is not present, but still verify structure can be created
         if (!pdb_atoms_record.contains("atoms") || !pdb_atoms_record["atoms"].is_array()) {
             // Legacy JSON might have atoms in split files - just verify structure was created
-            EXPECT_GT(structure.num_atoms(), 0) << "Structure should have atoms even if JSON doesn't have atoms array";
+            EXPECT_GT(structure.num_atoms(), 0)
+                << "Structure should have atoms even if JSON doesn't have atoms array";
             return;
         }
 
@@ -121,9 +123,9 @@ protected:
             << "Structure atom count doesn't match JSON atom count";
 
         // Compare first 50 atoms (or all if fewer) to verify structure
-        size_t num_to_compare = std::min(static_cast<size_t>(50), 
-                                         std::min(structure_atoms.size(), json_atom_count));
-        
+        size_t num_to_compare =
+            std::min(static_cast<size_t>(50), std::min(structure_atoms.size(), json_atom_count));
+
         for (size_t i = 0; i < num_to_compare; ++i) {
             SCOPED_TRACE("Atom index " + std::to_string(i));
             const auto& atom_json = atoms_json[i];
@@ -149,8 +151,7 @@ protected:
                 << "Residue name mismatch at index " << i;
 
             std::string chain_str = atom_json["chain_id"].get<std::string>();
-            EXPECT_EQ(atom.chain_id(), chain_str[0])
-                << "Chain ID mismatch at index " << i;
+            EXPECT_EQ(atom.chain_id(), chain_str[0]) << "Chain ID mismatch at index " << i;
 
             int expected_seq = atom_json["residue_seq"].get<int>();
             EXPECT_EQ(atom.residue_seq(), expected_seq)
@@ -168,7 +169,7 @@ TEST_F(CoreObjectsIntegrationTest, StructureHierarchy) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     // Parse PDB file
     PdbParser parser;
     Structure structure = parser.parse_file(pair.pdb_file);
@@ -181,15 +182,15 @@ TEST_F(CoreObjectsIntegrationTest, StructureHierarchy) {
     // Test hierarchy traversal
     size_t total_atoms = 0;
     size_t total_residues = 0;
-    
+
     for (const auto& chain : structure.chains()) {
         EXPECT_FALSE(chain.chain_id() == '\0') << "Chain has invalid ID";
         total_residues += chain.num_residues();
-        
+
         for (const auto& residue : chain.residues()) {
             EXPECT_FALSE(residue.name().empty()) << "Residue has empty name";
             total_atoms += residue.num_atoms();
-            
+
             for (const auto& atom : residue.atoms()) {
                 EXPECT_FALSE(atom.name().empty()) << "Atom has empty name";
                 EXPECT_TRUE(std::isfinite(atom.position().x()));
@@ -200,8 +201,7 @@ TEST_F(CoreObjectsIntegrationTest, StructureHierarchy) {
     }
 
     // Verify counts match
-    EXPECT_EQ(total_atoms, structure.num_atoms())
-        << "Atom count mismatch in hierarchy traversal";
+    EXPECT_EQ(total_atoms, structure.num_atoms()) << "Atom count mismatch in hierarchy traversal";
     EXPECT_EQ(total_residues, structure.num_residues())
         << "Residue count mismatch in hierarchy traversal";
 }
@@ -215,14 +215,14 @@ TEST_F(CoreObjectsIntegrationTest, PdbParsingMatchesLegacy) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     // Load legacy JSON
     auto pdb_atoms_record = load_pdb_atoms_record(pair.json_file);
-    
+
     // Parse PDB file
     PdbParser parser;
     Structure structure = parser.parse_file(pair.pdb_file);
-    
+
     // Compare structure with legacy JSON
     compare_structure_with_legacy(structure, pdb_atoms_record, 1e-6);
 }
@@ -236,21 +236,21 @@ TEST_F(CoreObjectsIntegrationTest, StructureJsonRoundTrip) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     // Parse PDB file
     PdbParser parser;
     Structure structure = parser.parse_file(pair.pdb_file);
-    
+
     // Export to JSON (legacy format - returns flat structure with atoms array)
     auto json = structure.to_json_legacy();
-    
+
     // Verify JSON structure
     EXPECT_TRUE(json.contains("atoms"));
     EXPECT_TRUE(json["atoms"].is_array());
-    
+
     // Load back from JSON
     Structure restored = Structure::from_json_legacy(json);
-    
+
     // Verify round-trip
     EXPECT_EQ(structure.num_atoms(), restored.num_atoms())
         << "Atom count mismatch after round-trip";
@@ -258,11 +258,11 @@ TEST_F(CoreObjectsIntegrationTest, StructureJsonRoundTrip) {
         << "Residue count mismatch after round-trip";
     EXPECT_EQ(structure.num_chains(), restored.num_chains())
         << "Chain count mismatch after round-trip";
-    
+
     // Compare atom data
     std::vector<Atom> original_atoms;
     std::vector<Atom> restored_atoms;
-    
+
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
             for (const auto& atom : residue.atoms()) {
@@ -270,7 +270,7 @@ TEST_F(CoreObjectsIntegrationTest, StructureJsonRoundTrip) {
             }
         }
     }
-    
+
     for (const auto& chain : restored.chains()) {
         for (const auto& residue : chain.residues()) {
             for (const auto& atom : residue.atoms()) {
@@ -278,13 +278,13 @@ TEST_F(CoreObjectsIntegrationTest, StructureJsonRoundTrip) {
             }
         }
     }
-    
+
     EXPECT_EQ(original_atoms.size(), restored_atoms.size());
-    
+
     // Compare first 20 atoms
-    size_t num_to_compare = std::min(static_cast<size_t>(20), 
-                                     std::min(original_atoms.size(), restored_atoms.size()));
-    
+    size_t num_to_compare =
+        std::min(static_cast<size_t>(20), std::min(original_atoms.size(), restored_atoms.size()));
+
     for (size_t i = 0; i < num_to_compare; ++i) {
         SCOPED_TRACE("Atom index " + std::to_string(i));
         EXPECT_EQ(original_atoms[i].name(), restored_atoms[i].name());
@@ -303,42 +303,42 @@ TEST_F(CoreObjectsIntegrationTest, ReferenceFrameWithStructure) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     // Load legacy JSON and find ref_frame records
     auto json = load_legacy_json(pair.json_file);
     auto ref_frame_records = find_records_by_type(json, "ref_frame");
-    
+
     if (ref_frame_records.empty()) {
         GTEST_SKIP() << "No ref_frame records found in legacy JSON";
     }
-    
+
     // Parse PDB file
     PdbParser parser;
     Structure structure = parser.parse_file(pair.pdb_file);
-    
+
     // Test setting reference frames on residues
     // Note: This test assumes we can set frames on residues
     // In a real scenario, frames would be calculated by BaseFrameCalculator
-    
+
     // For now, just verify we can create ReferenceFrame objects
     // and that they serialize correctly
     ReferenceFrame test_frame;
-    
+
     // Test JSON serialization
     auto frame_json = test_frame.to_json_legacy();
     EXPECT_TRUE(frame_json.contains("orien"));
     EXPECT_TRUE(frame_json.contains("org"));
-    
+
     // Test deserialization
     ReferenceFrame restored_frame = ReferenceFrame::from_json_legacy(frame_json);
-    
+
     // Compare frames
     auto orig_rot = test_frame.rotation().as_array();
     auto rest_rot = restored_frame.rotation().as_array();
     for (size_t i = 0; i < 9; ++i) {
         EXPECT_NEAR(orig_rot[i], rest_rot[i], 1e-9);
     }
-    
+
     auto orig_org = test_frame.origin().to_array();
     auto rest_org = restored_frame.origin().to_array();
     for (size_t i = 0; i < 3; ++i) {
@@ -355,36 +355,36 @@ TEST_F(CoreObjectsIntegrationTest, BasePairWithStructure) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     // Load legacy JSON and find base_pair records
     auto json = load_legacy_json(pair.json_file);
     auto base_pair_records = find_records_by_type(json, "base_pair");
-    
+
     if (base_pair_records.empty()) {
         GTEST_SKIP() << "No base_pair records found in legacy JSON";
     }
-    
+
     // Parse PDB file
     PdbParser parser;
     Structure structure = parser.parse_file(pair.pdb_file);
-    
+
     // Test BasePair JSON serialization
     // Create a test BasePair (we can't create real ones without finding algorithm)
     // But we can test the JSON round-trip
-    
+
     // Load first base pair from JSON
     const auto& bp_json = base_pair_records[0];
-    
+
     // Parse BasePair from JSON
     BasePair bp = BasePair::from_json_legacy(bp_json);
-    
+
     // Export back to JSON
     auto exported_json = bp.to_json_legacy();
-    
+
     // Compare key fields
     EXPECT_EQ(bp_json["base_i"].get<size_t>(), exported_json["base_i"].get<size_t>());
     EXPECT_EQ(bp_json["base_j"].get<size_t>(), exported_json["base_j"].get<size_t>());
-    
+
     // Compare frames if present
     if (bp_json.contains("orien_i") && exported_json.contains("orien_i")) {
         auto orig_orien = bp_json["orien_i"];
@@ -402,61 +402,61 @@ TEST_F(CoreObjectsIntegrationTest, LegacyJsonFormatCompatibility) {
     }
 
     const auto& pair = pairs_[0];
-    
+
     // Load legacy JSON
     auto json = load_legacy_json(pair.json_file);
-    
+
     // Verify structure
     EXPECT_TRUE(json.contains("pdb_file") || json.contains("pdb_name"));
     EXPECT_TRUE(json.contains("calculations"));
     EXPECT_TRUE(json["calculations"].is_array());
-    
+
     // Parse PDB file
     PdbParser parser;
     Structure structure = parser.parse_file(pair.pdb_file);
-    
+
     // Export to legacy JSON format (returns flat structure, not calculations array)
     auto our_json = structure.to_json_legacy();
-    
+
     // Verify our JSON has correct structure
     EXPECT_TRUE(our_json.contains("atoms"));
     EXPECT_TRUE(our_json["atoms"].is_array());
     EXPECT_TRUE(our_json.contains("num_atoms"));
-    
+
     // Find pdb_atoms record in legacy JSON
     auto legacy_atoms = find_records_by_type(json, "pdb_atoms");
-    
-        if (!legacy_atoms.empty()) {
-            const auto& legacy_record = legacy_atoms[0];
-            
-            // Compare atom counts - handle different number types
-            long legacy_count = 0;
-            if (legacy_record.contains("num_atoms")) {
-                if (legacy_record["num_atoms"].is_number_integer()) {
-                    legacy_count = legacy_record["num_atoms"].get<long>();
-                } else if (legacy_record["num_atoms"].is_number_unsigned()) {
-                    legacy_count = static_cast<long>(legacy_record["num_atoms"].get<unsigned long>());
-                }
-            }
-            
-            long our_count = 0;
-            if (our_json.contains("num_atoms")) {
-                if (our_json["num_atoms"].is_number_integer()) {
-                    our_count = our_json["num_atoms"].get<long>();
-                } else if (our_json["num_atoms"].is_number_unsigned()) {
-                    our_count = static_cast<long>(our_json["num_atoms"].get<unsigned long>());
-                }
-            }
-            
-            if (legacy_count > 0 && our_count > 0) {
-                EXPECT_EQ(our_count, legacy_count);
-            }
-            
-            // Compare number of atoms in arrays
-            if (legacy_record.contains("atoms") && our_json.contains("atoms")) {
-                EXPECT_EQ(legacy_record["atoms"].size(), our_json["atoms"].size());
+
+    if (!legacy_atoms.empty()) {
+        const auto& legacy_record = legacy_atoms[0];
+
+        // Compare atom counts - handle different number types
+        long legacy_count = 0;
+        if (legacy_record.contains("num_atoms")) {
+            if (legacy_record["num_atoms"].is_number_integer()) {
+                legacy_count = legacy_record["num_atoms"].get<long>();
+            } else if (legacy_record["num_atoms"].is_number_unsigned()) {
+                legacy_count = static_cast<long>(legacy_record["num_atoms"].get<unsigned long>());
             }
         }
+
+        long our_count = 0;
+        if (our_json.contains("num_atoms")) {
+            if (our_json["num_atoms"].is_number_integer()) {
+                our_count = our_json["num_atoms"].get<long>();
+            } else if (our_json["num_atoms"].is_number_unsigned()) {
+                our_count = static_cast<long>(our_json["num_atoms"].get<unsigned long>());
+            }
+        }
+
+        if (legacy_count > 0 && our_count > 0) {
+            EXPECT_EQ(our_count, legacy_count);
+        }
+
+        // Compare number of atoms in arrays
+        if (legacy_record.contains("atoms") && our_json.contains("atoms")) {
+            EXPECT_EQ(legacy_record["atoms"].size(), our_json["atoms"].size());
+        }
+    }
 }
 
 /**
@@ -476,11 +476,11 @@ TEST_F(CoreObjectsIntegrationTest, MultiplePdbFiles) {
             // Invalid value, use default
         }
     }
-    
+
     // Reload pairs from test set if specified
     if (test_set_size_env != nullptr) {
         pairs_ = test_data_discovery::discover_pairs_from_test_set(test_set_size);
-        
+
         // Filter to only pairs with pdb_atoms records
         std::vector<pdb_json_pair> filtered_pairs;
         for (const auto& pair : pairs_) {
@@ -490,7 +490,7 @@ TEST_F(CoreObjectsIntegrationTest, MultiplePdbFiles) {
         }
         pairs_ = filtered_pairs;
     }
-    
+
     // Test all pairs in the filtered set
     size_t max_pairs = pairs_.size();
 
@@ -506,19 +506,20 @@ TEST_F(CoreObjectsIntegrationTest, MultiplePdbFiles) {
         try {
             // Load legacy JSON
             auto pdb_atoms_record = load_pdb_atoms_record(pair.json_file);
-            
+
             // Parse PDB file
             PdbParser parser;
             Structure structure = parser.parse_file(pair.pdb_file);
-            
+
             // Verify structure has data (skip if empty - some PDBs might be problematic)
-            if (structure.num_atoms() == 0 || structure.num_residues() == 0 || structure.num_chains() == 0) {
+            if (structure.num_atoms() == 0 || structure.num_residues() == 0 ||
+                structure.num_chains() == 0) {
                 skipped++;
                 std::lock_guard<std::mutex> lock(error_mutex);
                 errors.push_back("Skipping " + pair.pdb_name + " (empty structure after parsing)");
                 continue;
             }
-            
+
             // Compare with legacy JSON (this may skip if atoms array not present)
             try {
                 compare_structure_with_legacy(structure, pdb_atoms_record, 1e-6);
@@ -557,4 +558,3 @@ TEST_F(CoreObjectsIntegrationTest, MultiplePdbFiles) {
 }
 
 } // namespace x3dna::test
-

@@ -33,7 +33,7 @@ struct hydrogen_bond {
     std::string donor_atom;
     std::string acceptor_atom;
     double distance;
-    char type; // '-' for standard, ' ' for non-standard
+    char type;                       // '-' for standard, ' ' for non-standard
     std::optional<size_t> hbond_idx; // Optional index for tracking (assigned when recording)
 };
 
@@ -51,7 +51,7 @@ private:
     std::optional<ReferenceFrame> frame1_;      // Reference frame for first residue
     std::optional<ReferenceFrame> frame2_;      // Reference frame for second residue
     std::vector<hydrogen_bond> hbonds_;         // Hydrogen bonds
-    std::optional<size_t> basepair_idx_;       // Optional index for tracking (assigned when recording)
+    std::optional<size_t> basepair_idx_; // Optional index for tracking (assigned when recording)
 
     /**
      * @brief Set base pair type from string and update enum
@@ -248,12 +248,12 @@ public:
         // Legacy: dir_x = dot(&orien[i][0], &orien[j][0])
         //         dir_y = dot(&orien[i][3], &orien[j][3])
         //         dir_z = dot(&orien[i][6], &orien[j][6])
-        // 
+        //
         // NOTE: Legacy has a bug in json_writer_record_base_pair:
         //   It declares: double dir_xyz_arr[4] = {dir_x, dir_y, dir_z};
         //   But uses: dir_xyz[1], dir_xyz[2], dir_xyz[3] (1-based indexing)
         //   So it actually stores: [dir_y, dir_z, 0.0] (skipping dir_x!)
-        // 
+        //
         // To match legacy exactly, we need to replicate this bug:
         if (frame1_.has_value() && frame2_.has_value()) {
             // Calculate all three direction components (even though we only use y and z)
@@ -269,11 +269,10 @@ public:
         }
 
         // Hydrogen bonds
-        // NOTE: Legacy does NOT store hbonds in base_pair records - they are in separate hbond_list records
-        // For exact legacy match, we should not include them in base_pair
-        // (Legacy stores hbonds separately in hbond_list records)
-        // Commented out to match legacy exactly:
-        // if (!hbonds_.empty()) {
+        // NOTE: Legacy does NOT store hbonds in base_pair records - they are in separate hbond_list
+        // records For exact legacy match, we should not include them in base_pair (Legacy stores
+        // hbonds separately in hbond_list records) Commented out to match legacy exactly: if
+        // (!hbonds_.empty()) {
         //     j["num_hbonds"] = static_cast<long>(hbonds_.size());
         //     j["hbonds"] = nlohmann::json::array();
         //     ...

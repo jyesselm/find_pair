@@ -10,8 +10,7 @@ using json = nlohmann::json;
 namespace x3dna {
 
 void ResidueTracker::add_residue(const std::string& chain_id, int residue_seq,
-                                 const std::string& insertion, 
-                                 const std::string& residue_name) {
+                                 const std::string& insertion, const std::string& residue_name) {
     int read_idx = static_cast<int>(residues_.size());
     residues_.emplace_back(read_idx, chain_id, residue_seq, insertion, residue_name);
 }
@@ -36,7 +35,7 @@ bool ResidueTracker::load_legacy_indices(const std::string& legacy_json_path) {
         std::cerr << "Warning: Could not open legacy JSON: " << legacy_json_path << std::endl;
         return false;
     }
-    
+
     // Parse JSON
     json j;
     try {
@@ -45,7 +44,7 @@ bool ResidueTracker::load_legacy_indices(const std::string& legacy_json_path) {
         std::cerr << "Error parsing legacy JSON: " << e.what() << std::endl;
         return false;
     }
-    
+
     // Check if this is array format or object format
     json records;
     if (j.is_array()) {
@@ -68,12 +67,12 @@ bool ResidueTracker::load_legacy_indices(const std::string& legacy_json_path) {
         std::cerr << "Unexpected JSON format - no base_frame_calc records found" << std::endl;
         return false;
     }
-    
+
     if (records.empty()) {
         std::cerr << "No base_frame_calc records in legacy JSON" << std::endl;
         return false;
     }
-    
+
     // Load indices from records
     int loaded_count = 0;
     for (const auto& record : records) {
@@ -82,21 +81,21 @@ bool ResidueTracker::load_legacy_indices(const std::string& legacy_json_path) {
         int seq = record.value("residue_seq", 0);
         std::string ins = record.value("insertion", "");
         int legacy_idx = record.value("residue_idx", -1);
-        
+
         // Find matching residue
         int read_idx = find_by_pdb_props(chain, seq, ins);
         if (read_idx >= 0) {
             residues_[read_idx].legacy_index = legacy_idx;
             loaded_count++;
         } else {
-            std::cerr << "Warning: Legacy residue " << chain << seq << ins 
-                     << " not found in read residues" << std::endl;
+            std::cerr << "Warning: Legacy residue " << chain << seq << ins
+                      << " not found in read residues" << std::endl;
         }
     }
-    
-    std::cout << "Loaded " << loaded_count << " legacy indices from " 
-              << legacy_json_path << std::endl;
-    
+
+    std::cout << "Loaded " << loaded_count << " legacy indices from " << legacy_json_path
+              << std::endl;
+
     return loaded_count > 0;
 }
 
@@ -120,7 +119,7 @@ ResidueTracker::ValidationResult ResidueTracker::validate() const {
     result.num_modern = 0;
     result.num_matched = 0;
     result.num_unmatched = 0;
-    
+
     // Count residues by category
     for (const auto& r : residues_) {
         if (r.filtered) {
@@ -136,56 +135,57 @@ ResidueTracker::ValidationResult ResidueTracker::validate() const {
             result.num_matched++;
         }
     }
-    
+
     // Check 1: num_modern should equal num_legacy for perfect match
     if (result.num_modern != result.num_legacy) {
         result.success = false;
         std::ostringstream oss;
-        oss << "Count mismatch: modern=" << result.num_modern 
-            << " legacy=" << result.num_legacy;
+        oss << "Count mismatch: modern=" << result.num_modern << " legacy=" << result.num_legacy;
         result.errors.push_back(oss.str());
     }
-    
+
     // Check 2: all non-filtered residues should have both indices
     for (const auto& r : residues_) {
         if (!r.filtered) {
             if (r.modern_index < 0) {
                 result.success = false;
                 std::ostringstream oss;
-                oss << "Non-filtered residue " << r.chain_id << r.residue_seq
-                    << r.insertion << " has no modern index";
+                oss << "Non-filtered residue " << r.chain_id << r.residue_seq << r.insertion
+                    << " has no modern index";
                 result.errors.push_back(oss.str());
                 // Only report first 10 errors to avoid spam
-                if (result.errors.size() >= 10) break;
+                if (result.errors.size() >= 10)
+                    break;
             }
             if (r.legacy_index < 0) {
                 result.success = false;
                 std::ostringstream oss;
-                oss << "Non-filtered residue " << r.chain_id << r.residue_seq
-                    << r.insertion << " has no legacy index";
+                oss << "Non-filtered residue " << r.chain_id << r.residue_seq << r.insertion
+                    << " has no legacy index";
                 result.errors.push_back(oss.str());
                 // Only report first 10 errors to avoid spam
-                if (result.errors.size() >= 10) break;
+                if (result.errors.size() >= 10)
+                    break;
             }
         }
     }
-    
+
     // Check 3: filtered residues should NOT have modern index
     for (const auto& r : residues_) {
         if (r.filtered && r.modern_index >= 0) {
             result.success = false;
             std::ostringstream oss;
-            oss << "Filtered residue " << r.chain_id << r.residue_seq
-                << r.insertion << " has modern index " << r.modern_index
-                << " (reason: " << r.filter_reason << ")";
+            oss << "Filtered residue " << r.chain_id << r.residue_seq << r.insertion
+                << " has modern index " << r.modern_index << " (reason: " << r.filter_reason << ")";
             result.errors.push_back(oss.str());
             // Only report first 10 errors to avoid spam
-            if (result.errors.size() >= 10) break;
+            if (result.errors.size() >= 10)
+                break;
         }
     }
-    
+
     result.num_unmatched = result.num_modern - result.num_matched;
-    
+
     return result;
 }
 
@@ -199,7 +199,7 @@ std::string ResidueTracker::ValidationResult::to_string() const {
     oss << "Legacy indices:   " << num_legacy << "\n";
     oss << "Matched:          " << num_matched << "\n";
     oss << "Unmatched:        " << num_unmatched << "\n";
-    
+
     if (!errors.empty()) {
         oss << "\nErrors:\n";
         for (const auto& err : errors) {
@@ -209,13 +209,13 @@ std::string ResidueTracker::ValidationResult::to_string() const {
             oss << "  ... (additional errors suppressed)\n";
         }
     }
-    
+
     return oss.str();
 }
 
 void ResidueTracker::export_mapping(const std::string& output_path) const {
     json j = json::array();
-    
+
     for (const auto& r : residues_) {
         json record;
         record["read_index"] = r.read_index;
@@ -229,7 +229,7 @@ void ResidueTracker::export_mapping(const std::string& output_path) const {
         record["residue_name"] = r.residue_name;
         j.push_back(record);
     }
-    
+
     std::ofstream file(output_path);
     if (file.is_open()) {
         file << std::setw(2) << j << std::endl;
@@ -258,4 +258,3 @@ std::optional<int> ResidueTracker::get_modern_index(int legacy_index) const {
 }
 
 } // namespace x3dna
-

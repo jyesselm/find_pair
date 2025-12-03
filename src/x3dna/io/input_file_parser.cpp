@@ -120,7 +120,7 @@ std::pair<size_t, size_t> InputFileParser::parse_base_pair_line(const std::strin
     // Format: res1 res2 [flag] # comment
     // Legacy code: sscanf(str, "%ld %ld %ld", &pair_num[1][i], &pair_num[2][i], &pair_num[3][i])
     // The base pair number is the loop index, not in the line
-    
+
     // Read residue/atom indices (1-based in file, convert to 0-based)
     int res1, res2;
     if (!(iss >> res1 >> res2)) {
@@ -131,12 +131,11 @@ std::pair<size_t, size_t> InputFileParser::parse_base_pair_line(const std::strin
     // Convert from 1-based to 0-based
     // Handle case where res2 might be 0 (shouldn't happen, but be safe)
     if (res1 <= 0 || res2 <= 0) {
-        throw std::runtime_error("Invalid residue indices at line " +
-                                 std::to_string(line_number) + 
-                                 ": res1=" + std::to_string(res1) + 
+        throw std::runtime_error("Invalid residue indices at line " + std::to_string(line_number) +
+                                 ": res1=" + std::to_string(res1) +
                                  ", res2=" + std::to_string(res2));
     }
-    
+
     size_t res1_0based = static_cast<size_t>(res1 - 1);
     size_t res2_0based = static_cast<size_t>(res2 - 1);
 
