@@ -1,0 +1,380 @@
+{
+  "70U": [
+    {
+      "pdb": "1FIR",
+      "residue": "A34"
+    }
+  ],
+  "KIR": [
+    {
+      "pdb": "1OB2",
+      "residue": "A1394"
+    }
+  ],
+  "NF2": [
+    {
+      "pdb": "2G92",
+      "residue": "A4"
+    },
+    {
+      "pdb": "2G92",
+      "residue": "B16"
+    },
+    {
+      "pdb": "2Q1O",
+      "residue": "B104"
+    },
+    {
+      "pdb": "2Q1O",
+      "residue": "A104"
+    },
+    {
+      "pdb": "2Q1O",
+      "residue": "D104"
+    },
+    {
+      "pdb": "2Q1O",
+      "residue": "C104"
+    }
+  ],
+  "A23": [
+    {
+      "pdb": "2XD0",
+      "residue": "H32"
+    },
+    {
+      "pdb": "2XD0",
+      "residue": "W32"
+    },
+    {
+      "pdb": "2XD0",
+      "residue": "I32"
+    },
+    {
+      "pdb": "2XD0",
+      "residue": "V32"
+    },
+    {
+      "pdb": "2XD0",
+      "residue": "G32"
+    },
+    {
+      "pdb": "2XD0",
+      "residue": "U32"
+    },
+    {
+      "pdb": "2XDD",
+      "residue": "G32"
+    },
+    {
+      "pdb": "2XDD",
+      "residue": "F32"
+    },
+    {
+      "pdb": "2XDD",
+      "residue": "H32"
+    }
+  ],
+  "EPE": [
+    {
+      "pdb": "3PO2",
+      "residue": "D222"
+    },
+    {
+      "pdb": "3PO3",
+      "residue": "A1735"
+    },
+    {
+      "pdb": "4BY7",
+      "residue": "G1172"
+    },
+    {
+      "pdb": "4BY7",
+      "residue": "A2459"
+    },
+    {
+      "pdb": "4E8K",
+      "residue": "A446"
+    },
+    {
+      "pdb": "4E8M",
+      "residue": "A445"
+    },
+    {
+      "pdb": "4E8M",
+      "residue": "A448"
+    },
+    {
+      "pdb": "4E8M",
+      "residue": "A446"
+    },
+    {
+      "pdb": "4E8N",
+      "residue": "A450"
+    },
+    {
+      "pdb": "4E8P",
+      "residue": "A448"
+    },
+    {
+      "pdb": "4E8P",
+      "residue": "A449"
+    },
+    {
+      "pdb": "4E8P",
+      "residue": "A447"
+    },
+    {
+      "pdb": "4FAQ",
+      "residue": "A447"
+    },
+    {
+      "pdb": "4FAX",
+      "residue": "A432"
+    },
+    {
+      "pdb": "4FAX",
+      "residue": "A431"
+    },
+    {
+      "pdb": "4PJO",
+      "residue": "2201"
+    },
+    {
+      "pdb": "4PJO",
+      "residue": "1201"
+    },
+    {
+      "pdb": "5ZUU",
+      "residue": "B501"
+    },
+    {
+      "pdb": "6T3N",
+      "residue": "A429"
+    },
+    {
+      "pdb": "6T3N",
+      "residue": "A428"
+    },
+    {
+      "pdb": "6T3S",
+      "residue": "A430"
+    },
+    {
+      "pdb": "6T3S",
+      "residue": "A431"
+    },
+    {
+      "pdb": "7K9D",
+      "residue": "B601"
+    },
+    {
+      "pdb": "7KKV",
+      "residue": "B601"
+    },
+    {
+      "pdb": "8AS7",
+      "residue": "A2103"
+    },
+    {
+      "pdb": "8OLS",
+      "residue": "A445"
+    },
+    {
+      "pdb": "8OLS",
+      "residue": "A446"
+    },
+    {
+      "pdb": "8OLV",
+      "residue": "A441"
+    },
+    {
+      "pdb": "8OLV",
+      "residue": "A442"
+    },
+    {
+      "pdb": "9DRS",
+      "residue": "B915"
+    },
+    {
+      "pdb": "9DRV",
+      "residue": "B907"
+    }
+  ],
+  "DA": [
+    {
+      "pdb": "4KI4",
+      "residue": "T1"
+    }
+  ],
+  "CVC": [
+    {
+      "pdb": "5EAO",
+      "residue": "B7"
+    },
+    {
+      "pdb": "5EAQ",
+      "residue": "B7"
+    }
+  ],
+  "J48": [
+    {
+      "pdb": "6QIQ",
+      "residue": "B101"
+    },
+    {
+      "pdb": "6QIQ",
+      "residue": "A101"
+    },
+    {
+      "pdb": "6QIR",
+      "residue": "C101"
+    },
+    {
+      "pdb": "6QIR",
+      "residue": "A101"
+    },
+    {
+      "pdb": "6QIR",
+      "residue": "D101"
+    },
+    {
+      "pdb": "6QIR",
+      "residue": "A102"
+    },
+    {
+      "pdb": "6QIS",
+      "residue": "C102"
+    },
+    {
+      "pdb": "6QIS",
+      "residue": "A101"
+    },
+    {
+      "pdb": "6QIS",
+      "residue": "B101"
+    },
+    {
+      "pdb": "6QIS",
+      "residue": "C101"
+    },
+    {
+      "pdb": "6QIS",
+      "residue": "E101"
+    },
+    {
+      "pdb": "6QIS",
+      "residue": "E102"
+    },
+    {
+      "pdb": "6QIS",
+      "residue": "G101"
+    },
+    {
+      "pdb": "6QIS",
+      "residue": "H101"
+    },
+    {
+      "pdb": "6QIT",
+      "residue": "C101"
+    },
+    {
+      "pdb": "6QIT",
+      "residue": "A101"
+    },
+    {
+      "pdb": "6QIT",
+      "residue": "D101"
+    },
+    {
+      "pdb": "6QIT",
+      "residue": "A102"
+    }
+  ],
+  "2YR": [
+    {
+      "pdb": "7S36",
+      "residue": "T6"
+    },
+    {
+      "pdb": "7S38",
+      "residue": "T6"
+    },
+    {
+      "pdb": "7S3H",
+      "residue": "T6"
+    },
+    {
+      "pdb": "9CJI",
+      "residue": "C7"
+    },
+    {
+      "pdb": "9CJJ",
+      "residue": "C7"
+    }
+  ],
+  "NMN": [
+    {
+      "pdb": "8GXC",
+      "residue": "A101"
+    },
+    {
+      "pdb": "8GXC",
+      "residue": "B101"
+    },
+    {
+      "pdb": "8HB1",
+      "residue": "B102"
+    },
+    {
+      "pdb": "8HB1",
+      "residue": "B101"
+    },
+    {
+      "pdb": "8HB8",
+      "residue": "A101"
+    },
+    {
+      "pdb": "8HB8",
+      "residue": "A102"
+    },
+    {
+      "pdb": "8HBA",
+      "residue": "B102"
+    },
+    {
+      "pdb": "8I3Z",
+      "residue": "B102"
+    },
+    {
+      "pdb": "8I3Z",
+      "residue": "B101"
+    }
+  ],
+  "NNR": [
+    {
+      "pdb": "8HB3",
+      "residue": "B101"
+    },
+    {
+      "pdb": "8HB3",
+      "residue": "A101"
+    }
+  ],
+  "WVQ": [
+    {
+      "pdb": "8UKQ",
+      "residue": "T19"
+    },
+    {
+      "pdb": "8UKS",
+      "residue": "T19"
+    }
+  ],
+  "NCA": [
+    {
+      "pdb": "9JM0",
+      "residue": "J401"
+    }
+  ]
+}

@@ -336,14 +336,26 @@ bool PdbParser::is_modified_nucleotide_name(const std::string& residue_name) con
         "PSU", "P5P", "PU",
         // Modified Adenine
         "A2M", "1MA", "2MA", "6MA", "OMA", "MIA", "I6A", "T6A", "M6A",
+        "A23", // 2-aminoadenine
+        "DA",  // Deoxyadenosine
         // Modified Cytosine
         "5MC", "OMC", "S4C", "5IC", "5FC", "CBR",
+        "CVC", // Cytidine derivative
         // Modified Guanine
         "OMG", "1MG", "2MG", "7MG", "M2G", "YYG", "YG", "QUO",
         // Modified Uracil/Thymine
-        "5MU", "H2U", "DHU", "OMU", "4SU", "S4U", "5BU", "2MU", "UR3", "RT",
+        "5MU", "H2U", "DHU", "OMU", "4SU", "S4U", "5BU", "2MU", "UR3", "RT", "70U",
+        "2YR", // Dihydrouridine derivative
         // Other common modified bases
-        "I", "DI" // Inosine
+        "I", "DI", // Inosine
+        "EPE",  // Ethylpseudouridine or similar
+        "J48",  // Modified base
+        "KIR",  // Modified base
+        "NCA",  // N-carboxyaminoadenine or similar
+        "NF2",  // Modified base
+        "NMN",  // Nicotinamide mononucleotide or modified base
+        "NNR",  // Modified base
+        "WVQ"   // Modified base
     };
 
     for (const auto& mod : modified_nucleotides) {

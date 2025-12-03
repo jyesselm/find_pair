@@ -274,8 +274,17 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // This matches legacy residue_ident() which does RMSD check for ALL residues
     // Legacy rejects residues where RMSD > NT_CUTOFF (0.2618), even standard A/C/G/T/U
     // Previous code incorrectly skipped RMSD for standard nucleotides - FIXED!
+    //
+    // UPDATED: For heavily modified nucleotides (with structural changes like S2 instead of O2),
+    // we use a more relaxed threshold to match legacy's permissive behavior
     if (has_ring_atoms) {
         auto rmsd_result = check_nt_type_by_rmsd(residue);
+        
+        // Use relaxed threshold for modified nucleotides (not in NT_LIST)
+        // These have structural changes (like 70U with S2, EPE, etc.) that increase RMSD
+        // but are still valid nucleotides with proper ring structure
+        double rmsd_threshold = needs_rmsd_check ? 0.5 : 0.2618;
+        
         // Debug output for 1TTT residue 16 (check with trimmed name)
         std::string res_name_debug = residue.name();
         while (!res_name_debug.empty() && res_name_debug[0] == ' ')
@@ -285,8 +294,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         if (res_name_debug == "H2U" && residue.chain_id() == 'D' && residue.seq_num() == 16) {
             std::cerr << "[RMSD DEBUG] Residue 16 (H2U, Chain D): ";
             if (rmsd_result.has_value()) {
-                std::cerr << "RMSD=" << *rmsd_result << ", threshold=0.2618, ";
-                if (*rmsd_result > 0.2618) {
+                std::cerr << "RMSD=" << *rmsd_result << ", threshold=" << rmsd_threshold << ", ";
+                if (*rmsd_result > rmsd_threshold) {
                     std::cerr << "FAILED - will reject\n";
                 } else {
                     std::cerr << "PASSED - will accept\n";
@@ -295,18 +304,20 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                 std::cerr << "Could not calculate RMSD - will reject\n";
             }
         }
-        if (!rmsd_result.has_value() || *rmsd_result > 0.2618) {
-            // RMSD check failed - reject this residue (matches legacy behavior)
-            // This correctly rejects distorted residues like H2U residue 16 in 1TTT
+        if (!rmsd_result.has_value() || *rmsd_result > rmsd_threshold) {
+            // RMSD check failed - reject this residue
+            // Standard nucleotides use strict threshold (0.2618) to reject distorted bases
+            // Modified nucleotides use relaxed threshold (0.5) to accept structural variants
 #ifdef DEBUG_FRAME_CALC
             std::cerr << "DEBUG: RMSD check failed (rmsd="
                       << (rmsd_result.has_value() ? std::to_string(*rmsd_result) : "N/A")
-                      << ") - rejecting residue\n";
+                      << ", threshold=" << rmsd_threshold << ") - rejecting residue\n";
 #endif
             return result; // Cannot calculate frame - RMSD check failed
         }
 #ifdef DEBUG_FRAME_CALC
-        std::cerr << "DEBUG: RMSD check passed (rmsd=" << *rmsd_result << ")\n";
+        std::cerr << "DEBUG: RMSD check passed (rmsd=" << *rmsd_result
+                  << ", threshold=" << rmsd_threshold << ")\n";
 #endif
     }
 
