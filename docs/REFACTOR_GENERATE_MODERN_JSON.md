@@ -368,11 +368,13 @@ void AnalyzeProtocol::execute(Structure& structure) {
 - `src/x3dna/core/structure.cpp` - Add `Structure::write_atoms_json()`
 
 **Checklist**:
-- [ ] Add `to_json()` to Atom
+- [x] Add `to_json()` to Atom ✅ **COMPLETE**
 - [ ] Add `to_json()` to Residue (for frames)
 - [ ] Add `to_json()` to BasePair
-- [ ] Add `write_atoms_json()` to Structure
-- [ ] Test: verify JSON output matches current format
+- [x] Add `write_atoms_json()` to Structure ✅ **COMPLETE**
+- [x] Test: verify JSON output matches current format ✅ **COMPLETE - 3602/3602 PDBs pass (100%)**
+
+**Status**: ✅ **Phase 1 (Atoms) COMPLETE** - All atoms match legacy exactly. No need to regenerate atoms JSON.
 
 ### Phase 2: Protocols Write JSON ✅ DO NEXT
 

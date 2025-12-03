@@ -24,7 +24,7 @@
 
 | Record Type | Status | Match Rate | Notes |
 |-------------|--------|------------|-------|
-| `pdb_atoms` | ✅ VALIDATED | ~100% | Atom parsing matches legacy |
+| `pdb_atoms` | ✅ **COMPLETE** | **100%** (3602/3602) | **DO NOT REGENERATE** - All atoms validated and match legacy exactly. Tested December 2, 2025. |
 | `base_frame_calc` | ✅ VALIDATED | ~100% | Frame metadata matches |
 | `frame_calc`/`ref_frame` | ✅ VALIDATED | ~100% | Reference frames match with `--fix-indices` |
 

@@ -1,0 +1,748 @@
+{
+  "test_date": "2025-12-02 20:06:25",
+  "total_pdbs": 80,
+  "total_available": 3602,
+  "stopped_early": true,
+  "passed": 80,
+  "partial": 0,
+  "failed": 0,
+  "elapsed_seconds": 1.21,
+  "critical_errors": [],
+  "summary": {
+    "total": 80,
+    "passed": 80,
+    "partial": 0,
+    "failed": 0,
+    "modern_ok": 80,
+    "legacy_ok": 80,
+    "compare_ok": 80,
+    "success_rate": 100.0
+  },
+  "results": {
+    "passed": [
+      {
+        "pdb_id": "100D",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 88,
+        "errors": []
+      },
+      {
+        "pdb_id": "157D",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 121,
+        "errors": []
+      },
+      {
+        "pdb_id": "161D",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 81,
+        "errors": []
+      },
+      {
+        "pdb_id": "165D",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 76,
+        "errors": []
+      },
+      {
+        "pdb_id": "168D",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 73,
+        "errors": []
+      },
+      {
+        "pdb_id": "1A34",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 337,
+        "errors": []
+      },
+      {
+        "pdb_id": "1A9N",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 571,
+        "errors": []
+      },
+      {
+        "pdb_id": "1AQ3",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 631,
+        "errors": []
+      },
+      {
+        "pdb_id": "1AQ4",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 631,
+        "errors": []
+      },
+      {
+        "pdb_id": "1ASY",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1130,
+        "errors": []
+      },
+      {
+        "pdb_id": "1ASZ",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1132,
+        "errors": []
+      },
+      {
+        "pdb_id": "1B23",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 747,
+        "errors": []
+      },
+      {
+        "pdb_id": "1B7F",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 442,
+        "errors": []
+      },
+      {
+        "pdb_id": "1BNA",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 104,
+        "errors": []
+      },
+      {
+        "pdb_id": "1BR3",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 41,
+        "errors": []
+      },
+      {
+        "pdb_id": "1C0A",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1179,
+        "errors": []
+      },
+      {
+        "pdb_id": "1CSL",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 172,
+        "errors": []
+      },
+      {
+        "pdb_id": "1D4R",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 214,
+        "errors": []
+      },
+      {
+        "pdb_id": "1D87",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 130,
+        "errors": []
+      },
+      {
+        "pdb_id": "1D88",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 114,
+        "errors": []
+      },
+      {
+        "pdb_id": "1D96",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 20,
+        "errors": []
+      },
+      {
+        "pdb_id": "1D9H",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 165,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DDY",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 148,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DFU",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 379,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DI2",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 528,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DK1",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 180,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DNO",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 144,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DNT",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 72,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DNX",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 105,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DQF",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 59,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DQH",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 76,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DRZ",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 191,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DUH",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 55,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DUL",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 424,
+        "errors": []
+      },
+      {
+        "pdb_id": "1DUQ",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 197,
+        "errors": []
+      },
+      {
+        "pdb_id": "1E7K",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 282,
+        "errors": []
+      },
+      {
+        "pdb_id": "1E8O",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 371,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EC6",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 381,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EFO",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 42,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EFW",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1402,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EGK",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 206,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EHZ",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 245,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EIY",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1206,
+        "errors": []
+      },
+      {
+        "pdb_id": "1ET4",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 905,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EUQ",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 602,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EUY",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 657,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EVP",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 97,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EVV",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 307,
+        "errors": []
+      },
+      {
+        "pdb_id": "1EXD",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 765,
+        "errors": []
+      },
+      {
+        "pdb_id": "1F1T",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 52,
+        "errors": []
+      },
+      {
+        "pdb_id": "1F27",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 221,
+        "errors": []
+      },
+      {
+        "pdb_id": "1F7U",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1272,
+        "errors": []
+      },
+      {
+        "pdb_id": "1F7V",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 723,
+        "errors": []
+      },
+      {
+        "pdb_id": "1F7Y",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 182,
+        "errors": []
+      },
+      {
+        "pdb_id": "1F8V",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1295,
+        "errors": []
+      },
+      {
+        "pdb_id": "1FEU",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 779,
+        "errors": []
+      },
+      {
+        "pdb_id": "1FFY",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1334,
+        "errors": []
+      },
+      {
+        "pdb_id": "1FFZ",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 500,
+        "errors": []
+      },
+      {
+        "pdb_id": "1FIR",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 94,
+        "errors": []
+      },
+      {
+        "pdb_id": "1FIX",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 92,
+        "errors": []
+      },
+      {
+        "pdb_id": "1FUF",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 98,
+        "errors": []
+      },
+      {
+        "pdb_id": "1FXL",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 395,
+        "errors": []
+      },
+      {
+        "pdb_id": "1G1X",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 635,
+        "errors": []
+      },
+      {
+        "pdb_id": "1G2E",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 331,
+        "errors": []
+      },
+      {
+        "pdb_id": "1G4Q",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 161,
+        "errors": []
+      },
+      {
+        "pdb_id": "1G59",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1358,
+        "errors": []
+      },
+      {
+        "pdb_id": "1GAX",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 2038,
+        "errors": []
+      },
+      {
+        "pdb_id": "1GID",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 350,
+        "errors": []
+      },
+      {
+        "pdb_id": "1GTR",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 835,
+        "errors": []
+      },
+      {
+        "pdb_id": "1GTS",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 733,
+        "errors": []
+      },
+      {
+        "pdb_id": "1H38",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 4727,
+        "errors": []
+      },
+      {
+        "pdb_id": "1H3E",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 526,
+        "errors": []
+      },
+      {
+        "pdb_id": "1H4Q",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1028,
+        "errors": []
+      },
+      {
+        "pdb_id": "1H4S",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1053,
+        "errors": []
+      },
+      {
+        "pdb_id": "1HC8",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 300,
+        "errors": []
+      },
+      {
+        "pdb_id": "1HMH",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 141,
+        "errors": []
+      },
+      {
+        "pdb_id": "1HQ1",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 419,
+        "errors": []
+      },
+      {
+        "pdb_id": "1HR2",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 622,
+        "errors": []
+      },
+      {
+        "pdb_id": "1HYS",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 1457,
+        "errors": []
+      },
+      {
+        "pdb_id": "1I2X",
+        "timestamp": "2025-12-02 20:06:25",
+        "modern_ok": true,
+        "legacy_ok": true,
+        "compare_ok": true,
+        "residues_matched": 124,
+        "errors": []
+      }
+    ],
+    "partial": [],
+    "failed": [],
+    "issues": []
+  }
+}

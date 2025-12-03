@@ -8,12 +8,20 @@
 
 ## All JSON Comparison Types (10 Total)
 
-### Stage 1: Core Data Parsing ✅ COMPLETE
+### Stage 1: Core Data Parsing ✅ **COMPLETE - DO NOT REGENERATE**
 **Focus**: Verify we're reading PDB files correctly
 
 | Record Type | Directory | What It Tests | Status |
 |-------------|-----------|---------------|--------|
-| `pdb_atoms` | `atoms/` | Atom parsing from PDB | ✅ DONE |
+| `pdb_atoms` | `pdb_atoms/` | Atom parsing from PDB | ✅ **COMPLETE** - 3602/3602 PDBs validated (100% pass rate) |
+
+**Validation Results** (December 2, 2025):
+- ✅ All 3602 fast PDBs tested and validated
+- ✅ 100% success rate - all atoms match legacy exactly
+- ✅ Atom indices match correctly (matched by atom_idx, not position)
+- ✅ Results saved to `data/atoms_test_results.json`
+
+**Note**: Atoms JSON generation is complete. No need to regenerate atoms JSON for future testing.
 
 **JSON Files Needed**:
 - `data/json_legacy/atoms/<PDB>.json`
