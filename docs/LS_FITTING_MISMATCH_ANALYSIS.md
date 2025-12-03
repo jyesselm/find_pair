@@ -189,7 +189,7 @@ For production use, comparisons should use tolerance:
 ### For Validation
 
 ✅ **Implemented**:
-- Deduplicate legacy records before comparison
+- Deduplicate legacy records before comparison (for old legacy JSON files)
 - Focus on unique record matching
 - Accept small FP differences as valid
 
@@ -200,18 +200,20 @@ For production use, comparisons should use tolerance:
 - More efficient (no duplicate records)
 - Clean, maintainable architecture
 
-### For Legacy Code (if maintained)
+### For Legacy Code
 
-⚠️ **Optional improvement**:
-- Remove duplicate ls_fitting calls from `ana_fncs.c`
-- Or add flag to prevent duplicate recording
+✅ **FIXED** (December 3, 2025):
+- Removed duplicate ls_fitting call from `org/src/ana_fncs.c` line 1289-1290
+- Legacy now generates single ls_fitting record per residue (matches modern)
+- Tested: 165D now generates 18 records (was 34 with duplicates)
 
 ---
 
 ## Files Modified
 
-- `tests_python/integration/test_ls_fitting.py` - Added deduplication logic
+- `tests_python/integration/test_ls_fitting.py` - Added deduplication logic (for old legacy JSON)
 - `tests_python/integration/test_ls_fitting_batch.py` - Added parallel processing (20 workers)
+- `org/src/ana_fncs.c` - **FIXED**: Removed duplicate ls_fitting call (line 1289-1290)
 
 ---
 
@@ -219,11 +221,12 @@ For production use, comparisons should use tolerance:
 
 | Aspect | Status |
 |--------|--------|
-| Modern ls_fitting correctness | ✅ Validated (matches unique legacy records) |
+| Modern ls_fitting correctness | ✅ Validated (matches legacy) |
 | Floating-point precision | ✅ Acceptable (1e-6 differences) |
-| Duplicate handling | ✅ Fixed (deduplication in comparison) |
+| Legacy duplicate issue | ✅ FIXED (removed duplicate call) |
+| Duplicate handling in tests | ✅ Kept (for old legacy JSON files) |
 | Batch testing infrastructure | ✅ Complete (parallel processing) |
-| Production readiness | ✅ Modern code ready |
+| Production readiness | ✅ Both modern and fixed legacy ready |
 
 ---
 
@@ -235,5 +238,5 @@ For production use, comparisons should use tolerance:
 
 ---
 
-*Summary: The "mismatches" were due to legacy code generating duplicate ls_fitting records. Modern code is correct and more efficient, generating each record once. With deduplication in the comparison code, validation shows high match rates (>95%) with only minor floating-point differences.*
+*Summary: The "mismatches" were due to legacy code generating duplicate ls_fitting records from two different functions. This has been FIXED by removing the redundant call in `ana_fncs.c`. Both modern and fixed legacy code now generate one ls_fitting record per residue. Validation shows high match rates (>95%) with only minor floating-point differences (1e-6).*
 
