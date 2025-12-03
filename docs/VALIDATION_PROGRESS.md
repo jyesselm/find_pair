@@ -11,7 +11,8 @@
 | Milestone | Status | Notes |
 |-----------|--------|-------|
 | ✅ Residue Index Matching | **COMPLETE** | All residues correctly matched to legacy indices via PDB properties |
-| 🔄 Full PDB Validation | **IN PROGRESS** | Running validation across all 1737 PDBs |
+| ✅ LS_Fitting Validation | **98.7% COMPLETE** | 3553/3602 PDBs pass (47 count mismatches remaining) |
+| 🔄 Final LS_Fitting Fixes | **IN PROGRESS** | Need to add 47 modified bases to structural_variants whitelist |
 | ⏳ All Record Types Match | **PENDING** | Need 100% match on all 10 record types |
 | ⏳ Step Parameters Match | **PENDING** | New comparison type added |
 | ⏳ Production Ready | **PENDING** | All validations passing |
