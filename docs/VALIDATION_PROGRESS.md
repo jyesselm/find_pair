@@ -2,7 +2,7 @@
 
 **Goal**: Achieve 100% accuracy with legacy X3DNA code across all validation types
 
-**Last Updated**: December 2, 2025
+**Last Updated**: December 3, 2025
 
 ---
 
@@ -11,11 +11,11 @@
 | Milestone | Status | Notes |
 |-----------|--------|-------|
 | ✅ Residue Index Matching | **COMPLETE** | All residues correctly matched to legacy indices via PDB properties |
-| ✅ LS_Fitting Validation | **98.7% COMPLETE** | 3553/3602 PDBs pass (47 count mismatches remaining) |
-| 🔄 Final LS_Fitting Fixes | **IN PROGRESS** | Need to add 47 modified bases to structural_variants whitelist |
-| ⏳ All Record Types Match | **PENDING** | Need 100% match on all 10 record types |
+| ✅ **LS_Fitting Validation** | **99.92% COMPLETE** ✅ | **3599/3602 PDBs pass** (3 edge cases: 1 legacy dup, 2 non-standard naming) |
+| ✅ RMSD Algorithm Match | **COMPLETE** | Fixed side-chain atom matching, two-try fallback, C1R support |
+| ⏳ All Record Types Match | **PENDING** | Need validation on remaining record types |
 | ⏳ Step Parameters Match | **PENDING** | New comparison type added |
-| ⏳ Production Ready | **PENDING** | All validations passing |
+| ⏳ Production Ready | **PENDING** | LS_fitting ✅, need other stages |
 
 ---
 
@@ -26,8 +26,9 @@
 | Record Type | Status | Match Rate | Notes |
 |-------------|--------|------------|-------|
 | `pdb_atoms` | ✅ **COMPLETE** | **100%** (3602/3602) | **DO NOT REGENERATE** - All atoms validated and match legacy exactly. Tested December 2, 2025. |
-| `base_frame_calc` | ✅ VALIDATED | ~100% | Frame metadata matches |
-| `frame_calc`/`ref_frame` | ✅ VALIDATED | ~100% | Reference frames match with `--fix-indices` |
+| `base_frame_calc` | ✅ **COMPLETE** | **100%** | Frame metadata matches |
+| `frame_calc`/`ref_frame` | ✅ **COMPLETE** | **100%** | Reference frames match with `--fix-indices` |
+| `ls_fitting` | ✅ **COMPLETE** | **99.92%** (3599/3602) | **Exact legacy algorithm**. 3 remaining: 1 legacy dup, 2 non-standard naming. December 3, 2025. |
 
 ### Phase 2: Base Pair Detection 🔄 IN PROGRESS
 
@@ -96,6 +97,37 @@ Batch 4: IN PROGRESS (43+ PASS so far, 1 FAIL)
 **Solution**: Use `--legacy-inp` to match legacy strand ordering  
 **Status**: 100% match on test set (origin, X, Y, Z axes)  
 **Validation**: All axes match within tolerance (< 0.0001)
+
+### ✅ LS_FITTING RMSD Calculation (COMPLETE) - December 3, 2025
+**Problem**: Count mismatches in 47 PDBs (98.7% success)  
+**Root Causes Found**:
+1. **Side-chain atoms**: Modified pyrimidines (2YR) have C8 in side chains, not ring
+2. **Two-try fallback**: Not properly retrying with pyrimidine-only atoms
+3. **C1R sugar**: NMN/NNR use C1R instead of C1'
+4. **Nitrogen requirement**: Modern was stricter than legacy
+
+**Solutions Applied**:
+1. Purine detection: Only match N7/C8/N9 if BOTH N7 AND C8 present
+2. Proper two-try: Explicitly calculate pyrimidine-only RMSD on second attempt
+3. C1R support: Accept both C1' and C1R for sugar detection
+4. Remove nitrogen req: Match legacy (only need ≥3 ring atoms + RMSD)
+
+**Results**: 
+- **99.92% success** (3599/3602 PDBs)
+- Fixed 44 PDBs (94% reduction in failures)
+- Uses strict 0.2618 threshold (exact legacy algorithm)
+- 30x faster with parallel processing (20 threads)
+
+**Remaining 3**:
+- 4KI4 (1): Legacy has 30 duplicate records
+- 5EAO, 5EAQ (2): CVC uses non-standard atom names (N01/C01 vs N1/C2)
+
+**Documentation**:
+- `docs/LS_FITTING_99_PERCENT_SUCCESS.md` - Complete analysis
+- `docs/LS_FITTING_PURINE_ATOM_FIX.md` - Technical details
+- `docs/LS_FITTING_COMPLETE_SUCCESS.md` - Summary
+
+**Commits**: 85414de, e0f0eab, cca4adf, 06c88b9, da87745
 
 ---
 
@@ -274,6 +306,15 @@ python3 scripts/compare_json.py compare --diff-only
 
 ## Update Log
 
+### December 3, 2025 - LS_FITTING 99.92% Success ✅
+- **MAJOR MILESTONE**: Fixed LS_FITTING validation from 98.7% to 99.92%
+- Identified and fixed 4 root causes (side-chain atoms, two-try fallback, C1R, nitrogen req)
+- Fixed 44 PDBs (94% reduction in count mismatches: 47 → 3)
+- Exact legacy algorithm replication with strict 0.2618 threshold
+- Added parallel processing: 20 threads, 30x speedup (3 min vs 90 min)
+- Remaining 3 are edge cases: 1 legacy duplicate, 2 non-standard atom naming
+- Commits: 85414de, e0f0eab, cca4adf, 06c88b9, da87745
+
 ### December 2, 2025
 - Created VALIDATION_PROGRESS.md tracking document
 - Documented current status: residue indexing complete
@@ -282,5 +323,5 @@ python3 scripts/compare_json.py compare --diff-only
 
 ---
 
-**Next Update**: After current validation run completes, update with final statistics and failure analysis.
+**Next Update**: Validate remaining record types (base_pair, pair_validation, distances, hbonds, selection).
 
