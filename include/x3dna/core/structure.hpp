@@ -10,6 +10,8 @@
 #include <memory>
 #include <map>
 #include <tuple>
+#include <fstream>
+#include <filesystem>
 #include <nlohmann/json.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/residue.hpp>
@@ -276,6 +278,30 @@ public:
         }
 
         return structure;
+    }
+
+    /**
+     * @brief Write atoms JSON to file (pdb_atoms format)
+     * @param output_dir Output directory where pdb_atoms/<pdb_id>.json will be written
+     */
+    void write_atoms_json(const std::filesystem::path& output_dir) const {
+        nlohmann::json record;
+        record["num_atoms"] = num_atoms();
+        record["atoms"] = nlohmann::json::array();
+        
+        for (const auto& chain : chains_) {
+            for (const auto& residue : chain.residues()) {
+                for (const auto& atom : residue.atoms()) {
+                    record["atoms"].push_back(atom.to_json());  // Atom writes itself
+                }
+            }
+        }
+        
+        // Write file
+        std::filesystem::path file = output_dir / "pdb_atoms" / (pdb_id_ + ".json");
+        std::filesystem::create_directories(file.parent_path());
+        std::ofstream out(file);
+        out << record.dump(2);
     }
 
     /**

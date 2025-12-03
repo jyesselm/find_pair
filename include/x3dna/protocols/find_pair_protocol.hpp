@@ -37,8 +37,10 @@ public:
     /**
      * @brief Constructor
      * @param template_path Path to standard base template directory
+     * @param output_dir Output directory for JSON files (optional, for Phase 2 refactor)
      */
-    explicit FindPairProtocol(const std::filesystem::path& template_path = "data/templates");
+    explicit FindPairProtocol(const std::filesystem::path& template_path = "data/templates",
+                              const std::filesystem::path& output_dir = "");
 
     /**
      * @brief Execute the find_pair protocol
@@ -119,7 +121,23 @@ public:
     }
 
     /**
+     * @brief Set output directory for JSON files
+     * @param output_dir Directory where JSON files will be written
+     */
+    void set_output_dir(const std::filesystem::path& output_dir) {
+        output_dir_ = output_dir;
+    }
+
+    /**
+     * @brief Get output directory
+     */
+    const std::filesystem::path& output_dir() const {
+        return output_dir_;
+    }
+
+    /**
      * @brief Set JSON writer for recording results
+     * @deprecated Phase 2 refactor: Protocols should write their own JSON
      */
     void set_json_writer(io::JsonWriter* writer) {
         json_writer_ = writer;
@@ -193,7 +211,11 @@ private:
     // Results
     std::vector<core::BasePair> base_pairs_;
 
+    // Output directory for JSON files (Phase 2 refactor)
+    std::filesystem::path output_dir_;
+
     // JSON writer (optional, for recording)
+    // TODO: Phase 4 - Remove JsonWriter once protocols write their own JSON
     io::JsonWriter* json_writer_ = nullptr;
 };
 
