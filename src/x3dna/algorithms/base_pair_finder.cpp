@@ -970,7 +970,7 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
 
 bool BasePairFinder::is_nucleotide(const Residue& residue) {
     ResidueType type = residue.residue_type();
-
+    
     // Check standard nucleotide types (always recognized)
     if (type == ResidueType::ADENINE || type == ResidueType::CYTOSINE ||
         type == ResidueType::GUANINE || type == ResidueType::THYMINE ||
@@ -1043,8 +1043,7 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
             double rmsd_threshold = NT_CUTOFF;
 
             auto rmsd_opt = check_nt_type_by_rmsd(residue);
-            // Debug output disabled (can be re-enabled for debugging)
-
+            
             if (rmsd_opt.has_value() && *rmsd_opt <= rmsd_threshold) {
                 // RMSD check passed - it's a nucleotide
                 return true;

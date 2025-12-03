@@ -307,17 +307,41 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         // Use strict threshold (0.2618) for all bases
         double rmsd_threshold = 0.2618;
         
-        // Debug output disabled (can be re-enabled for debugging)
+        // Debug output disabled
         if (!rmsd_result.has_value() || *rmsd_result > rmsd_threshold) {
             // RMSD check failed with all atoms
             // Legacy's TWO-TRY approach: If has purine atoms, retry with ONLY pyrimidine atoms
             // This handles cases where purine ring is distorted but pyrimidine core is fine
             if (has_purine_atoms) {
                 // Retry with only 6 pyrimidine atoms (C4, N3, C2, N1, C6, C5)
-                // Create a minimal residue check - just verify core ring is intact
-                std::optional<double> pyrimidine_rmsd = check_nt_type_by_rmsd(residue);
-                // Note: check_nt_type_by_rmsd already only uses ring atoms it finds
-                // The second try just gives it another chance if some purine atoms were problematic
+                // Calculate RMSD using ONLY pyrimidine ring atoms (first 6)
+                std::vector<geometry::Vector3D> experimental_coords;
+                std::vector<geometry::Vector3D> standard_coords;
+                
+                for (size_t i = 0; i < 6; ++i) {  // Only pyrimidine atoms (indices 0-5)
+                    const char* atom_name = RING_ATOM_NAMES[i];
+                    for (const auto& atom : residue.atoms()) {
+                        if (atom.name() == atom_name) {
+                            const auto& pos = atom.position();
+                            experimental_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
+                            standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0],
+                                                                         STANDARD_RING_GEOMETRY[i][1],
+                                                                         STANDARD_RING_GEOMETRY[i][2]));
+                            break;
+                        }
+                    }
+                }
+                
+                std::optional<double> pyrimidine_rmsd;
+                if (experimental_coords.size() >= 3) {
+                    geometry::LeastSquaresFitter fitter;
+                    try {
+                        auto fit_result = fitter.fit(standard_coords, experimental_coords);
+                        pyrimidine_rmsd = fit_result.rms;
+                    } catch (const std::exception&) {
+                        pyrimidine_rmsd = std::nullopt;
+                    }
+                }
                 
 #ifdef DEBUG_FRAME_CALC
                 std::cerr << "DEBUG: First RMSD check failed (rmsd="

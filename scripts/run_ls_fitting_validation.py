@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import Lock
 
 project_root = Path(".")
 sys.path.insert(0, str(project_root))
@@ -133,31 +135,53 @@ def main():
         "start_time": datetime.now().isoformat()
     }
     
-    for i, pdb_id in enumerate(pdb_ids, 1):
-        result = test_pdb_detailed(pdb_id, legacy_exe, modern_exe)
+    # Use thread lock for updating shared results
+    results_lock = Lock()
+    completed = 0
+    
+    # Process PDBs in parallel with 20 workers
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        # Submit all tasks
+        future_to_pdb = {
+            executor.submit(test_pdb_detailed, pdb_id, legacy_exe, modern_exe): pdb_id 
+            for pdb_id in pdb_ids
+        }
         
-        status = result["status"]
-        results[status] = results.get(status, 0) + 1
-        
-        if status == "pass":
-            print(f"[{i}/{len(pdb_ids)}] {pdb_id}: ✓ PASS ({result['count']} records)")
-        elif status == "fp_mismatch":
-            print(f"[{i}/{len(pdb_ids)}] {pdb_id}: ✓ OK ({result['mismatches']}/{result['count']} FP diffs, max={result['max_diff']:.2e})")
-        elif status == "count_mismatch":
-            print(f"[{i}/{len(pdb_ids)}] {pdb_id}: ⚠️  COUNT MISMATCH ({result['legacy_count']} vs {result['modern_count']}, diff={result['diff']})")
-            results["count_mismatch_pdbs"].append({
-                "pdb_id": pdb_id,
-                "legacy": result['legacy_count'],
-                "modern": result['modern_count'],
-                "diff": result['diff']
-            })
-        elif status == "error":
-            print(f"[{i}/{len(pdb_ids)}] {pdb_id}: ERROR - {result['reason']}")
-        elif status == "skip":
-            pass  # Silent skip
-        
-        if i % 100 == 0:
-            print(f"\n--- Progress: {i}/{len(pdb_ids)} | Pass: {results['pass']} | FP: {results['fp_mismatch']} | Count: {results['count_mismatch']} ---\n")
+        # Process results as they complete
+        for future in as_completed(future_to_pdb):
+            pdb_id = future_to_pdb[future]
+            
+            try:
+                result = future.result()
+            except Exception as e:
+                result = {"status": "error", "reason": str(e)}
+            
+            status = result["status"]
+            
+            # Thread-safe update of results
+            with results_lock:
+                completed += 1
+                results[status] = results.get(status, 0) + 1
+                
+                if status == "pass":
+                    print(f"[{completed}/{len(pdb_ids)}] {pdb_id}: ✓ PASS ({result['count']} records)")
+                elif status == "fp_mismatch":
+                    print(f"[{completed}/{len(pdb_ids)}] {pdb_id}: ✓ OK ({result['mismatches']}/{result['count']} FP diffs, max={result['max_diff']:.2e})")
+                elif status == "count_mismatch":
+                    print(f"[{completed}/{len(pdb_ids)}] {pdb_id}: ⚠️  COUNT MISMATCH ({result['legacy_count']} vs {result['modern_count']}, diff={result['diff']})")
+                    results["count_mismatch_pdbs"].append({
+                        "pdb_id": pdb_id,
+                        "legacy": result['legacy_count'],
+                        "modern": result['modern_count'],
+                        "diff": result['diff']
+                    })
+                elif status == "error":
+                    print(f"[{completed}/{len(pdb_ids)}] {pdb_id}: ERROR - {result['reason']}")
+                elif status == "skip":
+                    pass  # Silent skip
+                
+                if completed % 100 == 0:
+                    print(f"\n--- Progress: {completed}/{len(pdb_ids)} | Pass: {results['pass']} | FP: {results['fp_mismatch']} | Count: {results['count_mismatch']} ---\n")
     
     results["end_time"] = datetime.now().isoformat()
     
