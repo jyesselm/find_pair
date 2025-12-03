@@ -37,7 +37,7 @@ size_t LsFittingCalculator::calculate_and_record(core::Structure& structure,
         }
 
         // Calculate frame (stores frame on residue and returns full result)
-        BaseFrameCalculator::FrameCalculationResult frame_result = calculator_->calculate_frame(*residue);
+        FrameCalculationResult frame_result = calculator_->calculate_frame(*residue);
 
         if (!frame_result.is_valid) {
             continue;

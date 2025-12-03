@@ -16,6 +16,9 @@ class JsonWriter; // Forward declaration
 
 namespace algorithms {
 
+// Forward declaration
+class BaseFrameCalculator;
+
 /**
  * @class LsFittingCalculator
  * @brief Calculates and records least-squares fitting data for nucleotide residues
