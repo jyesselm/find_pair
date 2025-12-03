@@ -136,6 +136,21 @@ public:
     }
 
     /**
+     * @brief Set output stage (controls which JSON to write)
+     * @param stage Stage name: "frames", "distances", "hbonds", "validation", "selection", "all"
+     */
+    void set_output_stage(const std::string& stage) {
+        output_stage_ = stage;
+    }
+
+    /**
+     * @brief Get output stage
+     */
+    const std::string& output_stage() const {
+        return output_stage_;
+    }
+
+    /**
      * @brief Set JSON writer for recording results
      * @deprecated Phase 2 refactor: Protocols should write their own JSON
      */
@@ -156,6 +171,17 @@ public:
     const std::vector<algorithms::Helix>& helices() const {
         return helices_;
     }
+
+    /**
+     * @brief Write frames JSON (base_frame_calc, frame_calc, ls_fitting)
+     * @param structure Structure with calculated frames
+     * @param pdb_file PDB file path (for JsonWriter initialization)
+     * @param output_dir Output directory for JSON files
+     * @return Number of frames written
+     */
+    size_t write_frames_json(core::Structure& structure, 
+                            const std::filesystem::path& pdb_file,
+                            const std::filesystem::path& output_dir);
 
     /**
      * @brief Get frame calculator (for configuration)
@@ -213,6 +239,9 @@ private:
 
     // Output directory for JSON files (Phase 2 refactor)
     std::filesystem::path output_dir_;
+    
+    // Output stage (controls which JSON to write)
+    std::string output_stage_ = "all";
 
     // JSON writer (optional, for recording)
     // TODO: Phase 4 - Remove JsonWriter once protocols write their own JSON
