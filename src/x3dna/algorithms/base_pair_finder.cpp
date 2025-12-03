@@ -1003,7 +1003,6 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
 
         int ring_atom_count = 0;
         int kr = 0; // Purine ring atom count (N7, C8, N9)
-        bool has_nitrogen = false;
 
         for (const auto& atom_name : common_ring_atoms) {
             for (const auto& atom : residue.atoms()) {
@@ -1024,20 +1023,8 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
             }
         }
 
-        // Check for nitrogen atoms (N1 or N3)
-        for (const auto& atom_name : nitrogen_atoms) {
-            for (const auto& atom : residue.atoms()) {
-                if (atom.name() == atom_name) {
-                    has_nitrogen = true;
-                    break;
-                }
-            }
-            if (has_nitrogen) {
-                break;
-            }
-        }
-
         // Legacy logic: require >= 3 ring atoms, then do RMSD check
+        // No nitrogen requirement - RMSD check handles non-nucleotides
         if (ring_atom_count + kr >= 3) {
             // Use strict threshold (0.2618) for all
             double rmsd_threshold = NT_CUTOFF;

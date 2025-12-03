@@ -230,24 +230,12 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
             }
 #endif
 
-        // CRITICAL: Require nitrogen atoms (N1 or N3) to prevent non-nucleotides
-        // like glucose (GLC) from being treated as nucleotides
-        // This matches the fix in BasePairFinder::is_nucleotide()
-        bool has_nitrogen = false;
-        for (const auto& atom_name : nitrogen_atoms) {
-            for (const auto& atom : residue.atoms()) {
-                if (atom.name() == atom_name) {
-                    has_nitrogen = true;
-                    break;
-                }
-            }
-            if (has_nitrogen) {
-                break;
-            }
-        }
-
-        // Require >= 3 ring atoms AND at least one nitrogen atom (N1 or N3)
-        has_ring_atoms = (ring_atom_count >= 3 && has_nitrogen);
+        // Legacy only requires >= 3 ring atoms (by name) and C1' presence
+        // The RMSD check (check_nt_type_by_rmsd) rejects non-nucleotides via:
+        // 1. No C1' (e.g., glucose) → rejected
+        // 2. No nitrogen atoms AND no C1' → rejected (nN=0 && !C1_prime → DUMMY)
+        // So we don't need explicit nitrogen check here
+        has_ring_atoms = (ring_atom_count >= 3);
     } else {
         // For standard nucleotides (A, C, G, T, U) that ARE in NT_LIST, skip RMSD check
         // But if they're modified nucleotides not in NT_LIST (like H2U), they need RMSD check
@@ -277,20 +265,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                 }
             }
 
-            bool has_nitrogen = false;
-            for (const auto& atom_name : nitrogen_atoms) {
-                for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == atom_name) {
-                        has_nitrogen = true;
-                        break;
-                    }
-                }
-                if (has_nitrogen) {
-                    break;
-                }
-            }
-
-            has_ring_atoms = (ring_atom_count >= 3 && has_nitrogen);
+            // Legacy only requires >= 3 ring atoms
+            has_ring_atoms = (ring_atom_count >= 3);
         } else {
             // Standard nucleotide in NT_LIST - accept without RMSD check
             has_ring_atoms = true;

@@ -1,22 +1,10 @@
 {
-  "pass": 862,
+  "pass": 864,
   "fp_mismatch": 2732,
-  "count_mismatch": 5,
+  "count_mismatch": 3,
   "error": 3,
   "skip": 0,
   "count_mismatch_pdbs": [
-    {
-      "pdb_id": "2G92",
-      "legacy": 24,
-      "modern": 22,
-      "diff": 2
-    },
-    {
-      "pdb_id": "2Q1O",
-      "legacy": 48,
-      "modern": 44,
-      "diff": 4
-    },
     {
       "pdb_id": "4KI4",
       "legacy": 33,
@@ -36,6 +24,6 @@
       "diff": 1
     }
   ],
-  "start_time": "2025-12-03T15:52:39.754900",
-  "end_time": "2025-12-03T15:59:25.898263"
+  "start_time": "2025-12-03T16:07:32.986984",
+  "end_time": "2025-12-03T16:14:17.582031"
 }
