@@ -1,0 +1,102 @@
+[
+  {
+    "pdb_id": "1Q96",
+    "total_legacy": 88,
+    "total_modern": 41,
+    "matched": 0,
+    "missing_in_modern": 41,
+    "extra_in_modern": 41,
+    "mismatched_values": 0,
+    "success": false
+  },
+  {
+    "pdb_id": "1VBY",
+    "total_legacy": 85,
+    "total_modern": 41,
+    "matched": 0,
+    "missing_in_modern": 39,
+    "extra_in_modern": 39,
+    "mismatched_values": 2,
+    "success": false
+  },
+  {
+    "pdb_id": "3AVY",
+    "total_legacy": 18,
+    "total_modern": 10,
+    "matched": 0,
+    "missing_in_modern": 10,
+    "extra_in_modern": 10,
+    "mismatched_values": 0,
+    "success": false
+  },
+  {
+    "pdb_id": "3G8T",
+    "total_legacy": 596,
+    "total_modern": 314,
+    "matched": 0,
+    "missing_in_modern": 313,
+    "extra_in_modern": 313,
+    "mismatched_values": 1,
+    "success": false
+  },
+  {
+    "pdb_id": "3KNC",
+    "total_legacy": 16,
+    "total_modern": 8,
+    "matched": 0,
+    "missing_in_modern": 8,
+    "extra_in_modern": 8,
+    "mismatched_values": 0,
+    "success": false
+  },
+  {
+    "pdb_id": "4AL5",
+    "total_legacy": 12,
+    "total_modern": 6,
+    "matched": 0,
+    "missing_in_modern": 6,
+    "extra_in_modern": 6,
+    "mismatched_values": 0,
+    "success": false
+  },
+  {
+    "pdb_id": "5UJ2",
+    "total_legacy": 12,
+    "total_modern": 6,
+    "matched": 0,
+    "missing_in_modern": 6,
+    "extra_in_modern": 6,
+    "mismatched_values": 0,
+    "success": false
+  },
+  {
+    "pdb_id": "6CAQ",
+    "total_legacy": 1632,
+    "total_modern": 864,
+    "matched": 0,
+    "missing_in_modern": 850,
+    "extra_in_modern": 850,
+    "mismatched_values": 14,
+    "success": false
+  },
+  {
+    "pdb_id": "6LTU",
+    "total_legacy": 83,
+    "total_modern": 42,
+    "matched": 0,
+    "missing_in_modern": 42,
+    "extra_in_modern": 42,
+    "mismatched_values": 0,
+    "success": false
+  },
+  {
+    "pdb_id": "8J1J",
+    "total_legacy": 154,
+    "total_modern": 79,
+    "matched": 0,
+    "missing_in_modern": 79,
+    "extra_in_modern": 79,
+    "mismatched_values": 0,
+    "success": false
+  }
+]

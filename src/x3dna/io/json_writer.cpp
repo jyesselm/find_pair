@@ -634,10 +634,14 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
 
 void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dorg, double dNN,
                                         double plane_angle, double d_v, double overlap_area) {
+    // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
+    // Also, legacy outputs BOTH (i,j) and (j,i) - so we need to output both pairs
+    
+    // Output first pair (i, j) with 1-based indices
     nlohmann::json record;
     record["type"] = "distance_checks";
-    record["base_i"] = static_cast<long>(base_i); // Legacy uses long
-    record["base_j"] = static_cast<long>(base_j);
+    record["base_i"] = static_cast<long>(base_i + 1); // Convert to 1-based
+    record["base_j"] = static_cast<long>(base_j + 1); // Convert to 1-based
 
     // Values (nested object, matches legacy format)
     nlohmann::json values;
@@ -645,10 +649,24 @@ void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dor
     values["dNN"] = format_double(dNN);
     values["plane_angle"] = format_double(plane_angle);
     values["d_v"] = format_double(d_v);
-    values["overlap_area"] = format_double(overlap_area);
+    // Legacy outputs 0.0 instead of null for zero overlap
+    if (overlap_area == 0.0 || std::isnan(overlap_area)) {
+        values["overlap_area"] = 0.0;
+    } else {
+        values["overlap_area"] = format_double(overlap_area);
+    }
     record["values"] = values;
 
     add_calculation_record(record);
+    
+    // Legacy also outputs the reversed pair (j, i)
+    nlohmann::json record_reversed;
+    record_reversed["type"] = "distance_checks";
+    record_reversed["base_i"] = static_cast<long>(base_j + 1); // Swap: j becomes i
+    record_reversed["base_j"] = static_cast<long>(base_i + 1); // Swap: i becomes j
+    record_reversed["values"] = values; // Same values
+    
+    add_calculation_record(record_reversed);
 }
 
 void JsonWriter::record_hbond_list(size_t base_i, size_t base_j,
