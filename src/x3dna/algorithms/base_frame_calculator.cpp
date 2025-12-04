@@ -55,6 +55,18 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
     bool has_c1_prime = false;
     int purine_atom_count = 0; // Count of purine atoms found (N7, C8, N9)
     
+#ifdef DEBUG_FRAME_CALC
+    std::string res_name_check = residue.name();
+    while (!res_name_check.empty() && res_name_check[0] == ' ')
+        res_name_check.erase(0, 1);
+    while (!res_name_check.empty() && res_name_check.back() == ' ')
+        res_name_check.pop_back();
+    bool is_cvc = (res_name_check == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7);
+    if (is_cvc) {
+        std::cerr << "DEBUG: check_nt_type_by_rmsd for CVC B7, residue has " << residue.num_atoms() << " atoms\n";
+    }
+#endif
+    
     // Try to match ALL ring atoms (like legacy does)
     for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
         const char* atom_name = RING_ATOM_NAMES[i];
@@ -79,10 +91,27 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
                 if (i >= 6) {
                     purine_atom_count++;
                 }
+#ifdef DEBUG_FRAME_CALC
+                if (is_cvc) {
+                    std::cerr << "DEBUG: Matched ring atom " << i << ": " << atom_name << "\n";
+                }
+#endif
                 break;
             }
+#ifdef DEBUG_FRAME_CALC
+            if (is_cvc && i < 3) {  // Only show first few to avoid spam
+                std::cerr << "DEBUG: Checking atom '" << atom.name() << "' vs '" << atom_name << "'\n";
+            }
+#endif
         }
     }
+    
+#ifdef DEBUG_FRAME_CALC
+    if (is_cvc) {
+        std::cerr << "DEBUG: check_nt_type_by_rmsd result: matched=" << experimental_coords.size() 
+                  << ", nN=" << nN << ", purine_count=" << purine_atom_count << "\n";
+    }
+#endif
 
     // Check for C1' or C1R atom (required by legacy)
     // Some nucleotides like NMN use C1R instead of C1'
@@ -185,6 +214,22 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     int ring_atom_count = 0;
     bool has_purine_atoms = false;
 
+#ifdef DEBUG_FRAME_CALC
+    // Debug: show all atom names for CVC or any UNKNOWN residue
+    std::string residue_name_raw = residue.name();
+    while (!residue_name_raw.empty() && residue_name_raw[0] == ' ')
+        residue_name_raw.erase(0, 1);
+    while (!residue_name_raw.empty() && residue_name_raw.back() == ' ')
+        residue_name_raw.pop_back();
+    
+    if (residue_name_raw == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
+        std::cerr << "DEBUG: CVC B7 has " << residue.num_atoms() << " atoms:\n";
+        for (const auto& atom : residue.atoms()) {
+            std::cerr << "  Atom: '" << atom.name() << "' (len=" << atom.name().length() << ")\n";
+        }
+    }
+#endif
+
     if (residue_type == core::ResidueType::UNKNOWN ||
         residue_type == core::ResidueType::AMINO_ACID ||
         residue_type == core::ResidueType::NONCANONICAL_RNA ||
@@ -199,10 +244,28 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         static const std::vector<std::string> purine_ring_atoms = {" N7 ", " C8 ", " N9 "};
         static const std::vector<std::string> nitrogen_atoms = {" N1 ", " N3 "};
 
+#ifdef DEBUG_FRAME_CALC
+        // Always show for UNKNOWN residues to debug CVC
+        if (residue_type == core::ResidueType::UNKNOWN) {
+            std::string res_name_debug = res_name;
+            std::cerr << "DEBUG: UNKNOWN residue " << res_name_debug << " " << residue.chain_id() 
+                      << ":" << residue.seq_num() << " has " << residue.num_atoms() << " atoms\n";
+            if (res_name_debug == "CVC") {
+                std::cerr << "DEBUG: CVC atom names:\n";
+                for (const auto& atom : residue.atoms()) {
+                    std::cerr << "  '" << atom.name() << "'\n";
+                }
+            }
+        }
+#endif
+
         for (const auto& atom_name : common_ring_atoms) {
             for (const auto& atom : residue.atoms()) {
                 if (atom.name() == atom_name) {
                     ring_atom_count++;
+#ifdef DEBUG_FRAME_CALC
+                    std::cerr << "DEBUG: Found common ring atom: " << atom_name << "\n";
+#endif
                     break;
                 }
             }
@@ -214,8 +277,17 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
             for (const auto& atom : residue.atoms()) {
                 if (atom.name() == atom_name) {
                     ring_atom_count++;
+#ifdef DEBUG_FRAME_CALC
+                    std::cerr << "DEBUG: Found purine ring atom: " << atom_name << "\n";
+#endif
                     break;
                 }
+#ifdef DEBUG_FRAME_CALC
+                // Debug: show what atom names we're comparing
+                if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
+                    std::cerr << "DEBUG: Comparing '" << atom.name() << "' with '" << atom_name << "'\n";
+                }
+#endif
             }
         }
 
@@ -249,7 +321,16 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         // So we don't need explicit nitrogen check here
         has_ring_atoms = (ring_atom_count >= 3);
 #ifdef DEBUG_FRAME_CALC
-        std::cerr << "DEBUG: Ring atom count: " << ring_atom_count << ", has_ring_atoms: " << has_ring_atoms << "\n";
+        std::string residue_name_debug = residue.name();
+        while (!residue_name_debug.empty() && residue_name_debug[0] == ' ')
+            residue_name_debug.erase(0, 1);
+        while (!residue_name_debug.empty() && residue_name_debug.back() == ' ')
+            residue_name_debug.pop_back();
+        std::cerr << "DEBUG: Residue " << residue_name_debug << " " << residue.chain_id() << ":" << residue.seq_num()
+                  << " - Ring atom count: " << ring_atom_count << ", has_ring_atoms: " << has_ring_atoms << "\n";
+        if (residue_name_debug == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
+            std::cerr << "DEBUG: CVC B7 final check - ring_atom_count=" << ring_atom_count << ", has_ring_atoms=" << has_ring_atoms << "\n";
+        }
 #endif
     } else {
         // For standard nucleotides (A, C, G, T, U) that ARE in NT_LIST, skip RMSD check
@@ -375,8 +456,21 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // If no ring atoms, cannot calculate frame
     if (!has_ring_atoms) {
 #ifdef DEBUG_FRAME_CALC
+        std::string residue_name_final = residue.name();
+        while (!residue_name_final.empty() && residue_name_final[0] == ' ')
+            residue_name_final.erase(0, 1);
+        while (!residue_name_final.empty() && residue_name_final.back() == ' ')
+            residue_name_final.pop_back();
         std::cerr << "DEBUG: Skipping - not a nucleotide (type=" << static_cast<int>(residue_type)
-                  << ", no ring atoms)\n";
+                  << ", no ring atoms, ring_count=" << ring_atom_count << ", residue=" << residue_name_final
+                  << " " << residue.chain_id() << ":" << residue.seq_num() << ")\n";
+        if (residue_name_final == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
+            std::cerr << "DEBUG: CVC B7 REJECTED - ring_atom_count=" << ring_atom_count << ", has_ring_atoms=" << has_ring_atoms << "\n";
+            std::cerr << "DEBUG: CVC B7 has " << residue.num_atoms() << " atoms total\n";
+            for (const auto& atom : residue.atoms()) {
+                std::cerr << "  Atom: '" << atom.name() << "'\n";
+            }
+        }
 #endif
         return result; // Cannot calculate frame for non-nucleotides
     }
