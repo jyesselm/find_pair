@@ -138,9 +138,10 @@ size_t FrameJsonRecorder::record_frame_calc(core::Structure& structure, JsonWrit
 
         size_t record_idx = static_cast<size_t>(legacy_residue_idx);
         char base_type = residue->one_letter_code();
-        std::vector<geometry::Vector3D> standard_coords, experimental_coords;
         writer.record_frame_calc(record_idx, base_type, frame_result.template_file,
-                                 frame_result.rms_fit, standard_coords, experimental_coords,
+                                 frame_result.rms_fit,
+                                 frame_result.matched_standard_coords,
+                                 frame_result.matched_experimental_coords,
                                  residue->name(), residue->chain_id(), residue->seq_num(),
                                  residue->insertion());
         count++;

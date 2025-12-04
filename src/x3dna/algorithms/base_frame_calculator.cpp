@@ -582,20 +582,28 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check) {
         // Determine type from atoms
         if (has_ring_atoms) {
-            if (has_purine_atoms) {
-                // Determine purine type (A vs G) by checking for characteristic atoms
-                bool has_o6 = false, has_n6 = false, has_n2 = false;
-                for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == " O6 ")
-                        has_o6 = true;
-                    if (atom.name() == " N6 ")
-                        has_n6 = true;
-                    if (atom.name() == " N2 ")
-                        has_n2 = true;
+            // If residue_type is already GUANINE or ADENINE (from one_letter_code),
+            // treat as purine even if N7 is missing (some modified purines lack N7)
+            bool is_purine_from_code = (residue_type == core::ResidueType::GUANINE ||
+                                       residue_type == core::ResidueType::ADENINE);
+            if (has_purine_atoms || is_purine_from_code) {
+                // Only refine purine type if not already set correctly from one_letter_code
+                if (!is_purine_from_code) {
+                    // Determine purine type (A vs G) by checking for characteristic atoms
+                    bool has_o6 = false, has_n6 = false, has_n2 = false;
+                    for (const auto& atom : residue.atoms()) {
+                        if (atom.name() == " O6 ")
+                            has_o6 = true;
+                        if (atom.name() == " N6 ")
+                            has_n6 = true;
+                        if (atom.name() == " N2 ")
+                            has_n2 = true;
+                    }
+                    // G has O6, or N2 without N6; A has N6 without O6
+                    residue_type = (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE
+                                                                   : core::ResidueType::ADENINE;
                 }
-                // G has O6, or N2 without N6; A has N6 without O6
-                residue_type = (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE
-                                                               : core::ResidueType::ADENINE;
+                // else: keep the GUANINE or ADENINE from one_letter_code
             } else {
                 // Determine pyrimidine type (C vs T vs U vs P) by checking for characteristic atoms
                 bool has_n4 = false, has_c5m = false;
@@ -802,6 +810,10 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         standard_coords.push_back(matched.standard[i].position());
         experimental_coords.push_back(matched.experimental[i].position());
     }
+
+    // Store coordinates in result for frame_calc JSON output
+    result.matched_standard_coords = standard_coords;
+    result.matched_experimental_coords = experimental_coords;
 
     // Perform least-squares fitting
     geometry::LeastSquaresFitter fitter;
