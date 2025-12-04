@@ -90,13 +90,12 @@ if(BUILD_EXAMPLES)
 endif()
 
 # Tools - Only build tools that exist
-add_executable(generate_modern_json tools/generate_modern_json.cpp)
-target_link_libraries(generate_modern_json PRIVATE x3dna)
-
-add_executable(check_residue_indices tools/check_residue_indices.cpp)
-target_link_libraries(check_residue_indices PRIVATE x3dna)
-
-# Commented out - tools archived or don't exist
+# Commented out - tools archived or removed from repository
+# add_executable(generate_modern_json tools/generate_modern_json.cpp)
+# target_link_libraries(generate_modern_json PRIVATE x3dna)
+# 
+# add_executable(check_residue_indices tools/check_residue_indices.cpp)
+# target_link_libraries(check_residue_indices PRIVATE x3dna)
 # add_executable(test_overlap_calculation tools/test_overlap_calculation.cpp)
 # target_link_libraries(test_overlap_calculation PRIVATE x3dna)
 # 
