@@ -191,6 +191,24 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         res_name.erase(0, 1);
     while (!res_name.empty() && res_name.back() == ' ')
         res_name.pop_back();
+    
+    // TODO: Exclude common buffer/solvent/ligand molecules that aren't nucleotides
+    // Check one_letter_code - if it's space (' '), it's not a nucleotide
+    char one_letter = residue.one_letter_code();
+    if (one_letter == ' ') {
+        // Not a nucleotide (buffer, solvent, ligand, etc.) - skip
+        return result;
+    }
+    
+    // Also explicitly exclude known non-nucleotides that might have ambiguous one_letter_code
+    static const std::vector<std::string> excluded_molecules = {
+        "MES", "HEPES", "TRIS", "EDO", "GOL", "SO4", "PO4", "ACT", "FMT", "EFZ"
+    };
+    for (const auto& excluded : excluded_molecules) {
+        if (res_name == excluded) {
+            return result; // Not a nucleotide - skip
+        }
+    }
 
     // Check if this is a modified nucleotide not in NT_LIST (requires RMSD check)
     // Legacy: All residues not in NT_LIST go through RMSD check, even if they're recognized as
@@ -346,18 +364,19 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         }
 
         // Check for purine-specific atoms
-            // CRITICAL FIX: Only count as purine if we have BOTH N7 and C8
-            // Some modified pyrimidines (like 70U) have C8 in side chains, not as ring atom
-            // Legacy checks for this by requiring both N7 and C8 for purine detection
-            bool has_n7 = false, has_c8 = false;
+            // CRITICAL FIX: Legacy requires BOTH C8 AND N9 for purine detection (not N7+C8)
+            // QUO (queuosine) has C8+N9 but lacks N7 → treated as purine by legacy
+            // 9DG (9-deazaguanine) has C8+N7 but lacks N9 → treated as pyrimidine by legacy
+            bool has_n7 = false, has_c8 = false, has_n9 = false;
             for (const auto& atom : residue.atoms()) {
                 if (atom.name() == " N7 ") has_n7 = true;
                 if (atom.name() == " C8 ") has_c8 = true;
+                if (atom.name() == " N9 ") has_n9 = true;
             }
             
-            // Require both N7 and C8 for purine detection
-            // This prevents false purine detection for modified pyrimidines with C8 in modifications
-            has_purine_atoms = (has_n7 && has_c8);
+            // Require both C8 and N9 for purine detection (legacy behavior)
+            // N7 is optional (QUO lacks N7 but is still a purine)
+            has_purine_atoms = (has_c8 && has_n9);
 #ifdef DEBUG_FRAME_CALC
             if (has_purine_atoms) {
                 std::cerr << "DEBUG: Found purine atoms: N7=" << has_n7 
@@ -582,28 +601,24 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check) {
         // Determine type from atoms
         if (has_ring_atoms) {
-            // If residue_type is already GUANINE or ADENINE (from one_letter_code),
-            // treat as purine even if N7 is missing (some modified purines lack N7)
-            bool is_purine_from_code = (residue_type == core::ResidueType::GUANINE ||
-                                       residue_type == core::ResidueType::ADENINE);
-            if (has_purine_atoms || is_purine_from_code) {
-                // Only refine purine type if not already set correctly from one_letter_code
-                if (!is_purine_from_code) {
-                    // Determine purine type (A vs G) by checking for characteristic atoms
-                    bool has_o6 = false, has_n6 = false, has_n2 = false;
-                    for (const auto& atom : residue.atoms()) {
-                        if (atom.name() == " O6 ")
-                            has_o6 = true;
-                        if (atom.name() == " N6 ")
-                            has_n6 = true;
-                        if (atom.name() == " N2 ")
-                            has_n2 = true;
-                    }
-                    // G has O6, or N2 without N6; A has N6 without O6
-                    residue_type = (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE
-                                                                   : core::ResidueType::ADENINE;
+            // TODO: Some modified purines (e.g., QUO missing N7) could benefit from trusting
+            // one_letter_code, but for now match legacy behavior strictly based on detected atoms
+            // to ensure 100% validation match. Future improvement: trust one_letter_code when
+            // purine atoms are partially present but N7 is missing.
+            if (has_purine_atoms) {
+                // Determine purine type (A vs G) by checking for characteristic atoms
+                bool has_o6 = false, has_n6 = false, has_n2 = false;
+                for (const auto& atom : residue.atoms()) {
+                    if (atom.name() == " O6 ")
+                        has_o6 = true;
+                    if (atom.name() == " N6 ")
+                        has_n6 = true;
+                    if (atom.name() == " N2 ")
+                        has_n2 = true;
                 }
-                // else: keep the GUANINE or ADENINE from one_letter_code
+                // G has O6, or N2 without N6; A has N6 without O6
+                residue_type = (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE
+                                                               : core::ResidueType::ADENINE;
             } else {
                 // Determine pyrimidine type (C vs T vs U vs P) by checking for characteristic atoms
                 bool has_n4 = false, has_c5m = false;
