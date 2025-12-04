@@ -899,24 +899,12 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
     int nN = 0; // Count of nitrogen atoms (N1, N3, N7, N9)
     bool has_c1_prime = false;
     
-    // CRITICAL FIX: First check if this is a purine (has BOTH N7 and C8)
-    // to avoid matching side-chain atoms like C8 in 2YR (which is connected to sulfur, not part of ring)
-    bool has_n7 = false;
-    bool has_c8 = false;
-    for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " N7 ") has_n7 = true;
-        if (atom.name() == " C8 ") has_c8 = true;
-    }
-    bool is_purine = (has_n7 && has_c8);
+    // LEGACY BEHAVIOR: Try ALL 9 ring atoms first (matches legacy residue_ident)
+    // Then if RMSD fails and purine atoms were found, retry with pyrimidine-only
+    int purine_atom_count = 0; // Count of purine atoms found (N7, C8, N9)
 
     for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
         const char* atom_name = RING_ATOM_NAMES[i];
-        
-        // Skip purine-specific atoms (N7, C8, N9) for pyrimidines
-        // Indices: 6=N7, 7=C8, 8=N9
-        if (!is_purine && (i == 6 || i == 7 || i == 8)) {
-            continue;
-        }
 
         // Find this atom in residue
         for (const auto& atom : residue.atoms()) {
@@ -932,6 +920,11 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
                 // Count nitrogen atoms (indices 1=N3, 3=N1, 6=N7, 8=N9)
                 if (i == 1 || i == 3 || i == 6 || i == 8) {
                     nN++;
+                }
+                
+                // Count purine atoms (indices 6=N7, 7=C8, 8=N9) - for two-try fallback
+                if (i >= 6) {
+                    purine_atom_count++;
                 }
                 break;
             }

@@ -139,8 +139,8 @@ def main():
     results_lock = Lock()
     completed = 0
     
-    # Process PDBs in parallel with 20 workers
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    # Process PDBs in parallel with 10 workers
+    with ThreadPoolExecutor(max_workers=10) as executor:
         # Submit all tasks
         future_to_pdb = {
             executor.submit(test_pdb_detailed, pdb_id, legacy_exe, modern_exe): pdb_id 

@@ -33,36 +33,32 @@ constexpr std::array<const char*, 9> RING_ATOM_NAMES = {" C4 ", " N3 ", " C2 ", 
                                                         " C5 ", " N7 ", " C8 ", " N9 "};
 
 /**
+ * @brief Result of RMSD check
+ */
+struct RmsdCheckResult {
+    std::optional<double> rmsd;
+    bool found_purine_atoms; // Whether any purine atoms (N7, C8, N9) were found
+};
+
+/**
  * @brief Check nucleotide type by RMSD (matches legacy check_nt_type_by_rmsd)
  * @param residue Residue to check
- * @return RMSD value if calculable, or nullopt if not enough atoms
+ * @return RMSD value if calculable, or nullopt if not enough atoms, plus purine atom flag
  */
-std::optional<double> check_nt_type_by_rmsd(const core::Residue& residue) {
+RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
     // Find ring atoms in residue
+    // LEGACY BEHAVIOR: Try ALL 9 ring atoms first (matches legacy residue_ident)
+    // Then if RMSD fails and purine atoms were found, retry with pyrimidine-only
     std::vector<geometry::Vector3D> experimental_coords;
     std::vector<geometry::Vector3D> standard_coords;
     int nN = 0; // Count of nitrogen atoms (N1, N3, N7, N9)
     bool has_c1_prime = false;
+    int purine_atom_count = 0; // Count of purine atoms found (N7, C8, N9)
     
-    // CRITICAL FIX: First check if this is a purine (has BOTH N7 and C8)
-    // to avoid matching side-chain atoms like C8 in 2YR (which is connected to sulfur, not part of ring)
-    bool has_n7 = false;
-    bool has_c8 = false;
-    for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " N7 ") has_n7 = true;
-        if (atom.name() == " C8 ") has_c8 = true;
-    }
-    bool is_purine = (has_n7 && has_c8);
-
+    // Try to match ALL ring atoms (like legacy does)
     for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
         const char* atom_name = RING_ATOM_NAMES[i];
         
-        // Skip purine-specific atoms (N7, C8, N9) for pyrimidines
-        // Indices: 6=N7, 7=C8, 8=N9
-        if (!is_purine && (i == 6 || i == 7 || i == 8)) {
-            continue;
-        }
-
         // Find this atom in residue
         for (const auto& atom : residue.atoms()) {
             if (atom.name() == atom_name) {
@@ -77,6 +73,11 @@ std::optional<double> check_nt_type_by_rmsd(const core::Residue& residue) {
                 // Count nitrogen atoms (indices 1=N3, 3=N1, 6=N7, 8=N9)
                 if (i == 1 || i == 3 || i == 6 || i == 8) {
                     nN++;
+                }
+                
+                // Count purine atoms (indices 6=N7, 7=C8, 8=N9) - for two-try fallback
+                if (i >= 6) {
+                    purine_atom_count++;
                 }
                 break;
             }
@@ -94,21 +95,21 @@ std::optional<double> check_nt_type_by_rmsd(const core::Residue& residue) {
 
     // Legacy requires: (!nN && !C1_prime) -> return DUMMY
     if (nN == 0 && !has_c1_prime) {
-        return std::nullopt;
+        return {std::nullopt, purine_atom_count > 0};
     }
 
     // Need at least 3 atoms for RMSD calculation
     if (experimental_coords.size() < 3) {
-        return std::nullopt;
+        return {std::nullopt, purine_atom_count > 0};
     }
 
     // Perform least-squares fitting (matches legacy ls_fitting)
     geometry::LeastSquaresFitter fitter;
     try {
         auto fit_result = fitter.fit(standard_coords, experimental_coords);
-        return fit_result.rms;
+        return {fit_result.rms, purine_atom_count > 0};
     } catch (const std::exception&) {
-        return std::nullopt;
+        return {std::nullopt, purine_atom_count > 0};
     }
 }
 } // namespace
@@ -207,6 +208,17 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
             }
         }
 
+        // Also count purine atoms for ring_atom_count (legacy tries ALL 9 atoms)
+        // This allows residues like CVC (C4, C8, N9) to be detected
+        for (const auto& atom_name : purine_ring_atoms) {
+            for (const auto& atom : residue.atoms()) {
+                if (atom.name() == atom_name) {
+                    ring_atom_count++;
+                    break;
+                }
+            }
+        }
+
         // Check for purine-specific atoms
             // CRITICAL FIX: Only count as purine if we have BOTH N7 and C8
             // Some modified pyrimidines (like 70U) have C8 in side chains, not as ring atom
@@ -236,6 +248,9 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         // 2. No nitrogen atoms AND no C1' → rejected (nN=0 && !C1_prime → DUMMY)
         // So we don't need explicit nitrogen check here
         has_ring_atoms = (ring_atom_count >= 3);
+#ifdef DEBUG_FRAME_CALC
+        std::cerr << "DEBUG: Ring atom count: " << ring_atom_count << ", has_ring_atoms: " << has_ring_atoms << "\n";
+#endif
     } else {
         // For standard nucleotides (A, C, G, T, U) that ARE in NT_LIST, skip RMSD check
         // But if they're modified nucleotides not in NT_LIST (like H2U), they need RMSD check
@@ -256,9 +271,11 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                 }
             }
 
+            // Also count purine atoms for ring_atom_count (legacy tries ALL 9 atoms)
             for (const auto& atom_name : purine_ring_atoms) {
                 for (const auto& atom : residue.atoms()) {
                     if (atom.name() == atom_name) {
+                        ring_atom_count++;
                         has_purine_atoms = true;
                         break;
                     }
@@ -278,7 +295,9 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // Legacy rejects residues where RMSD > NT_CUTOFF (0.2618), even standard A/C/G/T/U
     
     if (has_ring_atoms) {
-        auto rmsd_result = check_nt_type_by_rmsd(residue);
+        auto rmsd_check = check_nt_type_by_rmsd(residue);
+        auto rmsd_result = rmsd_check.rmsd;
+        bool found_purine_atoms = rmsd_check.found_purine_atoms;
         
         // Use strict threshold (0.2618) for all bases
         double rmsd_threshold = 0.2618;
@@ -286,9 +305,10 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         // Debug output disabled
         if (!rmsd_result.has_value() || *rmsd_result > rmsd_threshold) {
             // RMSD check failed with all atoms
-            // Legacy's TWO-TRY approach: If has purine atoms, retry with ONLY pyrimidine atoms
+            // Legacy's TWO-TRY approach: If purine atoms were found, retry with ONLY pyrimidine atoms
             // This handles cases where purine ring is distorted but pyrimidine core is fine
-            if (has_purine_atoms) {
+            // Note: Legacy uses kr > 0 (any purine atoms found), not requiring both N7 and C8
+            if (found_purine_atoms) {
                 // Retry with only 6 pyrimidine atoms (C4, N3, C2, N1, C6, C5)
                 // Calculate RMSD using ONLY pyrimidine ring atoms (first 6)
                 std::vector<geometry::Vector3D> experimental_coords;
