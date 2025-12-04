@@ -67,10 +67,8 @@ target_link_libraries(x3dna PUBLIC
     nlohmann_json::nlohmann_json
 )
 
-# Add compile definitions for debug flags
-if(DEBUG_BP_TYPE_ID)
-    target_compile_definitions(x3dna PRIVATE DEBUG_BP_TYPE_ID)
-endif()
+# Add compile definitions for debug flags (after x3dna target is created)
+# This will be set later after the target is defined
 
 # Testing (after dependencies are loaded)
 if(BUILD_TESTS)
