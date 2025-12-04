@@ -202,7 +202,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     
     // Also explicitly exclude known non-nucleotides that might have ambiguous one_letter_code
     static const std::vector<std::string> excluded_molecules = {
-        "MES", "HEPES", "TRIS", "EDO", "GOL", "SO4", "PO4", "ACT", "FMT", "EFZ"
+        "MES", "HEPES", "TRIS", "EDO", "GOL", "SO4", "PO4", "ACT", "FMT", "EFZ", "LYA"
     };
     for (const auto& excluded : excluded_molecules) {
         if (res_name == excluded) {
