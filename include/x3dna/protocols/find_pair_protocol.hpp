@@ -106,21 +106,6 @@ public:
     }
 
     /**
-     * @brief Set fix indices from legacy JSON (for comparison with legacy)
-     */
-    void set_fix_indices_from_legacy_json(bool value, const std::string& json_file = "") {
-        fix_indices_from_legacy_json_ = value;
-        legacy_json_file_ = json_file;
-    }
-
-    /**
-     * @brief Get fix indices from legacy JSON
-     */
-    bool fix_indices_from_legacy_json() const {
-        return fix_indices_from_legacy_json_;
-    }
-
-    /**
      * @brief Set output directory for JSON files
      * @param output_dir Directory where JSON files will be written
      */
@@ -230,8 +215,6 @@ private:
     bool find_all_pairs_ = false;
     bool divide_helices_ = false;
     bool legacy_mode_ = false;
-    bool fix_indices_from_legacy_json_ = false;
-    std::string legacy_json_file_ = ""; // Legacy compatibility mode
 
     // Results
     std::vector<core::BasePair> base_pairs_;

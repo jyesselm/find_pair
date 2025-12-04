@@ -51,10 +51,6 @@ int main(int argc, char* argv[]) {
         if (json_writer) {
             protocol.set_json_writer(json_writer.get());
         }
-        if (options.fix_indices_from_legacy_json) {
-            protocol.set_fix_indices_from_legacy_json(true, options.legacy_json_file);
-        }
-
         // Execute protocol
         std::cout << "Finding base pairs...\n";
         protocol.execute(structure);

@@ -348,7 +348,8 @@ python3 scripts/stage_by_stage_validation.py \
 
 **Continue** until all 4,123 PDBs tested for Stage 2
 
-**Goal**: Stage 2 at 100% pass rate before moving to Stage 3
+**Goal**: Stage 2 at 100% pass rate AND legacy dependency removed from all Stage 2 generation before moving to Stage 3
+**Status**: ✅ COMPLETE - 100% match achieved AND legacy dependency fully removed (December 4, 2025)
 
 ---
 
@@ -599,7 +600,7 @@ python3 scripts/batch_validation_workflow.py \
 - 42 batches × 100 PDBs
 - Fix failures as they appear
 - Achieve 100% pass rate
-- ✅ Stage 2 complete
+- ✅ Stage 2 complete (100% match + legacy dependency fully removed - December 4, 2025)
 
 **Stage 3: Distance Checks**  
 - Same process

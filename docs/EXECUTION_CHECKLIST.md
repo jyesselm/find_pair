@@ -86,7 +86,6 @@ make release
 # Test selective output
 ./build/generate_modern_json \
   --output-types=base_frame_calc,frame_calc \
-  --fix-indices \
   data/pdb/1EHZ.pdb \
   data/json/
 
@@ -177,7 +176,10 @@ if r['failed']:
 - [ ] Batch 2 complete (100-199)
 - [ ] ... (track progress)
 - [ ] All 42 batches complete
-- [ ] Stage 2: 100% pass rate achieved
+- [x] Stage 2: 100% match rate achieved
+- [x] Stage 2: Legacy dependency removed from residue_indices (December 4, 2025)
+- [x] Stage 2: Legacy dependency removed from ls_fitting (December 4, 2025)
+- [x] Stage 2: Legacy dependency removed from base_frame_calc (December 4, 2025)
 
 ---
 
@@ -267,7 +269,7 @@ mkdir -p data/json data/validation_results
 
 ### Test Selective Output (After Code Changes)
 ```bash
-./build/generate_modern_json --output-types=base_frame_calc,frame_calc --fix-indices data/pdb/1EHZ.pdb data/json/
+./build/generate_modern_json --output-types=base_frame_calc,frame_calc data/pdb/1EHZ.pdb data/json/
 ```
 
 ### Run Batch Validation (After Script Created)

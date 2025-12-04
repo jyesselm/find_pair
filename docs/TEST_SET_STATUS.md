@@ -263,7 +263,7 @@ Compare the generated step/helical parameters
 ### For 100% Accuracy on Test Set
 
 ✅ Stage 1 (Atoms): 100% match on all available PDBs  
-✅ Stage 2 (Frames): 100% match on all available PDBs  
+✅ Stage 2 (Frames): 100% match achieved, legacy dependency fully removed (residue_indices ✅, ls_fitting ✅, base_frame_calc ✅) - December 4, 2025  
 ⏳ Stage 3 (Distance): 100% match on 22 PDBs  
 ⏳ Stage 4 (H-Bonds): 100% match on 22 PDBs  
 ⏳ Stage 5 (Validation): 100% match on 23 PDBs  

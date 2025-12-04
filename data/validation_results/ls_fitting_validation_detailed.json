@@ -1,29 +1,137 @@
 {
-  "pass": 864,
-  "fp_mismatch": 2732,
-  "count_mismatch": 3,
-  "error": 3,
+  "pass": 858,
+  "fp_mismatch": 2717,
+  "count_mismatch": 21,
+  "error": 6,
   "skip": 0,
   "count_mismatch_pdbs": [
     {
-      "pdb_id": "4KI4",
-      "legacy": 33,
-      "modern": 32,
-      "diff": 1
+      "pdb_id": "2FK6",
+      "legacy": 53,
+      "modern": 54,
+      "diff": -1
     },
     {
-      "pdb_id": "5EAO",
-      "legacy": 68,
-      "modern": 67,
-      "diff": 1
+      "pdb_id": "2GCV",
+      "legacy": 141,
+      "modern": 142,
+      "diff": -1
     },
     {
-      "pdb_id": "5EAQ",
-      "legacy": 68,
-      "modern": 67,
-      "diff": 1
+      "pdb_id": "2H0W",
+      "legacy": 141,
+      "modern": 142,
+      "diff": -1
+    },
+    {
+      "pdb_id": "2HO6",
+      "legacy": 141,
+      "modern": 143,
+      "diff": -2
+    },
+    {
+      "pdb_id": "2QKK",
+      "legacy": 164,
+      "modern": 165,
+      "diff": -1
+    },
+    {
+      "pdb_id": "4B3O",
+      "legacy": 45,
+      "modern": 46,
+      "diff": -1
+    },
+    {
+      "pdb_id": "4GCW",
+      "legacy": 55,
+      "modern": 56,
+      "diff": -1
+    },
+    {
+      "pdb_id": "4IFD",
+      "legacy": 20,
+      "modern": 21,
+      "diff": -1
+    },
+    {
+      "pdb_id": "4LVY",
+      "legacy": 89,
+      "modern": 91,
+      "diff": -2
+    },
+    {
+      "pdb_id": "4QVI",
+      "legacy": 80,
+      "modern": 81,
+      "diff": -1
+    },
+    {
+      "pdb_id": "4X4R",
+      "legacy": 69,
+      "modern": 70,
+      "diff": -1
+    },
+    {
+      "pdb_id": "4X4V",
+      "legacy": 64,
+      "modern": 65,
+      "diff": -1
+    },
+    {
+      "pdb_id": "6BSG",
+      "legacy": 47,
+      "modern": 48,
+      "diff": -1
+    },
+    {
+      "pdb_id": "6BSH",
+      "legacy": 47,
+      "modern": 48,
+      "diff": -1
+    },
+    {
+      "pdb_id": "6BSI",
+      "legacy": 47,
+      "modern": 48,
+      "diff": -1
+    },
+    {
+      "pdb_id": "6BSJ",
+      "legacy": 47,
+      "modern": 48,
+      "diff": -1
+    },
+    {
+      "pdb_id": "6E1T",
+      "legacy": 30,
+      "modern": 31,
+      "diff": -1
+    },
+    {
+      "pdb_id": "6G7Z",
+      "legacy": 186,
+      "modern": 187,
+      "diff": -1
+    },
+    {
+      "pdb_id": "6GYV",
+      "legacy": 190,
+      "modern": 191,
+      "diff": -1
+    },
+    {
+      "pdb_id": "7KJW",
+      "legacy": 44,
+      "modern": 45,
+      "diff": -1
+    },
+    {
+      "pdb_id": "7KQN",
+      "legacy": 66,
+      "modern": 68,
+      "diff": -2
     }
   ],
-  "start_time": "2025-12-03T20:10:16.740509",
-  "end_time": "2025-12-03T20:15:18.136019"
+  "start_time": "2025-12-03T21:35:22.280943",
+  "end_time": "2025-12-03T22:28:48.743420"
 }

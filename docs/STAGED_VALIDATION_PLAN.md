@@ -36,6 +36,7 @@ python3 scripts/compare_json.py atoms <PDB_ID>
 
 ### Stage 2: Reference Frame Calculation ✅ COMPLETE
 **Focus**: Verify frame calculations (rotation matrices, origins)
+**Status**: 100% match achieved AND legacy dependency removed from ALL Stage 2 generation (residue_indices, ls_fitting, base_frame_calc). Verified December 4, 2025.
 
 | Record Type | Directory | What It Tests | Status |
 |-------------|-----------|---------------|--------|
@@ -216,7 +217,7 @@ python3 scripts/compare_json.py helical <PDB_ID>
 
 #### Stage 2: Reference Frames
 - **Status**: ✅ COMPLETE
-- **What we validated**: Frame calculations match legacy (with `--fix-indices`)
+- **What we validated**: Frame calculations match legacy
 - **JSON generated**: `base_frame_calc/`, `frame_calc/` or `ref_frame/`
 
 ### 🔄 NEXT STAGES TO DO (In Order)

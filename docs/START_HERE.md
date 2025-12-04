@@ -214,7 +214,7 @@ cd org
 
 ### Modern Code
 ```bash
-./build/generate_modern_json --fix-indices data/pdb/1EHZ.pdb data/json/
+./build/generate_modern_json data/pdb/1EHZ.pdb data/json/
 # → Calls production C++ code:
 #   - PdbParser::parse() → reads PDB
 #   - BaseFrameCalculator::calculate_frame() → calculates frames

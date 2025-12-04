@@ -38,6 +38,9 @@ constexpr std::array<const char*, 9> RING_ATOM_NAMES = {" C4 ", " N3 ", " C2 ", 
 struct RmsdCheckResult {
     std::optional<double> rmsd;
     bool found_purine_atoms; // Whether any purine atoms (N7, C8, N9) were found
+    std::vector<std::string> matched_atom_names; // Atom names that were matched in RMSD check
+    std::vector<geometry::Vector3D> matched_experimental_coords; // Experimental coordinates from RMSD check
+    std::vector<geometry::Vector3D> matched_standard_coords; // Standard coordinates from RMSD check
 };
 
 /**
@@ -124,21 +127,35 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
 
     // Legacy requires: (!nN && !C1_prime) -> return DUMMY
     if (nN == 0 && !has_c1_prime) {
-        return {std::nullopt, purine_atom_count > 0};
+        return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
     }
 
     // Need at least 3 atoms for RMSD calculation
     if (experimental_coords.size() < 3) {
-        return {std::nullopt, purine_atom_count > 0};
+        return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
+    }
+
+    // Collect matched atom names in the order they were found
+    // This matches the order in experimental_coords and standard_coords
+    std::vector<std::string> matched_names;
+    for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
+        const char* atom_name = RING_ATOM_NAMES[i];
+        // Check if this atom was found in residue (same logic as above)
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == atom_name) {
+                matched_names.push_back(std::string(atom_name));
+                break;
+            }
+        }
     }
 
     // Perform least-squares fitting (matches legacy ls_fitting)
     geometry::LeastSquaresFitter fitter;
     try {
         auto fit_result = fitter.fit(standard_coords, experimental_coords);
-        return {fit_result.rms, purine_atom_count > 0};
+        return {fit_result.rms, purine_atom_count > 0, matched_names, experimental_coords, standard_coords};
     } catch (const std::exception&) {
-        return {std::nullopt, purine_atom_count > 0};
+        return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
     }
 }
 } // namespace
@@ -415,14 +432,18 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // This matches legacy residue_ident() which does RMSD check for ALL residues
     // Legacy rejects residues where RMSD > NT_CUTOFF (0.2618), even standard A/C/G/T/U
     
+    RmsdCheckResult rmsd_check;
+    std::optional<double> rmsd_result;
+    bool found_purine_atoms = false;
+    
     if (has_ring_atoms) {
         // DEBUG: Always print for CVC
         if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
             std::cerr << "DEBUG: CVC B7 - Calling check_nt_type_by_rmsd\n";
         }
-        auto rmsd_check = check_nt_type_by_rmsd(residue);
-        auto rmsd_result = rmsd_check.rmsd;
-        bool found_purine_atoms = rmsd_check.found_purine_atoms;
+        rmsd_check = check_nt_type_by_rmsd(residue);
+        rmsd_result = rmsd_check.rmsd;
+        found_purine_atoms = rmsd_check.found_purine_atoms;
         
         // DEBUG: Always print for CVC
         if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
@@ -671,13 +692,12 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
 
     // DEBUG: Always print for CVC
     if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-        std::cerr << "DEBUG: CVC B7 - Matched " << matched.num_matched << " atoms\n";
-        std::cerr << "DEBUG: CVC B7 - Matched atom names: ";
+        std::cerr << "DEBUG: CVC B7 - Template matching: Matched " << matched.num_matched << " atoms\n";
+        std::cerr << "DEBUG: CVC B7 - Template matched atom names: ";
         for (const auto& name : matched.atom_names) {
             std::cerr << name << " ";
         }
         std::cerr << "\n";
-        std::cerr << "DEBUG: CVC B7 - matched.is_valid()=" << matched.is_valid() << "\n";
     }
 
 #ifdef DEBUG_FRAME_CALC
@@ -689,7 +709,73 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     std::cerr << "\n";
 #endif
 
-    if (!matched.is_valid()) {
+    // If template matching failed but RMSD check passed with matched atoms, use those instead
+    // This handles modified nucleotides like CVC that have non-standard atom combinations
+    // DEBUG: Always print for CVC
+    if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
+        std::cerr << "DEBUG: CVC B7 - Checking fallback condition:\n";
+        std::cerr << "  matched.is_valid()=" << matched.is_valid() << "\n";
+        std::cerr << "  has_ring_atoms=" << has_ring_atoms << "\n";
+        std::cerr << "  rmsd_result.has_value()=" << rmsd_result.has_value() << "\n";
+        std::cerr << "  rmsd_check.matched_atom_names.size()=" << rmsd_check.matched_atom_names.size() << "\n";
+    }
+    
+    if (!matched.is_valid() && has_ring_atoms && rmsd_result.has_value() && 
+        !rmsd_check.matched_atom_names.empty() && rmsd_check.matched_atom_names.size() >= 3) {
+        // Use atoms from RMSD check instead of template matching
+        // DEBUG: Always print for CVC
+        if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
+            std::cerr << "DEBUG: CVC B7 - Template matching failed, using RMSD check atoms: ";
+            for (const auto& name : rmsd_check.matched_atom_names) {
+                std::cerr << name << " ";
+            }
+            std::cerr << "\n";
+        }
+        
+        // Build MatchedAtoms from RMSD check results
+        matched.num_matched = rmsd_check.matched_atom_names.size();
+        matched.atom_names = rmsd_check.matched_atom_names;
+        matched.experimental.clear();
+        matched.standard.clear();
+        
+        // Find atoms in residue and build standard coordinates
+        // The matched_atom_names, matched_experimental_coords, and matched_standard_coords
+        // are already in the same order from the RMSD check
+        for (size_t i = 0; i < rmsd_check.matched_atom_names.size(); ++i) {
+            const std::string& atom_name = rmsd_check.matched_atom_names[i];
+            
+            // Find atom in residue
+            bool found_experimental = false;
+            for (const auto& atom : residue.atoms()) {
+                if (atom.name() == atom_name) {
+                    matched.experimental.push_back(atom);
+                    found_experimental = true;
+                    break;
+                }
+            }
+            
+            if (!found_experimental) {
+                // Should not happen, but handle gracefully
+                continue;
+            }
+            
+            // Create standard atom from standard coordinates
+            const auto& std_coord = rmsd_check.matched_standard_coords[i];
+            core::Atom std_atom(atom_name, 
+                               geometry::Vector3D(std_coord.x(), std_coord.y(), std_coord.z()),
+                               "", ' ', 0, 'A');
+            matched.standard.push_back(std_atom);
+        }
+        
+        // Verify we have enough atoms
+        if (matched.experimental.size() < 3 || matched.standard.size() < 3) {
+            // DEBUG: Always print for CVC
+            if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
+                std::cerr << "DEBUG: CVC B7 - REJECTED: Failed to build matched atoms from RMSD check\n";
+            }
+            return result;
+        }
+    } else if (!matched.is_valid()) {
         // DEBUG: Always print for CVC
         if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
             std::cerr << "DEBUG: CVC B7 - REJECTED: Not enough matched atoms (need >= 3, got " 

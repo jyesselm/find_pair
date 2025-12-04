@@ -5,7 +5,6 @@
 
 #include <x3dna/protocols/find_pair_protocol.hpp>
 #include <x3dna/config/config_manager.hpp>
-#include <x3dna/io/residue_index_fixer.hpp>
 #include <x3dna/io/json_writer.hpp>
 #include <x3dna/core/residue.hpp>
 #include <iostream>
@@ -24,49 +23,6 @@ void FindPairProtocol::execute(core::Structure& structure) {
     // Check legacy mode from config if not explicitly set
     if (!legacy_mode_ && config_) {
         legacy_mode_ = config_->legacy_mode();
-    }
-
-    // Fix residue indices from legacy JSON if requested (for comparison)
-    if (fix_indices_from_legacy_json_) {
-        std::string json_file = legacy_json_file_;
-        if (json_file.empty()) {
-            // Auto-detect legacy JSON file from structure's PDB ID
-            std::string pdb_id = structure.pdb_id();
-            if (pdb_id.empty()) {
-                // Try to extract from structure name or use default
-                pdb_id = "UNKNOWN";
-            }
-            std::filesystem::path auto_json =
-                std::filesystem::path("data/json_legacy/base_frame_calc") / (pdb_id + ".json");
-            if (std::filesystem::exists(auto_json)) {
-                json_file = auto_json.string();
-            }
-        }
-
-        if (!json_file.empty() && std::filesystem::exists(json_file)) {
-            int fixed_count = io::fix_residue_indices_from_json(structure, json_file);
-            if (fixed_count > 0) {
-                std::cout << "[INFO] Fixed " << fixed_count
-                          << " residue indices from legacy JSON: " << json_file << "\n";
-            } else if (fixed_count < 0) {
-                // Error codes: -1 = file open error, -2 = not array, -3 = parse error
-                std::cerr << "[WARNING] Failed to load legacy JSON for fixing indices: "
-                          << json_file;
-                if (fixed_count == -1) {
-                    std::cerr << " (file open error)\n";
-                } else if (fixed_count == -2) {
-                    std::cerr << " (not an array)\n";
-                } else if (fixed_count == -3) {
-                    std::cerr << " (JSON parse error - file may be corrupted)\n";
-                } else {
-                    std::cerr << " (error code: " << fixed_count << ")\n";
-                }
-                std::cerr << "[WARNING] Continuing without fixing indices...\n";
-            }
-        } else if (fix_indices_from_legacy_json_) {
-            std::cerr << "[WARNING] Legacy JSON file not found for fixing indices: "
-                      << (json_file.empty() ? "(auto-detect failed)" : json_file) << "\n";
-        }
     }
 
     // Set legacy mode on frame calculator if needed
@@ -169,19 +125,7 @@ void FindPairProtocol::detect_helices(core::Structure& /* structure */) {
 size_t FindPairProtocol::write_frames_json(core::Structure& structure,
                                            const std::filesystem::path& pdb_file,
                                            const std::filesystem::path& output_dir) {
-    // Create JSON writer (optional legacy JSON for PDB line caching)
-    std::filesystem::path legacy_json_file;
-    std::filesystem::path legacy_dir = output_dir.parent_path() / "json_legacy";
-    std::string pdb_id = structure.pdb_id();
-    if (pdb_id.empty()) {
-        pdb_id = pdb_file.stem().string();
-    }
-    std::filesystem::path legacy_file = legacy_dir / "pdb_atoms" / (pdb_id + ".json");
-    if (std::filesystem::exists(legacy_file)) {
-        legacy_json_file = legacy_file;
-    }
-
-    io::JsonWriter writer(pdb_file, legacy_json_file);
+    io::JsonWriter writer(pdb_file);
 
     // Record residue indices (needed for frames)
     writer.record_residue_indices(structure);

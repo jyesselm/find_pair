@@ -513,7 +513,7 @@ python3 scripts/compare_json.py compare --test-set 100
 
 | Executable | Purpose | Usage |
 |------------|---------|-------|
-| `find_pair_app` | Find base pairs (modern find_pair) | `./build/find_pair_app [--fix-indices] [--legacy-inp=FILE] data/pdb/1H4S.pdb output.inp` |
+| `find_pair_app` | Find base pairs (modern find_pair) | `./build/find_pair_app [--legacy-inp=FILE] data/pdb/1H4S.pdb output.inp` |
 | `analyze_app` | Calculate step parameters | `./build/analyze_app output.inp` |
 | `generate_modern_json` | Generate JSON for comparison | `./build/generate_modern_json data/pdb/1H4S.pdb data/json/` |
 
@@ -533,20 +533,7 @@ python3 scripts/compare_json.py compare --test-set 100
 | `analyze_original` | `analyze_app` | Step parameters |
 | `find_pair_analyze` | `generate_modern_json` | JSON files |
 
-### Important: The `--fix-indices` Option
-
-**When comparing with legacy output, always use `--fix-indices`:**
-
-```bash
-./build/find_pair_app --fix-indices data/pdb/1H4S.pdb output.inp
-```
-
-**Why?** The modern and legacy code assign different indices to residues (off by 1). The `--fix-indices` option:
-- Reads the legacy JSON file (`data/json_legacy/base_frame_calc/<PDB>.json`)
-- Maps residues by their PDB properties (chain, seq_num, insertion code)
-- Assigns matching legacy indices to modern residues
-
-**Without `--fix-indices`**: Base pairs will have different residue indices and appear non-matching even when they're the same physical pairs.
+Modern parsing now assigns legacy-style residue and atom indices directly from the PDB scan order, so no extra flags are required when comparing outputs. If you previously relied on `--fix-indices`, simply regenerate with the current tools—the indices will already match the legacy JSON.
 
 ### The `--legacy-inp` Option for Exact Frame Matching
 
@@ -559,7 +546,7 @@ When generating `ref_frames_modern.dat`, the Y/Z axis orientation depends on res
 cd org && ./build/bin/find_pair_original ../data/pdb/1H4S.pdb && cd ..
 
 # Then generate modern with legacy ordering
-./build/find_pair_app --fix-indices --legacy-inp=1H4S.inp data/pdb/1H4S.pdb output.inp
+./build/find_pair_app --legacy-inp=1H4S.inp data/pdb/1H4S.pdb output.inp
 ```
 
 This parses the legacy `.inp` file to determine which residue was "first" in each pair, then uses the same ordering for frame calculations. This achieves **100% match** on all axes (origin, x, y, z).

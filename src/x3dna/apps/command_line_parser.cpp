@@ -79,11 +79,6 @@ FindPairOptions CommandLineParser::parse_find_pair(int argc, char* argv[]) {
                 options.curves_plus = true;
             } else if (arg == "-hjb" || arg == "--hjb") {
                 options.hjb = true;
-            } else if (arg == "--fix-indices" || arg == "--fix-indices-from-json") {
-                options.fix_indices_from_legacy_json = true;
-            } else if (arg.find("--fix-indices=") == 0) {
-                options.fix_indices_from_legacy_json = true;
-                options.legacy_json_file = extract_option_value(arg);
             } else if (arg.find("--legacy-inp=") == 0) {
                 options.legacy_inp_file = extract_option_value(arg);
             } else if (arg.find("-m") == 0) {
@@ -234,8 +229,6 @@ void CommandLineParser::print_find_pair_usage(const char* program_name) {
     std::cerr << "  -hjb             HJB option\n";
     std::cerr << "  -m[=filename]    Map file (default: Gaussian)\n";
     std::cerr << "  --legacy-mode    Enable legacy compatibility mode\n";
-    std::cerr << "  --fix-indices    Fix residue indices from legacy JSON (for comparison)\n";
-    std::cerr << "  --fix-indices=FILE  Fix indices using specific legacy JSON file\n";
     std::cerr << "\nExample:\n";
     std::cerr << "  " << program_name << " 1H4S.pdb\n";
     std::cerr << "  " << program_name << " --legacy-mode 1H4S.pdb output.inp\n";

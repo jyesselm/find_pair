@@ -18,15 +18,8 @@ namespace io {
 // Constants
 constexpr double EMPTY_CRITERION = 1e-10;
 
-JsonWriter::JsonWriter(const std::filesystem::path& pdb_file,
-                       const std::filesystem::path& legacy_json_file)
-    : pdb_file_(pdb_file), legacy_mappings_loaded_(false) {
+JsonWriter::JsonWriter(const std::filesystem::path& pdb_file) : pdb_file_(pdb_file) {
     initialize_json();
-
-    // Load legacy mappings if legacy JSON file is provided
-    if (!legacy_json_file.empty() && std::filesystem::exists(legacy_json_file)) {
-        load_legacy_mappings(legacy_json_file);
-    }
 }
 
 JsonWriter::~JsonWriter() {
@@ -175,149 +168,6 @@ std::string JsonWriter::get_pdb_line(size_t line_number) const {
     return "";
 }
 
-void JsonWriter::load_legacy_mappings(const std::filesystem::path& legacy_json_file) {
-    if (legacy_mappings_loaded_) {
-        return;
-    }
-
-    try {
-        std::ifstream file(legacy_json_file);
-        if (!file.is_open()) {
-            std::cerr << "[JSON_WRITER] Warning: Could not open legacy JSON file: "
-                      << legacy_json_file << "\n";
-            legacy_mappings_loaded_ = true;
-            return;
-        }
-
-        nlohmann::json legacy_data;
-        file >> legacy_data;
-
-        // Extract atoms from legacy JSON (handle both split files and grouped format)
-        nlohmann::json legacy_atoms;
-        nlohmann::json calculations = legacy_data.value("calculations", nlohmann::json::object());
-
-        if (calculations.is_object()) {
-            // Grouped format: calculations is a dict
-            auto pdb_atoms_group = calculations.value("pdb_atoms", nlohmann::json::array());
-            if (pdb_atoms_group.is_array() && !pdb_atoms_group.empty()) {
-                legacy_atoms = pdb_atoms_group[0].value("atoms", nlohmann::json::array());
-            }
-        } else if (calculations.is_array()) {
-            // Array format: find pdb_atoms entry
-            for (const auto& calc : calculations) {
-                if (calc.value("type", std::string("")) == "pdb_atoms") {
-                    legacy_atoms = calc.value("atoms", nlohmann::json::array());
-                    break;
-                }
-            }
-        }
-
-        // Try split file if not found in main file
-        if (legacy_atoms.empty()) {
-            std::filesystem::path split_file =
-                legacy_json_file.parent_path() /
-                (legacy_json_file.stem().string() + "_pdb_atoms.json");
-            if (std::filesystem::exists(split_file)) {
-                std::ifstream split_stream(split_file);
-                if (split_stream.is_open()) {
-                    nlohmann::json split_data;
-                    split_stream >> split_data;
-                    if (split_data.is_array() && !split_data.empty()) {
-                        legacy_atoms = split_data[0].value("atoms", nlohmann::json::array());
-                    }
-                }
-            }
-        }
-
-        // Build atom index mapping
-        for (const auto& atom : legacy_atoms) {
-            if (!atom.is_object())
-                continue;
-
-            std::string chain_id_str = atom.value("chain_id", std::string(""));
-            char chain_id = chain_id_str.empty() ? ' ' : chain_id_str[0];
-            int residue_seq = atom.value("residue_seq", 0);
-            std::string insertion_str = atom.value("insertion", std::string(" "));
-            char insertion = insertion_str.empty() ? ' ' : insertion_str[0];
-            std::string atom_name = atom.value("atom_name", std::string(""));
-            int atom_idx = atom.value("atom_idx", 0);
-
-            if (atom_idx > 0 && !atom_name.empty()) {
-                legacy_atom_idx_map_[std::make_tuple(chain_id, residue_seq, insertion, atom_name)] =
-                    atom_idx;
-            }
-        }
-
-        // Build residue index mapping from atoms
-        // Legacy residue indices are assigned sequentially as residues are encountered
-        // We infer residue boundaries by detecting changes in (chain_id, residue_seq, insertion)
-        int residue_idx = 1; // 1-based
-        char last_chain_id = '\0';
-        int last_residue_seq = 0;
-        char last_insertion = '\0';
-
-        for (const auto& atom : legacy_atoms) {
-            if (!atom.is_object())
-                continue;
-
-            std::string chain_id_str = atom.value("chain_id", std::string(""));
-            char chain_id = chain_id_str.empty() ? ' ' : chain_id_str[0];
-            int residue_seq = atom.value("residue_seq", 0);
-            std::string insertion_str = atom.value("insertion", std::string(" "));
-            char insertion = insertion_str.empty() ? ' ' : insertion_str[0];
-
-            // Check if this is a new residue (different from previous)
-            if (residue_seq != last_residue_seq || chain_id != last_chain_id ||
-                insertion != last_insertion) {
-                // New residue - add to mapping
-                auto key = std::make_tuple(chain_id, residue_seq, insertion);
-                if (legacy_residue_idx_map_.find(key) == legacy_residue_idx_map_.end()) {
-                    legacy_residue_idx_map_[key] = residue_idx;
-                    residue_idx++;
-                }
-
-                last_chain_id = chain_id;
-                last_residue_seq = residue_seq;
-                last_insertion = insertion;
-            }
-        }
-
-        std::cerr << "[JSON_WRITER] Loaded " << legacy_atom_idx_map_.size()
-                  << " legacy atom indices and " << legacy_residue_idx_map_.size()
-                  << " legacy residue indices\n";
-
-        legacy_mappings_loaded_ = true;
-    } catch (const std::exception& e) {
-        std::cerr << "[JSON_WRITER] Error loading legacy mappings: " << e.what() << "\n";
-        legacy_mappings_loaded_ = true;
-    }
-}
-
-int JsonWriter::get_legacy_atom_idx(char chain_id, int residue_seq, char insertion,
-                                    const std::string& atom_name) const {
-    auto key = std::make_tuple(chain_id, residue_seq, insertion, atom_name);
-    auto it = legacy_atom_idx_map_.find(key);
-    if (it != legacy_atom_idx_map_.end()) {
-        return it->second;
-    }
-    return 0;
-}
-
-int JsonWriter::get_legacy_residue_idx(char chain_id, int residue_seq, char insertion) const {
-    auto key = std::make_tuple(chain_id, residue_seq, insertion);
-    auto it = legacy_residue_idx_map_.find(key);
-    if (it != legacy_residue_idx_map_.end()) {
-        return it->second;
-    }
-    return 0;
-}
-
-void JsonWriter::set_legacy_indices_on_structure(core::Structure& structure) {
-    // Set legacy indices on all atoms in the structure
-    // This makes legacy indices available to all algorithms that use the structure
-    structure.set_legacy_indices(legacy_atom_idx_map_, legacy_residue_idx_map_);
-}
-
 void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
     nlohmann::json record;
     record["type"] = "pdb_atoms";
@@ -430,20 +280,7 @@ void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
     record["type"] = "base_frame_calc";
     record["residue_idx"] = residue_idx;
 
-    // Add legacy residue index if available
-    // First try to get from map (for backward compatibility)
-    int legacy_residue_idx = get_legacy_residue_idx(chain_id, residue_seq, insertion);
-    // If not found in map and residue_idx is in reasonable range, assume it's already
-    // legacy_residue_idx (0-based) Legacy residue indices are typically 1-based, so if residue_idx
-    // < 1000, it might be legacy_residue_idx - 1
-    if (legacy_residue_idx <= 0 && residue_idx > 0 && residue_idx < 10000) {
-        // The residue_idx passed might already be legacy_residue_idx (0-based)
-        // Convert back to 1-based for legacy_residue_idx field
-        legacy_residue_idx = static_cast<int>(residue_idx + 1);
-    }
-    if (legacy_residue_idx > 0) {
-        record["legacy_residue_idx"] = legacy_residue_idx;
-    }
+    record["legacy_residue_idx"] = static_cast<int>(residue_idx + 1);
 
     record["base_type"] = std::string(1, base_type);
 
@@ -480,11 +317,7 @@ void JsonWriter::record_ls_fitting(size_t residue_idx, size_t num_points, double
     record["type"] = "ls_fitting";
     record["residue_idx"] = residue_idx;
 
-    // Add legacy residue index if available
-    int legacy_residue_idx = get_legacy_residue_idx(chain_id, residue_seq, insertion);
-    if (legacy_residue_idx > 0) {
-        record["legacy_residue_idx"] = legacy_residue_idx;
-    }
+    record["legacy_residue_idx"] = static_cast<int>(residue_idx + 1);
 
     // Add residue identification information (matching legacy format)
     if (!residue_name.empty()) {
@@ -532,11 +365,7 @@ void JsonWriter::record_frame_calc(size_t residue_idx, char base_type,
     record["type"] = "frame_calc";
     record["residue_idx"] = residue_idx;
 
-    // Add legacy residue index if available
-    int legacy_residue_idx = get_legacy_residue_idx(chain_id, residue_seq, insertion);
-    if (legacy_residue_idx > 0) {
-        record["legacy_residue_idx"] = legacy_residue_idx;
-    }
+    record["legacy_residue_idx"] = static_cast<int>(residue_idx + 1);
     record["base_type"] = std::string(1, base_type);
 
     // Add residue identification information (matching legacy format)

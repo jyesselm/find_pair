@@ -8,6 +8,7 @@
 #include <string>
 #include <filesystem>
 #include <vector>
+#include <map>
 #include <array>
 #include <set>
 #include <nlohmann/json.hpp>
@@ -35,10 +36,8 @@ public:
     /**
      * @brief Constructor
      * @param pdb_file Path to the PDB file being processed
-     * @param legacy_json_file Optional path to legacy JSON file for index mapping
      */
-    explicit JsonWriter(const std::filesystem::path& pdb_file,
-                        const std::filesystem::path& legacy_json_file = std::filesystem::path());
+    explicit JsonWriter(const std::filesystem::path& pdb_file);
 
     /**
      * @brief Destructor - automatically finalizes if not already done
@@ -78,18 +77,6 @@ public:
     void write_split_files(const std::filesystem::path& output_dir, bool pretty_print = true) const;
 
     // Record writing methods - matching legacy format
-
-    /**
-     * @brief Set legacy indices on all atoms in a structure
-     * @param structure Structure to update (non-const to allow modification)
-     */
-    void set_legacy_indices_on_structure(core::Structure& structure);
-
-    /**
-     * @brief Load legacy JSON and create index mappings
-     * @param legacy_json_file Path to legacy JSON file
-     */
-    void load_legacy_mappings(const std::filesystem::path& legacy_json_file);
 
     /**
      * @brief Record PDB atom data
@@ -311,13 +298,6 @@ private:
     mutable std::vector<std::string> pdb_lines_;
     mutable bool pdb_lines_loaded_ = false;
 
-    // Legacy index mappings for direct comparison
-    // Key: (chain_id, residue_seq, insertion, atom_name) -> legacy_atom_idx
-    std::map<std::tuple<char, int, char, std::string>, int> legacy_atom_idx_map_;
-    // Key: (chain_id, residue_seq, insertion) -> legacy_residue_idx
-    std::map<std::tuple<char, int, char>, int> legacy_residue_idx_map_;
-    bool legacy_mappings_loaded_ = false;
-
     // Index counters for tracking basepairs and hbonds
     size_t basepair_idx_counter_ = 0;
     size_t hbond_idx_counter_ = 0;
@@ -347,26 +327,6 @@ private:
      * @return PDB line or empty string if not found
      */
     std::string get_pdb_line(size_t line_number) const;
-
-    /**
-     * @brief Get legacy atom index for an atom
-     * @param chain_id Chain identifier
-     * @param residue_seq Residue sequence number
-     * @param insertion Insertion code
-     * @param atom_name Atom name
-     * @return Legacy atom index or 0 if not found
-     */
-    int get_legacy_atom_idx(char chain_id, int residue_seq, char insertion,
-                            const std::string& atom_name) const;
-
-    /**
-     * @brief Get legacy residue index for a residue
-     * @param chain_id Chain identifier
-     * @param residue_seq Residue sequence number
-     * @param insertion Insertion code
-     * @return Legacy residue index or 0 if not found
-     */
-    int get_legacy_residue_idx(char chain_id, int residue_seq, char insertion) const;
 
     /**
      * @brief Escape string for JSON

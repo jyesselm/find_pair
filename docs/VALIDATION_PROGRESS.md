@@ -23,12 +23,13 @@
 
 ### Phase 1: Core Data Structures ✅ COMPLETE
 
-| Record Type | Status | Match Rate | Notes |
-|-------------|--------|------------|-------|
-| `pdb_atoms` | ✅ **COMPLETE** | **100%** (3602/3602) | **DO NOT REGENERATE** - All atoms validated and match legacy exactly. Tested December 2, 2025. |
-| `base_frame_calc` | ✅ **COMPLETE** | **100%** | Frame metadata matches |
-| `frame_calc`/`ref_frame` | ✅ **COMPLETE** | **100%** | Reference frames match with `--fix-indices` |
-| `ls_fitting` | ✅ **COMPLETE** | **99.92%** (3599/3602) | **Exact legacy algorithm**. 3 remaining: 1 legacy dup, 2 non-standard naming. December 3, 2025. |
+| Record Type | Status | Match Rate | Legacy Dependency Removed? | Notes |
+|-------------|--------|------------|---------------------------|-------|
+| `pdb_atoms` | ✅ **COMPLETE** | **100%** (3602/3602) | ✅ | **DO NOT REGENERATE** - All atoms validated and match legacy exactly. Tested December 2, 2025. |
+| `residue_indices` | ✅ **COMPLETE** | **100%** | ✅ | Legacy reads removed December 4, 2025. Pure modern generation. |
+| `base_frame_calc` | ✅ **COMPLETE** | **100%** | ✅ | Legacy dependency removed December 4, 2025. Uses modern residue indexing. |
+| `frame_calc`/`ref_frame` | ✅ **COMPLETE** | **100%** | ✅ | Legacy dependency removed December 4, 2025. Uses modern residue indexing. |
+| `ls_fitting` | ✅ **COMPLETE** | **99.92%** (3599/3602) | ✅ | **Exact legacy algorithm**. 3 edge cases. Legacy dependency removed December 4, 2025. |
 
 ### Phase 2: Base Pair Detection 🔄 IN PROGRESS
 
@@ -83,14 +84,12 @@ Batch 4: IN PROGRESS (43+ PASS so far, 1 FAIL)
 ### ✅ Residue Index Matching (COMPLETE)
 **Problem**: Modern code assigned different indices than legacy  
 **Solution**: Match residues by PDB properties (chain, seq_num, ins_code)  
-**Status**: 100% match achieved using `--fix-indices` option  
+**Status**: 100% match achieved by assigning legacy-style indices during parsing  
 **Validation**: Every residue in test set correctly maps to legacy index
 
 **Key Implementation**:
-- `--fix-indices` flag in `generate_modern_json` and `find_pair_app`
-- Reads legacy `base_frame_calc` JSON
-- Matches by chain ID, sequence number, insertion code
-- Assigns legacy indices to modern residues
+- PDB parsing now assigns legacy indices directly (chain, seq_num, insertion order)
+- No dependency on legacy JSON during generation
 
 ### ✅ Reference Frame Matching (COMPLETE)
 **Problem**: Frame orientations differed due to residue ordering  
