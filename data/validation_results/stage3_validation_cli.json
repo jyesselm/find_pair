@@ -1,0 +1,25 @@
+{
+  "stage_id": "stage3",
+  "stage_name": "Distance Checks",
+  "test_date": "2025-12-04T16:51:00.948701",
+  "total_pdbs": 10,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failed_pdbs": [
+    {
+      "pdb_id": "100D",
+      "errors": [
+        "No modern JSON for distance_checks"
+      ],
+      "details": {
+        "distance_checks": {
+          "legacy_exists": true,
+          "modern_exists": false
+        }
+      }
+    }
+  ],
+  "elapsed_seconds": 3.4e-05,
+  "pass_rate": 0.0
+}

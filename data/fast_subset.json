@@ -1,0 +1,26 @@
+{
+  "fast_subset": [
+    "1JID",
+    "2DR7",
+    "2GQ4",
+    "2NUE",
+    "2ZHB",
+    "3SKL",
+    "4A3C",
+    "4K32",
+    "6WOX",
+    "7EOI",
+    "7RGU",
+    "7YFX",
+    "8I87",
+    "8IYQ",
+    "8J62"
+  ],
+  "metadata": {
+    "source": "data/valid_pdbs_fast.json",
+    "subset_size": 15,
+    "total_pdbs": 3602,
+    "seed": 42,
+    "created": "auto-generated"
+  }
+}
