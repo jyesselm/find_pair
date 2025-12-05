@@ -1,0 +1,104 @@
+{
+  "description": "Registry of modified nucleotide properties for X3DNA",
+  "version": "1.0",
+  "date": "2025-12-05",
+  "modified_nucleotides": {
+    "modified_adenines": {
+      "A2M":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "2-methyladenosine"},
+      "1MA":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "1-methyladenosine"},
+      "2MA":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "2-methyladenosine"},
+      "OMA":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "O-methyladenosine"},
+      "6MA":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "N6-methyladenosine"},
+      "MIA":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "2-methylthio-N6-isopentenyladenosine"},
+      "I6A":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "N6-isopentenyladenosine"},
+      "T6A":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "N6-threonylcarbamoyladenosine"},
+      "M6A":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "N6-methyladenosine"},
+      "LCA":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "Locked adenosine (LNA)"},
+      "A23":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "2'-deoxy-2'-fluoroadenosine"},
+      "ATP":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "Adenosine triphosphate"},
+      "ADP":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "Adenosine diphosphate"},
+      "AMP":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "Adenosine monophosphate"},
+      "SAM":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "S-adenosylmethionine"},
+      "SAH":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "S-adenosylhomocysteine"},
+      "APC":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "Adenosine phosphate carrier"},
+      "AF2":  {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "Modified adenosine"},
+      "0A":   {"code": "a", "type": "ADENINE", "is_purine": true,  "description": "Numbered adenine variant"}
+    },
+    "modified_guanines": {
+      "OMG":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "O-methylguanosine"},
+      "1MG":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "1-methylguanosine"},
+      "2MG":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "2-methylguanosine"},
+      "7MG":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "7-methylguanosine"},
+      "M2G":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "N2-methylguanosine"},
+      "YYG":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Modified guanosine"},
+      "YG":   {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Modified guanosine"},
+      "QUO":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Queuosine"},
+      "LCG":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Locked guanosine (LNA)"},
+      "GTP":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Guanosine triphosphate"},
+      "GDP":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Guanosine diphosphate"},
+      "5GP":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "5'-guanosine monophosphate"},
+      "PRF":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Prefluorinated guanine"},
+      "BGM":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Beta-D-glucosyl-guanine"},
+      "G48":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Modified guanine"},
+      "0G":   {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Numbered guanine variant"},
+      "IGU":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Isoguanosine"},
+      "DGP":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Deoxyguanosine phosphate"},
+      "9DG":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "9-deazaguanine (legacy incorrectly maps to U)"}
+    },
+    "inosines": {
+      "IMP":  {"code": "I", "type": "INOSINE", "is_purine": true,  "description": "Inosine monophosphate (fixed: should be purine)"}
+    },
+    "modified_cytosines": {
+      "5MC":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "5-methylcytidine"},
+      "OMC":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "O-methylcytidine"},
+      "S4C":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "4-thiocytidine"},
+      "5IC":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "5-iodocytidine"},
+      "5FC":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "5-fluorocytidine"},
+      "CBR":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "5-bromocytidine"},
+      "LCC":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "Locked cytosine (LNA)"},
+      "EPE":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "Modified cytosine analog"},
+      "2YR":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "2'-O-ribosylcytidine"},
+      "CTP":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "Cytidine triphosphate"},
+      "CSL":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "Modified cytosine"},
+      "CBV":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "Carbovir"},
+      "CCC":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "Modified cytosine"},
+      "CFZ":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "Modified cytosine"},
+      "C43":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "Modified cytosine"},
+      "A6C":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "N6-acetyl-cytosine"},
+      "CFL":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "Modified cytosine"},
+      "RSQ":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "R-squared cytosine"},
+      "0C":   {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "Numbered cytosine variant"}
+    },
+    "modified_thymines": {
+      "5MU":  {"code": "t", "type": "THYMINE", "is_purine": false, "description": "5-methyluridine (ribothymidine)"},
+      "RT":   {"code": "t", "type": "THYMINE", "is_purine": false, "description": "Ribothymidine"},
+      "CM0":  {"code": "t", "type": "THYMINE", "is_purine": false, "description": "Modified thymine (has C7 methyl, legacy incorrectly maps to U)"}
+    },
+    "modified_uracils": {
+      "70U":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "7-methyluridine"},
+      "H2U":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Dihydrouridine"},
+      "DHU":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Dihydrouridine"},
+      "OMU":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "O-methyluridine"},
+      "4SU":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "4-thiouridine"},
+      "S4U":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "4-thiouridine"},
+      "5BU":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "5-bromouridine"},
+      "2MU":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "2-methyluridine"},
+      "UR3":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Modified uridine"},
+      "TLN":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Thymidine LNA"},
+      "J48":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Hypermodified nucleotide (wybutosine precursor)"},
+      "NMN":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Nicotinamide mononucleotide"},
+      "NNR":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Nicotinamide riboside"},
+      "WVQ":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Modified uracil"},
+      "US5":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "5-hydroxymethyluridine"},
+      "UTP":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Uridine triphosphate"},
+      "UFT":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Modified uracil"},
+      "0U":   {"code": "u", "type": "URACIL", "is_purine": false, "description": "Numbered uracil variant"},
+      "KIR":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Kinetin riboside"},
+      "1RN":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Thiouridine (S2 instead of O2)"}
+    },
+    "pseudouridines": {
+      "B8H":  {"code": "P", "type": "PSEUDOURIDINE", "is_purine": false, "description": "Pseudouridine derivative"}
+    }
+  }
+}
+

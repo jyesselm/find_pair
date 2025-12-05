@@ -6,6 +6,7 @@
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/chain.hpp>
+#include <x3dna/core/residue_factory.hpp>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -657,12 +658,10 @@ core::Structure PdbParser::build_structure_from_residues(
 
         auto [residue_name, chain_id, residue_seq, insertion_code] = key;
 
-        core::Residue residue(residue_name, residue_seq, chain_id, insertion_code);
-
-        // Add all atoms to residue
-        for (const auto& atom : atoms) {
-            residue.add_atom(atom);
-        }
+        // Use ResidueFactory to create residue with all properties initialized
+        core::Residue residue = core::ResidueFactory::create(
+            residue_name, residue_seq, chain_id, insertion_code, atoms
+        );
 
         // Use try_emplace for efficiency (C++17) - avoids unnecessary chain copy
         auto [it, inserted] = chains.try_emplace(chain_id, chain_id);

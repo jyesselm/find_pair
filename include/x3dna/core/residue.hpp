@@ -14,31 +14,11 @@
 #include <nlohmann/json.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/core/reference_frame.hpp>
+#include <x3dna/core/residue_type.hpp>
+#include <x3dna/core/modified_nucleotide_registry.hpp>
 
 namespace x3dna {
 namespace core {
-
-/**
- * @enum ResidueType
- * @brief Type of residue (nucleotide, amino acid, etc.)
- */
-enum class ResidueType {
-    UNKNOWN = -2,
-    AMINO_ACID = -1,
-    NUCLEOTIDE = 0,
-    ADENINE = 1,
-    CYTOSINE = 2,
-    GUANINE = 3,
-    THYMINE = 4,
-    URACIL = 5,
-    // Extended types for better classification
-    NONCANONICAL_RNA = 6, // Modified nucleotides with ring atoms
-    WATER = 7,            // Water molecules (HOH, WAT)
-    ION = 8,              // Ions (MG, NA, CL, etc.)
-    LIGAND = 9,           // Other small molecules/ligands
-    PSEUDOURIDINE = 10,   // Pseudouridine (PSU) - C1' bonded to C5 instead of N1
-    INOSINE = 11          // Inosine (I)
-};
 
 /**
  * @class Residue
@@ -59,7 +39,24 @@ public:
      * @param insertion Insertion code (PDB column 27, default ' ')
      */
     Residue(const std::string& name, int seq_num, char chain_id, char insertion = ' ')
-        : name_(name), seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {}
+        : name_(name), one_letter_code_('?'), type_(ResidueType::UNKNOWN), is_purine_(false),
+          seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {}
+
+    /**
+     * @brief Full constructor with all properties (used by ResidueFactory)
+     * @param name Residue name
+     * @param one_letter_code One-letter code ('A', 'C', 'G', 'U', etc.)
+     * @param type Residue type
+     * @param is_purine Whether this is a purine
+     * @param seq_num Sequence number
+     * @param chain_id Chain identifier
+     * @param insertion Insertion code
+     * @param atoms Vector of atoms
+     */
+    Residue(const std::string& name, char one_letter_code, ResidueType type, bool is_purine,
+            int seq_num, char chain_id, char insertion, const std::vector<Atom>& atoms)
+        : name_(name), one_letter_code_(one_letter_code), type_(type), is_purine_(is_purine),
+          seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion), atoms_(atoms) {}
 
     // Getters
     const std::string& name() const {
@@ -157,52 +154,12 @@ public:
      * - DNA format: DA, DC, DG, DT (may have leading/trailing spaces)
      * - Modified nucleotides: PSU, 5MC, 5MU, H2U, A2M, etc.
      */
+    /**
+     * @brief Get one-letter code (stored value, not computed)
+     * @return One-letter code ('A', 'C', 'G', 'U', 'a', 'c', etc.)
+     */
     char one_letter_code() const {
-        std::string trimmed = trim_name();
-
-        // Standard nucleotides - uppercase
-        if (trimmed == "A" || trimmed == "ADE" || trimmed == "DA")
-            return 'A';
-        if (trimmed == "C" || trimmed == "CYT" || trimmed == "DC")
-            return 'C';
-        if (trimmed == "G" || trimmed == "GUA" || trimmed == "DG")
-            return 'G';
-        if (trimmed == "T" || trimmed == "THY" || trimmed == "DT")
-            return 'T';
-        if (trimmed == "U" || trimmed == "URA" || trimmed == "DU")
-            return 'U';
-
-        // Modified nucleotides - return lowercase for parent base
-        // Pseudouridine (special case - P)
-        if (trimmed == "PSU")
-            return 'P';
-
-        // Modified Adenine → 'a'
-        if (trimmed == "A2M" || trimmed == "1MA" || trimmed == "2MA" || trimmed == "OMA" ||
-            trimmed == "6MA" || trimmed == "MIA" || trimmed == "I6A" || trimmed == "T6A" ||
-            trimmed == "M6A" || trimmed == "LCA" || trimmed == "A23") // A23 = 2'-deoxy-2'-fluoroadenosine
-            return 'a';
-
-        // Modified Cytosine → 'c'
-        if (trimmed == "5MC" || trimmed == "OMC" || trimmed == "S4C" || trimmed == "5IC" ||
-            trimmed == "5FC" || trimmed == "CBR" || trimmed == "LCC" || trimmed == "EPE") // EPE = Modified cytosine analog
-            return 'c';
-
-        // Modified Guanine → 'g'
-        if (trimmed == "OMG" || trimmed == "1MG" || trimmed == "2MG" || trimmed == "7MG" ||
-            trimmed == "M2G" || trimmed == "YYG" || trimmed == "YG" || trimmed == "QUO" ||
-            trimmed == "LCG") // LCG = Locked Guanosine (LNA)
-            return 'g';
-
-        // Modified Uracil/Thymine → 't' or 'u'
-        if (trimmed == "5MU" || trimmed == "RT") // Ribothymidine
-            return 't';
-        if (trimmed == "H2U" || trimmed == "DHU" || trimmed == "OMU" || trimmed == "4SU" ||
-            trimmed == "S4U" || trimmed == "5BU" || trimmed == "2MU" || trimmed == "UR3" ||
-            trimmed == "TLN") // TLN = Thymidine LNA (legacy maps to 'u')
-            return 'u';
-
-        return '?';
+        return one_letter_code_;
     }
 
     /**
@@ -212,7 +169,7 @@ public:
     bool is_nucleotide() const {
         char code = one_letter_code();
         // Standard nucleotides
-        if (code == 'A' || code == 'C' || code == 'G' || code == 'T' || code == 'U')
+        if (code == 'A' || code == 'C' || code == 'G' || code == 'T' || code == 'U' || code == 'I')
             return true;
         // Modified nucleotides (lowercase) and Pseudouridine (P)
         if (code == 'a' || code == 'c' || code == 'g' || code == 't' || code == 'u' || code == 'P')
@@ -221,19 +178,26 @@ public:
     }
 
     /**
+     * @brief Check if residue is a purine (stored value, not computed)
+     * @return true if purine (A, G, I), false otherwise
+     */
+    bool is_purine() const {
+        return is_purine_;
+    }
+
+    /**
      * @brief Get RY classification (Purine=1, Pyrimidine=0)
-     * @return 1 for purines (A, G, a, g), 0 for pyrimidines (C, T, U, c, t, u, P), -1 for
-     * non-nucleotides
+     * Uses stored is_purine_ value
+     * @return 1 for purines, 0 for pyrimidines, -1 for non-nucleotides
      */
     int ry_classification() const {
-        char code = one_letter_code();
-        // Purines (includes modified adenine/guanine)
-        if (code == 'A' || code == 'G' || code == 'a' || code == 'g') {
+        if (is_purine_) {
             return 1; // Purine
         }
-        // Pyrimidines (includes modified cytosine/uracil/thymine and pseudouridine)
-        if (code == 'C' || code == 'T' || code == 'U' || code == 'c' || code == 't' ||
-            code == 'u' || code == 'P') {
+        // Check if it's a nucleotide
+        char code = one_letter_code();
+        if (code == 'C' || code == 'T' || code == 'U' || code == 'P' || code == 'c' ||
+            code == 't' || code == 'u') {
             return 0; // Pyrimidine
         }
         return -1; // Not a nucleotide
@@ -242,85 +206,12 @@ public:
     /**
      * @brief Get residue type
      */
+    /**
+     * @brief Get residue type (stored value, not computed)
+     * @return ResidueType set by ResidueFactory at creation
+     */
     ResidueType residue_type() const {
-        char code = one_letter_code();
-        // Standard nucleotides
-        if (code == 'A')
-            return ResidueType::ADENINE;
-        if (code == 'C')
-            return ResidueType::CYTOSINE;
-        if (code == 'G')
-            return ResidueType::GUANINE;
-        if (code == 'T')
-            return ResidueType::THYMINE;
-        if (code == 'U')
-            return ResidueType::URACIL;
-
-        // Modified nucleotides - map to parent base type
-        if (code == 'a') // Modified adenine
-            return ResidueType::ADENINE;
-        if (code == 'c') // Modified cytosine
-            return ResidueType::CYTOSINE;
-        if (code == 'g') // Modified guanine
-            return ResidueType::GUANINE;
-        if (code == 't') // Modified thymine (ribothymidine)
-            return ResidueType::THYMINE;
-        if (code == 'u') // Modified uracil
-            return ResidueType::URACIL;
-        if (code == 'P') // Pseudouridine
-            return ResidueType::PSEUDOURIDINE;
-
-        // Check for water molecules and ions
-        std::string res_name = name();
-        // Remove leading/trailing spaces for comparison
-        std::string res_name_trimmed = res_name;
-        while (!res_name_trimmed.empty() && res_name_trimmed[0] == ' ') {
-            res_name_trimmed.erase(0, 1);
-        }
-        while (!res_name_trimmed.empty() && res_name_trimmed.back() == ' ') {
-            res_name_trimmed.pop_back();
-        }
-
-        // Check for water molecules (case-insensitive)
-        if (res_name_trimmed == "HOH" || res_name_trimmed == "WAT" || res_name_trimmed == "hoh" ||
-            res_name_trimmed == "wat") {
-            return ResidueType::WATER;
-        }
-
-        // Check for common ions (case-insensitive, common PDB ion names)
-        std::string res_upper = res_name_trimmed;
-        std::transform(res_upper.begin(), res_upper.end(), res_upper.begin(), ::toupper);
-        if (res_upper == "MG" || res_upper == "NA" || res_upper == "CL" || res_upper == "K" ||
-            res_upper == "CA" || res_upper == "ZN" || res_upper == "FE" || res_upper == "MN" ||
-            res_upper == "CU" || res_upper == "NI" || res_upper == "CO" || res_upper == "CD" ||
-            res_upper == "SR" || res_upper == "BA" || res_upper == "RB" || res_upper == "CS") {
-            return ResidueType::ION;
-        }
-
-        // Check for noncanonical RNA (modified nucleotides with ring atoms)
-        // This will be refined by checking for ring atoms in frame calculation
-        if (code == '?') {
-            // Check if it has ring atoms (indicates modified nucleotide)
-            static const std::vector<std::string> ring_atoms = {" C4 ", " N3 ", " C2 ",
-                                                                " N1 ", " C6 ", " C5 "};
-            int ring_count = 0;
-            for (const auto& atom : atoms()) {
-                for (const auto& ring_atom : ring_atoms) {
-                    if (atom.name() == ring_atom) {
-                        ring_count++;
-                        break;
-                    }
-                }
-            }
-            if (ring_count >= 3) {
-                return ResidueType::NONCANONICAL_RNA;
-            }
-            // Could be amino acid or ligand
-            return ResidueType::UNKNOWN;
-        }
-
-        // Default to unknown (could be ligand or other molecule)
-        return ResidueType::UNKNOWN;
+        return type_;
     }
 
     /**
@@ -442,6 +333,9 @@ public:
 
 private:
     std::string name_;                              // Residue name (e.g., "  C", "  G")
+    char one_letter_code_ = '?';                    // One-letter code (stored, not computed)
+    ResidueType type_ = ResidueType::UNKNOWN;       // Residue type (stored, not computed)
+    bool is_purine_ = false;                        // Is purine flag (stored, not computed)
     int seq_num_ = 0;                               // Sequence number
     char chain_id_ = '\0';                          // Chain identifier
     char insertion_ = ' ';                          // Insertion code (PDB column 27)
