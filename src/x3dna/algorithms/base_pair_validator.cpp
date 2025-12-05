@@ -122,12 +122,14 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
     bool cdns = result.distance_check && result.d_v_check && result.plane_angle_check &&
                 result.dNN_check && result.overlap_check;
 
+
     if (cdns) {
         // Count H-bonds simply (BEFORE validation) - matches legacy check_pair behavior
         // This is the key fix: legacy counts H-bonds before validation for pair validation
         using namespace x3dna::algorithms::hydrogen_bond;
         HydrogenBondCounter::count_simple(res1, res2, params_.hb_lower, params_.hb_dist1,
                                           params_.hb_atoms, result.num_base_hb, result.num_o2_hb);
+        
 
         // Check H-bond requirement (matches legacy lines 4616-4617)
         if (params_.min_base_hb > 0) {
