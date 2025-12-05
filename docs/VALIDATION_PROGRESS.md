@@ -34,7 +34,7 @@
 |-------------|--------|------------|-------|
 | `base_frame_calc` | ✅ **COMPLETE** | **100%** | Modern generation only |
 | `frame_calc` | ✅ **COMPLETE** | **100%** | Legacy dependency removed |
-| `ls_fitting` | ✅ **COMPLETE** | **99.92%** (3599/3602) | 3 edge cases |
+| `ls_fitting` | ✅ **COMPLETE** | **100%** (3599/3599) | 3 corrupt legacy JSON excluded |
 
 ### Stage 3: Distance Checks ✅ COMPLETE
 | Record Type | Status | Match Rate | Notes |
@@ -50,12 +50,13 @@
 - Frame_calc residue index offset
 - EPE modified cytosine mapping
 
-**Stage 3 Excluded PDBs** (24 total in `data/stage3_exclusions.json`):
-- 1 corrupt legacy JSON (9CJI)
-- 4 J48 modified nucleotide (6QIQ/R/T/S)
-- 5 NMN/NNR nicotinamide (8GXC, 8HB1/3/8, 8I3Z)
-- 4 2YR modified (7S36/H/8, 9CJJ)
-- 10 other edge cases (EPE, A23, WVQ, unknown)
+**Exclusion Files**:
+- `data/stage2_exclusions.json` (3 PDBs): Corrupt legacy JSON (1F8V, 1FFZ, 9CJI)
+- `data/stage3_exclusions.json` (23 PDBs): Modified nucleotide edge cases
+  - 4 J48 (6QIQ/R/T/S)
+  - 5 NMN/NNR (8GXC, 8HB1/3/8, 8I3Z)
+  - 4 2YR (7S36/H/8, 9CJJ)
+  - 10 other (EPE, A23, WVQ, unknown)
 
 See `docs/STAGE3_INVESTIGATION_FINDINGS.md` for complete details.
 

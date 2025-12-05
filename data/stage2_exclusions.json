@@ -1,0 +1,14 @@
+{
+  "description": "PDBs excluded from Stage 2+ validation due to ls_fitting/frame calculation issues",
+  "date": "2025-12-05",
+  "total_excluded": 3,
+  "categories": {
+    "corrupt_legacy_json": {
+      "count": 3,
+      "pdbs": ["1F8V", "1FFZ", "9CJI"],
+      "reason": "Legacy JSON files are truncated/corrupt and cannot be parsed"
+    }
+  },
+  "excluded_pdbs": ["1F8V", "1FFZ", "9CJI"]
+}
+

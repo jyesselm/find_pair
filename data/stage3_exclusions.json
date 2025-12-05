@@ -1,13 +1,9 @@
 {
-  "description": "PDBs excluded from Stage 3 validation due to modified nucleotide edge cases",
+  "description": "PDBs excluded from Stage 3 validation due to modified nucleotide edge cases (excludes Stage 2 failures)",
   "date": "2025-12-05",
-  "total_excluded": 24,
+  "note": "Stage 2 exclusions (1F8V, 1FFZ, 9CJI) are in stage2_exclusions.json",
+  "total_excluded": 23,
   "categories": {
-    "corrupt_legacy_json": {
-      "count": 1,
-      "pdbs": ["9CJI"],
-      "reason": "Legacy JSON file is truncated/corrupt"
-    },
     "a23_rmsd_fallback": {
       "count": 1,
       "pdbs": ["2XD0"],
@@ -51,7 +47,6 @@
     "8ABZ", "8ANE", "8GXC",
     "8HB1", "8HB3", "8HB8",
     "8I3Z", "8PFQ", "8SY6", "8UKS",
-    "9CJI", "9CJJ"
+    "9CJJ"
   ]
 }
-

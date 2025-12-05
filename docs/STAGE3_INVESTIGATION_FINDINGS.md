@@ -123,29 +123,31 @@ if (used_pyrimidine_fallback) {
 
 ---
 
-## Excluded PDBs (24) - Categorized by Root Cause
+## Excluded PDBs - Categorized by Root Cause
 
-All exclusions involve **modified nucleotides** not fully supported in legacy's baselist.dat.
-Documented in `data/stage3_exclusions.json` for future validation runs.
-
-### 1. Corrupt Legacy JSON (1 PDB)
+### Stage 2 Exclusions (3 PDBs in `data/stage2_exclusions.json`)
 | PDB | Issue |
 |-----|-------|
-| 9CJI | Legacy JSON file truncated/corrupt |
+| 1F8V | Corrupt legacy JSON |
+| 1FFZ | Corrupt legacy JSON |
+| 9CJI | Corrupt legacy JSON |
 
-### 2. A23 RMSD Fallback (1 PDB)
+### Stage 3 Exclusions (23 PDBs in `data/stage3_exclusions.json`)
+All involve **modified nucleotides** not fully supported in legacy's baselist.dat.
+
+### 1. A23 RMSD Fallback (1 PDB)
 | PDB | Issue |
 |-----|-------|
 | 2XD0 | A23 (2'-deoxy-2'-fluoroadenosine) uses pyrimidine RMSD fallback in some structures, causing dNN to use N1 instead of N9 |
 
-### 3. EPE Modified Cytosine (3 PDBs)
+### 2. EPE Modified Cytosine (3 PDBs)
 | PDB | Issue |
 |-----|-------|
 | 4E8M | 1 dNN mismatch (~0.22Å) |
 | 4E8R | 1 missing pair (G-EPE) |
 | 6T3N | 3 dNN mismatches |
 
-### 4. J48 Modified Nucleotide (4 PDBs)
+### 3. J48 Modified Nucleotide (4 PDBs)
 | PDB | Issue | Pairs Affected |
 |-----|-------|----------------|
 | 6QIQ | Missing A-J48 pairs | 2 |
@@ -155,7 +157,7 @@ Documented in `data/stage3_exclusions.json` for future validation runs.
 
 J48 is not in legacy's baselist.dat and has unusual atom configuration.
 
-### 5. 2YR Modified Nucleotide (4 PDBs)
+### 4. 2YR Modified Nucleotide (4 PDBs)
 | PDB | Issue |
 |-----|-------|
 | 7S36 | 1 missing (DG-2YR) |
@@ -165,7 +167,7 @@ J48 is not in legacy's baselist.dat and has unusual atom configuration.
 
 2YR is a 2'-O-ribose modification.
 
-### 6. NMN/NNR Nicotinamide Nucleotides (5 PDBs)
+### 5. NMN/NNR Nicotinamide Nucleotides (5 PDBs)
 | PDB | Issue |
 |-----|-------|
 | 8GXC | 4 missing (C/G-NMN) |
@@ -176,7 +178,7 @@ J48 is not in legacy's baselist.dat and has unusual atom configuration.
 
 NMN/NNR are nicotinamide-based cofactors sometimes treated as bases.
 
-### 7. Other Modified Nucleotides (5 PDBs)
+### 6. Other Modified Nucleotides (5 PDBs)
 | PDB | Issue | Modified Nucleotide |
 |-----|-------|---------------------|
 | 4IQS | 1 extra pair | Unknown |
@@ -185,7 +187,7 @@ NMN/NNR are nicotinamide-based cofactors sometimes treated as bases.
 | 8PFQ | 2 dNN mismatches | Unknown |
 | 8SY6 | 1 dNN mismatch | Unknown |
 
-### 8. WVQ Modified Nucleotide (1 PDB)
+### 7. WVQ Modified Nucleotide (1 PDB)
 | PDB | Issue |
 |-----|-------|
 | 8UKS | 1 missing (WVQ-CTP) |
