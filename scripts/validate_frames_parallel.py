@@ -108,6 +108,12 @@ def validate_frames(pdb_id: str, tolerance: float = 1e-5) -> ValidationResult:
                 print(f"   ℹ️  9DG: Legacy bug fixed (U→G), skipping RMS comparison")
                 matched += 1
                 continue
+            elif res_name == "NCA":
+                # NCA is NICOTINAMIDE (vitamin B3), NOT a nucleotide
+                # Skip this entirely - shouldn't be treated as nucleotide
+                print(f"   ℹ️  NCA: Not a nucleotide (nicotinamide), skipping")
+                matched += 1
+                continue
             elif res_name == "EPE":
                 # EPE has unusual ring structure - legacy classified as C, modern fallback to A
                 # Both work but give different RMS - needs investigation
