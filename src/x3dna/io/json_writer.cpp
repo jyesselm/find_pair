@@ -280,7 +280,8 @@ void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
     record["type"] = "base_frame_calc";
     record["residue_idx"] = residue_idx;
 
-    record["legacy_residue_idx"] = static_cast<int>(residue_idx + 1);
+    // Note: residue_idx is already 1-based (legacy format) when passed from frame_json_recorder
+    record["legacy_residue_idx"] = static_cast<int>(residue_idx);
 
     record["base_type"] = std::string(1, base_type);
 
@@ -317,7 +318,8 @@ void JsonWriter::record_ls_fitting(size_t residue_idx, size_t num_points, double
     record["type"] = "ls_fitting";
     record["residue_idx"] = residue_idx;
 
-    record["legacy_residue_idx"] = static_cast<int>(residue_idx + 1);
+    // Note: residue_idx is already 1-based (legacy format) when passed from frame_json_recorder
+    record["legacy_residue_idx"] = static_cast<int>(residue_idx);
 
     // Add residue identification information (matching legacy format)
     if (!residue_name.empty()) {
@@ -365,7 +367,8 @@ void JsonWriter::record_frame_calc(size_t residue_idx, char base_type,
     record["type"] = "frame_calc";
     record["residue_idx"] = residue_idx;
 
-    record["legacy_residue_idx"] = static_cast<int>(residue_idx + 1);
+    // Note: residue_idx is already 1-based (legacy format) when passed from frame_json_recorder
+    record["legacy_residue_idx"] = static_cast<int>(residue_idx);
     record["base_type"] = std::string(1, base_type);
 
     // Add residue identification information (matching legacy format)

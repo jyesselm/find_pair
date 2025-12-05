@@ -52,30 +52,57 @@ std::filesystem::path StandardBaseTemplates::find_template_path() {
     return std::filesystem::path();
 }
 
-std::string StandardBaseTemplates::type_to_filename(core::ResidueType type) {
+std::string StandardBaseTemplates::type_to_filename(core::ResidueType type, bool is_modified) {
+    // Legacy: uppercase one_letter_code -> Atomic_X.pdb, lowercase -> Atomic.x.pdb
+    // is_modified=true uses lowercase template (for modified nucleotides)
+    char base_char;
     switch (type) {
         case core::ResidueType::ADENINE:
-            return "Atomic_A.pdb";
+            base_char = 'a';
+            break;
         case core::ResidueType::CYTOSINE:
-            return "Atomic_C.pdb";
+            base_char = 'c';
+            break;
         case core::ResidueType::GUANINE:
-            return "Atomic_G.pdb";
+            base_char = 'g';
+            break;
         case core::ResidueType::THYMINE:
-            return "Atomic_T.pdb";
+            base_char = 't';
+            break;
         case core::ResidueType::URACIL:
-            return "Atomic_U.pdb";
+            base_char = 'u';
+            break;
         case core::ResidueType::PSEUDOURIDINE:
-            return "Atomic_P.pdb";
+            base_char = 'p';
+            break;
         case core::ResidueType::INOSINE:
-            return "Atomic_I.pdb";
+            base_char = 'i';
+            break;
         default:
             throw std::invalid_argument("Invalid residue type for template loading");
     }
+    
+    if (is_modified) {
+        // Modified nucleotide: Atomic.x.pdb (lowercase)
+        return std::string("Atomic.") + base_char + ".pdb";
+    } else {
+        // Standard nucleotide: Atomic_X.pdb (uppercase)
+        return std::string("Atomic_") + static_cast<char>(std::toupper(base_char)) + ".pdb";
+    }
+}
+
+// Backwards compatible version for existing code
+std::string StandardBaseTemplates::type_to_filename(core::ResidueType type) {
+    return type_to_filename(type, false);  // Default to standard (uppercase) template
+}
+
+std::filesystem::path StandardBaseTemplates::get_template_path(core::ResidueType type, bool is_modified) const {
+    std::string filename = type_to_filename(type, is_modified);
+    return template_path_ / filename;
 }
 
 std::filesystem::path StandardBaseTemplates::get_template_path(core::ResidueType type) const {
-    std::string filename = type_to_filename(type);
-    return template_path_ / filename;
+    return get_template_path(type, false);  // Default to standard (uppercase) template
 }
 
 bool StandardBaseTemplates::template_exists(core::ResidueType type) const {
@@ -84,15 +111,19 @@ bool StandardBaseTemplates::template_exists(core::ResidueType type) const {
            std::filesystem::is_regular_file(template_file);
 }
 
-core::Structure StandardBaseTemplates::load_template(core::ResidueType type) {
+core::Structure StandardBaseTemplates::load_template(core::ResidueType type, bool is_modified) {
+    // Create cache key that includes is_modified
+    // Use a simple encoding: type * 2 + is_modified
+    auto cache_key = static_cast<core::ResidueType>(static_cast<int>(type) * 2 + (is_modified ? 1 : 0));
+    
     // Check cache first
-    auto it = cache_.find(type);
+    auto it = cache_.find(cache_key);
     if (it != cache_.end() && it->second) {
         return *(it->second);
     }
 
     // Get template file path
-    std::filesystem::path template_file = get_template_path(type);
+    std::filesystem::path template_file = get_template_path(type, is_modified);
 
     if (!std::filesystem::exists(template_file)) {
         throw std::runtime_error("Template file not found: " + template_file.string());
@@ -103,9 +134,14 @@ core::Structure StandardBaseTemplates::load_template(core::ResidueType type) {
     core::Structure template_structure = parser.parse_file(template_file);
 
     // Cache the template
-    cache_[type] = std::make_shared<core::Structure>(template_structure);
+    cache_[cache_key] = std::make_shared<core::Structure>(template_structure);
 
     return template_structure;
+}
+
+// Backwards compatible version
+core::Structure StandardBaseTemplates::load_template(core::ResidueType type) {
+    return load_template(type, false);  // Default to standard (uppercase) template
 }
 
 void StandardBaseTemplates::set_template_path(const std::filesystem::path& template_path) {

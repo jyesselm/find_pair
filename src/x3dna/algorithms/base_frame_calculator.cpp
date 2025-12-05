@@ -218,8 +218,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // nucleotides Standard NT_LIST: A, C, G, T, U, PSU (pseudouridine), I (inosine) H2U is NOT in
     // NT_LIST, so it needs RMSD check regardless of residue_type
     static const std::vector<std::string> NT_LIST = {
-        "A", "C", "G", "T", "U", "PSU", "P5P", "PU", "I", "DI", "ADP", "GDP", "CDP", "UDP", "TDP",
-        "DA", "DC", "DG", "DT", "DU"}; // Added DNA bases
+        "A",   "C",   "G",   "T",   "U",   "PSU", "P5P", "PU", "I",  "DI",
+        "ADP", "GDP", "CDP", "UDP", "TDP", "DA",  "DC",  "DG", "DT", "DU"}; // Added DNA bases
     bool is_in_nt_list = false;
     std::string res_upper = res_name;
     for (char& c : res_upper) {
@@ -667,11 +667,14 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                 }
 
                 // Assign type based on detection
+                // IMPORTANT: Trust one_letter_code for modified nucleotides
+                // e.g., 2MU has C5M but should use URACIL template not THYMINE
                 if (is_pseudouridine) {
                     residue_type = core::ResidueType::PSEUDOURIDINE;
                 } else if (has_n4) {
                     residue_type = core::ResidueType::CYTOSINE;
-                } else if (has_c5m) {
+                } else if (has_c5m && one_letter != 'u') {
+                    // Only assign THYMINE if not explicitly a modified uracil
                     residue_type = core::ResidueType::THYMINE;
                 } else {
                     residue_type = core::ResidueType::URACIL; // Default for pyrimidines
@@ -693,10 +696,14 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     }
 
     // Load standard template
+    // Modified nucleotides (lowercase one_letter_code) use lowercase templates
+    // one_letter is already defined earlier in this function
+    bool is_modified_nucleotide = std::islower(static_cast<unsigned char>(one_letter));
+    
     core::Structure standard_template;
     try {
-        standard_template = templates_.load_template(residue_type);
-        result.template_file = templates_.get_template_path(residue_type);
+        standard_template = templates_.load_template(residue_type, is_modified_nucleotide);
+        result.template_file = templates_.get_template_path(residue_type, is_modified_nucleotide);
 
         // DEBUG: Always print for CVC
         if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {

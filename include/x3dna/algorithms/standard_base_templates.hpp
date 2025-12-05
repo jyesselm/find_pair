@@ -42,13 +42,29 @@ public:
     /**
      * @brief Load standard base template for a residue type
      * @param type Residue type (ADENINE, CYTOSINE, GUANINE, THYMINE, URACIL)
+     * @param is_modified If true, use lowercase template (Atomic.x.pdb) for modified nucleotides
      * @return Structure containing the standard base atoms
      * @throws std::runtime_error if template file cannot be found or loaded
+     */
+    core::Structure load_template(core::ResidueType type, bool is_modified);
+    
+    /**
+     * @brief Load standard base template for a residue type (standard nucleotide)
+     * @param type Residue type
+     * @return Structure containing the standard base atoms
      */
     core::Structure load_template(core::ResidueType type);
 
     /**
      * @brief Get template file path for a residue type
+     * @param type Residue type
+     * @param is_modified If true, use lowercase template (Atomic.x.pdb) for modified nucleotides
+     * @return Path to template file
+     */
+    std::filesystem::path get_template_path(core::ResidueType type, bool is_modified) const;
+    
+    /**
+     * @brief Get template file path for a residue type (standard nucleotide)
      * @param type Residue type
      * @return Path to template file
      */
@@ -93,6 +109,14 @@ private:
 
     /**
      * @brief Convert ResidueType to template filename
+     * @param type Residue type
+     * @param is_modified If true, use lowercase template (Atomic.x.pdb) for modified nucleotides
+     * @return Template filename (e.g., "Atomic_A.pdb" or "Atomic.a.pdb")
+     */
+    static std::string type_to_filename(core::ResidueType type, bool is_modified);
+    
+    /**
+     * @brief Convert ResidueType to template filename (standard nucleotide)
      * @param type Residue type
      * @return Template filename (e.g., "Atomic_A.pdb")
      */

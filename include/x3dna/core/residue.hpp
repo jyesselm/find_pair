@@ -180,24 +180,26 @@ public:
         // Modified Adenine → 'a'
         if (trimmed == "A2M" || trimmed == "1MA" || trimmed == "2MA" || trimmed == "OMA" ||
             trimmed == "6MA" || trimmed == "MIA" || trimmed == "I6A" || trimmed == "T6A" ||
-            trimmed == "M6A")
+            trimmed == "M6A" || trimmed == "LCA")  // LCA = Locked Adenosine (LNA)
             return 'a';
 
         // Modified Cytosine → 'c'
         if (trimmed == "5MC" || trimmed == "OMC" || trimmed == "S4C" || trimmed == "5IC" ||
-            trimmed == "5FC" || trimmed == "CBR")
+            trimmed == "5FC" || trimmed == "CBR" || trimmed == "LCC")  // LCC = Locked Cytidine (LNA)
             return 'c';
 
         // Modified Guanine → 'g'
         if (trimmed == "OMG" || trimmed == "1MG" || trimmed == "2MG" || trimmed == "7MG" ||
-            trimmed == "M2G" || trimmed == "YYG" || trimmed == "YG" || trimmed == "QUO")
+            trimmed == "M2G" || trimmed == "YYG" || trimmed == "YG" || trimmed == "QUO" ||
+            trimmed == "LCG")  // LCG = Locked Guanosine (LNA)
             return 'g';
 
         // Modified Uracil/Thymine → 't' or 'u'
-        if (trimmed == "5MU" || trimmed == "RT") // Ribothymidine
+        if (trimmed == "5MU" || trimmed == "RT")  // Ribothymidine
             return 't';
         if (trimmed == "H2U" || trimmed == "DHU" || trimmed == "OMU" || trimmed == "4SU" ||
-            trimmed == "S4U" || trimmed == "5BU" || trimmed == "2MU" || trimmed == "UR3")
+            trimmed == "S4U" || trimmed == "5BU" || trimmed == "2MU" || trimmed == "UR3" ||
+            trimmed == "TLN")  // TLN = Thymidine LNA (legacy maps to 'u')
             return 'u';
 
         return '?';
