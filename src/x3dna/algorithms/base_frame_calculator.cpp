@@ -254,7 +254,6 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     bool has_purine_atoms = false;
     bool used_pyrimidine_fallback = false; // Track if RMSD fallback to pyrimidine atoms occurred
 
-
 #ifdef DEBUG_FRAME_CALC
     // Debug: show all atom names for CVC or any UNKNOWN residue
     std::string residue_name_raw = residue.name();
@@ -526,11 +525,12 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                 }
 
                 // Second try passed - accept with pyrimidine atoms
-                // CRITICAL: For registry nucleotides, keep the original type but use pyrimidine atoms
-                // For unknown nucleotides, change to pyrimidine type
+                // CRITICAL: For registry nucleotides, keep the original type but use pyrimidine
+                // atoms For unknown nucleotides, change to pyrimidine type
                 bool is_registry_nucleotide = core::ModifiedNucleotideRegistry::contains(res_name);
                 if (!is_registry_nucleotide) {
-                    has_purine_atoms = false; // Change type to pyrimidine (unknown nucleotides only)
+                    has_purine_atoms =
+                        false; // Change type to pyrimidine (unknown nucleotides only)
                 }
                 used_pyrimidine_fallback = true; // Mark that we used pyrimidine fallback
                 rmsd_result = pyrimidine_rmsd;
@@ -603,15 +603,16 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     }
 
     // CRITICAL: For nucleotides in the registry, TRUST the ResidueFactory type
-    // Do NOT override it based on atom analysis - the factory has already determined the correct type
-    // This prevents issues like EPE (cytosine) being misclassified as adenine based on RMSD fallback
+    // Do NOT override it based on atom analysis - the factory has already determined the correct
+    // type This prevents issues like EPE (cytosine) being misclassified as adenine based on RMSD
+    // fallback
     bool is_registry_nucleotide = core::ModifiedNucleotideRegistry::contains(res_name);
-    
+
     // Determine residue type from atoms (for modified nucleotides or if type is still UNKNOWN)
     // If residue_type is already a standard nucleotide (A, C, G, T, U) and in NT_LIST, use it
     // Otherwise, determine type from atoms
     // BUT: Skip this entire atom-based type determination for registry nucleotides!
-    if (!is_registry_nucleotide && 
+    if (!is_registry_nucleotide &&
         (residue_type == core::ResidueType::UNKNOWN ||
          residue_type == core::ResidueType::AMINO_ACID ||
          residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check)) {
@@ -621,8 +622,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
             // purine/pyrimidine determination. This handles cases like A23 where RMSD fallback
             // to pyrimidine atoms occurs but the residue is still an adenine derivative.
             // Legacy uses baselist.dat which maps A23 -> 'a' (adenine)
-            bool is_purine_by_one_letter = (one_letter == 'A' || one_letter == 'G' || 
-                                            one_letter == 'a' || one_letter == 'g');
+            bool is_purine_by_one_letter =
+                (one_letter == 'A' || one_letter == 'G' || one_letter == 'a' || one_letter == 'g');
             bool is_purine = has_purine_atoms || is_purine_by_one_letter;
             if (is_purine) {
                 // Determine purine type (A vs G) by checking for characteristic atoms
@@ -741,8 +742,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // even if residue_type is a purine. This matches legacy behavior where
     // modified purines with distorted purine rings use pyrimidine atoms for fitting.
     core::ResidueType matching_type = residue_type;
-    if (used_pyrimidine_fallback && (residue_type == core::ResidueType::ADENINE || 
-                                      residue_type == core::ResidueType::GUANINE)) {
+    if (used_pyrimidine_fallback && (residue_type == core::ResidueType::ADENINE ||
+                                     residue_type == core::ResidueType::GUANINE)) {
         matching_type = core::ResidueType::URACIL; // Use pyrimidine atom list
     }
     MatchedAtoms matched = RingAtomMatcher::match(residue, standard_template,
