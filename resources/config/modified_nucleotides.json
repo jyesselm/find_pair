@@ -76,6 +76,7 @@
     },
     "modified_uracils": {
       "CM0":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "5-(carboxymethoxy) uridine-5'-monophosphate"},
+      "JSP":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Complex pyrimidine derivative, treated as modified uracil"},
       "70U":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "7-methyluridine"},
       "H2U":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Dihydrouridine"},
       "DHU":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "Dihydrouridine"},
