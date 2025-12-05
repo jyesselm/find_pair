@@ -3,9 +3,9 @@
 Test ls_fitting JSON generation and comparison.
 
 Tests Stage 3: ls_fitting JSON generation after refactoring.
-Uses x3dna_json_compare module for all comparison logic.
 """
 
+import subprocess
 import json
 from pathlib import Path
 from typing import Dict, Tuple, Optional
@@ -14,46 +14,135 @@ import sys
 # Add parent directory to path to import comparison module
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from x3dna_json_compare.frame_comparison import compare_frames
-from test_utils import (
-    find_executables,
-    generate_legacy_json,
-    generate_modern_json,
-    cleanup_output_dir
-)
+
+def find_executables(project_root: Path) -> Tuple[Optional[Path], Optional[Path]]:
+    """Find legacy and modern executables."""
+    legacy_exe = project_root / "org" / "build" / "bin" / "find_pair_analyze"
+    modern_exe = project_root / "build" / "generate_modern_json"
+    
+    if not legacy_exe.exists():
+        legacy_exe = None
+    if not modern_exe.exists():
+        modern_exe = None
+    
+    return legacy_exe, modern_exe
+
+def generate_legacy_ls_fitting(pdb_id: str, pdb_file: Path, output_dir: Path,
+                                legacy_exe: Path, project_root: Path) -> Tuple[bool, str]:
+    """Generate legacy ls_fitting JSON - check existing files first."""
+    try:
+        legacy_output = output_dir / "legacy"
+        legacy_output.mkdir(parents=True, exist_ok=True)
+        
+        # Check if legacy ls_fitting JSON already exists
+        ls_fitting_file = project_root / "data" / "json_legacy" / "ls_fitting" / f"{pdb_id}.json"
+        
+        if ls_fitting_file.exists():
+            # Copy existing file
+            (legacy_output / "ls_fitting").mkdir(exist_ok=True)
+            import shutil
+            shutil.copy2(ls_fitting_file, legacy_output / "ls_fitting" / f"{pdb_id}.json")
+            return True, "OK (existing file)"
+        
+        # File doesn't exist - need to generate it
+        # Legacy generates all frames together, so we need base_frame_calc and frame_calc too
+        # But we'll just check if ls_fitting exists after running legacy
+        if pdb_file.is_absolute():
+            try:
+                pdb_file_rel = pdb_file.relative_to(project_root)
+            except ValueError:
+                pdb_file_rel = pdb_file
+        else:
+            pdb_file_rel = pdb_file
+        
+        # Build path for org/ directory
+        if str(pdb_file_rel).startswith("data/"):
+            pdb_path_for_org = "../" + str(pdb_file_rel)
+        else:
+            pdb_path_for_org = str(pdb_file_rel)
+        
+        cmd = [str(legacy_exe.resolve()), pdb_path_for_org]
+        
+        # Run with timeout
+        try:
+            result = subprocess.run(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=300,  # 5 minute timeout
+                cwd=str(project_root / "org")
+            )
+            
+            if result.returncode != 0:
+                return False, f"Legacy generation failed (return code {result.returncode})"
+        except subprocess.TimeoutExpired:
+            return False, "Legacy generation timeout (exceeded 5 minutes)"
+        
+        # Check if file was created
+        if ls_fitting_file.exists():
+            # Copy to output directory
+            (legacy_output / "ls_fitting").mkdir(exist_ok=True)
+            import shutil
+            shutil.copy2(ls_fitting_file, legacy_output / "ls_fitting" / f"{pdb_id}.json")
+            return True, "OK"
+        else:
+            return False, "Legacy ls_fitting JSON file not created"
+        
+    except Exception as e:
+        return False, f"Legacy error: {str(e)}"
+
+def generate_modern_ls_fitting(pdb_id: str, pdb_file: Path, output_dir: Path,
+                               modern_exe: Path) -> Tuple[bool, str]:
+    """Generate modern ls_fitting JSON."""
+    try:
+        modern_output = output_dir / "modern"
+        modern_output.mkdir(parents=True, exist_ok=True)
+        
+        cmd = [str(modern_exe), str(pdb_file), str(modern_output), "--stage=ls_fitting"]
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=120  # 2 minute timeout
+        )
+        
+        if result.returncode != 0:
+            return False, f"Modern generation failed: {result.stderr[:200]}"
+        
+        # Check if modern JSON file was created
+        ls_fitting_file = modern_output / "ls_fitting" / f"{pdb_id}.json"
+        
+        if not ls_fitting_file.exists():
+            return False, "Modern ls_fitting JSON file not created"
+        
+        return True, "OK"
+        
+    except subprocess.TimeoutExpired:
+        return False, "Modern generation timeout"
+    except Exception as e:
+        return False, f"Modern error: {str(e)}"
 
 def compare_ls_fitting_json(legacy_file: Path, modern_file: Path,
                            pdb_file: Path, project_root: Path) -> Tuple[bool, Dict]:
-    """Compare legacy and modern ls_fitting JSON files using x3dna_json_compare."""
+    """Compare legacy and modern ls_fitting JSON files."""
     try:
-        # Load JSON files
+        # Load legacy JSON
         if not legacy_file.exists():
             return False, {"error": "Legacy file not found"}
-        if not modern_file.exists():
-            return False, {"error": "Modern file not found"}
         
         with open(legacy_file) as f:
             legacy_data = json.load(f)
+        
+        # Load modern JSON
+        if not modern_file.exists():
+            return False, {"error": "Modern file not found"}
+        
         with open(modern_file) as f:
             modern_data = json.load(f)
         
         # Normalize to lists
         legacy_records = legacy_data if isinstance(legacy_data, list) else [legacy_data]
         modern_records = modern_data if isinstance(modern_data, list) else [modern_data]
-        
-        # Add type field to records for comparison function
-        legacy_ls_records = []
-        for r in legacy_records:
-            if isinstance(r, dict):
-                r_copy = r.copy()
-                r_copy["type"] = "ls_fitting"
-                legacy_ls_records.append(r_copy)
-        
-        modern_ls_records = []
-        for r in modern_records:
-            if isinstance(r, dict):
-                r_copy = r.copy()
-                r_copy["type"] = "ls_fitting"
-                modern_ls_records.append(r_copy)
         
         # Load legacy atoms for atom_idx lookup
         legacy_atoms = []
@@ -72,7 +161,22 @@ def compare_ls_fitting_json(legacy_file: Path, modern_file: Path,
             except Exception:
                 pass  # Ignore errors loading atoms
         
-        # Use x3dna_json_compare for comparison
+        # Add type field to records for comparison function
+        # Legacy records don't have type, modern records might not either
+        legacy_ls_records = []
+        for r in legacy_records:
+            if isinstance(r, dict):
+                r_copy = r.copy()
+                r_copy["type"] = "ls_fitting"  # Add type field
+                legacy_ls_records.append(r_copy)
+        
+        modern_ls_records = []
+        for r in modern_records:
+            if isinstance(r, dict):
+                r_copy = r.copy()
+                r_copy["type"] = "ls_fitting"  # Add type field
+                modern_ls_records.append(r_copy)
+        
         compare_result = compare_frames(
             legacy_ls_records, modern_ls_records, pdb_file, None, legacy_atoms
         )
@@ -136,9 +240,8 @@ def test_single_pdb(pdb_id: str, pdb_file: Path, output_dir: Path,
     
     # Generate legacy
     if legacy_exe:
-        legacy_ok, legacy_msg = generate_legacy_json(
-            pdb_id, pdb_file, output_dir, legacy_exe, project_root,
-            record_types=["ls_fitting"]
+        legacy_ok, legacy_msg = generate_legacy_ls_fitting(
+            pdb_id, pdb_file, output_dir, legacy_exe, project_root
         )
         result["legacy_ok"] = legacy_ok
         if not legacy_ok:
@@ -147,8 +250,8 @@ def test_single_pdb(pdb_id: str, pdb_file: Path, output_dir: Path,
         result["errors"].append("Legacy executable not found")
     
     # Generate modern
-    modern_ok, modern_msg = generate_modern_json(
-        pdb_id, pdb_file, output_dir, modern_exe, stage="ls_fitting"
+    modern_ok, modern_msg = generate_modern_ls_fitting(
+        pdb_id, pdb_file, output_dir, modern_exe
     )
     result["modern_ok"] = modern_ok
     if not modern_ok:
@@ -238,8 +341,10 @@ def main():
             return_code = 1
     finally:
         # Clean up output directory
-        cleanup_output_dir(output_dir)
-        print(f"\nCleaned up output directory: {output_dir}")
+        import shutil
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
+            print(f"\nCleaned up output directory: {output_dir}")
     
     return return_code
 

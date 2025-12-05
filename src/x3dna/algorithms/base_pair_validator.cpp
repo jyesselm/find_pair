@@ -215,20 +215,22 @@ double BasePairValidator::z1_z2_angle_in_0_to_90(const Vector3D& z1, const Vecto
 }
 
 std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& residue) {
-    // Match legacy glyco_N logic exactly
-    // RY[i] == 1 (purine): find N9
-    // RY[i] == 0 (pyrimidine): find N1 (or C5 for P/p bases, but for dNN we use N1)
+    // Match legacy glyco_N logic exactly (org/src/cmn_fncs.c lines 4680-4730)
+    // Legacy determines is_purine via residue_ident(), which checks for N7/C8 atoms
+    // Then glyco_N looks for N9 (purine) or N1 (pyrimidine)
+    // If not found, legacy falls back to finding any atom with '9' or '1' in name
     
     // First check standard nucleotides by ResidueType
     ResidueType res_type = residue.residue_type();
     bool is_purine = (res_type == ResidueType::ADENINE || res_type == ResidueType::GUANINE);
     
-    // For modified nucleotides (NONCANONICAL_RNA), check if N9 exists (purine marker)
-    // This handles cases like GTP (modified guanine) which should use N9
+    // For modified nucleotides (NONCANONICAL_RNA), determine purine/pyrimidine 
+    // by checking for N7/C8 atoms (matches legacy residue_ident logic)
     if (res_type == ResidueType::NONCANONICAL_RNA) {
-        auto n9 = residue.find_atom(" N9 ");
-        if (n9.has_value()) {
-            is_purine = true;  // Has N9, so it's a purine-like modified base
+        auto n7 = residue.find_atom(" N7 ");
+        auto c8 = residue.find_atom(" C8 ");
+        if (n7.has_value() || c8.has_value()) {
+            is_purine = true;  // Has purine ring atoms
         }
     }
 
@@ -238,13 +240,19 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
         if (n9.has_value()) {
             return n9->position();
         }
+        // N9 not found - legacy fallback: find atom with '9' in name
+        // This handles modified nucleotides like 8B4 that have C9 but not N9
+        for (const auto& atom : residue.atoms()) {
+            const std::string& name = atom.name();
+            if (name.find('9') != std::string::npos) {
+                return atom.position();
+            }
+        }
     } else {
         // Pyrimidine: find N1
-        // Special case: for P/p bases, legacy uses C5, but for dNN calculation
-        // we should use N1 if available
+        // Special case: for P/p bases, legacy uses C5
         char base = residue.one_letter_code();
         if (base == 'P' || base == 'p') {
-            // For P/p, try C5 first (matches legacy glyco_N for P/p)
             auto c5 = residue.find_atom(" C5 ");
             if (c5.has_value()) {
                 return c5->position();
@@ -254,6 +262,13 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
         auto n1 = residue.find_atom(" N1 ");
         if (n1.has_value()) {
             return n1->position();
+        }
+        // N1 not found - legacy fallback: find atom with '1' in name
+        for (const auto& atom : residue.atoms()) {
+            const std::string& name = atom.name();
+            if (name.find('1') != std::string::npos) {
+                return atom.position();
+            }
         }
     }
 
