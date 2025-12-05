@@ -19,18 +19,18 @@ namespace apps {
 struct FindPairOptions {
     std::filesystem::path pdb_file;
     std::filesystem::path output_file;
-    bool single_strand = false;                // -S or -1 flag
-    bool find_all_pairs = false;               // -P flag
-    bool divide_helices = false;               // -D flag
-    bool curves = false;                       // -C flag
-    bool curves_plus = false;                  // -c+ flag
-    bool hetatm = false;                       // -T flag
-    bool detailed = false;                     // -Z flag
-    bool waters = false;                       // -W flag
-    bool hjb = false;                          // -hjb flag
-    std::string map_file;                      // -m flag
-    bool legacy_mode = false;                  // --legacy-mode flag
-    std::string legacy_inp_file = "";          // --legacy-inp=FILE for pair ordering
+    bool single_strand = false;       // -S or -1 flag
+    bool find_all_pairs = false;      // -P flag
+    bool divide_helices = false;      // -D flag
+    bool curves = false;              // -C flag
+    bool curves_plus = false;         // -c+ flag
+    bool hetatm = false;              // -T flag
+    bool detailed = false;            // -Z flag
+    bool waters = false;              // -W flag
+    bool hjb = false;                 // -hjb flag
+    std::string map_file;             // -m flag
+    bool legacy_mode = false;         // --legacy-mode flag
+    std::string legacy_inp_file = ""; // --legacy-inp=FILE for pair ordering
 
     /**
      * @brief Check if any option is set

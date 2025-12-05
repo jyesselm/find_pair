@@ -898,7 +898,7 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
     std::vector<geometry::Vector3D> standard_coords;
     int nN = 0; // Count of nitrogen atoms (N1, N3, N7, N9)
     bool has_c1_prime = false;
-    
+
     // LEGACY BEHAVIOR: Try ALL 9 ring atoms first (matches legacy residue_ident)
     for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
         const char* atom_name = RING_ATOM_NAMES[i];
@@ -955,7 +955,7 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
 
 bool BasePairFinder::is_nucleotide(const Residue& residue) {
     ResidueType type = residue.residue_type();
-    
+
     // Check standard nucleotide types (always recognized)
     if (type == ResidueType::ADENINE || type == ResidueType::CYTOSINE ||
         type == ResidueType::GUANINE || type == ResidueType::THYMINE ||
@@ -1015,7 +1015,7 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
             double rmsd_threshold = NT_CUTOFF;
 
             auto rmsd_opt = check_nt_type_by_rmsd(residue);
-            
+
             if (rmsd_opt.has_value() && *rmsd_opt <= rmsd_threshold) {
                 // RMSD check passed - it's a nucleotide
                 return true;

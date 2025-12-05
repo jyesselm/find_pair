@@ -34,7 +34,7 @@ struct FrameCalculationResult {
     // Additional metrics for debugging/comparison
     geometry::Matrix3D rotation_matrix; // Rotation matrix (3x3)
     geometry::Vector3D translation;     // Translation vector
-    
+
     // Matched coordinates (needed for frame_calc JSON output)
     std::vector<geometry::Vector3D> matched_standard_coords;     // Standard template coordinates
     std::vector<geometry::Vector3D> matched_experimental_coords; // Experimental PDB coordinates

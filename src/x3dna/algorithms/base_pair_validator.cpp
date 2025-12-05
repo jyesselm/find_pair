@@ -122,14 +122,12 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
     bool cdns = result.distance_check && result.d_v_check && result.plane_angle_check &&
                 result.dNN_check && result.overlap_check;
 
-
     if (cdns) {
         // Count H-bonds simply (BEFORE validation) - matches legacy check_pair behavior
         // This is the key fix: legacy counts H-bonds before validation for pair validation
         using namespace x3dna::algorithms::hydrogen_bond;
         HydrogenBondCounter::count_simple(res1, res2, params_.hb_lower, params_.hb_dist1,
                                           params_.hb_atoms, result.num_base_hb, result.num_o2_hb);
-        
 
         // Check H-bond requirement (matches legacy lines 4616-4617)
         if (params_.min_base_hb > 0) {
@@ -221,18 +219,18 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
     // Legacy determines is_purine via residue_ident(), which checks for N7/C8 atoms
     // Then glyco_N looks for N9 (purine) or N1 (pyrimidine)
     // If not found, legacy falls back to finding any atom with '9' or '1' in name
-    
+
     // First check standard nucleotides by ResidueType
     ResidueType res_type = residue.residue_type();
     bool is_purine = (res_type == ResidueType::ADENINE || res_type == ResidueType::GUANINE);
-    
-    // For modified nucleotides (NONCANONICAL_RNA), determine purine/pyrimidine 
+
+    // For modified nucleotides (NONCANONICAL_RNA), determine purine/pyrimidine
     // by checking for N7/C8 atoms (matches legacy residue_ident logic)
     if (res_type == ResidueType::NONCANONICAL_RNA) {
         auto n7 = residue.find_atom(" N7 ");
         auto c8 = residue.find_atom(" C8 ");
         if (n7.has_value() || c8.has_value()) {
-            is_purine = true;  // Has purine ring atoms
+            is_purine = true; // Has purine ring atoms
         }
     }
 
@@ -290,22 +288,20 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
     // 3. Align to z-axis (project to plane perpendicular to zave)
     // 4. Calculate polygon intersection area
 
-
     // Step 1: Get ring atoms and exocyclic atoms (only_ring = 0 means include exocyclic atoms)
     // Legacy: ratom_xyz(ring_atom[r1], only_ring=0, xyz, oave, oxyz1)
     // When only_ring=0, legacy uses ring_atom[10+i] = exocyclic atoms (one per ring atom)
     // get_cntatom() finds ONE exocyclic atom per ring atom (or ring atom itself if none found)
     // We need to match this exactly: exactly n atoms (one per ring atom)
-    
+
     std::vector<Vector3D> ring_coords1, ring_coords2;
 
     // RA_LIST: " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "
     // For pyrimidines: 6 atoms (C4, N3, C2, N1, C6, C5)
     // For purines: 9 atoms (C4, N3, C2, N1, C6, C5, N7, C8, N9)
-    static const std::vector<std::string> RING_ATOMS_ALL = {
-        " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "
-    };
-    
+    static const std::vector<std::string> RING_ATOMS_ALL = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
+                                                            " C5 ", " N7 ", " C8 ", " N9 "};
+
     // Find ring atoms and their exocyclic atoms for res1
     std::vector<const Atom*> ring_atoms1;
     for (const auto& ring_name : RING_ATOMS_ALL) {
@@ -316,7 +312,7 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
             }
         }
     }
-    
+
     // For each ring atom, find ONE exocyclic atom (connected atom that's not a ring atom)
     // Bond distance threshold: < 2.0 Angstroms (typical covalent bond)
     const double BOND_DISTANCE = 2.0;
@@ -324,11 +320,11 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
     for (const auto* ring_atom : ring_atoms1) {
         ring_atom_names1.insert(ring_atom->name());
     }
-    
+
     for (const auto* ring_atom : ring_atoms1) {
         const Atom* exocyclic_atom = nullptr;
         double min_dist = BOND_DISTANCE;
-        
+
         // Find closest connected atom that's not a ring atom
         // Legacy: skips hydrogen atoms (idx[ic] == 3 in get_cntatom)
         for (const auto& atom : res1.atoms()) {
@@ -345,13 +341,12 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
                 exocyclic_atom = &atom;
             }
         }
-        
+
         // Use exocyclic atom if found, otherwise use ring atom itself (matches legacy)
         const Atom* atom_to_use = (exocyclic_atom != nullptr) ? exocyclic_atom : ring_atom;
         ring_coords1.push_back(atom_to_use->position() - oave);
-        
     }
-    
+
     // Same for res2
     std::vector<const Atom*> ring_atoms2;
     for (const auto& ring_name : RING_ATOMS_ALL) {
@@ -362,16 +357,16 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
             }
         }
     }
-    
+
     std::set<std::string> ring_atom_names2;
     for (const auto* ring_atom : ring_atoms2) {
         ring_atom_names2.insert(ring_atom->name());
     }
-    
+
     for (const auto* ring_atom : ring_atoms2) {
         const Atom* exocyclic_atom = nullptr;
         double min_dist = BOND_DISTANCE;
-        
+
         for (const auto& atom : res2.atoms()) {
             if (ring_atom_names2.find(atom.name()) != ring_atom_names2.end()) {
                 continue;
@@ -386,7 +381,7 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
                 exocyclic_atom = &atom;
             }
         }
-        
+
         const Atom* atom_to_use = (exocyclic_atom != nullptr) ? exocyclic_atom : ring_atom;
         ring_coords2.push_back(atom_to_use->position() - oave);
     }
@@ -675,7 +670,8 @@ std::vector<core::hydrogen_bond> BasePairValidator::find_hydrogen_bonds(const Re
 
     double hb_lower = params_.hb_lower;
     double hb_dist1 = params_.hb_dist1;
-    double hb_dist2 = 0.0; // Matches legacy OVERLAP behavior (Phase 3 conflict marking always false)
+    double hb_dist2 =
+        0.0; // Matches legacy OVERLAP behavior (Phase 3 conflict marking always false)
 
     DetailedHBondResult detailed =
         HydrogenBondFinder::find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1, hb_dist2);

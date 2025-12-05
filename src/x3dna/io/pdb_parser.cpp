@@ -349,14 +349,14 @@ bool PdbParser::is_modified_nucleotide_name(const std::string& residue_name) con
         "2YR", // Dihydrouridine derivative
         // Other common modified bases
         "I", "DI", // Inosine
-        "EPE",  // Ethylpseudouridine or similar
-        "J48",  // Modified base
-        "KIR",  // Modified base
-        "NCA",  // N-carboxyaminoadenine or similar
-        "NF2",  // Modified base
-        "NMN",  // Nicotinamide mononucleotide or modified base
-        "NNR",  // Modified base
-        "WVQ"   // Modified base
+        "EPE",     // Ethylpseudouridine or similar
+        "J48",     // Modified base
+        "KIR",     // Modified base
+        "NCA",     // N-carboxyaminoadenine or similar
+        "NF2",     // Modified base
+        "NMN",     // Nicotinamide mononucleotide or modified base
+        "NNR",     // Modified base
+        "WVQ"      // Modified base
     };
 
     for (const auto& mod : modified_nucleotides) {

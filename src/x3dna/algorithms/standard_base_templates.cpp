@@ -81,7 +81,7 @@ std::string StandardBaseTemplates::type_to_filename(core::ResidueType type, bool
         default:
             throw std::invalid_argument("Invalid residue type for template loading");
     }
-    
+
     if (is_modified) {
         // Modified nucleotide: Atomic.x.pdb (lowercase)
         return std::string("Atomic.") + base_char + ".pdb";
@@ -93,16 +93,17 @@ std::string StandardBaseTemplates::type_to_filename(core::ResidueType type, bool
 
 // Backwards compatible version for existing code
 std::string StandardBaseTemplates::type_to_filename(core::ResidueType type) {
-    return type_to_filename(type, false);  // Default to standard (uppercase) template
+    return type_to_filename(type, false); // Default to standard (uppercase) template
 }
 
-std::filesystem::path StandardBaseTemplates::get_template_path(core::ResidueType type, bool is_modified) const {
+std::filesystem::path StandardBaseTemplates::get_template_path(core::ResidueType type,
+                                                               bool is_modified) const {
     std::string filename = type_to_filename(type, is_modified);
     return template_path_ / filename;
 }
 
 std::filesystem::path StandardBaseTemplates::get_template_path(core::ResidueType type) const {
-    return get_template_path(type, false);  // Default to standard (uppercase) template
+    return get_template_path(type, false); // Default to standard (uppercase) template
 }
 
 bool StandardBaseTemplates::template_exists(core::ResidueType type) const {
@@ -114,8 +115,9 @@ bool StandardBaseTemplates::template_exists(core::ResidueType type) const {
 core::Structure StandardBaseTemplates::load_template(core::ResidueType type, bool is_modified) {
     // Create cache key that includes is_modified
     // Use a simple encoding: type * 2 + is_modified
-    auto cache_key = static_cast<core::ResidueType>(static_cast<int>(type) * 2 + (is_modified ? 1 : 0));
-    
+    auto cache_key =
+        static_cast<core::ResidueType>(static_cast<int>(type) * 2 + (is_modified ? 1 : 0));
+
     // Check cache first
     auto it = cache_.find(cache_key);
     if (it != cache_.end() && it->second) {
@@ -141,7 +143,7 @@ core::Structure StandardBaseTemplates::load_template(core::ResidueType type, boo
 
 // Backwards compatible version
 core::Structure StandardBaseTemplates::load_template(core::ResidueType type) {
-    return load_template(type, false);  // Default to standard (uppercase) template
+    return load_template(type, false); // Default to standard (uppercase) template
 }
 
 void StandardBaseTemplates::set_template_path(const std::filesystem::path& template_path) {

@@ -699,7 +699,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // Modified nucleotides (lowercase one_letter_code) use lowercase templates
     // one_letter is already defined earlier in this function
     bool is_modified_nucleotide = std::islower(static_cast<unsigned char>(one_letter));
-    
+
     core::Structure standard_template;
     try {
         standard_template = templates_.load_template(residue_type, is_modified_nucleotide);

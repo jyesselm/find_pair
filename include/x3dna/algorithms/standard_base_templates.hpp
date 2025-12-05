@@ -47,7 +47,7 @@ public:
      * @throws std::runtime_error if template file cannot be found or loaded
      */
     core::Structure load_template(core::ResidueType type, bool is_modified);
-    
+
     /**
      * @brief Load standard base template for a residue type (standard nucleotide)
      * @param type Residue type
@@ -62,7 +62,7 @@ public:
      * @return Path to template file
      */
     std::filesystem::path get_template_path(core::ResidueType type, bool is_modified) const;
-    
+
     /**
      * @brief Get template file path for a residue type (standard nucleotide)
      * @param type Residue type
@@ -114,7 +114,7 @@ private:
      * @return Template filename (e.g., "Atomic_A.pdb" or "Atomic.a.pdb")
      */
     static std::string type_to_filename(core::ResidueType type, bool is_modified);
-    
+
     /**
      * @brief Convert ResidueType to template filename (standard nucleotide)
      * @param type Residue type

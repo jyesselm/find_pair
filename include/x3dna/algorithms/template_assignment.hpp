@@ -29,15 +29,15 @@ public:
 
     /**
      * @brief Get specific atoms to use for matching a modified nucleotide
-     * 
+     *
      * Some modified nucleotides need specific atom lists to match legacy exactly.
      * This avoids differences in auto-detection logic.
-     * 
+     *
      * @param residue_name The 3-letter residue name
      * @return Vector of atom names if specific list exists, nullopt otherwise
      */
-    static std::optional<std::vector<std::string>> get_matching_atoms(
-        const std::string& residue_name);
+    static std::optional<std::vector<std::string>>
+    get_matching_atoms(const std::string& residue_name);
 
 private:
     // Modified purines that need explicit template assignment

@@ -69,14 +69,15 @@ size_t FrameJsonRecorder::record_ls_fitting(core::Structure& structure, JsonWrit
             res_name_debug.erase(0, 1);
         while (!res_name_debug.empty() && res_name_debug.back() == ' ')
             res_name_debug.pop_back();
-        bool is_cvc = (res_name_debug == "CVC" && residue->chain_id() == 'B' && residue->seq_num() == 7);
+        bool is_cvc =
+            (res_name_debug == "CVC" && residue->chain_id() == 'B' && residue->seq_num() == 7);
 
         algorithms::FrameCalculationResult frame_result = calculator_.calculate_frame(*residue);
-        
+
         if (is_cvc) {
             std::cerr << "DEBUG: CVC B7 frame_result.is_valid=" << frame_result.is_valid << "\n";
         }
-        
+
         if (!frame_result.is_valid) {
             if (is_cvc) {
                 std::cerr << "DEBUG: CVC B7 rejected - frame_result.is_valid=false\n";
@@ -95,7 +96,8 @@ size_t FrameJsonRecorder::record_ls_fitting(core::Structure& structure, JsonWrit
 
         if (legacy_residue_idx <= 0) {
             if (is_cvc) {
-                std::cerr << "DEBUG: CVC B7 rejected - legacy_residue_idx=" << legacy_residue_idx << " <= 0\n";
+                std::cerr << "DEBUG: CVC B7 rejected - legacy_residue_idx=" << legacy_residue_idx
+                          << " <= 0\n";
             }
             continue;
         }
@@ -139,11 +141,9 @@ size_t FrameJsonRecorder::record_frame_calc(core::Structure& structure, JsonWrit
         size_t record_idx = static_cast<size_t>(legacy_residue_idx);
         char base_type = residue->one_letter_code();
         writer.record_frame_calc(record_idx, base_type, frame_result.template_file,
-                                 frame_result.rms_fit,
-                                 frame_result.matched_standard_coords,
-                                 frame_result.matched_experimental_coords,
-                                 residue->name(), residue->chain_id(), residue->seq_num(),
-                                 residue->insertion());
+                                 frame_result.rms_fit, frame_result.matched_standard_coords,
+                                 frame_result.matched_experimental_coords, residue->name(),
+                                 residue->chain_id(), residue->seq_num(), residue->insertion());
         count++;
     }
 
