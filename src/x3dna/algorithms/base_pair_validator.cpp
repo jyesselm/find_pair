@@ -220,18 +220,27 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
     // Then glyco_N looks for N9 (purine) or N1 (pyrimidine)
     // If not found, legacy falls back to finding any atom with '9' or '1' in name
 
-    // First check standard nucleotides by ResidueType
+    // For standard nucleotides, determine purine/pyrimidine by ResidueType
+    // For modified nucleotides, determine by checking for N7/C8 atoms (matches legacy residue_ident)
     ResidueType res_type = residue.residue_type();
-    bool is_purine = (res_type == ResidueType::ADENINE || res_type == ResidueType::GUANINE);
-
-    // For modified nucleotides (NONCANONICAL_RNA), determine purine/pyrimidine
-    // by checking for N7/C8 atoms (matches legacy residue_ident logic)
-    if (res_type == ResidueType::NONCANONICAL_RNA) {
+    char one_letter = residue.one_letter_code();
+    bool is_modified = std::islower(static_cast<unsigned char>(one_letter));
+    
+    bool is_purine = false;
+    if (is_modified || res_type == ResidueType::NONCANONICAL_RNA) {
+        // Modified nucleotide: determine purine/pyrimidine by checking for purine ring atoms
+        // Legacy residue_ident checks for N7/C8, but some modified purines (e.g., A7E = 7-deaza-adenine)
+        // have N9 but lack N7/C8 (A7E has C7 instead of N7, N8 instead of C8)
+        // So we also check for N9 to catch these cases
         auto n7 = residue.find_atom(" N7 ");
         auto c8 = residue.find_atom(" C8 ");
-        if (n7.has_value() || c8.has_value()) {
-            is_purine = true; // Has purine ring atoms
+        auto n9 = residue.find_atom(" N9 ");
+        if (n7.has_value() || c8.has_value() || n9.has_value()) {
+            is_purine = true;
         }
+    } else {
+        // Standard nucleotide: use ResidueType
+        is_purine = (res_type == ResidueType::ADENINE || res_type == ResidueType::GUANINE);
     }
 
     if (is_purine) {

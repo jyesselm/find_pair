@@ -252,20 +252,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     bool has_ring_atoms = false;
     int ring_atom_count = 0;
     bool has_purine_atoms = false;
+    bool used_pyrimidine_fallback = false; // Track if RMSD fallback to pyrimidine atoms occurred
 
-    // DEBUG: Print for any residue with B:7 to see what we get
-    if (residue.chain_id() == 'B' && residue.seq_num() == 7) {
-        std::cerr << "DEBUG: B7 residue - name='" << res_name << "' (len=" << res_name.length()
-                  << "), raw_name='" << residue.name() << "' (len=" << residue.name().length()
-                  << "), type=" << static_cast<int>(residue_type)
-                  << ", num_atoms=" << residue.num_atoms() << "\n";
-        if (residue.num_atoms() > 0) {
-            std::cerr << "DEBUG: B7 atom names:\n";
-            for (const auto& atom : residue.atoms()) {
-                std::cerr << "  '" << atom.name() << "'\n";
-            }
-        }
-    }
 
 #ifdef DEBUG_FRAME_CALC
     // Debug: show all atom names for CVC or any UNKNOWN residue
@@ -539,6 +527,7 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
 
                 // Second try passed - accept as pyrimidine (force type to pyrimidine)
                 has_purine_atoms = false; // Treat as pyrimidine
+                used_pyrimidine_fallback = true; // Mark that we used pyrimidine fallback
                 rmsd_result = pyrimidine_rmsd;
             } else {
                 // No purine atoms and first try failed - reject
@@ -616,11 +605,14 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
         residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check) {
         // Determine type from atoms
         if (has_ring_atoms) {
-            // TODO: Some modified purines (e.g., QUO missing N7) could benefit from trusting
-            // one_letter_code, but for now match legacy behavior strictly based on detected atoms
-            // to ensure 100% validation match. Future improvement: trust one_letter_code when
-            // purine atoms are partially present but N7 is missing.
-            if (has_purine_atoms) {
+            // For modified nucleotides with known one_letter_code, trust that code for
+            // purine/pyrimidine determination. This handles cases like A23 where RMSD fallback
+            // to pyrimidine atoms occurs but the residue is still an adenine derivative.
+            // Legacy uses baselist.dat which maps A23 -> 'a' (adenine)
+            bool is_purine_by_one_letter = (one_letter == 'A' || one_letter == 'G' || 
+                                            one_letter == 'a' || one_letter == 'g');
+            bool is_purine = has_purine_atoms || is_purine_by_one_letter;
+            if (is_purine) {
                 // Determine purine type (A vs G) by checking for characteristic atoms
                 bool has_o6 = false, has_n6 = false, has_n2 = false;
                 for (const auto& atom : residue.atoms()) {
@@ -733,8 +725,16 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // Match ring atoms
     // Pass detected residue_type to ensure correct atom list is used
     // (residue.residue_type() might still be UNKNOWN for modified nucleotides)
+    // IMPORTANT: If pyrimidine fallback was used, match only 6 pyrimidine atoms
+    // even if residue_type is a purine. This matches legacy behavior where
+    // modified purines with distorted purine rings use pyrimidine atoms for fitting.
+    core::ResidueType matching_type = residue_type;
+    if (used_pyrimidine_fallback && (residue_type == core::ResidueType::ADENINE || 
+                                      residue_type == core::ResidueType::GUANINE)) {
+        matching_type = core::ResidueType::URACIL; // Use pyrimidine atom list
+    }
     MatchedAtoms matched = RingAtomMatcher::match(residue, standard_template,
-                                                  std::optional<core::ResidueType>(residue_type));
+                                                  std::optional<core::ResidueType>(matching_type));
 
     // DEBUG: Always print for CVC
     if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {

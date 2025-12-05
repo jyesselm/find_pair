@@ -180,12 +180,12 @@ public:
         // Modified Adenine → 'a'
         if (trimmed == "A2M" || trimmed == "1MA" || trimmed == "2MA" || trimmed == "OMA" ||
             trimmed == "6MA" || trimmed == "MIA" || trimmed == "I6A" || trimmed == "T6A" ||
-            trimmed == "M6A" || trimmed == "LCA") // LCA = Locked Adenosine (LNA)
+            trimmed == "M6A" || trimmed == "LCA" || trimmed == "A23") // A23 = 2'-deoxy-2'-fluoroadenosine
             return 'a';
 
         // Modified Cytosine → 'c'
         if (trimmed == "5MC" || trimmed == "OMC" || trimmed == "S4C" || trimmed == "5IC" ||
-            trimmed == "5FC" || trimmed == "CBR" || trimmed == "LCC") // LCC = Locked Cytidine (LNA)
+            trimmed == "5FC" || trimmed == "CBR" || trimmed == "LCC" || trimmed == "EPE") // EPE = Modified cytosine analog
             return 'c';
 
         // Modified Guanine → 'g'
