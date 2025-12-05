@@ -54,6 +54,13 @@ public:
      * @return true if purine, false if pyrimidine, nullopt if not found
      */
     static std::optional<bool> is_purine(const std::string& residue_name);
+    
+    /**
+     * @brief Check if a residue is in the registry
+     * @param residue_name Three-letter residue name
+     * @return true if residue is known/registered, false otherwise
+     */
+    static bool contains(const std::string& residue_name);
 
 private:
     // The central registry - all modified nucleotide data in one place

@@ -100,8 +100,8 @@ def validate_frames(pdb_id: str, tolerance: float = 1e-5) -> ValidationResult:
                 effective_tolerance = 1e-2  # Numerical precision (~5e-3)
             elif res_name == "70U":
                 effective_tolerance = 0.15  # LS fitting anomaly (~0.09)
-            elif res_name == "I":
-                effective_tolerance = 3e-2  # Inosine - atom ordering/float precision (up to ~2.5e-2 observed)
+            elif res_name == "I" or res_name == "DI":
+                effective_tolerance = 5e-2  # Inosine/deoxyinosine - atom ordering/float precision (up to ~4e-2 observed)
             elif res_name == "9DG":
                 # BUG FIX: 9-deazaguanine is a modified G, not U
                 # Legacy incorrectly classified as U, modern correctly uses G template

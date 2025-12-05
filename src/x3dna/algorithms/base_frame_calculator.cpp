@@ -525,8 +525,13 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                     return result; // Cannot calculate frame - both attempts failed
                 }
 
-                // Second try passed - accept as pyrimidine (force type to pyrimidine)
-                has_purine_atoms = false; // Treat as pyrimidine
+                // Second try passed - accept with pyrimidine atoms
+                // CRITICAL: For registry nucleotides, keep the original type but use pyrimidine atoms
+                // For unknown nucleotides, change to pyrimidine type
+                bool is_registry_nucleotide = core::ModifiedNucleotideRegistry::contains(res_name);
+                if (!is_registry_nucleotide) {
+                    has_purine_atoms = false; // Change type to pyrimidine (unknown nucleotides only)
+                }
                 used_pyrimidine_fallback = true; // Mark that we used pyrimidine fallback
                 rmsd_result = pyrimidine_rmsd;
             } else {
@@ -597,13 +602,20 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                   << "\n";
     }
 
+    // CRITICAL: For nucleotides in the registry, TRUST the ResidueFactory type
+    // Do NOT override it based on atom analysis - the factory has already determined the correct type
+    // This prevents issues like EPE (cytosine) being misclassified as adenine based on RMSD fallback
+    bool is_registry_nucleotide = core::ModifiedNucleotideRegistry::contains(res_name);
+    
     // Determine residue type from atoms (for modified nucleotides or if type is still UNKNOWN)
     // If residue_type is already a standard nucleotide (A, C, G, T, U) and in NT_LIST, use it
     // Otherwise, determine type from atoms
-    if (residue_type == core::ResidueType::UNKNOWN ||
-        residue_type == core::ResidueType::AMINO_ACID ||
-        residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check) {
-        // Determine type from atoms
+    // BUT: Skip this entire atom-based type determination for registry nucleotides!
+    if (!is_registry_nucleotide && 
+        (residue_type == core::ResidueType::UNKNOWN ||
+         residue_type == core::ResidueType::AMINO_ACID ||
+         residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check)) {
+        // Determine type from atoms (only for NON-registry nucleotides)
         if (has_ring_atoms) {
             // For modified nucleotides with known one_letter_code, trust that code for
             // purine/pyrimidine determination. This handles cases like A23 where RMSD fallback

@@ -212,6 +212,10 @@ std::optional<bool> ModifiedNucleotideRegistry::is_purine(const std::string& res
     return info.has_value() ? std::optional<bool>(info->is_purine) : std::nullopt;
 }
 
+bool ModifiedNucleotideRegistry::contains(const std::string& residue_name) {
+    return get_info(residue_name).has_value();
+}
+
 } // namespace core
 } // namespace x3dna
 
