@@ -2,7 +2,7 @@
 
 **Goal**: Achieve 100% accuracy with legacy X3DNA code across all validation types
 
-**Last Updated**: December 3, 2025
+**Last Updated**: December 5, 2025
 
 ---
 
@@ -11,316 +11,178 @@
 | Milestone | Status | Notes |
 |-----------|--------|-------|
 | ✅ Residue Index Matching | **COMPLETE** | All residues correctly matched to legacy indices via PDB properties |
-| ✅ **LS_Fitting Validation** | **99.92% COMPLETE** ✅ | **3599/3602 PDBs pass** (3 edge cases: 1 legacy dup, 2 non-standard naming) |
-| ✅ RMSD Algorithm Match | **COMPLETE** | Fixed side-chain atom matching, two-try fallback, C1R support |
-| ⏳ All Record Types Match | **PENDING** | Need validation on remaining record types |
-| ⏳ Step Parameters Match | **PENDING** | New comparison type added |
-| ⏳ Production Ready | **PENDING** | LS_fitting ✅, need other stages |
+| ✅ Atoms Validation | **100% COMPLETE** | All 3602 PDBs pass |
+| ✅ LS_Fitting Validation | **99.92% COMPLETE** | 3599/3602 PDBs pass (3 edge cases) |
+| ✅ **Distance Checks Validation** | **99.3% COMPLETE** ✅ | **3578/3602 PDBs pass** |
+| ⏳ H-bonds Validation | **PENDING** | Stage 4 |
+| ⏳ Pair Validation | **PENDING** | Stage 5 |
+| ⏳ Best Pair Selection | **PENDING** | Stage 6 - PRIMARY OUTPUT |
+| ⏳ Step Parameters | **PENDING** | Stage 7-9 |
 
 ---
 
-## Validation Status by Record Type
+## Validation Status by Stage
 
-### Phase 1: Core Data Structures ✅ COMPLETE
-
-| Record Type | Status | Match Rate | Legacy Dependency Removed? | Notes |
-|-------------|--------|------------|---------------------------|-------|
-| `pdb_atoms` | ✅ **COMPLETE** | **100%** (3602/3602) | ✅ | **DO NOT REGENERATE** - All atoms validated and match legacy exactly. Tested December 2, 2025. |
-| `residue_indices` | ✅ **COMPLETE** | **100%** | ✅ | Legacy reads removed December 4, 2025. Pure modern generation. |
-| `base_frame_calc` | ✅ **COMPLETE** | **100%** | ✅ | Legacy dependency removed December 4, 2025. Uses modern residue indexing. |
-| `frame_calc`/`ref_frame` | ✅ **COMPLETE** | **100%** | ✅ | Legacy dependency removed December 4, 2025. Uses modern residue indexing. |
-| `ls_fitting` | ✅ **COMPLETE** | **99.92%** (3599/3602) | ✅ | **Exact legacy algorithm**. 3 edge cases. Legacy dependency removed December 4, 2025. |
-
-### Phase 2: Base Pair Detection 🔄 IN PROGRESS
-
+### Stage 1: Atoms ✅ COMPLETE
 | Record Type | Status | Match Rate | Notes |
 |-------------|--------|------------|-------|
-| `base_pair` | 🔄 TESTING | TBD | Currently validating |
-| `pair_validation` | 🔄 TESTING | TBD | Validation results comparison |
-| `distance_checks` | 🔄 TESTING | TBD | Geometric measurements |
-| `hbond_list` | 🔄 TESTING | TBD | H-bond detection |
-| `find_bestpair_selection` | 🔄 TESTING | TBD | **PRIMARY OUTPUT** - must be 100% |
+| `pdb_atoms` | ✅ **COMPLETE** | **100%** (3602/3602) | All atoms validated |
+| `residue_indices` | ✅ **COMPLETE** | **100%** | Legacy-style indices assigned during parsing |
 
-### Phase 3: Step Parameters ⏳ PENDING
-
+### Stage 2: Frames ✅ COMPLETE  
 | Record Type | Status | Match Rate | Notes |
 |-------------|--------|------------|-------|
+| `base_frame_calc` | ✅ **COMPLETE** | **100%** | Modern generation only |
+| `frame_calc` | ✅ **COMPLETE** | **100%** | Legacy dependency removed |
+| `ls_fitting` | ✅ **COMPLETE** | **99.92%** (3599/3602) | 3 edge cases |
+
+### Stage 3: Distance Checks ✅ COMPLETE
+| Record Type | Status | Match Rate | Notes |
+|-------------|--------|------------|-------|
+| `distance_checks` | ✅ **COMPLETE** | **99.3%** (3578/3602) | See detailed report |
+
+**Stage 3 Issues Fixed**:
+- dNN calculation for modified nucleotides (8B4, A23, A7E)
+- Purine detection extended to check N9 (for 7-deaza bases)
+- G-quadruplex overlap calculation (skip hydrogens)
+- Modified nucleotide template selection (lowercase templates)
+- DNA bases template selection (DT, DA, etc.)
+- Frame_calc residue index offset
+- EPE modified cytosine mapping
+
+**Stage 3 Remaining Failures** (24 PDBs):
+- 7 dNN mismatches (modified nucleotides)
+- 16 missing pairs (J48, unknown modified nucleotides)
+- 1 extra pair
+
+See `docs/STAGE3_INVESTIGATION_FINDINGS.md` for complete details.
+
+### Stage 4: H-bonds ⏳ PENDING
+| Record Type | Status | Match Rate | Notes |
+|-------------|--------|------------|-------|
+| `hbond_list` | ⏳ PENDING | TBD | Next stage to validate |
+
+### Stage 5: Pair Validation ⏳ PENDING
+| Record Type | Status | Match Rate | Notes |
+|-------------|--------|------------|-------|
+| `pair_validation` | ⏳ PENDING | TBD | Validation results comparison |
+
+### Stage 6: Best Pair Selection ⏳ PENDING
+| Record Type | Status | Match Rate | Notes |
+|-------------|--------|------------|-------|
+| `find_bestpair_selection` | ⏳ PENDING | TBD | **PRIMARY OUTPUT** - must be 100% |
+| `mutual_best_decisions` | ⏳ PENDING | TBD | |
+
+### Stage 7-9: Parameters ⏳ PENDING
+| Record Type | Status | Match Rate | Notes |
+|-------------|--------|------------|-------|
+| `base_pair` | ⏳ PENDING | TBD | Base pair parameters |
 | `bpstep_params` | ⏳ PENDING | TBD | Shift, Slide, Rise, Tilt, Roll, Twist |
 | `helical_params` | ⏳ PENDING | TBD | Helical axis parameters |
 
 ---
 
-## PDB Validation Statistics
+## Test Set Details
 
-**Current Run**: Batch validation in progress
-
-### Summary Stats
-- **Total PDBs Available**: 1737
-- **With Legacy JSON**: ~300-400 (estimated)
-- **Currently Testing**: Batch 3-4 of ~18 batches
-- **Passed**: ~150+
-- **Failed**: 1 (7EH2 - count mismatch)
-- **Timeout**: ~13 (large structures >120s)
-- **Skipped**: ~1000+ (no legacy JSON)
-
-### Recent Results
-```
-Batch 2: 1 PASS, 0 FAIL, 93 SKIP
-Batch 3: 78 PASS, 0 FAIL, 15 SKIP
-Batch 4: IN PROGRESS (43+ PASS so far, 1 FAIL)
-```
-
-### Known Issues
-1. **7EH2**: Count mismatch - needs investigation
-2. **Timeouts**: 13 large structures exceed 120s limit
-   - 6ZMT, 6ZLW, 6ZN5, 6ZOJ, 5XYM, 5NRG (Batch 2)
-   - 6ZV6, 6ZUO, 6ZXG, 6ZXH, 6ZXD, 6ZXE (Batch 3)
-   - 7ASM (Batch 3)
+| Test Set | Total PDBs | Description |
+|----------|------------|-------------|
+| `valid_pdbs_fast.json` | 3602 | PDBs with valid atoms and frames |
+| Full database | ~4000+ | All available PDBs |
 
 ---
 
-## Completed Milestones
+## Key Code Files Modified
 
-### ✅ Residue Index Matching (COMPLETE)
-**Problem**: Modern code assigned different indices than legacy  
-**Solution**: Match residues by PDB properties (chain, seq_num, ins_code)  
-**Status**: 100% match achieved by assigning legacy-style indices during parsing  
-**Validation**: Every residue in test set correctly maps to legacy index
+### Stage 3 Fixes
 
-**Key Implementation**:
-- PDB parsing now assigns legacy indices directly (chain, seq_num, insertion order)
-- No dependency on legacy JSON during generation
+**`src/x3dna/algorithms/base_pair_validator.cpp`**:
+- Extended purine detection (N7 OR C8 OR N9)
+- Modified nucleotide atom-based detection
+- Fixed overlap calculation (skip hydrogens)
+- Legacy fallback logic for dNN
 
-### ✅ Reference Frame Matching (COMPLETE)
-**Problem**: Frame orientations differed due to residue ordering  
-**Solution**: Use `--legacy-inp` to match legacy strand ordering  
-**Status**: 100% match on test set (origin, X, Y, Z axes)  
-**Validation**: All axes match within tolerance (< 0.0001)
+**`src/x3dna/algorithms/base_frame_calculator.cpp`**:
+- Pyrimidine RMSD fallback tracking
+- DNA bases in NT_LIST
+- Modified nucleotide template selection
+- Trust one_letter_code for modified types
 
-### ✅ LS_FITTING RMSD Calculation (COMPLETE) - December 3, 2025
-**Problem**: Count mismatches in 47 PDBs (98.7% success)  
-**Root Causes Found**:
-1. **Side-chain atoms**: Modified pyrimidines (2YR) have C8 in side chains, not ring
-2. **Two-try fallback**: Not properly retrying with pyrimidine-only atoms
-3. **C1R sugar**: NMN/NNR use C1R instead of C1'
-4. **Nitrogen requirement**: Modern was stricter than legacy
+**`include/x3dna/core/residue.hpp`**:
+- Added A23 → 'a'
+- Added EPE → 'c'
+- Added LNA bases (LCC, LCG, LCA, TLN)
 
-**Solutions Applied**:
-1. Purine detection: Only match N7/C8/N9 if BOTH N7 AND C8 present
-2. Proper two-try: Explicitly calculate pyrimidine-only RMSD on second attempt
-3. C1R support: Accept both C1' and C1R for sugar detection
-4. Remove nitrogen req: Match legacy (only need ≥3 ring atoms + RMSD)
+**`src/x3dna/io/json_writer.cpp`**:
+- Fixed residue index offset
 
-**Results**: 
-- **99.92% success** (3599/3602 PDBs)
-- Fixed 44 PDBs (94% reduction in failures)
-- Uses strict 0.2618 threshold (exact legacy algorithm)
-- 30x faster with parallel processing (20 threads)
-
-**Remaining 3**:
-- 4KI4 (1): Legacy has 30 duplicate records
-- 5EAO, 5EAQ (2): CVC uses non-standard atom names (N01/C01 vs N1/C2)
-
-**Documentation**:
-- `docs/LS_FITTING_99_PERCENT_SUCCESS.md` - Complete analysis
-- `docs/LS_FITTING_PURINE_ATOM_FIX.md` - Technical details
-- `docs/LS_FITTING_COMPLETE_SUCCESS.md` - Summary
-
-**Commits**: 85414de, e0f0eab, cca4adf, 06c88b9, da87745
+**`src/x3dna/algorithms/standard_base_templates.cpp`**:
+- Added `is_modified` parameter for lowercase templates
 
 ---
 
-## Active Tasks
+## Validation Commands
 
-### 🔄 Current: Full PDB Validation
-**Command**: `./RUN_FULL_VALIDATION.sh` (or similar validation script)
+### Run Stage 3 Validation
+```python
+import json, subprocess, tempfile, shutil
+from x3dna_json_compare.distance_comparison import compare_distance_checks
 
-**What it does**:
-- Tests all PDBs with legacy JSON available
-- Compares all record types
-- Uses `--only-paired` mode to match legacy behavior
-- Automatically resumes from last checkpoint
-- Cleans up successful validations
+# Test a single PDB
+with open('data/json_legacy/distance_checks/1ABC.json') as f:
+    legacy = json.load(f)
 
-**Next Steps**:
-1. ✅ Let current validation run complete
-2. ⏳ Analyze all failures
-3. ⏳ Investigate timeout cases
-4. ⏳ Fix any count/matching issues
-5. ⏳ Re-run validation until 100% pass rate
+tmpdir = tempfile.mkdtemp()
+subprocess.run(['./build/generate_modern_json', 'data/pdb/1ABC.pdb', tmpdir, '--stage=distances'])
 
-### 🔄 Investigation Needed: 7EH2 Failure
-**Issue**: Count mismatch detected  
-**Priority**: HIGH  
-**Next Steps**:
-```bash
-# Investigate the failure
-python3 scripts/compare_json.py compare 7EH2 --verbose
+with open(f'{tmpdir}/distance_checks/1ABC.json') as f:
+    modern = json.load(f)
 
-# Regenerate if needed
-python3 scripts/rebuild_json.py regenerate 7EH2
-
-# Compare specific record types
-python3 scripts/compare_json.py atoms 7EH2
-python3 scripts/compare_json.py frames 7EH2
-python3 scripts/compare_json.py ring-atoms 7EH2
+result = compare_distance_checks(legacy, modern, tolerance=1e-5)
 ```
 
----
-
-## Next Major Milestones
-
-### 1. Complete Base Pair Validation (Phase 2)
-**Goal**: 100% match on `find_bestpair_selection` across all test PDBs
-
-**Validation Command**:
-```bash
-python3 scripts/compare_json.py compare --test-set 100
-```
-
-**Success Criteria**:
-- All base pairs match legacy selection
-- All validation results match
-- All H-bond lists match
-- All distance checks match
-
-### 2. Step Parameter Validation (Phase 3)
-**Goal**: 100% match on step parameters
-
-**Validation Command**:
-```bash
-python3 scripts/compare_json.py steps <PDB_ID>
-```
-
-**Success Criteria**:
-- All 6 step parameters match within tolerance
-- Helical parameters match within tolerance
-- Works with both modern and legacy input files
-
-### 3. Performance Optimization
-**Goal**: Reduce/eliminate timeouts
-
-**Known Issues**:
-- 13 PDBs timeout (>120s)
-- May need algorithm optimization
-- Consider parallel frame calculation
-
-**Options**:
-- Increase timeout threshold for validation
-- Optimize overlap calculation
-- Profile and optimize bottlenecks
-- Consider caching strategies
-
----
-
-## Test Sets
-
-### Test Set Sizes
-- **test_set_10.json**: 10 PDBs - Quick validation
-- **test_set_50.json**: 50 PDBs - Medium validation  
-- **test_set_100.json**: 100 PDBs - Comprehensive validation
-- **test_set_500.json**: 500 PDBs - Extended validation
-- **test_set_1000.json**: 1000 PDBs - Full validation
-- **All PDBs**: 1737 total (but only ~300-400 have legacy JSON)
-
-### Quick Validation Commands
-```bash
-# Quick test (10 PDBs)
-python3 scripts/compare_json.py compare --test-set 10
-
-# Standard test (100 PDBs)  
-python3 scripts/compare_json.py compare --test-set 100
-
-# Full test (all available)
-python3 scripts/compare_json.py compare
-```
-
----
-
-## Success Criteria for 100% Accuracy
-
-### Required for Production Release
-
-1. ✅ **Residue Matching**: 100% correct index mapping
-2. 🔄 **Base Pair Detection**: 100% match on selected pairs
-3. ⏳ **Step Parameters**: 100% match within tolerance
-4. ⏳ **All Record Types**: 100% match on all 10 types
-5. ⏳ **Test Set 100**: All 100 PDBs pass validation
-6. ⏳ **No Regressions**: Continuous validation passes
-
-### Tolerance Values
-- **Coordinates**: ±1e-6 Å
-- **Distances**: ±1e-6 Å  
-- **Angles**: ±1e-6°
-- **Rotation matrices**: < 0.0001 per element
-- **RMS fit**: < 0.001 Å
-- **Step parameters**: TBD (based on legacy precision)
-
----
-
-## Validation Tools Reference
-
-### Primary Validation
-```bash
-# Main comparison tool
-python3 scripts/compare_json.py compare [PDB_ID] [--verbose] [--test-set N]
-
-# Regenerate JSON
-python3 scripts/rebuild_json.py regenerate [PDB_ID] [--legacy-only|--modern-only]
-
-# Full validation
-./RUN_FULL_VALIDATION.sh
-```
-
-### Specific Record Types
-```bash
-python3 scripts/compare_json.py atoms <PDB_ID>
-python3 scripts/compare_json.py frames <PDB_ID>
-python3 scripts/compare_json.py ring-atoms <PDB_ID>
-python3 scripts/compare_json.py steps <PDB_ID>
-```
-
-### Debugging
-```bash
-# Verbose comparison
-python3 scripts/compare_json.py compare <PDB_ID> --verbose
-
-# Save report
-python3 scripts/compare_json.py compare --output report.md
-
-# Only show differences
-python3 scripts/compare_json.py compare --diff-only
+### Run Batch Validation with 10 Workers
+```python
+from concurrent.futures import ThreadPoolExecutor
+# ... see test scripts in tests_python/integration/
 ```
 
 ---
 
 ## Documentation Links
 
-- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Complete testing documentation
+- [STAGE3_INVESTIGATION_FINDINGS.md](STAGE3_INVESTIGATION_FINDINGS.md) - Stage 3 detailed report
+- [LS_FITTING_99_PERCENT_SUCCESS.md](LS_FITTING_99_PERCENT_SUCCESS.md) - Stage 2 (LS fitting) analysis
 - [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md) - Record types reference
-- [CODE_FLOW.md](CODE_FLOW.md) - How the code works
-- [README.md](../README.md) - Project overview
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Complete testing documentation
 
 ---
 
 ## Update Log
 
-### December 3, 2025 - LS_FITTING 99.92% Success ✅
-- **MAJOR MILESTONE**: Fixed LS_FITTING validation from 98.7% to 99.92%
-- Identified and fixed 4 root causes (side-chain atoms, two-try fallback, C1R, nitrogen req)
-- Fixed 44 PDBs (94% reduction in count mismatches: 47 → 3)
-- Exact legacy algorithm replication with strict 0.2618 threshold
-- Added parallel processing: 20 threads, 30x speedup (3 min vs 90 min)
-- Remaining 3 are edge cases: 1 legacy duplicate, 2 non-standard atom naming
-- Commits: 85414de, e0f0eab, cca4adf, 06c88b9, da87745
+### December 5, 2025 - Stage 3 Complete ✅
+- **MAJOR MILESTONE**: Stage 3 (distance_checks) validation 99.3% complete
+- Fixed 8 major issues (dNN, overlap, templates, etc.)
+- 3578/3602 PDBs pass
+- 24 remaining failures are edge cases with unusual modified nucleotides
+- Full documentation in STAGE3_INVESTIGATION_FINDINGS.md
+- Ready to proceed to Stage 4 (H-bonds)
 
-### December 2, 2025
-- Created VALIDATION_PROGRESS.md tracking document
-- Documented current status: residue indexing complete
-- Identified next steps: complete PDB validation, investigate failures
-- Set success criteria for 100% accuracy goal
+### December 4, 2025 - Stage 1-2 Complete
+- Legacy dependencies removed from frame generation
+- All 3602 PDBs pass atoms validation
+- 99.92% pass rate for ls_fitting
+
+### December 3, 2025 - LS_FITTING Success
+- Fixed LS_FITTING validation from 98.7% to 99.92%
+- Identified and fixed 4 root causes
+- Added parallel processing (20 threads, 30x speedup)
 
 ---
 
-**Next Update**: Validate remaining record types (base_pair, pair_validation, distances, hbonds, selection).
+## Next Steps
 
+1. **Stage 4**: Run H-bonds validation on 3602 PDBs
+2. **Stage 5**: Run pair_validation on 3602 PDBs  
+3. **Stage 6**: Run find_bestpair_selection - PRIMARY OUTPUT
+4. **Stage 7-9**: Validate base_pair, step, helical parameters
+5. **Target**: 100% match on PRIMARY OUTPUT (find_bestpair_selection)
