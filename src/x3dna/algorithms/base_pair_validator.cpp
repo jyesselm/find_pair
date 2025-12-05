@@ -290,6 +290,7 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
     // 3. Align to z-axis (project to plane perpendicular to zave)
     // 4. Calculate polygon intersection area
 
+
     // Step 1: Get ring atoms and exocyclic atoms (only_ring = 0 means include exocyclic atoms)
     // Legacy: ratom_xyz(ring_atom[r1], only_ring=0, xyz, oave, oxyz1)
     // When only_ring=0, legacy uses ring_atom[10+i] = exocyclic atoms (one per ring atom)
@@ -329,9 +330,14 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
         double min_dist = BOND_DISTANCE;
         
         // Find closest connected atom that's not a ring atom
+        // Legacy: skips hydrogen atoms (idx[ic] == 3 in get_cntatom)
         for (const auto& atom : res1.atoms()) {
             if (ring_atom_names1.find(atom.name()) != ring_atom_names1.end()) {
                 continue; // Skip ring atoms
+            }
+            // Skip hydrogen atoms (matches legacy get_cntatom which skips idx==3)
+            if (atom.name().size() >= 2 && atom.name()[1] == 'H') {
+                continue;
             }
             double dist = (atom.position() - ring_atom->position()).length();
             if (dist < min_dist && dist > 0.1) { // Within bond distance, not same atom
@@ -343,6 +349,7 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
         // Use exocyclic atom if found, otherwise use ring atom itself (matches legacy)
         const Atom* atom_to_use = (exocyclic_atom != nullptr) ? exocyclic_atom : ring_atom;
         ring_coords1.push_back(atom_to_use->position() - oave);
+        
     }
     
     // Same for res2
@@ -367,6 +374,10 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
         
         for (const auto& atom : res2.atoms()) {
             if (ring_atom_names2.find(atom.name()) != ring_atom_names2.end()) {
+                continue;
+            }
+            // Skip hydrogen atoms (matches legacy get_cntatom which skips idx==3)
+            if (atom.name().size() >= 2 && atom.name()[1] == 'H') {
                 continue;
             }
             double dist = (atom.position() - ring_atom->position()).length();
