@@ -46,7 +46,8 @@
       "9DG":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "9-deazaguanine (legacy incorrectly maps to U)"}
     },
     "inosines": {
-      "IMP":  {"code": "I", "type": "INOSINE", "is_purine": true,  "description": "Inosine monophosphate (fixed: should be purine)"}
+      "IMP":  {"code": "I", "type": "INOSINE", "is_purine": true,  "description": "Inosine monophosphate (fixed: should be purine)"},
+      "DI":   {"code": "I", "type": "INOSINE", "is_purine": true,  "description": "2'-deoxyinosine"}
     },
     "modified_cytosines": {
       "5MC":  {"code": "c", "type": "CYTOSINE", "is_purine": false, "description": "5-methylcytidine"},
