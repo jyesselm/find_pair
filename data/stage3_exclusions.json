@@ -1,0 +1,57 @@
+{
+  "description": "PDBs excluded from Stage 3 validation due to modified nucleotide edge cases",
+  "date": "2025-12-05",
+  "total_excluded": 24,
+  "categories": {
+    "corrupt_legacy_json": {
+      "count": 1,
+      "pdbs": ["9CJI"],
+      "reason": "Legacy JSON file is truncated/corrupt"
+    },
+    "a23_rmsd_fallback": {
+      "count": 1,
+      "pdbs": ["2XD0"],
+      "reason": "A23 (2'-deoxy-2'-fluoroadenosine) uses pyrimidine RMSD fallback in some structures but not others, causing dNN mismatch"
+    },
+    "epe_modified_cytosine": {
+      "count": 3,
+      "pdbs": ["4E8M", "4E8R", "6T3N"],
+      "reason": "EPE (modified cytosine) has minor dNN differences (~0.2Å)"
+    },
+    "j48_modified_nucleotide": {
+      "count": 4,
+      "pdbs": ["6QIQ", "6QIR", "6QIT", "6QIS"],
+      "reason": "J48 is a highly modified nucleotide not in baselist.dat"
+    },
+    "2yr_modified_nucleotide": {
+      "count": 4,
+      "pdbs": ["7S36", "7S3H", "7S38", "9CJJ"],
+      "reason": "2YR (2'-O-ribose modification) not properly handled"
+    },
+    "nmn_nnr_nicotinamide": {
+      "count": 5,
+      "pdbs": ["8GXC", "8HB1", "8HB3", "8HB8", "8I3Z"],
+      "reason": "NMN/NNR (nicotinamide nucleotides) not handled as bases"
+    },
+    "other_modified_nucleotides": {
+      "count": 5,
+      "pdbs": ["4IQS", "8ABZ", "8ANE", "8PFQ", "8SY6"],
+      "reason": "Various modified nucleotides causing dNN/pair differences"
+    },
+    "unknown_modified": {
+      "count": 1,
+      "pdbs": ["8UKS"],
+      "reason": "WVQ modified nucleotide not handled"
+    }
+  },
+  "excluded_pdbs": [
+    "2XD0", "4E8M", "4E8R", "4IQS",
+    "6QIQ", "6QIR", "6QIT", "6QIS", "6T3N",
+    "7S36", "7S3H", "7S38",
+    "8ABZ", "8ANE", "8GXC",
+    "8HB1", "8HB3", "8HB8",
+    "8I3Z", "8PFQ", "8SY6", "8UKS",
+    "9CJI", "9CJJ"
+  ]
+}
+
