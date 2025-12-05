@@ -218,7 +218,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // nucleotides Standard NT_LIST: A, C, G, T, U, PSU (pseudouridine), I (inosine) H2U is NOT in
     // NT_LIST, so it needs RMSD check regardless of residue_type
     static const std::vector<std::string> NT_LIST = {
-        "A", "C", "G", "T", "U", "PSU", "P5P", "PU", "I", "DI", "ADP", "GDP", "CDP", "UDP", "TDP"};
+        "A", "C", "G", "T", "U", "PSU", "P5P", "PU", "I", "DI", "ADP", "GDP", "CDP", "UDP", "TDP",
+        "DA", "DC", "DG", "DT", "DU"}; // Added DNA bases
     bool is_in_nt_list = false;
     std::string res_upper = res_name;
     for (char& c : res_upper) {
