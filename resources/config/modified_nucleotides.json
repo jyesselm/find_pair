@@ -73,7 +73,8 @@
     "modified_thymines": {
       "5MU":  {"code": "t", "type": "THYMINE", "is_purine": false, "description": "5-methyluridine (ribothymidine)"},
       "RT":   {"code": "t", "type": "THYMINE", "is_purine": false, "description": "Ribothymidine"},
-      "CM0":  {"code": "t", "type": "THYMINE", "is_purine": false, "description": "Modified thymine (has C7 methyl, legacy incorrectly maps to U)"}
+      "CM0":  {"code": "t", "type": "THYMINE", "is_purine": false, "description": "Modified thymine (has C7 methyl, legacy incorrectly maps to U)"},
+      "JSP":  {"code": "t", "type": "THYMINE", "is_purine": false, "description": "J-substituted pyrimidine (thymine analog), legacy misclassified as U"}
     },
     "modified_uracils": {
       "70U":  {"code": "u", "type": "URACIL", "is_purine": false, "description": "7-methyluridine"},

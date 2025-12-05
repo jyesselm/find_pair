@@ -108,10 +108,10 @@ def validate_frames(pdb_id: str, tolerance: float = 1e-5) -> ValidationResult:
                 print(f"   ℹ️  9DG: Legacy bug fixed (U→G), skipping RMS comparison")
                 matched += 1
                 continue
-            elif res_name == "CM0":
-                # BUG FIX: CM0 is a modified T (has C7 methyl), not U
+            elif res_name in ["CM0", "JSP"]:
+                # BUG FIX: CM0/JSP are modified T (have C7 methyl), not U
                 # Legacy incorrectly classified as U, modern correctly uses T template
-                print(f"   ℹ️  CM0: Legacy bug fixed (U→T), skipping RMS comparison")
+                print(f"   ℹ️  {res_name}: Legacy bug fixed (U→T), skipping RMS comparison")
                 matched += 1
                 continue
             elif res_name == "EPE":
