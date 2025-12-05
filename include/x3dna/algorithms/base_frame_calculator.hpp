@@ -14,6 +14,7 @@
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/algorithms/standard_base_templates.hpp>
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
+#include <x3dna/algorithms/residue_type_detector.hpp>
 #include <x3dna/geometry/least_squares_fitter.hpp>
 
 namespace x3dna {
