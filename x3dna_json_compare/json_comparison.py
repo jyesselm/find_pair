@@ -223,8 +223,8 @@ class JsonComparator:
             base_dir = json_file.parent
             
             for calc_type in ['base_frame_calc', 'ls_fitting', 'frame_calc']:
-                # Map ls_fitting to frame_calc directory in new structure
-                dir_name = 'frame_calc' if calc_type == 'ls_fitting' else calc_type
+                # Each calc_type has its own directory
+                dir_name = calc_type
                 
                 # Try new structure: <record_type>/<PDB_ID>.json
                 split_file = find_json_file(base_dir, pdb_id, dir_name)
@@ -232,6 +232,10 @@ class JsonComparator:
                     try:
                         split_data = self._load_json(split_file)
                         if isinstance(split_data, list):
+                            # Add type field to each record if missing
+                            for rec in split_data:
+                                if 'type' not in rec:
+                                    rec['type'] = calc_type
                             records.extend(split_data)
                     except Exception:
                         pass

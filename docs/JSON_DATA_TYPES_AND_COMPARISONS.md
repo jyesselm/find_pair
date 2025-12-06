@@ -10,14 +10,28 @@ This document describes each type of JSON data record produced by the X3DNA find
 
 ## Stage Organization
 
-The validation pipeline has **4 stages**. Each stage generates specific JSON files and must pass before proceeding:
+The validation pipeline has **4 stages** that follow the legacy code execution order. Each stage generates specific JSON files and must pass before proceeding:
 
 | Stage | Name | CLI Flag | JSON Files | Status |
 |-------|------|----------|------------|--------|
 | 1 | Atoms | `atoms` | `pdb_atoms` | ✅ PASSED |
-| 2 | Residue Indices & Frames | `frames`, `residue_indices` | `residue_indices`, `ls_fitting`, `base_frame_calc`, `frame_calc` | ✅ PASSED |
+| 2 | Residue Indices & Frames | `frames`, `residue_indices` | `residue_indices`, `ls_fitting`, `base_frame_calc`, `frame_calc` | ⚠️ NEEDS TESTING |
 | 3 | Pairs | `pairs` | `pair_validation`, `distance_checks`, `hbond_list`, `base_pair`, `find_bestpair_selection` | ⚠️ IN PROGRESS |
 | 4 | Steps | `steps` | `bpstep_params`, `helical_params` | ⏳ PENDING |
+
+### Legacy Code Execution Order
+
+The legacy find_pair algorithm executes in this order:
+
+1. **Atom parsing** → `pdb_atoms`
+2. **Residue indexing** (`seidx`) → `residue_indices`
+3. **Frame calculation** (`base_info`) → `base_frame_calc`, `ls_fitting`, `frame_calc`
+4. **Pair finding** (within `check_pair` and `all_pairs`):
+   - Pair validation → `pair_validation`
+   - Distance checks → `distance_checks`
+   - H-bond listing → `hbond_list`
+   - Best pair selection → `base_pair`, `find_bestpair_selection`
+5. **Step parameters** → `bpstep_params`, `helical_params`
 
 ### Running Validation by Stage
 
@@ -99,7 +113,7 @@ Parse PDB file and extract all atoms with their coordinates and metadata.
 
 ---
 
-## Stage 2: Residue Indices & Frames ✅ PASSED
+## Stage 2: Residue Indices & Frames ⚠️ NEEDS TESTING
 
 ### Purpose
 Calculate residue-to-atom mappings and base reference frames using template fitting.
@@ -109,6 +123,11 @@ Calculate residue-to-atom mappings and base reference frames using template fitt
 - `ls_fitting/<PDB_ID>.json` - Least-squares fitting results
 - `base_frame_calc/<PDB_ID>.json` - Base frame calculation results
 - `frame_calc/<PDB_ID>.json` - Reference frames (rotation matrix + origin)
+
+### ⚠️ Important Note
+The comparison framework had bugs that caused frame comparisons to incorrectly pass. Fixed issues:
+1. **Missing `type` field**: Legacy frame split files don't include a `type` field, but comparison code expected it. Fixed by adding `type` field when loading from split files.
+2. **Modern JSON generation**: Most PDBs don't have modern frame JSON files. Need to regenerate with `--stage=frames`.
 
 ---
 
