@@ -465,13 +465,15 @@ def create_record_comparison_from_dicts(
     )
 
 
-def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6) -> str:
+def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6, 
+                                  diff_only: bool = False) -> str:
     """Generate a complete verbose report for a comparison result.
     
     Args:
         pdb_id: PDB identifier
         result: ComparisonResult object
         tolerance: Numerical comparison tolerance
+        diff_only: If True, only show mismatches. If False, show all records.
     
     Returns:
         Formatted verbose report string
@@ -480,7 +482,7 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6) -
         tolerance=tolerance,
         show_provenance=False,
         show_related=True,
-        diff_only=False
+        diff_only=diff_only
     )
     
     # Build stages list
@@ -506,8 +508,11 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6) -
     
     reporter.add_header(pdb_id, stages)
     
-    # Add distance checks
+    # Add distance checks - load JSON to show ALL records
     if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
+        import json
+        from pathlib import Path
+        
         dcc = result.distance_checks_comparison
         reporter.add_stage_header("distance_checks", 3)
         reporter.add_stage_summary(
@@ -516,22 +521,72 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6) -
             len(dcc.missing_in_modern), len(dcc.extra_in_modern),
             len(dcc.mismatched_checks)
         )
-        for mismatch in dcc.mismatched_checks[:reporter.max_mismatches_per_stage]:
-            pair_key = (mismatch.get('base_i'), mismatch.get('base_j'))
-            rec_comp = create_record_comparison_from_dicts(
-                record_key=pair_key,
-                record_type="distance_checks",
-                legacy_record=mismatch.get('legacy_record', {}),
-                modern_record=mismatch.get('modern_record', {}),
-                fields_to_compare=['dorg', 'dNN', 'plane_angle', 'd_v', 'overlap_area'],
-                tolerance=tolerance,
-                legacy_source=f"data/json_legacy/distance_checks/{pdb_id}.json",
-                modern_source=f"data/json/distance_checks/{pdb_id}.json"
-            )
-            reporter.add_record_comparison(rec_comp)
+        
+        # Load all distance check records to show every record
+        if not diff_only:
+            legacy_file = Path(f"data/json_legacy/distance_checks/{pdb_id}.json")
+            modern_file = Path(f"data/json/distance_checks/{pdb_id}.json")
+            
+            if legacy_file.exists() and modern_file.exists():
+                try:
+                    with open(legacy_file) as f:
+                        legacy_data = json.load(f)
+                    with open(modern_file) as f:
+                        modern_data = json.load(f)
+                    
+                    # Create dict for quick modern lookup
+                    modern_dict = {}
+                    for rec in modern_data:
+                        key = (rec.get('base_i'), rec.get('base_j'))
+                        modern_dict[key] = rec
+                    
+                    # Compare all legacy records
+                    shown_count = 0
+                    max_to_show = 1000
+                    
+                    for legacy_rec in legacy_data:
+                        if shown_count >= max_to_show:
+                            break
+                        
+                        pair_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
+                        modern_rec = modern_dict.get(pair_key, {})
+                        
+                        rec_comp = create_record_comparison_from_dicts(
+                            record_key=pair_key,
+                            record_type="distance_checks",
+                            legacy_record=legacy_rec,
+                            modern_record=modern_rec,
+                            fields_to_compare=['dorg', 'dNN', 'plane_angle', 'd_v', 'overlap_area'],
+                            tolerance=tolerance,
+                            legacy_source=str(legacy_file),
+                            modern_source=str(modern_file)
+                        )
+                        reporter.add_record_comparison(rec_comp)
+                        shown_count += 1
+                except Exception:
+                    pass
+        
+        # Fall back to mismatch-only if needed
+        if diff_only or len([s for s in reporter.sections if 'MISMATCH' in s or 'MATCH' in s]) == 0:
+            for mismatch in dcc.mismatched_checks[:reporter.max_mismatches_per_stage]:
+                pair_key = (mismatch.get('base_i'), mismatch.get('base_j'))
+                rec_comp = create_record_comparison_from_dicts(
+                    record_key=pair_key,
+                    record_type="distance_checks",
+                    legacy_record=mismatch.get('legacy_record', {}),
+                    modern_record=mismatch.get('modern_record', {}),
+                    fields_to_compare=['dorg', 'dNN', 'plane_angle', 'd_v', 'overlap_area'],
+                    tolerance=tolerance,
+                    legacy_source=f"data/json_legacy/distance_checks/{pdb_id}.json",
+                    modern_source=f"data/json/distance_checks/{pdb_id}.json"
+                )
+                reporter.add_record_comparison(rec_comp)
     
-    # Add hbond list
+    # Add hbond list - load JSON to show ALL records
     if hasattr(result, 'hbond_list_comparison') and result.hbond_list_comparison:
+        import json
+        from pathlib import Path
+        
         hlc = result.hbond_list_comparison
         reporter.add_stage_header("hbond_list", 4)
         reporter.add_stage_summary(
@@ -540,22 +595,72 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6) -
             len(hlc.missing_in_modern), len(hlc.extra_in_modern),
             len(hlc.mismatched_pairs)
         )
-        for mismatch in hlc.mismatched_pairs[:reporter.max_mismatches_per_stage]:
-            pair_key = (mismatch.get('base_i'), mismatch.get('base_j'))
-            rec_comp = create_record_comparison_from_dicts(
-                record_key=pair_key,
-                record_type="hbond_list",
-                legacy_record=mismatch.get('legacy_record', {}),
-                modern_record=mismatch.get('modern_record', {}),
-                fields_to_compare=['num_hbonds'],
-                tolerance=tolerance,
-                legacy_source=f"data/json_legacy/hbond_list/{pdb_id}.json",
-                modern_source=f"data/json/hbond_list/{pdb_id}.json"
-            )
-            reporter.add_record_comparison(rec_comp)
+        
+        # Load all hbond records to show every record
+        if not diff_only:
+            legacy_file = Path(f"data/json_legacy/hbond_list/{pdb_id}.json")
+            modern_file = Path(f"data/json/hbond_list/{pdb_id}.json")
+            
+            if legacy_file.exists() and modern_file.exists():
+                try:
+                    with open(legacy_file) as f:
+                        legacy_data = json.load(f)
+                    with open(modern_file) as f:
+                        modern_data = json.load(f)
+                    
+                    # Create dict for quick modern lookup
+                    modern_dict = {}
+                    for rec in modern_data:
+                        key = (rec.get('base_i'), rec.get('base_j'))
+                        modern_dict[key] = rec
+                    
+                    # Compare all legacy records
+                    shown_count = 0
+                    max_to_show = 1000
+                    
+                    for legacy_rec in legacy_data:
+                        if shown_count >= max_to_show:
+                            break
+                        
+                        pair_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
+                        modern_rec = modern_dict.get(pair_key, {})
+                        
+                        rec_comp = create_record_comparison_from_dicts(
+                            record_key=pair_key,
+                            record_type="hbond_list",
+                            legacy_record=legacy_rec,
+                            modern_record=modern_rec,
+                            fields_to_compare=['num_hbonds'],
+                            tolerance=tolerance,
+                            legacy_source=str(legacy_file),
+                            modern_source=str(modern_file)
+                        )
+                        reporter.add_record_comparison(rec_comp)
+                        shown_count += 1
+                except Exception:
+                    pass
+        
+        # Fall back to mismatch-only if needed
+        if diff_only or len([s for s in reporter.sections if 'MISMATCH' in s or 'MATCH' in s]) == 0:
+            for mismatch in hlc.mismatched_pairs[:reporter.max_mismatches_per_stage]:
+                pair_key = (mismatch.get('base_i'), mismatch.get('base_j'))
+                rec_comp = create_record_comparison_from_dicts(
+                    record_key=pair_key,
+                    record_type="hbond_list",
+                    legacy_record=mismatch.get('legacy_record', {}),
+                    modern_record=mismatch.get('modern_record', {}),
+                    fields_to_compare=['num_hbonds'],
+                    tolerance=tolerance,
+                    legacy_source=f"data/json_legacy/hbond_list/{pdb_id}.json",
+                    modern_source=f"data/json/hbond_list/{pdb_id}.json"
+                )
+                reporter.add_record_comparison(rec_comp)
     
-    # Add frames
+    # Add frames - load JSON files to show ALL records
     if result.frame_comparison:
+        import json
+        from pathlib import Path
+        
         fc = result.frame_comparison
         reporter.add_stage_header("frames", 2)
         reporter.add_stage_summary(
@@ -565,33 +670,96 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6) -
             0,
             len(fc.mismatched_calculations)
         )
-        for mismatch in fc.mismatched_calculations[:reporter.max_mismatches_per_stage]:
-            residue_key = mismatch.residue_key
-            record_type = "unknown"
-            mismatches_dict = mismatch.mismatches
-            if 'base_frame_calc' in mismatches_dict:
-                record_type = "base_frame_calc"
-                fields = ['rms_fit', 'num_matched_atoms', 'base_type']
-            elif 'ls_fitting' in mismatches_dict:
-                record_type = "ls_fitting"
-                fields = ['rms_fit', 'num_points']
-            elif 'frame_calc' in mismatches_dict:
-                record_type = "frame_calc"
-                fields = ['rms_fit', 'num_matched_atoms']
-            else:
-                fields = ['rms_fit']
-            
-            rec_comp = create_record_comparison_from_dicts(
-                record_key=residue_key,
-                record_type=record_type,
-                legacy_record=mismatch.legacy_record,
-                modern_record=mismatch.modern_record,
-                fields_to_compare=fields,
-                tolerance=tolerance,
-                legacy_source=f"data/json_legacy/{record_type}/{pdb_id}.json",
-                modern_source=f"data/json/{record_type}/{pdb_id}.json"
-            )
-            reporter.add_record_comparison(rec_comp)
+        
+        # Load all frame records from JSON files to show every record
+        if not diff_only:
+            # Try to load base_frame_calc files first
+            for record_type in ['base_frame_calc', 'ls_fitting', 'frame_calc']:
+                legacy_file = Path(f"data/json_legacy/{record_type}/{pdb_id}.json")
+                modern_file = Path(f"data/json/{record_type}/{pdb_id}.json")
+                
+                if legacy_file.exists() and modern_file.exists():
+                    try:
+                        with open(legacy_file) as f:
+                            legacy_data = json.load(f)
+                        with open(modern_file) as f:
+                            modern_data = json.load(f)
+                        
+                        # Determine fields to compare based on record type
+                        if record_type == 'base_frame_calc':
+                            fields = ['rms_fit', 'num_matched_atoms', 'base_type']
+                        elif record_type == 'ls_fitting':
+                            fields = ['rms_fit', 'num_points']
+                        else:
+                            fields = ['rms_fit', 'num_matched_atoms']
+                        
+                        # Create a dict for quick modern lookup
+                        modern_dict = {}
+                        for rec in modern_data:
+                            key = (rec.get('chain_id'), rec.get('residue_seq'), rec.get('insertion_code', ' '))
+                            modern_dict[key] = rec
+                        
+                        # Compare all legacy records
+                        shown_count = 0
+                        max_to_show = 1000  # Safety limit
+                        
+                        for legacy_rec in legacy_data:
+                            if shown_count >= max_to_show:
+                                break
+                            
+                            residue_key = (legacy_rec.get('chain_id'), 
+                                         legacy_rec.get('residue_seq'), 
+                                         legacy_rec.get('insertion_code', ' '))
+                            modern_rec = modern_dict.get(residue_key, {})
+                            
+                            rec_comp = create_record_comparison_from_dicts(
+                                record_key=residue_key,
+                                record_type=record_type,
+                                legacy_record=legacy_rec,
+                                modern_record=modern_rec,
+                                fields_to_compare=fields,
+                                tolerance=tolerance,
+                                legacy_source=str(legacy_file),
+                                modern_source=str(modern_file)
+                            )
+                            reporter.add_record_comparison(rec_comp)
+                            shown_count += 1
+                        
+                        # Only show one record type
+                        break
+                    except Exception as e:
+                        # Fall back to mismatch-only if loading fails
+                        pass
+        
+        # If diff_only or file loading failed, show just mismatches
+        if diff_only or not reporter.sections or len(reporter.sections) < 3:
+            for mismatch in fc.mismatched_calculations[:reporter.max_mismatches_per_stage]:
+                residue_key = mismatch.residue_key
+                record_type = "unknown"
+                mismatches_dict = mismatch.mismatches
+                if 'base_frame_calc' in mismatches_dict:
+                    record_type = "base_frame_calc"
+                    fields = ['rms_fit', 'num_matched_atoms', 'base_type']
+                elif 'ls_fitting' in mismatches_dict:
+                    record_type = "ls_fitting"
+                    fields = ['rms_fit', 'num_points']
+                elif 'frame_calc' in mismatches_dict:
+                    record_type = "frame_calc"
+                    fields = ['rms_fit', 'num_matched_atoms']
+                else:
+                    fields = ['rms_fit']
+                
+                rec_comp = create_record_comparison_from_dicts(
+                    record_key=residue_key,
+                    record_type=record_type,
+                    legacy_record=mismatch.legacy_record,
+                    modern_record=mismatch.modern_record,
+                    fields_to_compare=fields,
+                    tolerance=tolerance,
+                    legacy_source=f"data/json_legacy/{record_type}/{pdb_id}.json",
+                    modern_source=f"data/json/{record_type}/{pdb_id}.json"
+                )
+                reporter.add_record_comparison(rec_comp)
     
     # Add summary
     stages_compared = len(stages)
