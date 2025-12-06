@@ -1,0 +1,861 @@
+{
+  "stage_num": 3,
+  "stage_id": "base_frame_calc",
+  "stage_name": "Base Frame Calc",
+  "test_date": "2025-12-06T15:50:29.981785",
+  "total_pdbs": 50,
+  "passed": 0,
+  "failed": 50,
+  "skipped": 0,
+  "failed_pdbs": [
+    {
+      "pdb_id": "100D",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "157D",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 48,
+        "modern_count": 24,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "161D",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "165D",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 1, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 12, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 7, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 2, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 34,
+        "modern_count": 18,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "168D",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1A34",
+      "errors": [
+        "Key ('C', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 7, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('C', 4, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('C', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 9, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 38,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1A9N",
+      "errors": [
+        "Key ('R', 17, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('Q', 1, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('Q', 3, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('R', 21, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('Q', 18, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 72,
+        "modern_count": 48,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1AQ3",
+      "errors": [
+        "Key ('R', 17, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('S', 14, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('S', 5, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('S', 7, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('R', 8, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 44,
+        "modern_count": 28,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1AQ4",
+      "errors": [
+        "Key ('R', 17, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('S', 14, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('S', 16, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('S', 5, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('S', 7, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 48,
+        "modern_count": 30,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1ASY",
+      "errors": [
+        "Key ('S', 624, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('R', 664, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('R', 653, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('S', 628, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('S', 639, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 264,
+        "modern_count": 150,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1ASZ",
+      "errors": [
+        "Key ('S', 624, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('R', 664, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('R', 653, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('S', 628, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('S', 639, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 264,
+        "modern_count": 152,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1B23",
+      "errors": [
+        "Key ('R', 70, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('R', 6, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('R', 39, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('R', 28, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('R', 61, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 133,
+        "modern_count": 75,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1B7F",
+      "errors": [
+        "Key ('P', 9, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('Q', 9, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('P', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('Q', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 28,
+        "modern_count": 24,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1BNA",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 48,
+        "modern_count": 24,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1BR3",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 29, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 40, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 33, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 1, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 57,
+        "modern_count": 41,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1C0A",
+      "errors": [
+        "Key ('B', 643, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 632, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 608, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 649, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 664, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 135,
+        "modern_count": 79,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1CSL",
+      "errors": [
+        "Key ('A', 50, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 52, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 43, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 73, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 75, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 52,
+        "modern_count": 28,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1D4R",
+      "errors": [
+        "Key ('B', 7, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 19, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 9, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 21, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 140,
+        "modern_count": 84,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1D87",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1D88",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1D96",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1D9H",
+      "errors": [
+        "Key ('A', 6, ' ') base_type: 'u' vs '?'",
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DDY",
+      "errors": [
+        "Key ('E', 411, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('G', 626, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('G', 615, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 19, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 30, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 220,
+        "modern_count": 140,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DFU",
+      "errors": [
+        "Key ('N', 74, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('M', 94, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('N', 85, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('N', 78, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('M', 96, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 70,
+        "modern_count": 38,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DI2",
+      "errors": [
+        "Key ('C', 6, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('D', 15, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('D', 17, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('C', 4, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('D', 19, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 60,
+        "modern_count": 40,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DK1",
+      "errors": [
+        "Key ('B', 7, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 53, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 40, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 9, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 31, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 105,
+        "modern_count": 57,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DNO",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DNT",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DNX",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 20, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DQF",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 1, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 3, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 37,
+        "modern_count": 19,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DQH",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 1, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 3, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 37,
+        "modern_count": 19,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DRZ",
+      "errors": [
+        "Key ('B', 159, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 170, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 137, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 117, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 128, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 126,
+        "modern_count": 72,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DUH",
+      "errors": [
+        "Key ('A', 72, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 71, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 75, ' ') base_type: 'g' vs '?'"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 47,
+        "modern_count": 45,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DUL",
+      "errors": [
+        "Key ('B', 137, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 159, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 170, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 150, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 148, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 91,
+        "modern_count": 49,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1DUQ",
+      "errors": [
+        "Key ('E', 310, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 128, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 117, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 109, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('H', 428, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 200,
+        "modern_count": 104,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1E7K",
+      "errors": [
+        "Key ('D', 28, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('D', 43, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('C', 28, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('C', 43, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('C', 41, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 62,
+        "modern_count": 34,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1E8O",
+      "errors": [
+        "Key ('E', 101, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('E', 147, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('E', 127, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('E', 105, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('E', 116, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 92,
+        "modern_count": 50,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EC6",
+      "errors": [
+        "Key ('D', 4, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('D', 17, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('C', 4, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('D', 19, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('C', 19, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 62,
+        "modern_count": 40,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EFO",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 18, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 1, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 3, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 37,
+        "modern_count": 19,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EFW",
+      "errors": [
+        "Key ('D', 4, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('D', 15, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('D', 43, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('D', 19, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('C', 50, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 255,
+        "modern_count": 145,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EGK",
+      "errors": [
+        "Key ('D', 138, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('D', 149, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 19, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 24, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('D', 122, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 212,
+        "modern_count": 108,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EHZ",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 28, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 39, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 50, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 61, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 136,
+        "modern_count": 76,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EIY",
+      "errors": [
+        "Key ('C', 6, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('C', 63, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('C', 4, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('C', 15, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('C', 28, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 134,
+        "modern_count": 76,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1ET4",
+      "errors": [
+        "Key ('A', 215, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 226, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('D', 532, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('D', 521, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 230, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 275,
+        "modern_count": 175,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EUQ",
+      "errors": [
+        "Key ('B', 927, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 925, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 958, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 938, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 949, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 129,
+        "modern_count": 73,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EUY",
+      "errors": [
+        "Key ('B', 927, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 925, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 958, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 938, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 949, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 130,
+        "modern_count": 74,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EVP",
+      "errors": [
+        "Key ('R', 17, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('Q', 1, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('Q', 3, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('R', 19, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('Q', 5, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 40,
+        "modern_count": 20,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EVV",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 28, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 39, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 50, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 61, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 134,
+        "modern_count": 76,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1EXD",
+      "errors": [
+        "Key ('B', 927, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 925, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 958, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('B', 938, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('B', 949, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 130,
+        "modern_count": 74,
+        "passed": false
+      }
+    },
+    {
+      "pdb_id": "1F1T",
+      "errors": [
+        "Key ('A', 6, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 28, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 19, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}",
+        "Key ('A', 10, ' ') matched_atoms differ: only_legacy={' N7 '}, only_modern={' C4 '}",
+        "Key ('A', 8, ' ') matched_atoms differ: only_legacy={\" C1'\"}, only_modern={' C4 '}"
+      ],
+      "details": {
+        "legacy_exists": true,
+        "modern_exists": true,
+        "legacy_count": 68,
+        "modern_count": 38,
+        "passed": false
+      }
+    }
+  ],
+  "elapsed_seconds": 0.058796,
+  "pass_rate": 0.0
+}

@@ -329,41 +329,84 @@ def compare_pdb_atoms(legacy_records: List[Dict], modern_records: List[Dict],
         
         modern_atom = modern_by_legacy_idx[idx]
         
-        # Compare coordinates
-        leg_xyz = legacy_atom.get('xyz', [])
-        mod_xyz = modern_atom.get('xyz', [])
-        if len(leg_xyz) == 3 and len(mod_xyz) == 3:
+        # Compare xyz (required, tolerance 1e-6)
+        leg_xyz = legacy_atom.get('xyz')
+        mod_xyz = modern_atom.get('xyz')
+        if leg_xyz is None:
+            errors.append(f"Atom {idx} legacy missing xyz")
+        elif mod_xyz is None:
+            errors.append(f"Atom {idx} modern missing xyz")
+        elif len(leg_xyz) != 3 or len(mod_xyz) != 3:
+            errors.append(f"Atom {idx} xyz wrong length")
+        else:
             for i, (l, m) in enumerate(zip(leg_xyz, mod_xyz)):
                 if abs(l - m) > tolerance:
                     errors.append(f"Atom {idx} xyz[{i}]: {l} vs {m}")
         
-        # Compare atom name
-        leg_name = legacy_atom.get('atom_name', '').strip()
-        mod_name = modern_atom.get('atom_name', '').strip()
-        if leg_name != mod_name:
-            errors.append(f"Atom {idx} name: '{leg_name}' vs '{mod_name}'")
+        # Compare atom_name (required, exact)
+        leg_name = legacy_atom.get('atom_name')
+        mod_name = modern_atom.get('atom_name')
+        if leg_name is None:
+            errors.append(f"Atom {idx} legacy missing atom_name")
+        elif mod_name is None:
+            errors.append(f"Atom {idx} modern missing atom_name")
+        elif leg_name.strip() != mod_name.strip():
+            errors.append(f"Atom {idx} atom_name: '{leg_name}' vs '{mod_name}'")
+        
+        # Compare residue_name (required, exact)
+        leg_resname = legacy_atom.get('residue_name')
+        mod_resname = modern_atom.get('residue_name')
+        if leg_resname is None:
+            errors.append(f"Atom {idx} legacy missing residue_name")
+        elif mod_resname is None:
+            errors.append(f"Atom {idx} modern missing residue_name")
+        elif leg_resname.strip() != mod_resname.strip():
+            errors.append(f"Atom {idx} residue_name: '{leg_resname}' vs '{mod_resname}'")
+        
+        # Compare chain_id (required, exact)
+        leg_chain = legacy_atom.get('chain_id')
+        mod_chain = modern_atom.get('chain_id')
+        if leg_chain is None:
+            errors.append(f"Atom {idx} legacy missing chain_id")
+        elif mod_chain is None:
+            errors.append(f"Atom {idx} modern missing chain_id")
+        elif leg_chain != mod_chain:
+            errors.append(f"Atom {idx} chain_id: '{leg_chain}' vs '{mod_chain}'")
     
     return len(errors) == 0, errors
 
 
 def compare_residue_indices(legacy_records: List[Dict], modern_records: List[Dict], 
                             tolerance: float = 1e-6) -> Tuple[bool, List[str]]:
-    """Compare residue indices records (Stage 2)."""
+    """Compare residue indices records (Stage 2).
+    
+    Required fields: legacy_residue_idx, start_atom_idx, end_atom_idx
+    """
     errors = []
     
     if len(legacy_records) != len(modern_records):
         errors.append(f"Count mismatch: legacy={len(legacy_records)}, modern={len(modern_records)}")
-        return False, errors
+        # Don't return early - continue to find what's different
     
     # Build lookup by (chain_id, residue_seq, insertion)
     legacy_by_key = {}
     for rec in legacy_records:
-        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        chain = rec.get('chain_id')
+        seq = rec.get('residue_seq')
+        if chain is None or seq is None:
+            errors.append(f"Legacy record missing chain_id or residue_seq")
+            continue
+        key = (chain, seq, rec.get('insertion', ' '))
         legacy_by_key[key] = rec
     
     modern_by_key = {}
     for rec in modern_records:
-        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        chain = rec.get('chain_id')
+        seq = rec.get('residue_seq')
+        if chain is None or seq is None:
+            errors.append(f"Modern record missing chain_id or residue_seq")
+            continue
+        key = (chain, seq, rec.get('insertion', ' '))
         modern_by_key[key] = rec
     
     # Compare
@@ -374,29 +417,68 @@ def compare_residue_indices(legacy_records: List[Dict], modern_records: List[Dic
         
         modern_rec = modern_by_key[key]
         
-        # Compare legacy_residue_idx
+        # Compare legacy_residue_idx (required, exact)
         leg_idx = legacy_rec.get('residue_idx') or legacy_rec.get('legacy_residue_idx')
         mod_idx = modern_rec.get('legacy_residue_idx')
-        if leg_idx != mod_idx:
-            errors.append(f"Index mismatch at {key}: legacy={leg_idx}, modern={mod_idx}")
+        if leg_idx is None:
+            errors.append(f"Key {key} legacy missing residue_idx")
+        elif mod_idx is None:
+            errors.append(f"Key {key} modern missing legacy_residue_idx")
+        elif leg_idx != mod_idx:
+            errors.append(f"Key {key} legacy_residue_idx: {leg_idx} vs {mod_idx}")
+        
+        # Compare start_atom_idx (required, exact)
+        leg_start = legacy_rec.get('start_atom_idx') or legacy_rec.get('legacy_start_atom_idx')
+        mod_start = modern_rec.get('legacy_start_atom_idx')
+        if leg_start is None:
+            errors.append(f"Key {key} legacy missing start_atom_idx")
+        elif mod_start is None:
+            errors.append(f"Key {key} modern missing legacy_start_atom_idx")
+        elif leg_start != mod_start:
+            errors.append(f"Key {key} start_atom_idx: {leg_start} vs {mod_start}")
+        
+        # Compare end_atom_idx (required, exact)
+        leg_end = legacy_rec.get('end_atom_idx') or legacy_rec.get('legacy_end_atom_idx')
+        mod_end = modern_rec.get('legacy_end_atom_idx')
+        if leg_end is None:
+            errors.append(f"Key {key} legacy missing end_atom_idx")
+        elif mod_end is None:
+            errors.append(f"Key {key} modern missing legacy_end_atom_idx")
+        elif leg_end != mod_end:
+            errors.append(f"Key {key} end_atom_idx: {leg_end} vs {mod_end}")
+    
+    # Check for extra keys in modern
+    extra_in_modern = set(modern_by_key.keys()) - set(legacy_by_key.keys())
+    if extra_in_modern:
+        for key in list(extra_in_modern)[:5]:
+            errors.append(f"Extra in modern: {key}")
     
     return len(errors) == 0, errors
 
 
 def compare_base_frame_calc(legacy_records: List[Dict], modern_records: List[Dict],
                             tolerance: float = 0.001) -> Tuple[bool, List[str]]:
-    """Compare base_frame_calc records (Stage 3)."""
+    """Compare base_frame_calc records (Stage 3).
+    
+    Required fields: base_type, rms_fit, num_matched_atoms, matched_atoms
+    """
     errors = []
     
     # Build lookup by (chain_id, residue_seq, insertion)
     legacy_by_key = {}
     for rec in legacy_records:
-        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        key = (rec.get('chain_id'), rec.get('residue_seq'), rec.get('insertion', ' '))
+        if None in key[:2]:
+            errors.append(f"Legacy record missing chain_id or residue_seq: {rec}")
+            continue
         legacy_by_key[key] = rec
     
     modern_by_key = {}
     for rec in modern_records:
-        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        key = (rec.get('chain_id'), rec.get('residue_seq'), rec.get('insertion', ' '))
+        if None in key[:2]:
+            errors.append(f"Modern record missing chain_id or residue_seq: {rec}")
+            continue
         modern_by_key[key] = rec
     
     common_keys = set(legacy_by_key.keys()) & set(modern_by_key.keys())
@@ -405,24 +487,46 @@ def compare_base_frame_calc(legacy_records: List[Dict], modern_records: List[Dic
         leg_rec = legacy_by_key[key]
         mod_rec = modern_by_key[key]
         
-        # Compare rms_fit
-        leg_rms = leg_rec.get('rms_fit', 0.0)
-        mod_rms = mod_rec.get('rms_fit', 0.0)
-        if abs(leg_rms - mod_rms) > tolerance:
-            errors.append(f"Key {key} rms_fit: {leg_rms} vs {mod_rms}")
+        # Compare base_type (required, critical for modified nucleotides)
+        leg_type = leg_rec.get('base_type')
+        mod_type = mod_rec.get('base_type')
+        if leg_type is None:
+            errors.append(f"Key {key} legacy missing base_type")
+        elif mod_type is None:
+            errors.append(f"Key {key} modern missing base_type")
+        elif leg_type != mod_type:
+            errors.append(f"Key {key} base_type: '{leg_type}' vs '{mod_type}'")
         
-        # Compare num_matched_atoms
-        leg_num = leg_rec.get('num_matched_atoms', 0)
-        mod_num = mod_rec.get('num_matched_atoms', 0)
-        if leg_num != mod_num:
+        # Compare rms_fit (required, tolerance 0.001)
+        leg_rms = leg_rec.get('rms_fit')
+        mod_rms = mod_rec.get('rms_fit')
+        if leg_rms is None:
+            errors.append(f"Key {key} legacy missing rms_fit")
+        elif mod_rms is None:
+            errors.append(f"Key {key} modern missing rms_fit")
+        elif abs(leg_rms - mod_rms) > tolerance:
+            errors.append(f"Key {key} rms_fit: {leg_rms} vs {mod_rms} (diff={abs(leg_rms - mod_rms)})")
+        
+        # Compare num_matched_atoms (required, exact)
+        leg_num = leg_rec.get('num_matched_atoms')
+        mod_num = mod_rec.get('num_matched_atoms')
+        if leg_num is None:
+            errors.append(f"Key {key} legacy missing num_matched_atoms")
+        elif mod_num is None:
+            errors.append(f"Key {key} modern missing num_matched_atoms")
+        elif leg_num != mod_num:
             errors.append(f"Key {key} num_matched_atoms: {leg_num} vs {mod_num}")
         
-        # Compare matched_atoms (as sets)
-        leg_atoms = set(leg_rec.get('matched_atoms', []))
-        mod_atoms = set(mod_rec.get('matched_atoms', []))
-        if leg_atoms != mod_atoms:
-            only_leg = leg_atoms - mod_atoms
-            only_mod = mod_atoms - leg_atoms
+        # Compare matched_atoms (required, set equality)
+        leg_atoms = leg_rec.get('matched_atoms')
+        mod_atoms = mod_rec.get('matched_atoms')
+        if leg_atoms is None:
+            errors.append(f"Key {key} legacy missing matched_atoms")
+        elif mod_atoms is None:
+            errors.append(f"Key {key} modern missing matched_atoms")
+        elif set(leg_atoms) != set(mod_atoms):
+            only_leg = set(leg_atoms) - set(mod_atoms)
+            only_mod = set(mod_atoms) - set(leg_atoms)
             errors.append(f"Key {key} matched_atoms differ: only_legacy={only_leg}, only_modern={only_mod}")
     
     # Check for missing keys
@@ -436,18 +540,27 @@ def compare_base_frame_calc(legacy_records: List[Dict], modern_records: List[Dic
 
 def compare_ls_fitting(legacy_records: List[Dict], modern_records: List[Dict],
                        tolerance: float = 0.001) -> Tuple[bool, List[str]]:
-    """Compare ls_fitting records (Stage 4)."""
+    """Compare ls_fitting records (Stage 4).
+    
+    Required fields: base_type, rms_fit, num_points, rotation_matrix, translation
+    """
     errors = []
     
     # Build lookup by (chain_id, residue_seq, insertion)
     legacy_by_key = {}
     for rec in legacy_records:
-        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        key = (rec.get('chain_id'), rec.get('residue_seq'), rec.get('insertion', ' '))
+        if None in key[:2]:
+            errors.append(f"Legacy record missing chain_id or residue_seq")
+            continue
         legacy_by_key[key] = rec
     
     modern_by_key = {}
     for rec in modern_records:
-        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        key = (rec.get('chain_id'), rec.get('residue_seq'), rec.get('insertion', ' '))
+        if None in key[:2]:
+            errors.append(f"Modern record missing chain_id or residue_seq")
+            continue
         modern_by_key[key] = rec
     
     common_keys = set(legacy_by_key.keys()) & set(modern_by_key.keys())
@@ -456,32 +569,60 @@ def compare_ls_fitting(legacy_records: List[Dict], modern_records: List[Dict],
         leg_rec = legacy_by_key[key]
         mod_rec = modern_by_key[key]
         
-        # Compare rms_fit
-        leg_rms = leg_rec.get('rms_fit', 0.0)
-        mod_rms = mod_rec.get('rms_fit', 0.0)
-        if abs(leg_rms - mod_rms) > tolerance:
+        # Compare base_type (required)
+        leg_type = leg_rec.get('base_type')
+        mod_type = mod_rec.get('base_type')
+        if leg_type is None:
+            errors.append(f"Key {key} legacy missing base_type")
+        elif mod_type is None:
+            errors.append(f"Key {key} modern missing base_type")
+        elif leg_type != mod_type:
+            errors.append(f"Key {key} base_type: '{leg_type}' vs '{mod_type}'")
+        
+        # Compare rms_fit (required, tolerance 0.001)
+        leg_rms = leg_rec.get('rms_fit')
+        mod_rms = mod_rec.get('rms_fit')
+        if leg_rms is None:
+            errors.append(f"Key {key} legacy missing rms_fit")
+        elif mod_rms is None:
+            errors.append(f"Key {key} modern missing rms_fit")
+        elif abs(leg_rms - mod_rms) > tolerance:
             errors.append(f"Key {key} rms_fit: {leg_rms} vs {mod_rms}")
         
-        # Compare num_points
-        leg_num = leg_rec.get('num_points', 0)
-        mod_num = mod_rec.get('num_points', 0)
-        if leg_num != mod_num:
+        # Compare num_points (required, exact)
+        leg_num = leg_rec.get('num_points')
+        mod_num = mod_rec.get('num_points')
+        if leg_num is None:
+            errors.append(f"Key {key} legacy missing num_points")
+        elif mod_num is None:
+            errors.append(f"Key {key} modern missing num_points")
+        elif leg_num != mod_num:
             errors.append(f"Key {key} num_points: {leg_num} vs {mod_num}")
         
-        # Compare rotation_matrix
-        leg_rot = leg_rec.get('rotation_matrix', [])
-        mod_rot = mod_rec.get('rotation_matrix', [])
-        if leg_rot and mod_rot:
+        # Compare rotation_matrix (required, tolerance 1e-4 per element)
+        leg_rot = leg_rec.get('rotation_matrix')
+        mod_rot = mod_rec.get('rotation_matrix')
+        if leg_rot is None:
+            errors.append(f"Key {key} legacy missing rotation_matrix")
+        elif mod_rot is None:
+            errors.append(f"Key {key} modern missing rotation_matrix")
+        else:
             match, msg = compare_matrix(leg_rot, mod_rot, tolerance=1e-4)
             if not match:
                 errors.append(f"Key {key} rotation_matrix: {msg}")
         
-        # Compare translation
-        leg_trans = leg_rec.get('translation', [])
-        mod_trans = mod_rec.get('translation', [])
-        if len(leg_trans) == 3 and len(mod_trans) == 3:
+        # Compare translation (required, tolerance 1e-6 per element)
+        leg_trans = leg_rec.get('translation')
+        mod_trans = mod_rec.get('translation')
+        if leg_trans is None:
+            errors.append(f"Key {key} legacy missing translation")
+        elif mod_trans is None:
+            errors.append(f"Key {key} modern missing translation")
+        elif len(leg_trans) != 3 or len(mod_trans) != 3:
+            errors.append(f"Key {key} translation wrong length: {len(leg_trans)} vs {len(mod_trans)}")
+        else:
             max_diff = max(abs(leg_trans[i] - mod_trans[i]) for i in range(3))
-            if max_diff > tolerance:
+            if max_diff > 1e-6:
                 errors.append(f"Key {key} translation max_diff: {max_diff}")
     
     return len(errors) == 0, errors
@@ -489,18 +630,27 @@ def compare_ls_fitting(legacy_records: List[Dict], modern_records: List[Dict],
 
 def compare_frame_calc(legacy_records: List[Dict], modern_records: List[Dict],
                        tolerance: float = 1e-4) -> Tuple[bool, List[str]]:
-    """Compare frame_calc records (Stage 5)."""
+    """Compare frame_calc records (Stage 5).
+    
+    Required fields: base_type, orien, org
+    """
     errors = []
     
     # Build lookup by (chain_id, residue_seq, insertion)
     legacy_by_key = {}
     for rec in legacy_records:
-        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        key = (rec.get('chain_id'), rec.get('residue_seq'), rec.get('insertion', ' '))
+        if None in key[:2]:
+            errors.append(f"Legacy record missing chain_id or residue_seq")
+            continue
         legacy_by_key[key] = rec
     
     modern_by_key = {}
     for rec in modern_records:
-        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        key = (rec.get('chain_id'), rec.get('residue_seq'), rec.get('insertion', ' '))
+        if None in key[:2]:
+            errors.append(f"Modern record missing chain_id or residue_seq")
+            continue
         modern_by_key[key] = rec
     
     common_keys = set(legacy_by_key.keys()) & set(modern_by_key.keys())
@@ -509,21 +659,47 @@ def compare_frame_calc(legacy_records: List[Dict], modern_records: List[Dict],
         leg_rec = legacy_by_key[key]
         mod_rec = modern_by_key[key]
         
-        # Compare orien (rotation matrix)
-        leg_orien = leg_rec.get('orien', [])
-        mod_orien = mod_rec.get('orien', [])
-        if leg_orien and mod_orien:
+        # Compare base_type (required, critical for modified nucleotides)
+        leg_type = leg_rec.get('base_type')
+        mod_type = mod_rec.get('base_type')
+        if leg_type is None:
+            errors.append(f"Key {key} legacy missing base_type")
+        elif mod_type is None:
+            errors.append(f"Key {key} modern missing base_type")
+        elif leg_type != mod_type:
+            errors.append(f"Key {key} base_type: '{leg_type}' vs '{mod_type}'")
+        
+        # Compare orien (required, rotation matrix, tolerance 1e-4)
+        leg_orien = leg_rec.get('orien')
+        mod_orien = mod_rec.get('orien')
+        if leg_orien is None:
+            errors.append(f"Key {key} legacy missing orien")
+        elif mod_orien is None:
+            errors.append(f"Key {key} modern missing orien")
+        else:
             match, msg = compare_matrix(leg_orien, mod_orien, tolerance)
             if not match:
                 errors.append(f"Key {key} orien: {msg}")
         
-        # Compare org (origin)
-        leg_org = leg_rec.get('org', [])
-        mod_org = mod_rec.get('org', [])
-        if len(leg_org) == 3 and len(mod_org) == 3:
+        # Compare org (required, origin coordinates, tolerance 1e-6)
+        leg_org = leg_rec.get('org')
+        mod_org = mod_rec.get('org')
+        if leg_org is None:
+            errors.append(f"Key {key} legacy missing org")
+        elif mod_org is None:
+            errors.append(f"Key {key} modern missing org")
+        elif len(leg_org) != 3 or len(mod_org) != 3:
+            errors.append(f"Key {key} org wrong length: {len(leg_org)} vs {len(mod_org)}")
+        else:
             max_diff = max(abs(leg_org[i] - mod_org[i]) for i in range(3))
-            if max_diff > tolerance:
+            if max_diff > 1e-6:
                 errors.append(f"Key {key} org max_diff: {max_diff}")
+    
+    # Check for missing keys
+    missing_in_modern = set(legacy_by_key.keys()) - common_keys
+    if missing_in_modern:
+        for key in list(missing_in_modern)[:5]:
+            errors.append(f"Missing in modern: {key}")
     
     return len(errors) == 0, errors
 
