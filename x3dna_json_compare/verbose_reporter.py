@@ -1021,6 +1021,219 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                 except Exception:
                     pass
     
+    # Add pair_validation
+    if hasattr(result, 'pair_validation_comparison') and result.pair_validation_comparison:
+        import json
+        from pathlib import Path
+        
+        pvc = result.pair_validation_comparison
+        reporter.add_stage_header("pair_validation", 7)
+        reporter.add_stage_summary(
+            pvc.total_legacy, pvc.total_modern,
+            pvc.common_count,
+            len(pvc.missing_in_modern), len(pvc.extra_in_modern),
+            len(pvc.mismatched_validations)
+        )
+        
+        # Load all pair_validation records to show every record
+        if not diff_only:
+            legacy_file = Path(f"data/json_legacy/pair_validation/{pdb_id}.json")
+            modern_file = Path(f"data/json/pair_validation/{pdb_id}.json")
+            
+            if legacy_file.exists() and modern_file.exists():
+                try:
+                    with open(legacy_file) as f:
+                        legacy_data = json.load(f)
+                    with open(modern_file) as f:
+                        modern_data = json.load(f)
+                    
+                    # Create dict for quick modern lookup
+                    modern_dict = {}
+                    for rec in modern_data:
+                        key = (rec.get('base_i'), rec.get('base_j'))
+                        modern_dict[key] = rec
+                    
+                    # Compare all legacy records
+                    shown_count = 0
+                    max_to_show = 1000
+                    
+                    # Fields to compare for pair validation
+                    fields = ['is_valid', 'bp_type_id', 'LonePair']
+                    
+                    for legacy_rec in legacy_data:
+                        if shown_count >= max_to_show:
+                            break
+                        
+                        pair_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
+                        
+                        # Check if modern has this pair
+                        if pair_key not in modern_dict:
+                            reporter.sections.append(
+                                f"⚠️  WARNING: (base_i={pair_key[0]}, base_j={pair_key[1]}) - "
+                                f"Legacy pair_validation not found in modern output!\n"
+                            )
+                            shown_count += 1
+                            continue
+                        
+                        modern_rec = modern_dict.get(pair_key)
+                        
+                        rec_comp = create_record_comparison_from_dicts(
+                            record_key=pair_key,
+                            record_type="pair_validation",
+                            legacy_record=legacy_rec,
+                            modern_record=modern_rec,
+                            fields_to_compare=fields,
+                            tolerance=tolerance,
+                            legacy_source=str(legacy_file),
+                            modern_source=str(modern_file)
+                        )
+                        reporter.add_record_comparison(rec_comp)
+                        shown_count += 1
+                except Exception:
+                    pass
+    
+    # Add find_bestpair_selection
+    if hasattr(result, 'find_bestpair_comparison') and result.find_bestpair_comparison:
+        import json
+        from pathlib import Path
+        
+        fbc = result.find_bestpair_comparison
+        reporter.add_stage_header("find_bestpair_selection", 8)
+        reporter.add_stage_summary(
+            fbc.total_legacy, fbc.total_modern,
+            fbc.common_count,
+            len(fbc.missing_in_modern), len(fbc.extra_in_modern),
+            0  # No mismatch count for selections
+        )
+        
+        # Load all find_bestpair records to show every record
+        if not diff_only:
+            legacy_file = Path(f"data/json_legacy/find_bestpair_selection/{pdb_id}.json")
+            modern_file = Path(f"data/json/find_bestpair_selection/{pdb_id}.json")
+            
+            if legacy_file.exists() and modern_file.exists():
+                try:
+                    with open(legacy_file) as f:
+                        legacy_data = json.load(f)
+                    with open(modern_file) as f:
+                        modern_data = json.load(f)
+                    
+                    # Create dict for quick modern lookup
+                    modern_dict = {}
+                    for rec in modern_data:
+                        key = (rec.get('base_i'), rec.get('base_j'))
+                        modern_dict[key] = rec
+                    
+                    # Compare all legacy records
+                    shown_count = 0
+                    max_to_show = 1000
+                    
+                    # Fields to compare for find_bestpair
+                    fields = ['selected']
+                    
+                    for legacy_rec in legacy_data:
+                        if shown_count >= max_to_show:
+                            break
+                        
+                        pair_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
+                        
+                        # Check if modern has this pair
+                        if pair_key not in modern_dict:
+                            reporter.sections.append(
+                                f"⚠️  WARNING: (base_i={pair_key[0]}, base_j={pair_key[1]}) - "
+                                f"Legacy find_bestpair selection not found in modern output!\n"
+                            )
+                            shown_count += 1
+                            continue
+                        
+                        modern_rec = modern_dict.get(pair_key)
+                        
+                        rec_comp = create_record_comparison_from_dicts(
+                            record_key=pair_key,
+                            record_type="find_bestpair_selection",
+                            legacy_record=legacy_rec,
+                            modern_record=modern_rec,
+                            fields_to_compare=fields,
+                            tolerance=tolerance,
+                            legacy_source=str(legacy_file),
+                            modern_source=str(modern_file)
+                        )
+                        reporter.add_record_comparison(rec_comp)
+                        shown_count += 1
+                except Exception:
+                    pass
+    
+    # Add base_pair
+    if hasattr(result, 'base_pair_comparison') and result.base_pair_comparison:
+        import json
+        from pathlib import Path
+        
+        bpc = result.base_pair_comparison
+        reporter.add_stage_header("base_pair", 9)
+        reporter.add_stage_summary(
+            bpc.total_legacy, bpc.total_modern,
+            bpc.common_count,
+            len(bpc.missing_in_modern), len(bpc.extra_in_modern),
+            len(bpc.mismatched_pairs)
+        )
+        
+        # Load all base_pair records to show every record
+        if not diff_only:
+            legacy_file = Path(f"data/json_legacy/base_pair/{pdb_id}.json")
+            modern_file = Path(f"data/json/base_pair/{pdb_id}.json")
+            
+            if legacy_file.exists() and modern_file.exists():
+                try:
+                    with open(legacy_file) as f:
+                        legacy_data = json.load(f)
+                    with open(modern_file) as f:
+                        modern_data = json.load(f)
+                    
+                    # Create dict for quick modern lookup
+                    modern_dict = {}
+                    for rec in modern_data:
+                        key = (rec.get('base_i'), rec.get('base_j'))
+                        modern_dict[key] = rec
+                    
+                    # Compare all legacy records
+                    shown_count = 0
+                    max_to_show = 1000
+                    
+                    # Fields to compare for base_pair
+                    fields = ['bp_name', 'Saenger', 'LW']
+                    
+                    for legacy_rec in legacy_data:
+                        if shown_count >= max_to_show:
+                            break
+                        
+                        pair_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
+                        
+                        # Check if modern has this pair
+                        if pair_key not in modern_dict:
+                            reporter.sections.append(
+                                f"⚠️  WARNING: (base_i={pair_key[0]}, base_j={pair_key[1]}) - "
+                                f"Legacy base_pair not found in modern output!\n"
+                            )
+                            shown_count += 1
+                            continue
+                        
+                        modern_rec = modern_dict.get(pair_key)
+                        
+                        rec_comp = create_record_comparison_from_dicts(
+                            record_key=pair_key,
+                            record_type="base_pair",
+                            legacy_record=legacy_rec,
+                            modern_record=modern_rec,
+                            fields_to_compare=fields,
+                            tolerance=tolerance,
+                            legacy_source=str(legacy_file),
+                            modern_source=str(modern_file)
+                        )
+                        reporter.add_record_comparison(rec_comp)
+                        shown_count += 1
+                except Exception:
+                    pass
+    
     # Add summary
     stages_compared = len(stages)
     stages_with_diffs = 0
@@ -1051,6 +1264,23 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
         if len(result.hbond_list_comparison.mismatched_pairs) > 0:
             stages_with_diffs += 1
             diff_details.append(f"hbond_list: {len(result.hbond_list_comparison.mismatched_pairs)} mismatches")
+    
+    if hasattr(result, 'pair_validation_comparison') and result.pair_validation_comparison:
+        pvc = result.pair_validation_comparison
+        if len(pvc.mismatched_validations) > 0:
+            stages_with_diffs += 1
+            diff_details.append(f"pair_validation: {len(pvc.mismatched_validations)} mismatches")
+    
+    if hasattr(result, 'find_bestpair_comparison') and result.find_bestpair_comparison:
+        fbc = result.find_bestpair_comparison
+        if len(fbc.missing_in_modern) > 0 or len(fbc.extra_in_modern) > 0:
+            stages_with_diffs += 1
+            diff_details.append(f"find_bestpair_selection: {len(fbc.missing_in_modern) + len(fbc.extra_in_modern)} differences")
+    
+    if hasattr(result, 'base_pair_comparison') and result.base_pair_comparison:
+        if len(result.base_pair_comparison.mismatched_pairs) > 0:
+            stages_with_diffs += 1
+            diff_details.append(f"base_pair: {len(result.base_pair_comparison.mismatched_pairs)} mismatches")
     
     reporter.add_summary(
         stages_compared=stages_compared,
