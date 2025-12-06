@@ -2,17 +2,36 @@
 Unified validation runner.
 
 Single implementation for all validation types - replaces the many validate_*.py scripts.
+
+Features:
+- Checkpoint/resume: Save progress to JSON, resume from where you left off
+- Clean on match: Delete modern JSON files that match legacy (save disk space)
+- Stage-specific: Only validate/generate specific stages
 """
 
 import json
+import shutil
+from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Set
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing
 
 from .json_comparison import JsonComparator
 from .output import OutputFormatter, ValidationSummary
 from .pdb_list import get_pdb_list
+
+
+# Stage to JSON subdirectory mapping
+STAGE_JSON_DIRS = {
+    'atoms': ['pdb_atoms'],
+    'frames': ['base_frame_calc', 'frame_calc', 'ls_fitting'],
+    'hbonds': ['hbond_list'],
+    'pairs': ['base_pair', 'pair_validation', 'find_bestpair_selection', 'distance_checks'],
+    'steps': ['bpstep_params'],
+    'helical': ['helical_params'],
+    'residue_indices': ['residue_indices'],
+}
 
 
 def _validate_single_pdb(args) -> Dict[str, Any]:
@@ -81,7 +100,13 @@ def _summarize_hbond_comparison(hc) -> Optional[Dict]:
 
 
 class ValidationRunner:
-    """Core validation runner - single implementation for all validation types."""
+    """Core validation runner - single implementation for all validation types.
+    
+    Features:
+    - Checkpoint/resume: Save progress to JSON file, skip already-passed PDBs
+    - Clean on match: Delete modern JSON files that match legacy
+    - Stage-specific validation
+    """
     
     def __init__(self,
                  project_root: Path = None,
@@ -92,6 +117,9 @@ class ValidationRunner:
                  stop_on_first: bool = False,
                  document_differences: bool = False,
                  diff_file: Path = None,
+                 checkpoint_file: Path = None,
+                 resume: bool = False,
+                 clean_on_match: bool = False,
                  **comparator_kwargs):
         """Initialize validation runner.
         
@@ -104,6 +132,9 @@ class ValidationRunner:
             stop_on_first: Stop at first failure
             document_differences: Save differences to file
             diff_file: Custom path for differences file
+            checkpoint_file: Path to checkpoint file for resume support
+            resume: If True, skip PDBs that already passed in checkpoint
+            clean_on_match: If True, delete modern JSON files that match legacy
             **comparator_kwargs: Additional arguments for JsonComparator
         """
         self.project_root = Path(project_root) if project_root else Path.cwd()
@@ -114,10 +145,16 @@ class ValidationRunner:
         self.stop_on_first = stop_on_first
         self.document_differences = document_differences
         self.diff_file = diff_file
+        self.checkpoint_file = checkpoint_file
+        self.resume = resume
+        self.clean_on_match = clean_on_match
         
         # Build comparator kwargs from stages
         self.comparator_kwargs = self._build_comparator_kwargs(stages, comparator_kwargs)
         self.output = OutputFormatter(quiet=quiet, verbose=verbose)
+        
+        # Load checkpoint if resuming
+        self.checkpoint_data = self._load_checkpoint() if resume and checkpoint_file else None
     
     def _build_comparator_kwargs(self, stages: List[str], extra_kwargs: Dict) -> Dict:
         """Build JsonComparator kwargs from stage list."""
@@ -155,6 +192,70 @@ class ValidationRunner:
         kwargs.update(extra_kwargs)
         return kwargs
     
+    def _load_checkpoint(self) -> Optional[Dict]:
+        """Load checkpoint file if it exists."""
+        if not self.checkpoint_file:
+            return None
+        checkpoint_path = Path(self.checkpoint_file)
+        if not checkpoint_path.exists():
+            return None
+        try:
+            with open(checkpoint_path, 'r') as f:
+                return json.load(f)
+        except Exception:
+            return None
+    
+    def _save_checkpoint(self, results: Dict[str, Dict]):
+        """Save checkpoint to file."""
+        if not self.checkpoint_file:
+            return
+        
+        checkpoint_path = Path(self.checkpoint_file)
+        checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        checkpoint = {
+            'timestamp': datetime.now().isoformat(),
+            'stages': self.stages,
+            'results': results
+        }
+        
+        with open(checkpoint_path, 'w') as f:
+            json.dump(checkpoint, f, indent=2, default=str)
+    
+    def _get_passed_pdbs(self) -> Set[str]:
+        """Get set of PDBs that already passed (from checkpoint)."""
+        if not self.checkpoint_data:
+            return set()
+        
+        results = self.checkpoint_data.get('results', {})
+        return {pdb_id for pdb_id, result in results.items() 
+                if result.get('status') == 'match'}
+    
+    def _clean_modern_json(self, pdb_id: str):
+        """Delete modern JSON files for a PDB that matched."""
+        if not self.clean_on_match:
+            return
+        
+        # Determine which directories to clean based on stages
+        dirs_to_clean = []
+        if 'all' in self.stages:
+            dirs_to_clean = [d for dirs in STAGE_JSON_DIRS.values() for d in dirs]
+        else:
+            for stage in self.stages:
+                if stage in STAGE_JSON_DIRS:
+                    dirs_to_clean.extend(STAGE_JSON_DIRS[stage])
+        
+        # Delete files in each directory
+        for subdir in dirs_to_clean:
+            json_file = self.project_root / 'data' / 'json' / subdir / f'{pdb_id}.json'
+            if json_file.exists():
+                json_file.unlink()
+        
+        # Also try main json file
+        main_json = self.project_root / 'data' / 'json' / f'{pdb_id}.json'
+        if main_json.exists():
+            main_json.unlink()
+    
     def get_pdb_list(self,
                      specific: List[str] = None,
                      max_count: int = None,
@@ -162,13 +263,25 @@ class ValidationRunner:
         """Get list of PDBs to validate.
         
         Uses data/valid_pdbs_fast.json by default.
+        If resume is enabled, skips PDBs that already passed.
         """
-        return get_pdb_list(
+        pdb_ids = get_pdb_list(
             self.project_root,
             specific=specific,
             max_count=max_count,
             test_set=test_set
         )
+        
+        # Filter out already-passed PDBs if resuming
+        if self.resume and self.checkpoint_data:
+            passed_pdbs = self._get_passed_pdbs()
+            original_count = len(pdb_ids)
+            pdb_ids = [pdb_id for pdb_id in pdb_ids if pdb_id not in passed_pdbs]
+            if not self.quiet and passed_pdbs:
+                skipped = original_count - len(pdb_ids)
+                print(f"Resuming: skipping {skipped} already-passed PDBs")
+        
+        return pdb_ids
     
     def validate(self, pdb_ids: List[str]) -> ValidationSummary:
         """Validate all PDBs. Returns summary.
@@ -184,6 +297,11 @@ class ValidationRunner:
         skipped = 0
         differences = []
         first_failure_pdb = None
+        all_results = {}  # For checkpoint
+        
+        # Load existing results from checkpoint if resuming
+        if self.checkpoint_data:
+            all_results = self.checkpoint_data.get('results', {}).copy()
         
         self.output.start(len(pdb_ids), self.stages)
         
@@ -191,9 +309,11 @@ class ValidationRunner:
             # Sequential processing for stop-on-first or single PDB
             for i, pdb_id in enumerate(pdb_ids):
                 result = self._validate_single_sequential(pdb_id)
+                all_results[pdb_id] = result
                 
                 if result['status'] == 'match':
                     passed += 1
+                    self._clean_modern_json(pdb_id)  # Clean matched files
                 elif result['status'] == 'skip' or result['status'] == 'error':
                     if 'not found' in str(result.get('errors', [])):
                         skipped += 1
@@ -204,6 +324,8 @@ class ValidationRunner:
                         if self.stop_on_first and first_failure_pdb is None:
                             first_failure_pdb = pdb_id
                             self.output.first_failure(pdb_id, result)
+                            # Save checkpoint before stopping
+                            self._save_checkpoint(all_results)
                             break
                 else:  # diff
                     failed += 1
@@ -212,16 +334,25 @@ class ValidationRunner:
                     if self.stop_on_first and first_failure_pdb is None:
                         first_failure_pdb = pdb_id
                         self.output.first_failure(pdb_id, result)
+                        # Save checkpoint before stopping
+                        self._save_checkpoint(all_results)
                         break
                 
                 self.output.progress(i + 1, len(pdb_ids), pdb_id, result)
+                
+                # Save checkpoint periodically (every 100 PDBs)
+                if self.checkpoint_file and (i + 1) % 100 == 0:
+                    self._save_checkpoint(all_results)
         else:
             # Parallel processing
             results = self._validate_parallel(pdb_ids)
             
             for i, (pdb_id, result) in enumerate(results):
+                all_results[pdb_id] = result
+                
                 if result['status'] == 'match':
                     passed += 1
+                    self._clean_modern_json(pdb_id)  # Clean matched files
                 elif result['status'] == 'skip' or result['status'] == 'error':
                     if 'not found' in str(result.get('errors', [])):
                         skipped += 1
@@ -235,6 +366,14 @@ class ValidationRunner:
                         differences.append(result)
                 
                 self.output.progress(i + 1, len(pdb_ids), pdb_id, result)
+            
+            # Save checkpoint after parallel run
+            if self.checkpoint_file:
+                self._save_checkpoint(all_results)
+        
+        # Final checkpoint save
+        if self.checkpoint_file:
+            self._save_checkpoint(all_results)
         
         # Write differences file if requested
         diff_file_path = None
@@ -248,7 +387,8 @@ class ValidationRunner:
             skipped=skipped,
             stages_tested=self.stages,
             differences_file=diff_file_path,
-            first_failure_pdb=first_failure_pdb
+            first_failure_pdb=first_failure_pdb,
+            checkpoint_file=self.checkpoint_file
         )
         
         self.output.summary(summary)

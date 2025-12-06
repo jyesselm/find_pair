@@ -20,6 +20,7 @@ class ValidationSummary:
     stages_tested: List[str]
     differences_file: Optional[Path] = None
     first_failure_pdb: Optional[str] = None
+    checkpoint_file: Optional[Path] = None
     
     @property
     def all_passed(self) -> bool:
@@ -165,6 +166,9 @@ class OutputFormatter:
         
         if summary.differences_file:
             self._print(f"\nDifferences saved to: {summary.differences_file}")
+        
+        if summary.checkpoint_file:
+            self._print(f"Checkpoint saved to: {summary.checkpoint_file}")
         
         if summary.first_failure_pdb:
             self._print(f"\nStopped at first failure: {summary.first_failure_pdb}")

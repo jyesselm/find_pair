@@ -45,10 +45,17 @@ def main():
 @click.option('--stop-on-first', '-s', is_flag=True, help='Stop at first failure for debugging')
 @click.option('--diff', is_flag=True, help='Document all differences to file')
 @click.option('--diff-file', type=click.Path(path_type=Path), help='Custom differences output file')
+@click.option('--checkpoint', type=click.Path(path_type=Path), 
+              help='Save progress to checkpoint file for resume')
+@click.option('--resume', is_flag=True, 
+              help='Resume from checkpoint, skipping already-passed PDBs')
+@click.option('--clean-on-match', is_flag=True,
+              help='Delete modern JSON files that match legacy (save disk space)')
 @click.option('--project-root', type=click.Path(path_type=Path, exists=True),
               help='Project root directory (default: current directory)')
 def validate(stages, pdb, max_count, test_set, workers, quiet, verbose, 
-             stop_on_first, diff, diff_file, project_root):
+             stop_on_first, diff, diff_file, checkpoint, resume, clean_on_match,
+             project_root):
     """Validate legacy vs modern JSON outputs.
     
     STAGES: atoms, frames, hbonds, pairs, steps (default: all)
@@ -63,6 +70,15 @@ def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
         fp2-validate --diff               # Document differences
         fp2-validate --max 100            # First 100 PDBs only
         fp2-validate --test-set 100       # Use saved test set
+    
+    \b
+    Checkpoint/Resume:
+        fp2-validate --checkpoint run.json     # Save progress
+        fp2-validate --checkpoint run.json --resume  # Resume from checkpoint
+    
+    \b
+    Clean up matched files:
+        fp2-validate --clean-on-match     # Delete modern JSON that matches
     """
     # Determine project root
     if project_root is None:
@@ -88,6 +104,9 @@ def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
         stop_on_first=stop_on_first,
         document_differences=diff,
         diff_file=diff_file,
+        checkpoint_file=checkpoint,
+        resume=resume,
+        clean_on_match=clean_on_match,
     )
     
     # Get PDB list
@@ -193,6 +212,11 @@ def alias_options(f):
     f = click.option('--verbose', '-v', is_flag=True, help='Show per-PDB results')(f)
     f = click.option('--stop-on-first', '-s', is_flag=True, help='Stop at first failure')(f)
     f = click.option('--diff', is_flag=True, help='Document differences to file')(f)
+    f = click.option('--checkpoint', type=click.Path(path_type=Path), 
+                     help='Save progress to checkpoint file')(f)
+    f = click.option('--resume', is_flag=True, help='Resume from checkpoint')(f)
+    f = click.option('--clean-on-match', is_flag=True, 
+                     help='Delete modern JSON that matches legacy')(f)
     return f
 
 
