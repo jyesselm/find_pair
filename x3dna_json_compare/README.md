@@ -28,10 +28,49 @@ fp2-validate --test-set 100 -q    # Quick CI check
 fp2-validate --diff               # Save to data/validation_results/
 fp2-validate --diff-file my.json  # Custom output file
 
+# Checkpoint/Resume (for long runs)
+fp2-validate validate --test-set 1000 --checkpoint run.json  # Save progress
+fp2-validate validate --test-set 1000 --checkpoint run.json --resume  # Resume
+
+# Clean up matched files (save disk space)
+fp2-validate pairs --clean-on-match  # Delete modern JSON that matches
+
 # Environment info
 fp2-validate info                 # Shows executables, PDB counts
 fp2-validate list-pdbs            # List all fast PDBs
 fp2-validate list-pdbs --test-set 50  # List PDBs in test set
+```
+
+### Checkpoint/Resume Workflow
+
+For long validation runs, use checkpoints to save progress and resume if interrupted:
+
+```bash
+# Start validation with checkpoint
+fp2-validate validate --test-set 1000 --checkpoint validation_run.json
+
+# If interrupted, resume from where you left off
+fp2-validate validate --test-set 1000 --checkpoint validation_run.json --resume
+
+# The checkpoint file tracks:
+# - Which PDBs have been validated
+# - Pass/fail status for each
+# - Timestamp and stages tested
+```
+
+### Clean on Match
+
+To save disk space during large validation runs, use `--clean-on-match` to automatically delete modern JSON files that match legacy:
+
+```bash
+# Validate pairs and delete matched files
+fp2-validate pairs --test-set 1000 --clean-on-match
+
+# Only deletes files for the stage being validated:
+# - pairs: base_pair, pair_validation, find_bestpair_selection, distance_checks
+# - frames: base_frame_calc, frame_calc, ls_fitting
+# - hbonds: hbond_list
+# etc.
 ```
 
 ### Command Reference
@@ -61,6 +100,9 @@ fp2-validate list-pdbs --test-set 50  # List PDBs in test set
 | `--stop-on-first, -s` | Stop at first failure |
 | `--diff` | Document differences |
 | `--diff-file PATH` | Custom output file |
+| `--checkpoint PATH` | Save progress to checkpoint file |
+| `--resume` | Skip already-passed PDBs (requires --checkpoint) |
+| `--clean-on-match` | Delete modern JSON files that match legacy |
 
 ---
 

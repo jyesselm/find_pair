@@ -85,6 +85,9 @@ fp2-validate list-pdbs --test-set 50  # PDBs in test set 50
 | `--stop-on-first, -s` | Stop at first failure |
 | `--diff` | Document differences to file |
 | `--diff-file PATH` | Custom differences output file |
+| `--checkpoint PATH` | Save progress to checkpoint file for resume |
+| `--resume` | Skip already-passed PDBs (requires --checkpoint) |
+| `--clean-on-match` | Delete modern JSON files that match legacy |
 
 ### Common Workflows
 
@@ -103,6 +106,15 @@ fp2-validate --test-set 100 --quiet
 
 # Generate difference report
 fp2-validate --test-set 100 --diff
+
+# Long validation run with checkpoint (can resume if interrupted)
+fp2-validate validate --test-set 1000 --checkpoint run.json
+
+# Resume from checkpoint
+fp2-validate validate --test-set 1000 --checkpoint run.json --resume
+
+# Validate and clean up matched files (save disk space)
+fp2-validate pairs --test-set 1000 --clean-on-match
 ```
 
 ---
