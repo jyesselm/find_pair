@@ -10,61 +10,69 @@ This document describes each type of JSON data record produced by the X3DNA find
 
 ## Stage Organization
 
-The validation pipeline has **4 stages** that follow the legacy code execution order. Each stage generates specific JSON files and must pass before proceeding:
+The validation pipeline has **12 stages** that follow the legacy code execution order. Each stage generates specific JSON files and must pass before proceeding:
 
-| Stage | Name | CLI Flag | JSON Files | Status |
-|-------|------|----------|------------|--------|
-| 1 | Atoms | `atoms` | `pdb_atoms` | ✅ PASSED |
-| 2 | Residue Indices & Frames | `frames`, `residue_indices` | `residue_indices`, `ls_fitting`, `base_frame_calc`, `frame_calc` | ⚠️ NEEDS TESTING |
-| 3 | Pairs | `pairs` | `pair_validation`, `distance_checks`, `hbond_list`, `base_pair`, `find_bestpair_selection` | ⚠️ IN PROGRESS |
-| 4 | Steps | `steps` | `bpstep_params`, `helical_params` | ⏳ PENDING |
+| Stage | CLI | Name | JSON File | Status |
+|-------|-----|------|-----------|--------|
+| 1 | `1` or `pdb_atoms` | Atom Parsing | `pdb_atoms` | ✅ PASSED |
+| 2 | `2` or `residue_indices` | Residue Indices | `residue_indices` | ⏳ PENDING |
+| 3 | `3` or `base_frame_calc` | Base Frame Calc | `base_frame_calc` | ✅ PASSED |
+| 4 | `4` or `ls_fitting` | LS Fitting | `ls_fitting` | ✅ PASSED |
+| 5 | `5` or `frame_calc` | Frame Calc | `frame_calc` | ✅ PASSED |
+| 6 | `6` or `pair_validation` | Pair Validation | `pair_validation` | ⚠️ IN PROGRESS |
+| 7 | `7` or `distance_checks` | Distance Checks | `distance_checks` | ⚠️ IN PROGRESS |
+| 8 | `8` or `hbond_list` | H-bond List | `hbond_list` | ⏳ PENDING |
+| 9 | `9` or `base_pair` | Base Pairs | `base_pair` | ⚠️ IN PROGRESS |
+| 10 | `10` or `find_bestpair_selection` | Best Pair Selection | `find_bestpair_selection` | ⚠️ IN PROGRESS |
+| 11 | `11` or `bpstep_params` | Step Parameters | `bpstep_params` | ⏳ PENDING |
+| 12 | `12` or `helical_params` | Helical Parameters | `helical_params` | ⏳ PENDING |
 
-### Legacy Code Execution Order
+### Stage Groups (for convenience)
 
-The legacy find_pair algorithm executes in this order:
-
-1. **Atom parsing** → `pdb_atoms`
-2. **Residue indexing** (`seidx`) → `residue_indices`
-3. **Frame calculation** (`base_info`) → `base_frame_calc`, `ls_fitting`, `frame_calc`
-4. **Pair finding** (within `check_pair` and `all_pairs`):
-   - Pair validation → `pair_validation`
-   - Distance checks → `distance_checks`
-   - H-bond listing → `hbond_list`
-   - Best pair selection → `base_pair`, `find_bestpair_selection`
-5. **Step parameters** → `bpstep_params`, `helical_params`
+| Group | Stages | Description |
+|-------|--------|-------------|
+| `atoms` | 1 | Atom parsing only |
+| `frames` | 3,4,5 | All frame calculations |
+| `pairs` | 6,7,9,10 | Pair validation and selection |
+| `hbonds` | 8 | H-bond list |
+| `steps` | 11,12 | Step and helical parameters |
+| `all` | 1-12 | All stages |
 
 ### Running Validation by Stage
 
 ```bash
-# Validate stage 1 only (atoms)
-fp2-validate validate atoms --test-set 100
+# Validate by stage number
+fp2-validate validate 1 --pdb 1D96             # Stage 1 (atoms)
+fp2-validate validate 3 4 5 --pdb 1D96         # Stages 3-5 (frames)
 
-# Validate stage 2 only (frames + residue_indices)
-fp2-validate validate frames residue_indices --test-set 100
+# Validate by stage name  
+fp2-validate validate pdb_atoms --pdb 1D96     # Stage 1
+fp2-validate validate base_frame_calc --pdb 1D96  # Stage 3
 
-# Validate stage 3 only (pairs)
-fp2-validate validate pairs --test-set 100
-
-# Validate stage 4 only (steps)
-fp2-validate validate steps --test-set 100
+# Validate by stage group
+fp2-validate validate atoms --test-set 10      # Group: atoms (stage 1)
+fp2-validate validate frames --test-set 10     # Group: frames (stages 3,4,5)
+fp2-validate validate pairs --test-set 10      # Group: pairs (stages 6,7,9,10)
 
 # Validate all stages
 fp2-validate validate all --test-set 100
+
+# Sequential validation (recommended workflow)
+fp2-validate validate 1 --test-set 100 -v      # First pass stage 1
+fp2-validate validate 2 --test-set 100 -v      # Then stage 2
+fp2-validate validate 3 --test-set 100 -v      # Then stage 3... etc
 ```
 
 ### Generating JSON by Stage
 
 ```bash
-# Generate only stage 1 JSON
-./build/tools/generate_modern_json data/pdb/1ABC.pdb data/json --stage=atoms
-
-# Generate only stage 2 JSON
-./build/tools/generate_modern_json data/pdb/1ABC.pdb data/json --stage=residue_indices
-./build/tools/generate_modern_json data/pdb/1ABC.pdb data/json --stage=ls_fitting
-./build/tools/generate_modern_json data/pdb/1ABC.pdb data/json --stage=frames
+# Generate by stage
+./build/generate_modern_json data/pdb/1ABC.pdb data/json --stage=atoms
+./build/generate_modern_json data/pdb/1ABC.pdb data/json --stage=residue_indices
+./build/generate_modern_json data/pdb/1ABC.pdb data/json --stage=frames
 
 # Generate all stages
-./build/tools/generate_modern_json data/pdb/1ABC.pdb data/json --stage=all
+./build/generate_modern_json data/pdb/1ABC.pdb data/json --stage=all
 ```
 
 ---
