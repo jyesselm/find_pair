@@ -143,12 +143,6 @@ class VerboseReporter:
         status = "✅ MATCH" if comparison.matches else "❌ MISMATCH"
         lines.append(f"{status} {self._format_record_key(comparison.record_key, comparison.record_type)}")
         
-        # Source paths
-        if comparison.legacy_source:
-            lines.append(f"  Legacy source: {comparison.legacy_source}")
-        if comparison.modern_source:
-            lines.append(f"  Modern source: {comparison.modern_source}")
-        
         # Field comparisons
         if comparison.field_comparisons:
             lines.append("")
