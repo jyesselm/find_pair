@@ -227,7 +227,7 @@ def pytest_addoption(parser):
         help="Maximum number of PDBs to test"
     )
     parser.addoption(
-        "--pdb",
+        "--pdb-id",
         action="store",
         default=None,
         help="Test a specific PDB ID"

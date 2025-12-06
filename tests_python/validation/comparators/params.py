@@ -86,7 +86,10 @@ def _build_step_lookup(records: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any
     """Build lookup by step index."""
     lookup = {}
     for rec in records:
-        idx = rec.get("step_idx") or rec.get("idx")
+        # Use explicit None check - 0 is a valid index!
+        idx = rec.get("step_idx")
+        if idx is None:
+            idx = rec.get("idx")
         if idx is not None:
             lookup[idx] = rec
     return lookup
