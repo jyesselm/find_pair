@@ -46,6 +46,7 @@ add_library(x3dna
     src/x3dna/core/residue_factory.cpp
     src/x3dna/algorithms/standard_base_templates.cpp
     src/x3dna/algorithms/ring_atom_matcher.cpp
+    src/x3dna/algorithms/residue_type_detector.cpp
     src/x3dna/algorithms/base_frame_calculator.cpp
     src/x3dna/algorithms/base_pair_validator.cpp
     src/x3dna/algorithms/base_pair_finder.cpp
@@ -69,13 +70,13 @@ target_link_libraries(x3dna PUBLIC
     nlohmann_json::nlohmann_json
 )
 
-# Add compile definitions for debug flags
+# Add compile definitions for debug flags (optional, enable with -DDEBUG_BP_TYPE_ID=ON etc)
 if(DEBUG_BP_TYPE_ID)
     target_compile_definitions(x3dna PRIVATE DEBUG_BP_TYPE_ID)
 endif()
-
-# Always enable DEBUG_FRAME_CALC for now to debug CVC issue
-target_compile_definitions(x3dna PRIVATE DEBUG_FRAME_CALC)
+if(DEBUG_FRAME_CALC)
+    target_compile_definitions(x3dna PRIVATE DEBUG_FRAME_CALC)
+endif()
 
 # Testing (after dependencies are loaded)
 if(BUILD_TESTS)

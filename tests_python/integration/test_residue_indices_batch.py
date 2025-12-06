@@ -200,22 +200,22 @@ def main():
     valid_pdb_ids = set()
     try:
         with open(fast_pdbs_file) as f:
-                valid_data = json.load(f)
-                # Handle different possible formats
-                if isinstance(valid_data, list):
-                    valid_pdb_ids = set(valid_data)
-                elif isinstance(valid_data, dict):
-                    # Check for common keys
-                    if "valid_pdbs_with_atoms_and_frames" in valid_data:
-                        valid_pdb_ids = set(valid_data["valid_pdbs_with_atoms_and_frames"])
-                    elif "valid_pdbs" in valid_data:
-                        valid_pdb_ids = set(valid_data["valid_pdbs"])
-                    else:
-                        # Assume keys are PDB IDs
-                        valid_pdb_ids = set(valid_data.keys())
-        except Exception as e:
-            print(f"⚠️  Could not load {fast_pdbs_file.name}: {e}")
-            print("   Will test all PDB files")
+            valid_data = json.load(f)
+            # Handle different possible formats
+            if isinstance(valid_data, list):
+                valid_pdb_ids = set(valid_data)
+            elif isinstance(valid_data, dict):
+                # Check for common keys
+                if "valid_pdbs_with_atoms_and_frames" in valid_data:
+                    valid_pdb_ids = set(valid_data["valid_pdbs_with_atoms_and_frames"])
+                elif "valid_pdbs" in valid_data:
+                    valid_pdb_ids = set(valid_data["valid_pdbs"])
+                else:
+                    # Assume keys are PDB IDs
+                    valid_pdb_ids = set(valid_data.keys())
+    except Exception as e:
+        print(f"⚠️  Could not load {fast_pdbs_file.name}: {e}")
+        print("   Will test all PDB files")
     
     # Get all PDB files, filtered by valid_pdbs if available
     all_pdb_files = sorted(list(pdb_dir.glob("*.pdb")))

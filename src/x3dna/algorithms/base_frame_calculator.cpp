@@ -6,7 +6,6 @@
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <stdexcept>
 #include <cmath>
-#include <iostream>
 #include <algorithm>
 #include <cctype>
 
@@ -33,94 +32,37 @@ constexpr std::array<const char*, 9> RING_ATOM_NAMES = {" C4 ", " N3 ", " C2 ", 
                                                         " C5 ", " N7 ", " C8 ", " N9 "};
 
 /**
- * @brief Result of RMSD check
- */
-struct RmsdCheckResult {
-    std::optional<double> rmsd;
-    bool found_purine_atoms;                     // Whether any purine atoms (N7, C8, N9) were found
-    std::vector<std::string> matched_atom_names; // Atom names that were matched in RMSD check
-    std::vector<geometry::Vector3D>
-        matched_experimental_coords; // Experimental coordinates from RMSD check
-    std::vector<geometry::Vector3D> matched_standard_coords; // Standard coordinates from RMSD check
-};
-
-/**
  * @brief Check nucleotide type by RMSD (matches legacy check_nt_type_by_rmsd)
- * @param residue Residue to check
- * @return RMSD value if calculable, or nullopt if not enough atoms, plus purine atom flag
  */
 RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
-    // Find ring atoms in residue
-    // LEGACY BEHAVIOR: Try ALL 9 ring atoms first (matches legacy residue_ident)
-    // Then if RMSD fails and purine atoms were found, retry with pyrimidine-only
     std::vector<geometry::Vector3D> experimental_coords;
     std::vector<geometry::Vector3D> standard_coords;
-    int nN = 0; // Count of nitrogen atoms (N1, N3, N7, N9)
+    int nN = 0;
     bool has_c1_prime = false;
-    int purine_atom_count = 0; // Count of purine atoms found (N7, C8, N9)
+    int purine_atom_count = 0;
 
-#ifdef DEBUG_FRAME_CALC
-    std::string res_name_check = residue.name();
-    while (!res_name_check.empty() && res_name_check[0] == ' ')
-        res_name_check.erase(0, 1);
-    while (!res_name_check.empty() && res_name_check.back() == ' ')
-        res_name_check.pop_back();
-    bool is_cvc = (res_name_check == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7);
-    if (is_cvc) {
-        std::cerr << "DEBUG: check_nt_type_by_rmsd for CVC B7, residue has " << residue.num_atoms()
-                  << " atoms\n";
-    }
-#endif
-
-    // Try to match ALL ring atoms (like legacy does)
+    // Try to match ALL ring atoms
     for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
         const char* atom_name = RING_ATOM_NAMES[i];
-
-        // Find this atom in residue
         for (const auto& atom : residue.atoms()) {
             if (atom.name() == atom_name) {
                 const auto& pos = atom.position();
                 experimental_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
-
-                // Use corresponding standard geometry
                 standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0],
                                                              STANDARD_RING_GEOMETRY[i][1],
                                                              STANDARD_RING_GEOMETRY[i][2]));
-
-                // Count nitrogen atoms (indices 1=N3, 3=N1, 6=N7, 8=N9)
                 if (i == 1 || i == 3 || i == 6 || i == 8) {
                     nN++;
                 }
-
-                // Count purine atoms (indices 6=N7, 7=C8, 8=N9) - for two-try fallback
                 if (i >= 6) {
                     purine_atom_count++;
                 }
-#ifdef DEBUG_FRAME_CALC
-                if (is_cvc) {
-                    std::cerr << "DEBUG: Matched ring atom " << i << ": " << atom_name << "\n";
-                }
-#endif
                 break;
             }
-#ifdef DEBUG_FRAME_CALC
-            if (is_cvc && i < 3) { // Only show first few to avoid spam
-                std::cerr << "DEBUG: Checking atom '" << atom.name() << "' vs '" << atom_name
-                          << "'\n";
-            }
-#endif
         }
     }
 
-#ifdef DEBUG_FRAME_CALC
-    if (is_cvc) {
-        std::cerr << "DEBUG: check_nt_type_by_rmsd result: matched=" << experimental_coords.size()
-                  << ", nN=" << nN << ", purine_count=" << purine_atom_count << "\n";
-    }
-#endif
-
-    // Check for C1' or C1R atom (required by legacy)
-    // Some nucleotides like NMN use C1R instead of C1'
+    // Check for C1' or C1R atom
     for (const auto& atom : residue.atoms()) {
         if (atom.name() == " C1'" || atom.name() == " C1R") {
             has_c1_prime = true;
@@ -128,22 +70,17 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
         }
     }
 
-    // Legacy requires: (!nN && !C1_prime) -> return DUMMY
     if (nN == 0 && !has_c1_prime) {
         return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
     }
-
-    // Need at least 3 atoms for RMSD calculation
     if (experimental_coords.size() < 3) {
         return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
     }
 
-    // Collect matched atom names in the order they were found
-    // This matches the order in experimental_coords and standard_coords
+    // Collect matched atom names
     std::vector<std::string> matched_names;
     for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
         const char* atom_name = RING_ATOM_NAMES[i];
-        // Check if this atom was found in residue (same logic as above)
         for (const auto& atom : residue.atoms()) {
             if (atom.name() == atom_name) {
                 matched_names.push_back(std::string(atom_name));
@@ -152,7 +89,7 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
         }
     }
 
-    // Perform least-squares fitting (matches legacy ls_fitting)
+    // Perform least-squares fitting
     geometry::LeastSquaresFitter fitter;
     try {
         auto fit_result = fitter.fit(standard_coords, experimental_coords);
@@ -162,6 +99,136 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
         return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
     }
 }
+
+// Known non-nucleotide molecules to exclude
+bool is_excluded_molecule(const std::string& res_name) {
+    static const std::vector<std::string> excluded = {
+        "MES", "HEPES", "TRIS", "EDO", "GOL", "SO4", "PO4", "ACT", "FMT", "EFZ", "LYA"};
+    return std::find(excluded.begin(), excluded.end(), res_name) != excluded.end();
+}
+
+// Standard nucleotide list
+bool is_in_nt_list(const std::string& res_name) {
+    static const std::vector<std::string> NT_LIST = {
+        "A",   "C",   "G",   "T",   "U",   "PSU", "P5P", "PU", "I",  "DI",
+        "ADP", "GDP", "CDP", "UDP", "TDP", "DA",  "DC",  "DG", "DT", "DU"};
+    std::string upper = res_name;
+    for (char& c : upper) {
+        c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+    }
+    for (const auto& nt : NT_LIST) {
+        if (upper == nt) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Count ring atoms in a residue
+std::tuple<int, bool> count_ring_atoms(const core::Residue& residue) {
+    static const std::vector<std::string> common_ring = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
+    static const std::vector<std::string> purine_ring = {" N7 ", " C8 ", " N9 "};
+    
+    int count = 0;
+    bool has_purine = false;
+    
+    for (const auto& atom_name : common_ring) {
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == atom_name) {
+                count++;
+                break;
+            }
+        }
+    }
+    for (const auto& atom_name : purine_ring) {
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == atom_name) {
+                count++;
+                has_purine = true;
+                break;
+            }
+        }
+    }
+    return {count, has_purine};
+}
+
+// Detect purine atoms
+bool detect_purine_atoms(const core::Residue& residue) {
+    bool has_n7 = false, has_c8 = false, has_n9 = false;
+    for (const auto& atom : residue.atoms()) {
+        if (atom.name() == " N7 ") has_n7 = true;
+        if (atom.name() == " C8 ") has_c8 = true;
+        if (atom.name() == " N9 ") has_n9 = true;
+    }
+    return has_n7 || has_c8 || has_n9;
+}
+
+// Determine purine type (A vs G)
+core::ResidueType determine_purine_type(const core::Residue& residue) {
+    bool has_o6 = false, has_n6 = false, has_n2 = false;
+    for (const auto& atom : residue.atoms()) {
+        if (atom.name() == " O6 ") has_o6 = true;
+        if (atom.name() == " N6 ") has_n6 = true;
+        if (atom.name() == " N2 ") has_n2 = true;
+    }
+    return (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE : core::ResidueType::ADENINE;
+}
+
+// Determine pyrimidine type
+core::ResidueType determine_pyrimidine_type(const core::Residue& residue, char one_letter) {
+    bool has_n4 = false, has_c5m = false;
+    for (const auto& atom : residue.atoms()) {
+        if (atom.name() == " N4 ") has_n4 = true;
+        if (atom.name() == " C5M" || atom.name() == " C7 ") has_c5m = true;
+    }
+
+    // Check for pseudouridine
+    auto c1p = residue.find_atom(" C1'");
+    auto n1 = residue.find_atom(" N1 ");
+    auto c5 = residue.find_atom(" C5 ");
+    if (c1p && n1 && c5) {
+        double dist_n1 = (c1p->position() - n1->position()).length();
+        double dist_c5 = (c1p->position() - c5->position()).length();
+        if (dist_c5 <= 2.0 && dist_n1 > 2.0) {
+            return core::ResidueType::PSEUDOURIDINE;
+        }
+    }
+
+    if (has_n4) return core::ResidueType::CYTOSINE;
+    if (has_c5m && one_letter != 'u') return core::ResidueType::THYMINE;
+    return core::ResidueType::URACIL;
+}
+
+// Try pyrimidine-only RMSD check
+std::optional<double> try_pyrimidine_rmsd(const core::Residue& residue) {
+    std::vector<geometry::Vector3D> exp_coords;
+    std::vector<geometry::Vector3D> std_coords;
+    
+    for (size_t i = 0; i < 6; ++i) {
+        const char* atom_name = RING_ATOM_NAMES[i];
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == atom_name) {
+                const auto& pos = atom.position();
+                exp_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
+                std_coords.push_back(geometry::Vector3D(
+                    STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
+                    STANDARD_RING_GEOMETRY[i][2]));
+                break;
+            }
+        }
+    }
+    
+    if (exp_coords.size() < 3) return std::nullopt;
+    
+    geometry::LeastSquaresFitter fitter;
+    try {
+        auto result = fitter.fit(std_coords, exp_coords);
+        return result.rms;
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
+}
+
 } // namespace
 
 BaseFrameCalculator::BaseFrameCalculator(const std::filesystem::path& template_path)
@@ -169,12 +236,9 @@ BaseFrameCalculator::BaseFrameCalculator(const std::filesystem::path& template_p
 
 FrameCalculationResult BaseFrameCalculator::calculate_frame(core::Residue& residue) {
     FrameCalculationResult result = calculate_frame_impl(residue);
-
-    // Store frame in residue if valid
     if (result.is_valid) {
         residue.set_reference_frame(result.frame);
     }
-
     return result;
 }
 
@@ -188,698 +252,157 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     FrameCalculationResult result;
     result.is_valid = false;
 
-    // Get residue type
+    // Get residue info
     core::ResidueType residue_type = residue.residue_type();
     std::string res_name = residue.name();
-    while (!res_name.empty() && res_name[0] == ' ')
-        res_name.erase(0, 1);
-    while (!res_name.empty() && res_name.back() == ' ')
-        res_name.pop_back();
+    while (!res_name.empty() && res_name[0] == ' ') res_name.erase(0, 1);
+    while (!res_name.empty() && res_name.back() == ' ') res_name.pop_back();
 
-    // TODO: Exclude common buffer/solvent/ligand molecules that aren't nucleotides
-    // Check one_letter_code - if it's space (' '), it's not a nucleotide
     char one_letter = residue.one_letter_code();
-    if (one_letter == ' ') {
-        // Not a nucleotide (buffer, solvent, ligand, etc.) - skip
+    if (one_letter == ' ' || is_excluded_molecule(res_name)) {
         return result;
     }
 
-    // Also explicitly exclude known non-nucleotides that might have ambiguous one_letter_code
-    static const std::vector<std::string> excluded_molecules = {
-        "MES", "HEPES", "TRIS", "EDO", "GOL", "SO4", "PO4", "ACT", "FMT", "EFZ", "LYA"};
-    for (const auto& excluded : excluded_molecules) {
-        if (res_name == excluded) {
-            return result; // Not a nucleotide - skip
-        }
-    }
-
-    // Check if this is a modified nucleotide not in NT_LIST (requires RMSD check)
-    // Legacy: All residues not in NT_LIST go through RMSD check, even if they're recognized as
-    // nucleotides Standard NT_LIST: A, C, G, T, U, PSU (pseudouridine), I (inosine) H2U is NOT in
-    // NT_LIST, so it needs RMSD check regardless of residue_type
-    static const std::vector<std::string> NT_LIST = {
-        "A",   "C",   "G",   "T",   "U",   "PSU", "P5P", "PU", "I",  "DI",
-        "ADP", "GDP", "CDP", "UDP", "TDP", "DA",  "DC",  "DG", "DT", "DU"}; // Added DNA bases
-    bool is_in_nt_list = false;
-    std::string res_upper = res_name;
-    for (char& c : res_upper) {
-        c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
-    }
-    for (const auto& nt : NT_LIST) {
-        std::string nt_upper = nt;
-        for (char& c : nt_upper) {
-            c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
-        }
-        if (res_upper == nt_upper) {
-            is_in_nt_list = true;
-            break;
-        }
-    }
-    bool needs_rmsd_check = !is_in_nt_list; // All non-NT_LIST residues need RMSD check
-
-// DEBUG: Log residue info (can be enabled with -DDEBUG_FRAME_CALC)
-#ifdef DEBUG_FRAME_CALC
-    std::cerr << "DEBUG: Calculating frame for residue: " << residue.name() << " "
-              << residue.chain_id() << ":" << residue.seq_num()
-              << " (type=" << static_cast<int>(residue_type)
-              << ", one_letter=" << residue.one_letter_code() << ", needs_rmsd=" << needs_rmsd_check
-              << ")\n";
-#endif
-
-    // Check if valid nucleotide
-    // Legacy includes modified nucleotides that have ring atoms but aren't in NT_LIST
-    // Check if residue has ring atoms as a fallback (similar to legacy residue_ident)
+    bool needs_rmsd_check = !is_in_nt_list(res_name);
     bool has_ring_atoms = false;
-    int ring_atom_count = 0;
     bool has_purine_atoms = false;
-    bool used_pyrimidine_fallback = false; // Track if RMSD fallback to pyrimidine atoms occurred
+    bool used_pyrimidine_fallback = false;
 
-#ifdef DEBUG_FRAME_CALC
-    // Debug: show all atom names for CVC or any UNKNOWN residue
-    std::string residue_name_raw = residue.name();
-    while (!residue_name_raw.empty() && residue_name_raw[0] == ' ')
-        residue_name_raw.erase(0, 1);
-    while (!residue_name_raw.empty() && residue_name_raw.back() == ' ')
-        residue_name_raw.pop_back();
-
-    if (residue_name_raw == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-        std::cerr << "DEBUG: CVC B7 has " << residue.num_atoms() << " atoms:\n";
-        for (const auto& atom : residue.atoms()) {
-            std::cerr << "  Atom: '" << atom.name() << "' (len=" << atom.name().length() << ")\n";
-        }
-    }
-#endif
-
-    if (residue_type == core::ResidueType::UNKNOWN ||
-        residue_type == core::ResidueType::AMINO_ACID ||
-        residue_type == core::ResidueType::NONCANONICAL_RNA ||
-        (needs_rmsd_check && (residue_type == core::ResidueType::ADENINE ||
-                              residue_type == core::ResidueType::CYTOSINE ||
-                              residue_type == core::ResidueType::GUANINE ||
-                              residue_type == core::ResidueType::THYMINE ||
-                              residue_type == core::ResidueType::URACIL))) {
-        // ALWAYS PRINT FOR DEBUGGING
-        std::cerr << "DEBUG: Entered ring atom counting block for " << res_name << " "
-                  << residue.chain_id() << ":" << residue.seq_num()
-                  << " (type=" << static_cast<int>(residue_type) << ")\n";
-
-        // Check for ring atoms (C4, N3, C2, N1, C6, C5 are common to all)
-        static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
-                                                                   " N1 ", " C6 ", " C5 "};
-        static const std::vector<std::string> purine_ring_atoms = {" N7 ", " C8 ", " N9 "};
-        static const std::vector<std::string> nitrogen_atoms = {" N1 ", " N3 "};
-
-#ifdef DEBUG_FRAME_CALC
-        // Always show for UNKNOWN residues to debug CVC
-        if (residue_type == core::ResidueType::UNKNOWN) {
-            std::string res_name_debug = res_name;
-            std::cerr << "DEBUG: UNKNOWN residue " << res_name_debug << " " << residue.chain_id()
-                      << ":" << residue.seq_num() << " has " << residue.num_atoms() << " atoms\n";
-            if (res_name_debug == "CVC") {
-                std::cerr << "DEBUG: CVC atom names:\n";
-                for (const auto& atom : residue.atoms()) {
-                    std::cerr << "  '" << atom.name() << "'\n";
-                }
-            }
-        }
-#endif
-
-        // UNCONDITIONAL DEBUG: Print all atom names for UNKNOWN residues to diagnose
-        if (residue_type == core::ResidueType::UNKNOWN) {
-            std::string res_name_debug = res_name;
-            std::cerr << "DEBUG: UNKNOWN residue '" << res_name_debug << "' " << residue.chain_id()
-                      << ":" << residue.seq_num() << " has " << residue.num_atoms() << " atoms\n";
-            if (residue.num_atoms() > 0) {
-                std::cerr << "DEBUG: Atom names: ";
-                for (const auto& atom : residue.atoms()) {
-                    std::cerr << "'" << atom.name() << "' ";
-                }
-                std::cerr << "\n";
-            }
-        }
-
-        for (const auto& atom_name : common_ring_atoms) {
-            for (const auto& atom : residue.atoms()) {
-                if (atom.name() == atom_name) {
-                    ring_atom_count++;
-#ifdef DEBUG_FRAME_CALC
-                    std::cerr << "DEBUG: Found common ring atom: " << atom_name << "\n";
-#endif
-                    break;
-                }
-            }
-        }
-
-        if (residue_type == core::ResidueType::UNKNOWN) {
-            std::cerr << "DEBUG: After common ring atoms, count=" << ring_atom_count << "\n";
-        }
-
-        // Also count purine atoms for ring_atom_count (legacy tries ALL 9 atoms)
-        // This allows residues like CVC (C4, C8, N9) to be detected
-        for (const auto& atom_name : purine_ring_atoms) {
-            for (const auto& atom : residue.atoms()) {
-                if (atom.name() == atom_name) {
-                    ring_atom_count++;
-#ifdef DEBUG_FRAME_CALC
-                    std::cerr << "DEBUG: Found purine ring atom: " << atom_name << "\n";
-#endif
-                    break;
-                }
-#ifdef DEBUG_FRAME_CALC
-                // Debug: show what atom names we're comparing
-                if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-                    std::cerr << "DEBUG: Comparing '" << atom.name() << "' with '" << atom_name
-                              << "'\n";
-                }
-#endif
-            }
-        }
-
-        // Check for purine-specific atoms
-        // CRITICAL FIX: Legacy requires BOTH C8 AND N9 for purine detection (not N7+C8)
-        // QUO (queuosine) has C8+N9 but lacks N7 → treated as purine by legacy
-        // 9DG (9-deazaguanine) has C8+N7 but lacks N9 → treated as pyrimidine by legacy
-        bool has_n7 = false, has_c8 = false, has_n9 = false;
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == " N7 ")
-                has_n7 = true;
-            if (atom.name() == " C8 ")
-                has_c8 = true;
-            if (atom.name() == " N9 ")
-                has_n9 = true;
-        }
-
-        // Legacy residue_ident() considers a residue a purine if ANY of N7, C8, N9 are present
-        // (see kr check in cmn_fncs.c lines 1360-1365: if (i >= 6) kr++)
-        // This handles modified nucleotides like 8B4 that have N7, C8 but not N9
-        has_purine_atoms = (has_n7 || has_c8 || has_n9);
-#ifdef DEBUG_FRAME_CALC
-        if (has_purine_atoms) {
-            std::cerr << "DEBUG: Found purine atoms: N7=" << has_n7 << ", C8=" << has_c8 << "\n";
-        } else if (has_c8 && !has_n7) {
-            std::cerr << "DEBUG: Has C8 but not N7 - NOT a purine (likely modified pyrimidine)\n";
-        }
-#endif
-
-        // Legacy only requires >= 3 ring atoms (by name) and C1' presence
-        // The RMSD check (check_nt_type_by_rmsd) rejects non-nucleotides via:
-        // 1. No C1' (e.g., glucose) → rejected
-        // 2. No nitrogen atoms AND no C1' → rejected (nN=0 && !C1_prime → DUMMY)
-        // So we don't need explicit nitrogen check here
-        has_ring_atoms = (ring_atom_count >= 3);
-
-        if (residue_type == core::ResidueType::UNKNOWN) {
-            std::cerr << "DEBUG: Final ring_atom_count=" << ring_atom_count
-                      << ", has_ring_atoms=" << has_ring_atoms << "\n";
-        }
-#ifdef DEBUG_FRAME_CALC
-        std::string residue_name_debug = residue.name();
-        while (!residue_name_debug.empty() && residue_name_debug[0] == ' ')
-            residue_name_debug.erase(0, 1);
-        while (!residue_name_debug.empty() && residue_name_debug.back() == ' ')
-            residue_name_debug.pop_back();
-        std::cerr << "DEBUG: Residue " << residue_name_debug << " " << residue.chain_id() << ":"
-                  << residue.seq_num() << " - Ring atom count: " << ring_atom_count
-                  << ", has_ring_atoms: " << has_ring_atoms << "\n";
-        if (residue_name_debug == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-            std::cerr << "DEBUG: CVC B7 final check - ring_atom_count=" << ring_atom_count
-                      << ", has_ring_atoms=" << has_ring_atoms << "\n";
-        }
-#endif
+    // Check for ring atoms if needed
+    bool should_check_rings = (residue_type == core::ResidueType::UNKNOWN ||
+                               residue_type == core::ResidueType::AMINO_ACID ||
+                               residue_type == core::ResidueType::NONCANONICAL_RNA ||
+                               needs_rmsd_check);
+    
+    if (should_check_rings) {
+        auto [ring_count, has_purine] = count_ring_atoms(residue);
+        has_ring_atoms = (ring_count >= 3);
+        has_purine_atoms = has_purine || detect_purine_atoms(residue);
     } else {
-        // For standard nucleotides (A, C, G, T, U) that ARE in NT_LIST, skip RMSD check
-        // But if they're modified nucleotides not in NT_LIST (like H2U), they need RMSD check
-        if (needs_rmsd_check) {
-            // Even though it's recognized as a standard nucleotide type, it's not in NT_LIST
-            // So we need to check for ring atoms and do RMSD check
-            static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
-                                                                       " N1 ", " C6 ", " C5 "};
-            static const std::vector<std::string> purine_ring_atoms = {" N7 ", " C8 ", " N9 "};
-            static const std::vector<std::string> nitrogen_atoms = {" N1 ", " N3 "};
-
-            for (const auto& atom_name : common_ring_atoms) {
-                for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == atom_name) {
-                        ring_atom_count++;
-                        break;
-                    }
-                }
-            }
-
-            // Also count purine atoms for ring_atom_count (legacy tries ALL 9 atoms)
-            for (const auto& atom_name : purine_ring_atoms) {
-                for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == atom_name) {
-                        ring_atom_count++;
-                        has_purine_atoms = true;
-                        break;
-                    }
-                }
-            }
-
-            // Legacy only requires >= 3 ring atoms
-            has_ring_atoms = (ring_atom_count >= 3);
-        } else {
-            // Standard nucleotide in NT_LIST - accept without RMSD check
-            has_ring_atoms = true;
-        }
+        has_ring_atoms = true;
     }
 
-    // CRITICAL: ALWAYS check RMSD for ALL residues with ring atoms (even standard nucleotides)
-    // This matches legacy residue_ident() which does RMSD check for ALL residues
-    // Legacy rejects residues where RMSD > NT_CUTOFF (0.2618), even standard A/C/G/T/U
-
+    // RMSD check
     RmsdCheckResult rmsd_check;
     std::optional<double> rmsd_result;
     bool found_purine_atoms = false;
+    constexpr double RMSD_THRESHOLD = 0.2618;
 
     if (has_ring_atoms) {
-        // DEBUG: Always print for CVC
-        if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-            std::cerr << "DEBUG: CVC B7 - Calling check_nt_type_by_rmsd\n";
-        }
         rmsd_check = check_nt_type_by_rmsd(residue);
         rmsd_result = rmsd_check.rmsd;
         found_purine_atoms = rmsd_check.found_purine_atoms;
 
-        // DEBUG: Always print for CVC
-        if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-            std::cerr << "DEBUG: CVC B7 - RMSD result: "
-                      << (rmsd_result.has_value() ? std::to_string(*rmsd_result) : "nullopt")
-                      << ", found_purine_atoms=" << found_purine_atoms << "\n";
-        }
-
-        // Use strict threshold (0.2618) for all bases
-        double rmsd_threshold = 0.2618;
-
-        // Debug output disabled
-        if (!rmsd_result.has_value() || *rmsd_result > rmsd_threshold) {
-            // RMSD check failed with all atoms
-            // Legacy's TWO-TRY approach: If purine atoms were found, retry with ONLY pyrimidine
-            // atoms This handles cases where purine ring is distorted but pyrimidine core is fine
-            // Note: Legacy uses kr > 0 (any purine atoms found), not requiring both N7 and C8
+        if (!rmsd_result.has_value() || *rmsd_result > RMSD_THRESHOLD) {
             if (found_purine_atoms) {
-                // Retry with only 6 pyrimidine atoms (C4, N3, C2, N1, C6, C5)
-                // Calculate RMSD using ONLY pyrimidine ring atoms (first 6)
-                std::vector<geometry::Vector3D> experimental_coords;
-                std::vector<geometry::Vector3D> standard_coords;
-
-                for (size_t i = 0; i < 6; ++i) { // Only pyrimidine atoms (indices 0-5)
-                    const char* atom_name = RING_ATOM_NAMES[i];
-                    for (const auto& atom : residue.atoms()) {
-                        if (atom.name() == atom_name) {
-                            const auto& pos = atom.position();
-                            experimental_coords.push_back(
-                                geometry::Vector3D(pos.x(), pos.y(), pos.z()));
-                            standard_coords.push_back(geometry::Vector3D(
-                                STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
-                                STANDARD_RING_GEOMETRY[i][2]));
-                            break;
-                        }
-                    }
+                auto pyr_rmsd = try_pyrimidine_rmsd(residue);
+                if (!pyr_rmsd.has_value() || *pyr_rmsd > RMSD_THRESHOLD) {
+                    return result;
                 }
-
-                std::optional<double> pyrimidine_rmsd;
-                if (experimental_coords.size() >= 3) {
-                    geometry::LeastSquaresFitter fitter;
-                    try {
-                        auto fit_result = fitter.fit(standard_coords, experimental_coords);
-                        pyrimidine_rmsd = fit_result.rms;
-                    } catch (const std::exception&) {
-                        pyrimidine_rmsd = std::nullopt;
-                    }
+                if (!core::ModifiedNucleotideRegistry::contains(res_name)) {
+                    has_purine_atoms = false;
                 }
-
-#ifdef DEBUG_FRAME_CALC
-                std::cerr << "DEBUG: First RMSD check failed (rmsd="
-                          << (rmsd_result.has_value() ? std::to_string(*rmsd_result) : "N/A")
-                          << "), retrying as pyrimidine-only\n";
-#endif
-
-                // If still fails, reject
-                if (!pyrimidine_rmsd.has_value() || *pyrimidine_rmsd > rmsd_threshold) {
-#ifdef DEBUG_FRAME_CALC
-                    std::cerr << "DEBUG: Second try also failed - rejecting residue\n";
-#endif
-                    return result; // Cannot calculate frame - both attempts failed
-                }
-
-                // Second try passed - accept with pyrimidine atoms
-                // CRITICAL: For registry nucleotides, keep the original type but use pyrimidine
-                // atoms For unknown nucleotides, change to pyrimidine type
-                bool is_registry_nucleotide = core::ModifiedNucleotideRegistry::contains(res_name);
-                if (!is_registry_nucleotide) {
-                    has_purine_atoms =
-                        false; // Change type to pyrimidine (unknown nucleotides only)
-                }
-                used_pyrimidine_fallback = true; // Mark that we used pyrimidine fallback
-                rmsd_result = pyrimidine_rmsd;
+                used_pyrimidine_fallback = true;
+                rmsd_result = pyr_rmsd;
             } else {
-                // No purine atoms and first try failed - reject
-#ifdef DEBUG_FRAME_CALC
-                std::cerr << "DEBUG: RMSD check failed (rmsd="
-                          << (rmsd_result.has_value() ? std::to_string(*rmsd_result) : "N/A")
-                          << ", threshold=" << rmsd_threshold << ") - rejecting residue\n";
-#endif
-                return result; // Cannot calculate frame - RMSD check failed
+                return result;
             }
-        }
-#ifdef DEBUG_FRAME_CALC
-        std::cerr << "DEBUG: RMSD check passed (rmsd=" << *rmsd_result
-                  << ", threshold=" << rmsd_threshold << ")\n";
-#endif
-
-        // DEBUG: Always print for CVC
-        if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-            std::cerr << "DEBUG: CVC B7 - RMSD check passed, continuing to frame calculation\n";
         }
     }
 
-    // If no ring atoms, cannot calculate frame
     if (!has_ring_atoms) {
-#ifdef DEBUG_FRAME_CALC
-        std::string residue_name_final = residue.name();
-        while (!residue_name_final.empty() && residue_name_final[0] == ' ')
-            residue_name_final.erase(0, 1);
-        while (!residue_name_final.empty() && residue_name_final.back() == ' ')
-            residue_name_final.pop_back();
-        std::cerr << "DEBUG: Skipping - not a nucleotide (type=" << static_cast<int>(residue_type)
-                  << ", no ring atoms, ring_count=" << ring_atom_count
-                  << ", residue=" << residue_name_final << " " << residue.chain_id() << ":"
-                  << residue.seq_num() << ")\n";
-        if (residue_name_final == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-            std::cerr << "DEBUG: CVC B7 REJECTED - ring_atom_count=" << ring_atom_count
-                      << ", has_ring_atoms=" << has_ring_atoms << "\n";
-            std::cerr << "DEBUG: CVC B7 has " << residue.num_atoms() << " atoms total\n";
-            for (const auto& atom : residue.atoms()) {
-                std::cerr << "  Atom: '" << atom.name() << "'\n";
-            }
-        }
-#endif
-        return result; // Cannot calculate frame for non-nucleotides
+        return result;
     }
 
-#ifdef DEBUG_FRAME_CALC
-    if (has_ring_atoms) {
-        std::cerr << "DEBUG: Residue has " << ring_atom_count
-                  << " ring atoms - treating as nucleotide\n";
-        std::cerr << "DEBUG: Has purine atoms: " << (has_purine_atoms ? "yes" : "no") << "\n";
-        if (!has_purine_atoms && ring_atom_count >= 6) {
-            // Debug: list all atom names to see why purine detection failed
-            std::cerr << "DEBUG: Available atom names in residue: ";
-            for (const auto& atom : residue.atoms()) {
-                std::cerr << atom.name() << " ";
-            }
-            std::cerr << "\n";
-        }
-    }
-#endif
-
-    // DEBUG: Always print for CVC
-    if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-        std::cerr << "DEBUG: CVC B7 - After RMSD check, determining residue type. Current type="
-                  << static_cast<int>(residue_type) << ", has_purine_atoms=" << has_purine_atoms
-                  << "\n";
-    }
-
-    // CRITICAL: For nucleotides in the registry, TRUST the ResidueFactory type
-    // Do NOT override it based on atom analysis - the factory has already determined the correct
-    // type This prevents issues like EPE (cytosine) being misclassified as adenine based on RMSD
-    // fallback
+    // Determine residue type
     bool is_registry_nucleotide = core::ModifiedNucleotideRegistry::contains(res_name);
-
-    // Determine residue type from atoms (for modified nucleotides or if type is still UNKNOWN)
-    // If residue_type is already a standard nucleotide (A, C, G, T, U) and in NT_LIST, use it
-    // Otherwise, determine type from atoms
-    // BUT: Skip this entire atom-based type determination for registry nucleotides!
+    
     if (!is_registry_nucleotide &&
         (residue_type == core::ResidueType::UNKNOWN ||
          residue_type == core::ResidueType::AMINO_ACID ||
          residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check)) {
-        // Determine type from atoms (only for NON-registry nucleotides)
         if (has_ring_atoms) {
-            // For modified nucleotides with known one_letter_code, trust that code for
-            // purine/pyrimidine determination. This handles cases like A23 where RMSD fallback
-            // to pyrimidine atoms occurs but the residue is still an adenine derivative.
-            // Legacy uses baselist.dat which maps A23 -> 'a' (adenine)
-            bool is_purine_by_one_letter =
-                (one_letter == 'A' || one_letter == 'G' || one_letter == 'a' || one_letter == 'g');
-            bool is_purine = has_purine_atoms || is_purine_by_one_letter;
-            if (is_purine) {
-                // Determine purine type (A vs G) by checking for characteristic atoms
-                bool has_o6 = false, has_n6 = false, has_n2 = false;
-                for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == " O6 ")
-                        has_o6 = true;
-                    if (atom.name() == " N6 ")
-                        has_n6 = true;
-                    if (atom.name() == " N2 ")
-                        has_n2 = true;
-                }
-                // G has O6, or N2 without N6; A has N6 without O6
-                residue_type = (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE
-                                                               : core::ResidueType::ADENINE;
+            bool is_purine_by_letter = (one_letter == 'A' || one_letter == 'G' ||
+                                        one_letter == 'a' || one_letter == 'g');
+            if (has_purine_atoms || is_purine_by_letter) {
+                residue_type = determine_purine_type(residue);
             } else {
-                // Determine pyrimidine type (C vs T vs U vs P) by checking for characteristic atoms
-                bool has_n4 = false, has_c5m = false;
-                bool is_pseudouridine = false;
-
-                // Check for characteristic atoms
-                for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == " N4 ")
-                        has_n4 = true;
-                    if (atom.name() == " C5M" || atom.name() == " C7 ")
-                        has_c5m = true;
-                }
-
-                // Check for pseudouridine (PSU): C1' bonded to C5 instead of N1
-                // Legacy: p1p2_dist(xyz[c1p], xyz[c5]) <= 2.0 && p1p2_dist(xyz[c1p], xyz[n1]) > 2.0
-                auto c1p_opt = residue.find_atom(" C1'");
-                auto n1_opt = residue.find_atom(" N1 ");
-                auto c5_opt = residue.find_atom(" C5 ");
-
-                if (c1p_opt.has_value() && n1_opt.has_value() && c5_opt.has_value()) {
-                    double dist_c1p_n1 = (c1p_opt->position() - n1_opt->position()).length();
-                    double dist_c1p_c5 = (c1p_opt->position() - c5_opt->position()).length();
-                    // Pseudouridine: C1'-C5 bond (~1.5 Å) instead of C1'-N1 bond
-                    if (dist_c1p_c5 <= 2.0 && dist_c1p_n1 > 2.0) {
-                        is_pseudouridine = true;
-#ifdef DEBUG_FRAME_CALC
-                        std::cerr << "DEBUG: Detected pseudouridine: C1'-C5=" << dist_c1p_c5
-                                  << ", C1'-N1=" << dist_c1p_n1 << "\n";
-#endif
-                    }
-                }
-
-                // Assign type based on detection
-                // IMPORTANT: Trust one_letter_code for modified nucleotides
-                // e.g., 2MU has C5M but should use URACIL template not THYMINE
-                if (is_pseudouridine) {
-                    residue_type = core::ResidueType::PSEUDOURIDINE;
-                } else if (has_n4) {
-                    residue_type = core::ResidueType::CYTOSINE;
-                } else if (has_c5m && one_letter != 'u') {
-                    // Only assign THYMINE if not explicitly a modified uracil
-                    residue_type = core::ResidueType::THYMINE;
-                } else {
-                    residue_type = core::ResidueType::URACIL; // Default for pyrimidines
-                }
+                residue_type = determine_pyrimidine_type(residue, one_letter);
             }
         } else {
-#ifdef DEBUG_FRAME_CALC
-            std::cerr << "DEBUG: Skipping - not a nucleotide (type="
-                      << static_cast<int>(residue_type) << ", no ring atoms)\n";
-#endif
-            return result; // Cannot calculate frame for non-nucleotides
+            return result;
         }
     }
 
-    // DEBUG: Always print for CVC
-    if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-        std::cerr << "DEBUG: CVC B7 - Loading template for type=" << static_cast<int>(residue_type)
-                  << "\n";
-    }
-
-    // Load standard template
-    // Modified nucleotides (lowercase one_letter_code) use lowercase templates
-    // one_letter is already defined earlier in this function
-    bool is_modified_nucleotide = std::islower(static_cast<unsigned char>(one_letter));
-
+    // Load template
+    bool is_modified = std::islower(static_cast<unsigned char>(one_letter));
     core::Structure standard_template;
     try {
-        standard_template = templates_.load_template(residue_type, is_modified_nucleotide);
-        result.template_file = templates_.get_template_path(residue_type, is_modified_nucleotide);
-
-        // DEBUG: Always print for CVC
-        if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-            std::cerr << "DEBUG: CVC B7 - Template loaded: " << result.template_file << "\n";
-        }
-
-#ifdef DEBUG_FRAME_CALC
-        std::cerr << "DEBUG: Template loaded: " << result.template_file << "\n";
-        std::cerr << "DEBUG: Template has " << standard_template.num_atoms() << " atoms\n";
-#endif
-    } catch (const std::exception& e) {
-        // Template not found or failed to load
-        // DEBUG: Always print for CVC
-        if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-            std::cerr << "DEBUG: CVC B7 - Template loading failed: " << e.what() << "\n";
-            std::cerr << "DEBUG: CVC B7 - Template path: " << templates_.template_path() << "\n";
-            std::cerr << "DEBUG: CVC B7 - Residue type: " << static_cast<int>(residue_type) << "\n";
-        }
-#ifdef DEBUG_FRAME_CALC
-        std::cerr << "DEBUG: Template loading failed: " << e.what() << "\n";
-        std::cerr << "DEBUG: Template path: " << templates_.template_path() << "\n";
-        std::cerr << "DEBUG: Residue type: " << static_cast<int>(residue_type) << "\n";
-#endif
+        standard_template = templates_.load_template(residue_type, is_modified);
+        result.template_file = templates_.get_template_path(residue_type, is_modified);
+    } catch (const std::exception&) {
         return result;
     }
 
     // Match ring atoms
-    // Pass detected residue_type to ensure correct atom list is used
-    // (residue.residue_type() might still be UNKNOWN for modified nucleotides)
-    // IMPORTANT: If pyrimidine fallback was used, match only 6 pyrimidine atoms
-    // even if residue_type is a purine. This matches legacy behavior where
-    // modified purines with distorted purine rings use pyrimidine atoms for fitting.
     core::ResidueType matching_type = residue_type;
     if (used_pyrimidine_fallback && (residue_type == core::ResidueType::ADENINE ||
                                      residue_type == core::ResidueType::GUANINE)) {
-        matching_type = core::ResidueType::URACIL; // Use pyrimidine atom list
+        matching_type = core::ResidueType::URACIL;
     }
     MatchedAtoms matched = RingAtomMatcher::match(residue, standard_template,
                                                   std::optional<core::ResidueType>(matching_type));
 
-    // DEBUG: Always print for CVC
-    if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-        std::cerr << "DEBUG: CVC B7 - Template matching: Matched " << matched.num_matched
-                  << " atoms\n";
-        std::cerr << "DEBUG: CVC B7 - Template matched atom names: ";
-        for (const auto& name : matched.atom_names) {
-            std::cerr << name << " ";
-        }
-        std::cerr << "\n";
-    }
-
-#ifdef DEBUG_FRAME_CALC
-    std::cerr << "DEBUG: Matched " << matched.num_matched << " atoms\n";
-    std::cerr << "DEBUG: Matched atom names: ";
-    for (const auto& name : matched.atom_names) {
-        std::cerr << name << " ";
-    }
-    std::cerr << "\n";
-#endif
-
-    // If template matching failed but RMSD check passed with matched atoms, use those instead
-    // This handles modified nucleotides like CVC that have non-standard atom combinations
-    // DEBUG: Always print for CVC
-    if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-        std::cerr << "DEBUG: CVC B7 - Checking fallback condition:\n";
-        std::cerr << "  matched.is_valid()=" << matched.is_valid() << "\n";
-        std::cerr << "  has_ring_atoms=" << has_ring_atoms << "\n";
-        std::cerr << "  rmsd_result.has_value()=" << rmsd_result.has_value() << "\n";
-        std::cerr << "  rmsd_check.matched_atom_names.size()="
-                  << rmsd_check.matched_atom_names.size() << "\n";
-    }
-
+    // Fallback to RMSD check atoms if template matching failed
     if (!matched.is_valid() && has_ring_atoms && rmsd_result.has_value() &&
         !rmsd_check.matched_atom_names.empty() && rmsd_check.matched_atom_names.size() >= 3) {
-        // Use atoms from RMSD check instead of template matching
-        // DEBUG: Always print for CVC
-        if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-            std::cerr << "DEBUG: CVC B7 - Template matching failed, using RMSD check atoms: ";
-            for (const auto& name : rmsd_check.matched_atom_names) {
-                std::cerr << name << " ";
-            }
-            std::cerr << "\n";
-        }
-
-        // Build MatchedAtoms from RMSD check results
         matched.num_matched = rmsd_check.matched_atom_names.size();
         matched.atom_names = rmsd_check.matched_atom_names;
         matched.experimental.clear();
         matched.standard.clear();
 
-        // Find atoms in residue and build standard coordinates
-        // The matched_atom_names, matched_experimental_coords, and matched_standard_coords
-        // are already in the same order from the RMSD check
         for (size_t i = 0; i < rmsd_check.matched_atom_names.size(); ++i) {
             const std::string& atom_name = rmsd_check.matched_atom_names[i];
-
-            // Find atom in residue
-            bool found_experimental = false;
             for (const auto& atom : residue.atoms()) {
                 if (atom.name() == atom_name) {
                     matched.experimental.push_back(atom);
-                    found_experimental = true;
                     break;
                 }
             }
-
-            if (!found_experimental) {
-                // Should not happen, but handle gracefully
-                continue;
-            }
-
-            // Create standard atom from standard coordinates
             const auto& std_coord = rmsd_check.matched_standard_coords[i];
             core::Atom std_atom(atom_name,
-                                geometry::Vector3D(std_coord.x(), std_coord.y(), std_coord.z()), "",
-                                ' ', 0, 'A');
+                                geometry::Vector3D(std_coord.x(), std_coord.y(), std_coord.z()),
+                                "", ' ', 0, 'A');
             matched.standard.push_back(std_atom);
         }
 
-        // Verify we have enough atoms
         if (matched.experimental.size() < 3 || matched.standard.size() < 3) {
-            // DEBUG: Always print for CVC
-            if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-                std::cerr
-                    << "DEBUG: CVC B7 - REJECTED: Failed to build matched atoms from RMSD check\n";
-            }
             return result;
         }
     } else if (!matched.is_valid()) {
-        // DEBUG: Always print for CVC
-        if (res_name == "CVC" && residue.chain_id() == 'B' && residue.seq_num() == 7) {
-            std::cerr << "DEBUG: CVC B7 - REJECTED: Not enough matched atoms (need >= 3, got "
-                      << matched.num_matched << ")\n";
-            std::cerr << "DEBUG: CVC B7 - Residue has " << residue.num_atoms() << " total atoms\n";
-        }
-#ifdef DEBUG_FRAME_CALC
-        std::cerr << "DEBUG: Not enough matched atoms (need >= 3, got " << matched.num_matched
-                  << ")\n";
-        std::cerr << "DEBUG: Residue has " << residue.num_atoms() << " total atoms\n";
-#endif
-        // Not enough matched atoms (need at least 3)
         return result;
     }
 
     result.num_matched = matched.num_matched;
     result.matched_atoms = matched.atom_names;
 
-    // Extract coordinates from matched atoms
+    // Extract coordinates
     std::vector<geometry::Vector3D> standard_coords;
     std::vector<geometry::Vector3D> experimental_coords;
-
     for (size_t i = 0; i < matched.num_matched; ++i) {
         standard_coords.push_back(matched.standard[i].position());
         experimental_coords.push_back(matched.experimental[i].position());
     }
-
-    // Store coordinates in result for frame_calc JSON output
     result.matched_standard_coords = standard_coords;
     result.matched_experimental_coords = experimental_coords;
 
     // Perform least-squares fitting
     geometry::LeastSquaresFitter fitter;
-    geometry::LeastSquaresFitter::FitResult fit_result =
-        fitter.fit(standard_coords, experimental_coords);
+    auto fit_result = fitter.fit(standard_coords, experimental_coords);
 
-    // Extract rotation and translation
     result.rotation_matrix = fit_result.rotation;
     result.translation = fit_result.translation;
     result.rms_fit = fit_result.rms;
-
-    // Create reference frame from rotation and translation
     result.frame = core::ReferenceFrame(result.rotation_matrix, result.translation);
     result.is_valid = true;
 
@@ -887,28 +410,15 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
 }
 
 void BaseFrameCalculator::calculate_all_frames(core::Structure& structure) {
-    // CRITICAL: Iterate in legacy index order (PDB file order) to match legacy behavior
-    // This ensures frames are calculated in the same order as legacy code
-    // Get residues in legacy order (PDB file order)
-    std::vector<core::Residue*> residues_in_order;
-    for (const auto* residue_ptr : structure.residues_in_legacy_order()) {
-        // Need non-const pointer for modification
-        residues_in_order.push_back(const_cast<core::Residue*>(residue_ptr));
+    std::vector<core::Residue*> residues;
+    for (const auto* ptr : structure.residues_in_legacy_order()) {
+        residues.push_back(const_cast<core::Residue*>(ptr));
     }
 
-    // Iterate through residues in legacy order, calculating frames
-    // Note: We don't skip UNKNOWN residues here because calculate_frame_impl
-    // has logic to detect modified nucleotides by ring atoms (like XGR, XCR, etc.)
-    // Only skip amino acids explicitly
-    for (auto* residue : residues_in_order) {
-        // Skip only amino acids - let calculate_frame handle UNKNOWN residues
-        // (it will check for ring atoms to detect modified nucleotides)
+    for (auto* residue : residues) {
         if (residue->residue_type() == core::ResidueType::AMINO_ACID) {
             continue;
         }
-
-        // Calculate frame (modifies residue to store frame)
-        // calculate_frame_impl will check for ring atoms if residue_type is UNKNOWN
         calculate_frame(*residue);
     }
 }

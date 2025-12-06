@@ -86,12 +86,8 @@ void JsonWriter::add_calculation_record(const nlohmann::json& record) {
 void JsonWriter::write_split_files(const std::filesystem::path& output_dir,
                                    bool pretty_print) const {
     if (split_records_.empty()) {
-        std::cerr << "[JSON_WRITER] Warning: No split records to write (split_records_ is empty)\n";
         return;
     }
-
-    std::cerr << "[JSON_WRITER] Writing " << split_records_.size() << " split files to "
-              << output_dir << "\n";
 
     // Map record types to directory names
     std::map<std::string, std::string> type_to_dir = {
@@ -123,8 +119,6 @@ void JsonWriter::write_split_files(const std::filesystem::path& output_dir,
         std::filesystem::path split_file = record_dir / (pdb_name_ + ".json");
         std::ofstream file(split_file);
         if (!file.is_open()) {
-            std::cerr << "[JSON_WRITER] Warning: Could not open split file for writing: "
-                      << split_file << "\n";
             continue;
         }
 
@@ -133,9 +127,6 @@ void JsonWriter::write_split_files(const std::filesystem::path& output_dir,
         } else {
             file << records.dump();
         }
-
-        std::cerr << "[JSON_WRITER] Wrote split file: " << split_file << " (" << records.size()
-                  << " entries)\n";
     }
 }
 

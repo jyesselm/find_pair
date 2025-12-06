@@ -37,12 +37,10 @@ static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> load_re
     };
     
     std::ifstream file;
-    std::string used_path;
     
     for (const auto& path : search_paths) {
         file.open(path);
         if (file.is_open()) {
-            used_path = path;
             break;
         }
     }
@@ -69,9 +67,6 @@ static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> load_re
                 registry[name] = nucinfo;
             }
         }
-        
-        std::cerr << "Loaded " << registry.size() << " modified nucleotides from " 
-                  << used_path << "\n";
         
     } catch (const std::exception& e) {
         std::cerr << "ERROR loading modified_nucleotides.json: " << e.what() << "\n";
