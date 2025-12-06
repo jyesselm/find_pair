@@ -245,10 +245,6 @@ comparisons:
   residue_indices: true  # Stage 0
 
 tolerance: 1.0e-6      # Global tolerance
-
-cache:
-  enabled: true
-  force_recompute: false
 ```
 
 ### Proposed Enhanced Config
@@ -276,10 +272,6 @@ verbose:
   show_provenance: false   # Show calculation source
   show_related: true       # Show related records
   max_mismatches: 20       # Limit per stage
-  
-cache:
-  enabled: true
-  force_recompute: false
 ```
 
 ---

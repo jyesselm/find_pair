@@ -400,7 +400,6 @@ BasePair
 
 ### Caching
 - Frame calculations cached on residues
-- JSON comparison results cached
 - Template loading cached
 
 ### Parallelization

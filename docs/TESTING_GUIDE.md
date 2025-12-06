@@ -174,10 +174,9 @@ See [JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md) for
 
 The comparison functionality is provided by the `x3dna_json_compare` Python package, which includes:
 
-- **`JsonComparator`** - Main comparison engine with caching
+- **`JsonComparator`** - Main comparison engine
 - **`PdbFileReader`** - Efficient PDB file reader
 - **`JsonValidator`** - JSON validation utilities
-- **`ComparisonCache`** - Result caching for performance
 
 See [x3dna_json_compare/README.md](../x3dna_json_compare/README.md) for API documentation.
 
@@ -722,8 +721,7 @@ python3 scripts/rebuild_json.py clean --execute
 
 1. **Missing files**: Ensure both legacy and modern JSON files exist
 2. **Invalid JSON**: Run `python3 scripts/rebuild_json.py validate`
-3. **Cache issues**: Use `--no-cache` flag to bypass caching
-4. **Threading issues**: Use `--threads 1` for single-threaded execution
+3. **Threading issues**: Use `--threads 1` for single-threaded execution
 
 ### Residue Indexing Issues
 
@@ -774,10 +772,9 @@ python3 scripts/rebuild_json.py clean --execute
 
 ### Performance Issues
 
-1. **Use caching**: Comparison results are cached by default
-2. **Use test sets**: Compare smaller test sets for faster iteration
-3. **Use parallel processing**: Default uses all CPU cores
-4. **Profile slow tests**: Use profiling tools to identify bottlenecks
+1. **Use test sets**: Compare smaller test sets for faster iteration
+2. **Use parallel processing**: Default uses all CPU cores
+3. **Profile slow tests**: Use profiling tools to identify bottlenecks
 
 ---
 

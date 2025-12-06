@@ -125,8 +125,7 @@ comparator = JsonComparator(
     compare_frames=True,
     compare_hbond_list=True,
     compare_pairs=True,
-    compare_steps=True,
-    enable_cache=False  # Disable caching
+    compare_steps=True
 )
 
 # Compare single PDB
@@ -210,7 +209,6 @@ x3dna_json_compare/
 ├── frame_comparison.py  # Frame comparison
 ├── hbond_comparison.py  # H-bond comparison
 ├── pdb_utils.py         # PDB file utilities
-├── result_cache.py      # Comparison caching
 └── README.md            # This file
 ```
 

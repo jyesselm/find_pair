@@ -28,7 +28,6 @@ python3 scripts/compare_json.py compare 100D --verbose
 
 ```
 Comparing 1 file(s) using 24 thread(s)...
-  (Caching enabled - use --no-cache to disable)
   Enabled comparisons: frames, steps, pairs, hbond_list, residue_indices
 
 ================================================================================

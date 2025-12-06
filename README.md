@@ -988,8 +988,7 @@ make info
 
 1. **Missing files**: Regenerate with `python3 scripts/rebuild_json.py regenerate <PDB>`
 2. **Invalid JSON**: Validate with `python3 scripts/rebuild_json.py validate`
-3. **Cache issues**: Use `--no-cache` flag in comparison tools
-4. **Threading issues**: Use `--threads 1` for single-threaded execution
+3. **Threading issues**: Use `--threads 1` for single-threaded execution
 
 ## License
 
