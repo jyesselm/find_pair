@@ -1,21 +1,22 @@
 {
   "total_differences": 1,
   "stages_tested": [
-    "frames"
+    "1"
   ],
   "differences": [
     {
-      "pdb_id": "1D96",
+      "pdb_id": "5N9G",
       "status": "diff",
       "has_differences": true,
       "errors": [],
-      "atom_comparison": null,
-      "frame_comparison": {
-        "total_legacy": 20,
-        "matched": 0,
-        "missing_residues": 0,
-        "mismatched_calculations": 20
+      "atom_comparison": {
+        "total_legacy": 11623,
+        "total_modern": 11623,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 20
       },
+      "frame_comparison": null,
       "hbond_comparison": null
     }
   ]

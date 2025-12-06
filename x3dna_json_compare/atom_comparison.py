@@ -162,7 +162,7 @@ def compare_atoms(legacy_atoms: List[Dict], modern_atoms: List[Dict],
         'xyz',                    # Coordinates
         'residue_name',           # Residue name
         'record_type',            # PDB record type
-        'alt_loc',                # Alternate location
+        # 'alt_loc' intentionally excluded - modern doesn't store alternate location
         'atom_name',              # Atom name
         'chain_id',               # Chain identifier
         'residue_seq',            # Residue sequence number
