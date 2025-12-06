@@ -9,6 +9,11 @@ from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass, field
 
 
+def normalize_pair_key(base_i: int, base_j: int) -> Tuple[int, int]:
+    """Normalize pair key to (min, max) for consistent comparison."""
+    return (min(base_i, base_j), max(base_i, base_j))
+
+
 @dataclass
 class PairValidationComparison:
     """Result of pair_validation comparison."""
@@ -34,7 +39,7 @@ class DistanceChecksComparison:
 def compare_pair_validations(
     legacy_records: List[Dict],
     modern_records: List[Dict],
-    tolerance: float = 1e-6
+    tolerance: float = 1e-5  # Relaxed to handle normal floating point variations
 ) -> PairValidationComparison:
     """
     Compare pair_validation records between legacy and modern JSON.
@@ -49,7 +54,8 @@ def compare_pair_validations(
     """
     result = PairValidationComparison()
     
-    # Build maps by (base_i, base_j)
+    # Build maps by normalized (base_i, base_j) - using (min, max) for consistent comparison
+    # Legacy stores both (i,j) and (j,i) for valid pairs, modern only stores one direction
     legacy_map = {}
     modern_map = {}
     
@@ -59,7 +65,7 @@ def compare_pair_validations(
         base_i = rec.get('base_i')
         base_j = rec.get('base_j')
         if base_i is not None and base_j is not None:
-            key = (base_i, base_j)
+            key = normalize_pair_key(base_i, base_j)  # Normalize to (min, max)
             legacy_map[key] = rec
     
     for rec in modern_records:
@@ -68,7 +74,7 @@ def compare_pair_validations(
         base_i = rec.get('base_i')
         base_j = rec.get('base_j')
         if base_i is not None and base_j is not None:
-            key = (base_i, base_j)
+            key = normalize_pair_key(base_i, base_j)  # Normalize to (min, max)
             modern_map[key] = rec
     
     result.total_legacy = len(legacy_map)

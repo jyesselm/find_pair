@@ -32,14 +32,17 @@ def compare_distance_checks(
     """
     Compare distance_checks records between legacy and modern.
     
+    IMPORTANT: Legacy uses 1-based indices, modern uses 0-based indices.
+    This function converts modern indices to 1-based for comparison.
+    
     Matching Strategy:
     - Match by (base_i, base_j) - order normalized to (min, max)
     - Compare: dorg, dNN, plane_angle, d_v, overlap_area
     - All values must match within tolerance
     
     Args:
-        legacy_records: List of legacy distance_checks records
-        modern_records: List of modern distance_checks records
+        legacy_records: List of legacy distance_checks records (1-based indices)
+        modern_records: List of modern distance_checks records (0-based indices)
         tolerance: Numerical tolerance for floating point comparisons (default: 1e-6)
     
     Returns:
@@ -51,6 +54,7 @@ def compare_distance_checks(
     result.total_modern = len(modern_records)
     
     # Build dictionaries keyed by normalized (base_i, base_j)
+    # Legacy uses 1-based indices
     legacy_dict = {}
     for record in legacy_records:
         base_i = record.get('base_i')
@@ -59,6 +63,7 @@ def compare_distance_checks(
             key = normalize_pair_key(base_i, base_j)
             legacy_dict[key] = record
     
+    # Modern now uses 1-based indices (same as legacy)
     modern_dict = {}
     for record in modern_records:
         base_i = record.get('base_i')

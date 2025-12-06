@@ -8,7 +8,7 @@ import sys
 from dataclasses import dataclass
 from typing import List, Optional, TextIO
 from pathlib import Path
-from .verbose_reporter import VerboseReporter
+from .verbose_reporter import VerboseReporter, generate_full_verbose_report
 
 
 @dataclass
@@ -87,18 +87,17 @@ class OutputFormatter:
             if full_result:
                 # Generate verbose report for detailed comparison
                 try:
-                    reporter = VerboseReporter(pdb_id, full_result)
-                    verbose_output = reporter.generate_report()
-                    
-                    # VerboseReporter returns empty string for single-stage comparisons
-                    # TODO: Enhance VerboseReporter to handle single-stage comparisons
-                    if verbose_output:
+                    verbose_output = generate_full_verbose_report(pdb_id, full_result, tolerance=1e-6)
+                    if verbose_output.strip():
                         self._print(verbose_output)
                     else:
                         # Fallback: show basic comparison info
-                        self._print(f"  For detailed comparison: fp2-validate compare {pdb_id} --verbose")
+                        self._print(f"  All comparisons passed")
                 except Exception as e:
                     # Fallback if VerboseReporter fails
+                    import traceback
+                    self._print(f"  Error generating verbose report: {e}")
+                    traceback.print_exc()
                     self._print(f"  For detailed comparison: fp2-validate compare {pdb_id} --verbose")
             elif status_val == 'match':
                 self._print(f"  All comparisons passed")

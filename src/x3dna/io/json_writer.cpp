@@ -564,23 +564,12 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
                                         double dir_x, double dir_y, double dir_z,
                                         const std::array<double, 5>& rtn_val,
                                         const algorithms::ValidationParameters& params) {
-    // CRITICAL: Validation records must use 0-based indices (matching base_frame_calc)
-    // If we receive 1-based indices (>= 4000 for large PDBs), this is a bug
-    // For now, we'll log a warning but still record (to avoid breaking existing code)
-    // TODO: Fix all call sites to use 0-based indices
-    if (base_i >= 4000 || base_j >= 4000) {
-// Likely 1-based indices - this should not happen
-// Log warning for debugging (can be removed once all call sites are fixed)
-#ifdef DEBUG_VALIDATION_INDICES
-        std::cerr << "[WARNING] record_pair_validation called with potentially 1-based indices: "
-                  << "base_i=" << base_i << ", base_j=" << base_j << "\n";
-#endif
-    }
-
+    // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
+    // Legacy pair_validation records use 1-based indices (e.g., base_i=1 to 20 for 20 residues)
     nlohmann::json record;
     record["type"] = "pair_validation";
-    record["base_i"] = static_cast<long>(base_i); // Legacy uses long
-    record["base_j"] = static_cast<long>(base_j);
+    record["base_i"] = static_cast<long>(base_i + 1); // Convert to 1-based for legacy
+    record["base_j"] = static_cast<long>(base_j + 1); // Convert to 1-based for legacy
     record["is_valid"] = static_cast<long>(is_valid ? 1 : 0); // Legacy uses long
     record["bp_type_id"] = static_cast<long>(bp_type_id);
 
@@ -665,10 +654,11 @@ void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dor
 
 void JsonWriter::record_hbond_list(size_t base_i, size_t base_j,
                                    const std::vector<core::hydrogen_bond>& hbonds) {
+    // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
     nlohmann::json record;
     record["type"] = "hbond_list";
-    record["base_i"] = base_i;
-    record["base_j"] = base_j;
+    record["base_i"] = static_cast<long>(base_i + 1); // Convert to 1-based for legacy
+    record["base_j"] = static_cast<long>(base_j + 1); // Convert to 1-based for legacy
     record["num_hbonds"] = hbonds.size();
 
     nlohmann::json hbonds_array = nlohmann::json::array();

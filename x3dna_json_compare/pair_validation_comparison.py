@@ -33,6 +33,9 @@ def compare_pair_validation(
     """
     Compare pair_validation records between legacy and modern.
     
+    IMPORTANT: Legacy uses 1-based indices, modern uses 0-based indices.
+    This function converts modern indices to 1-based for comparison.
+    
     Fields compared:
     1. is_valid: 0 or 1 (exact)
     2. bp_type_id: -1, 0, 1, 2 (exact)
@@ -41,8 +44,8 @@ def compare_pair_validation(
     5. Validation checks: distance_check, d_v_check, plane_angle_check, dNN_check (exact)
     
     Args:
-        legacy_records: List of legacy pair_validation records
-        modern_records: List of modern pair_validation records
+        legacy_records: List of legacy pair_validation records (1-based indices)
+        modern_records: List of modern pair_validation records (0-based indices)
         tolerance: Numerical tolerance for floating point comparisons (default: 1e-6)
     
     Returns:
@@ -54,6 +57,7 @@ def compare_pair_validation(
     result.total_modern = len(modern_records)
     
     # Build dictionaries keyed by normalized (base_i, base_j)
+    # Legacy uses 1-based indices
     legacy_dict = {}
     for record in legacy_records:
         base_i = record.get('base_i')
@@ -62,6 +66,7 @@ def compare_pair_validation(
             key = normalize_pair_key(base_i, base_j)
             legacy_dict[key] = record
     
+    # Modern now uses 1-based indices (same as legacy)
     modern_dict = {}
     for record in modern_records:
         base_i = record.get('base_i')

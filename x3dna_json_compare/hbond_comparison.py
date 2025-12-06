@@ -227,6 +227,7 @@ def compare_hbond_lists(
             key = normalize_pair(base_i, base_j)
             legacy_map[key] = rec
 
+    # Modern now uses 1-based indices (same as legacy)
     for rec in modern_records:
         if rec.get("type") != "hbond_list":
             continue

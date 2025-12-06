@@ -352,7 +352,7 @@ def compare(pdb_ids, verbose, output, test_set, workers, project_root):
     # Generate report
     if verbose and len(pdb_ids) == 1:
         # Full verbose mode with field-by-field comparison
-        from .verbose_reporter import VerboseReporter, create_record_comparison_from_dicts
+        from .verbose_reporter import generate_full_verbose_report
         
         pdb_id = list(pdb_ids)[0]
         result = results.get(pdb_id)
@@ -360,151 +360,8 @@ def compare(pdb_ids, verbose, output, test_set, workers, project_root):
             click.echo(f"Error: No result for {pdb_id}", err=True)
             sys.exit(1)
         
-        # Use VerboseReporter for full field-by-field output
-        reporter = VerboseReporter(
-            tolerance=comparator.tolerance,
-            show_provenance=False,
-            show_related=True,
-            diff_only=False
-        )
-        
-        # Build stages list
-        stages = []
-        if result.atom_comparison:
-            stages.append("atoms")
-        if result.frame_comparison:
-            stages.append("frames")
-        if result.step_comparison:
-            stages.append("steps")
-        if result.helical_comparison:
-            stages.append("helical")
-        if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
-            stages.append("distance_checks")
-        if hasattr(result, 'hbond_list_comparison') and result.hbond_list_comparison:
-            stages.append("hbond_list")
-        if hasattr(result, 'pair_validation_comparison') and result.pair_validation_comparison:
-            stages.append("pair_validation")
-        if hasattr(result, 'find_bestpair_comparison') and result.find_bestpair_comparison:
-            stages.append("find_bestpair_selection")
-        if hasattr(result, 'base_pair_comparison') and result.base_pair_comparison:
-            stages.append("base_pair")
-        
-        reporter.add_header(pdb_id, stages)
-        
-        # Add distance checks
-        if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
-            dcc = result.distance_checks_comparison
-            reporter.add_stage_header("distance_checks", 3)
-            reporter.add_stage_summary(
-                dcc.total_legacy, dcc.total_modern,
-                dcc.total_legacy - len(dcc.missing_in_modern),
-                len(dcc.missing_in_modern), len(dcc.extra_in_modern),
-                len(dcc.mismatched_checks)
-            )
-            for mismatch in dcc.mismatched_checks[:reporter.max_mismatches_per_stage]:
-                pair_key = (mismatch.get('base_i'), mismatch.get('base_j'))
-                rec_comp = create_record_comparison_from_dicts(
-                    record_key=pair_key,
-                    record_type="distance_checks",
-                    legacy_record=mismatch.get('legacy_record', {}),
-                    modern_record=mismatch.get('modern_record', {}),
-                    fields_to_compare=['dorg', 'dNN', 'plane_angle', 'd_v', 'overlap_area'],
-                    tolerance=comparator.tolerance,
-                    legacy_source=f"data/json_legacy/distance_checks/{pdb_id}.json",
-                    modern_source=f"data/json/distance_checks/{pdb_id}.json"
-                )
-                reporter.add_record_comparison(rec_comp)
-        
-        # Add hbond list
-        if hasattr(result, 'hbond_list_comparison') and result.hbond_list_comparison:
-            hlc = result.hbond_list_comparison
-            reporter.add_stage_header("hbond_list", 4)
-            reporter.add_stage_summary(
-                hlc.total_legacy, hlc.total_modern,
-                hlc.total_legacy - len(hlc.missing_in_modern),
-                len(hlc.missing_in_modern), len(hlc.extra_in_modern),
-                len(hlc.mismatched_pairs)
-            )
-            for mismatch in hlc.mismatched_pairs[:reporter.max_mismatches_per_stage]:
-                pair_key = (mismatch.get('base_i'), mismatch.get('base_j'))
-                rec_comp = create_record_comparison_from_dicts(
-                    record_key=pair_key,
-                    record_type="hbond_list",
-                    legacy_record=mismatch.get('legacy_record', {}),
-                    modern_record=mismatch.get('modern_record', {}),
-                    fields_to_compare=['num_hbonds'],
-                    tolerance=comparator.tolerance,
-                    legacy_source=f"data/json_legacy/hbond_list/{pdb_id}.json",
-                    modern_source=f"data/json/hbond_list/{pdb_id}.json"
-                )
-                reporter.add_record_comparison(rec_comp)
-        
-        # Add frames
-        if result.frame_comparison:
-            fc = result.frame_comparison
-            reporter.add_stage_header("frames", 2)
-            reporter.add_stage_summary(
-                fc.total_legacy, fc.total_modern,
-                fc.total_legacy - len(fc.missing_residues),
-                len(fc.missing_residues),
-                0,
-                len(fc.mismatched_calculations)
-            )
-            for mismatch in fc.mismatched_calculations[:reporter.max_mismatches_per_stage]:
-                residue_key = mismatch.residue_key
-                record_type = "unknown"
-                mismatches_dict = mismatch.mismatches
-                if 'base_frame_calc' in mismatches_dict:
-                    record_type = "base_frame_calc"
-                    fields = ['rms_fit', 'num_matched_atoms', 'base_type']
-                elif 'ls_fitting' in mismatches_dict:
-                    record_type = "ls_fitting"
-                    fields = ['rms_fit', 'num_points']
-                elif 'frame_calc' in mismatches_dict:
-                    record_type = "frame_calc"
-                    fields = ['rms_fit', 'num_matched_atoms']
-                else:
-                    fields = ['rms_fit']
-                
-                rec_comp = create_record_comparison_from_dicts(
-                    record_key=residue_key,
-                    record_type=record_type,
-                    legacy_record=mismatch.legacy_record,
-                    modern_record=mismatch.modern_record,
-                    fields_to_compare=fields,
-                    tolerance=comparator.tolerance,
-                    legacy_source=f"data/json_legacy/{record_type}/{pdb_id}.json",
-                    modern_source=f"data/json/{record_type}/{pdb_id}.json"
-                )
-                reporter.add_record_comparison(rec_comp)
-        
-        # Add summary
-        stages_compared = len(stages)
-        stages_with_diffs = 0
-        diff_details = []
-        
-        if result.frame_comparison and len(result.frame_comparison.mismatched_calculations) > 0:
-            stages_with_diffs += 1
-            diff_details.append(f"frames: {len(result.frame_comparison.mismatched_calculations)} mismatches")
-        
-        if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
-            if len(result.distance_checks_comparison.mismatched_checks) > 0:
-                stages_with_diffs += 1
-                diff_details.append(f"distance_checks: {len(result.distance_checks_comparison.mismatched_checks)} mismatches")
-        
-        if hasattr(result, 'hbond_list_comparison') and result.hbond_list_comparison:
-            if len(result.hbond_list_comparison.mismatched_pairs) > 0:
-                stages_with_diffs += 1
-                diff_details.append(f"hbond_list: {len(result.hbond_list_comparison.mismatched_pairs)} mismatches")
-        
-        reporter.add_summary(
-            stages_compared=stages_compared,
-            perfect_matches=stages_compared - stages_with_diffs,
-            stages_with_diffs=stages_with_diffs,
-            diff_details=diff_details
-        )
-        
-        report = reporter.generate_report()
+        # Use helper to generate full verbose report
+        report = generate_full_verbose_report(pdb_id, result, tolerance=comparator.tolerance)
     else:
         # Summary mode
         if verbose: click.echo("Warning: Verbose only works for single PDB", err=True)
