@@ -380,11 +380,9 @@ def create_comparator(config_path: Optional[Path] = None, project_root: Optional
     config = load_config(config_path)
     flags = get_comparison_flags(config)
     
-    # Create comparator with config values
+    # Create comparator with config values (cache removed for reliability)
     return JsonComparator(
         tolerance=config.get("tolerance", 1e-6),
-        enable_cache=config.get("cache", {}).get("enabled", True),
-        force_recompute=config.get("cache", {}).get("force_recompute", False),
         **flags
     )
 
@@ -1563,11 +1561,6 @@ def common_options(f):
         help="Use a saved test set of the specified size (10, 50, 100, 500, or 1000 PDBs)",
     )(f)
     f = click.option(
-        "--no-cache",
-        is_flag=True,
-        help="Disable result caching (caching is enabled by default for better performance)",
-    )(f)
-    f = click.option(
         "--config",
         type=click.Path(path_type=Path, exists=True),
         default=None,
@@ -1669,7 +1662,7 @@ def cli():
 @click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, config, pdb_ids):
+def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, config, pdb_ids):
     """Compare atoms and frames for specified PDB(s) or all available."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
@@ -1702,12 +1695,6 @@ def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenera
     # Load config from YAML file
     config_path = config or (project_root / "comparison_config.yaml")
     comparator = create_comparator(config_path, project_root)
-    # Override cache setting from command line
-    if no_cache:
-        comparator.enable_cache = False
-    
-    if comparator.enable_cache and not no_cache:
-        click.echo("  (Caching enabled - use --no-cache to disable)")
     
     # Show which comparisons are enabled
     enabled = []
@@ -1767,7 +1754,7 @@ def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenera
 @click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def atoms(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, pdb_ids):
+def atoms(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
     """Compare only atom records (skip frame calculations)."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
@@ -1797,11 +1784,9 @@ def atoms(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate
     click.echo(
         f"Comparing atoms for {len(pdb_ids)} file(s) using {max_workers} thread(s)..."
     )
-    if not no_cache:
-        click.echo("  (Caching enabled - use --no-cache to disable)")
 
     comparator = JsonComparator(
-        enable_cache=not no_cache, compare_atoms=True, compare_frames=False, compare_steps=False
+        compare_atoms=True, compare_frames=False, compare_steps=False
     )
     results = run_comparison(
         pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate
@@ -1823,7 +1808,7 @@ def atoms(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate
 @click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def frames(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, pdb_ids):
+def frames(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
     """Compare only frame calculations (skip atom records)."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
@@ -1853,11 +1838,9 @@ def frames(verbose, diff_only, show_all, legacy_mode, output, threads, regenerat
     click.echo(
         f"Comparing frames for {len(pdb_ids)} file(s) using {max_workers} thread(s)..."
     )
-    if not no_cache:
-        click.echo("  (Caching enabled - use --no-cache to disable)")
 
     comparator = JsonComparator(
-        enable_cache=not no_cache, compare_atoms=False, compare_frames=True, compare_steps=False
+        compare_atoms=False, compare_frames=True, compare_steps=False
     )
     results = run_comparison(
         pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate
@@ -1879,7 +1862,7 @@ def frames(verbose, diff_only, show_all, legacy_mode, output, threads, regenerat
 @click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def steps(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, no_cache, config, pdb_ids):
+def steps(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, config, pdb_ids):
     """Compare step parameters (bpstep_params, helical_params). 
     
     IMPORTANT: Frames are verified first since step parameters depend on frames.
@@ -1914,12 +1897,10 @@ def steps(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate
         f"Comparing step parameters for {len(pdb_ids)} file(s) using {max_workers} thread(s)..."
     )
     click.echo("  NOTE: Frames will be verified first (step parameters depend on frames)")
-    if not no_cache:
-        click.echo("  (Caching enabled - use --no-cache to disable)")
 
     # Compare frames FIRST, then steps (frames are required for step parameter comparison)
     comparator = JsonComparator(
-        enable_cache=not no_cache, compare_atoms=False, compare_frames=True, compare_steps=True
+        compare_atoms=False, compare_frames=True, compare_steps=True
     )
     results = run_comparison(
         pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate

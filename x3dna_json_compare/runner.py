@@ -26,52 +26,52 @@ from .pdb_list import get_pdb_list
 # Each stage maps to a comparison flag and the JSON directories it validates
 STAGE_CONFIG = {
     # Stage 1: Atom parsing
-    '1': {'name': 'pdb_atoms', 'compare_flag': 'compare_atoms', 'json_dirs': ['pdb_atoms']},
-    'pdb_atoms': {'name': 'pdb_atoms', 'compare_flag': 'compare_atoms', 'json_dirs': ['pdb_atoms']},
+    '1': {'name': 'pdb_atoms', 'compare_flag': 'compare_atoms', 'json_dirs': ['pdb_atoms'], 'check_type': 'atoms'},
+    'pdb_atoms': {'name': 'pdb_atoms', 'compare_flag': 'compare_atoms', 'json_dirs': ['pdb_atoms'], 'check_type': 'atoms'},
     
     # Stage 2: Residue indices
-    '2': {'name': 'residue_indices', 'compare_flag': 'compare_residue_indices', 'json_dirs': ['residue_indices']},
-    'residue_indices': {'name': 'residue_indices', 'compare_flag': 'compare_residue_indices', 'json_dirs': ['residue_indices']},
+    '2': {'name': 'residue_indices', 'compare_flag': 'compare_residue_indices', 'json_dirs': ['residue_indices'], 'check_type': 'residue_indices'},
+    'residue_indices': {'name': 'residue_indices', 'compare_flag': 'compare_residue_indices', 'json_dirs': ['residue_indices'], 'check_type': 'residue_indices'},
     
     # Stage 3: Base frame calculation
-    '3': {'name': 'base_frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['base_frame_calc']},
-    'base_frame_calc': {'name': 'base_frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['base_frame_calc']},
+    '3': {'name': 'base_frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['base_frame_calc'], 'check_type': 'frame'},
+    'base_frame_calc': {'name': 'base_frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['base_frame_calc'], 'check_type': 'frame'},
     
     # Stage 4: LS fitting
-    '4': {'name': 'ls_fitting', 'compare_flag': 'compare_frames', 'json_dirs': ['ls_fitting']},
-    'ls_fitting': {'name': 'ls_fitting', 'compare_flag': 'compare_frames', 'json_dirs': ['ls_fitting']},
+    '4': {'name': 'ls_fitting', 'compare_flag': 'compare_frames', 'json_dirs': ['ls_fitting'], 'check_type': 'frame'},
+    'ls_fitting': {'name': 'ls_fitting', 'compare_flag': 'compare_frames', 'json_dirs': ['ls_fitting'], 'check_type': 'frame'},
     
     # Stage 5: Frame calculation  
-    '5': {'name': 'frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['frame_calc']},
-    'frame_calc': {'name': 'frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['frame_calc']},
+    '5': {'name': 'frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['frame_calc'], 'check_type': 'frame'},
+    'frame_calc': {'name': 'frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['frame_calc'], 'check_type': 'frame'},
     
     # Stage 6: Pair validation
-    '6': {'name': 'pair_validation', 'compare_flag': 'compare_pairs', 'json_dirs': ['pair_validation']},
-    'pair_validation': {'name': 'pair_validation', 'compare_flag': 'compare_pairs', 'json_dirs': ['pair_validation']},
+    '6': {'name': 'pair_validation', 'compare_flag': 'compare_pairs', 'json_dirs': ['pair_validation'], 'check_type': 'pair_validation'},
+    'pair_validation': {'name': 'pair_validation', 'compare_flag': 'compare_pairs', 'json_dirs': ['pair_validation'], 'check_type': 'pair_validation'},
     
     # Stage 7: Distance checks
-    '7': {'name': 'distance_checks', 'compare_flag': 'compare_pairs', 'json_dirs': ['distance_checks']},
-    'distance_checks': {'name': 'distance_checks', 'compare_flag': 'compare_pairs', 'json_dirs': ['distance_checks']},
+    '7': {'name': 'distance_checks', 'compare_flag': 'compare_pairs', 'json_dirs': ['distance_checks'], 'check_type': 'distance_checks'},
+    'distance_checks': {'name': 'distance_checks', 'compare_flag': 'compare_pairs', 'json_dirs': ['distance_checks'], 'check_type': 'distance_checks'},
     
     # Stage 8: H-bond list
-    '8': {'name': 'hbond_list', 'compare_flag': 'compare_hbond_list', 'json_dirs': ['hbond_list']},
-    'hbond_list': {'name': 'hbond_list', 'compare_flag': 'compare_hbond_list', 'json_dirs': ['hbond_list']},
+    '8': {'name': 'hbond_list', 'compare_flag': 'compare_hbond_list', 'json_dirs': ['hbond_list'], 'check_type': 'hbond_list'},
+    'hbond_list': {'name': 'hbond_list', 'compare_flag': 'compare_hbond_list', 'json_dirs': ['hbond_list'], 'check_type': 'hbond_list'},
     
     # Stage 9: Base pair
-    '9': {'name': 'base_pair', 'compare_flag': 'compare_pairs', 'json_dirs': ['base_pair']},
-    'base_pair': {'name': 'base_pair', 'compare_flag': 'compare_pairs', 'json_dirs': ['base_pair']},
+    '9': {'name': 'base_pair', 'compare_flag': 'compare_pairs', 'json_dirs': ['base_pair'], 'check_type': 'base_pair'},
+    'base_pair': {'name': 'base_pair', 'compare_flag': 'compare_pairs', 'json_dirs': ['base_pair'], 'check_type': 'base_pair'},
     
     # Stage 10: Find bestpair selection
-    '10': {'name': 'find_bestpair_selection', 'compare_flag': 'compare_pairs', 'json_dirs': ['find_bestpair_selection']},
-    'find_bestpair_selection': {'name': 'find_bestpair_selection', 'compare_flag': 'compare_pairs', 'json_dirs': ['find_bestpair_selection']},
+    '10': {'name': 'find_bestpair_selection', 'compare_flag': 'compare_pairs', 'json_dirs': ['find_bestpair_selection'], 'check_type': 'find_bestpair'},
+    'find_bestpair_selection': {'name': 'find_bestpair_selection', 'compare_flag': 'compare_pairs', 'json_dirs': ['find_bestpair_selection'], 'check_type': 'find_bestpair'},
     
     # Stage 11: Step parameters
-    '11': {'name': 'bpstep_params', 'compare_flag': 'compare_steps', 'json_dirs': ['bpstep_params']},
-    'bpstep_params': {'name': 'bpstep_params', 'compare_flag': 'compare_steps', 'json_dirs': ['bpstep_params']},
+    '11': {'name': 'bpstep_params', 'compare_flag': 'compare_steps', 'json_dirs': ['bpstep_params'], 'check_type': 'step'},
+    'bpstep_params': {'name': 'bpstep_params', 'compare_flag': 'compare_steps', 'json_dirs': ['bpstep_params'], 'check_type': 'step'},
     
     # Stage 12: Helical parameters  
-    '12': {'name': 'helical_params', 'compare_flag': 'compare_steps', 'json_dirs': ['helical_params']},
-    'helical_params': {'name': 'helical_params', 'compare_flag': 'compare_steps', 'json_dirs': ['helical_params']},
+    '12': {'name': 'helical_params', 'compare_flag': 'compare_steps', 'json_dirs': ['helical_params'], 'check_type': 'helical'},
+    'helical_params': {'name': 'helical_params', 'compare_flag': 'compare_steps', 'json_dirs': ['helical_params'], 'check_type': 'helical'},
 }
 
 # Grouped stages (for backward compatibility)
@@ -96,7 +96,7 @@ STAGE_JSON_DIRS = {
 
 def _validate_single_pdb(args) -> Dict[str, Any]:
     """Worker function for parallel validation (must be top-level for pickling)."""
-    pdb_id, project_root_str, comparator_kwargs = args
+    pdb_id, project_root_str, comparator_kwargs, check_types = args
     project_root = Path(project_root_str)
     
     # Create comparator for this process
@@ -108,11 +108,22 @@ def _validate_single_pdb(args) -> Dict[str, Any]:
     
     result = comparator.compare_files(legacy_file, modern_file, pdb_file, pdb_id)
     
+    # Check for stage-specific differences
+    stage_has_diff = False
+    if check_types:
+        for ct in check_types:
+            if has_stage_differences(result, ct):
+                stage_has_diff = True
+                break
+    else:
+        # If no specific check_types, use the general has_differences
+        stage_has_diff = result.has_differences()
+    
     # Convert to dict for pickling
     return {
         'pdb_id': pdb_id,
         'status': result.status,
-        'has_differences': result.has_differences(),
+        'has_differences': stage_has_diff,
         'errors': result.errors,
         'atom_comparison': _summarize_atom_comparison(result.atom_comparison),
         'frame_comparison': _summarize_frame_comparison(result.frame_comparison),
@@ -157,6 +168,89 @@ def _summarize_hbond_comparison(hc) -> Optional[Dict]:
         'missing_in_modern': len(hc.missing_in_modern),
         'extra_in_modern': len(hc.extra_in_modern),
     }
+
+
+def has_stage_differences(result, check_type: str) -> bool:
+    """Check if a comparison result has differences for a specific stage type.
+    
+    Args:
+        result: ComparisonResult object
+        check_type: Stage-specific check type ('atoms', 'frame', 'residue_indices', 
+                    'pair_validation', 'distance_checks', 'hbond_list', 'base_pair',
+                    'find_bestpair', 'step', 'helical')
+    
+    Returns:
+        True if differences exist for the specified check type
+    """
+    if check_type == 'atoms':
+        if result.atom_comparison:
+            ac = result.atom_comparison
+            return (len(ac.missing_in_modern) > 0 or
+                    len(ac.extra_in_modern) > 0 or
+                    len(ac.mismatched_fields) > 0 or
+                    ac.count_difference)
+    
+    elif check_type == 'frame':
+        if result.frame_comparison:
+            fc = result.frame_comparison
+            return (len(fc.missing_residues) > 0 or
+                    len(fc.mismatched_calculations) > 0)
+    
+    elif check_type == 'residue_indices':
+        if result.residue_indices_comparison:
+            ric = result.residue_indices_comparison
+            return (ric.missing_in_modern or
+                    ric.extra_in_modern or
+                    len(ric.mismatched_entries) > 0 or
+                    not ric.num_residue_match)
+    
+    elif check_type == 'pair_validation':
+        if result.pair_validation_comparison:
+            pvc = result.pair_validation_comparison
+            return (len(pvc.missing_in_modern) > 0 or
+                    len(pvc.extra_in_modern) > 0 or
+                    len(pvc.mismatched_validations) > 0)
+    
+    elif check_type == 'distance_checks':
+        if result.distance_checks_comparison:
+            dc = result.distance_checks_comparison
+            return (len(dc.missing_in_modern) > 0 or
+                    len(dc.extra_in_modern) > 0 or
+                    len(dc.mismatched_checks) > 0)
+    
+    elif check_type == 'hbond_list':
+        if result.hbond_list_comparison:
+            hc = result.hbond_list_comparison
+            return (len(hc.missing_in_modern) > 0 or
+                    len(hc.extra_in_modern) > 0 or
+                    len(hc.mismatched_pairs) > 0)
+    
+    elif check_type == 'base_pair':
+        if result.base_pair_comparison:
+            bpc = result.base_pair_comparison
+            return (len(bpc.missing_in_modern) > 0 or
+                    len(bpc.extra_in_modern) > 0 or
+                    len(bpc.mismatched_pairs) > 0)
+    
+    elif check_type == 'find_bestpair':
+        if result.find_bestpair_comparison:
+            fpc = result.find_bestpair_comparison
+            return (len(fpc.missing_in_modern) > 0 or
+                    len(fpc.extra_in_modern) > 0)
+    
+    elif check_type == 'step':
+        if result.step_comparison:
+            sc = result.step_comparison
+            return (len(sc.missing_steps) > 0 or
+                    len(sc.mismatched_steps) > 0)
+    
+    elif check_type == 'helical':
+        if result.helical_comparison:
+            hc = result.helical_comparison
+            return (len(hc.missing_steps) > 0 or
+                    len(hc.mismatched_steps) > 0)
+    
+    return False
 
 
 class ValidationRunner:
@@ -216,9 +310,13 @@ class ValidationRunner:
         # Load checkpoint if resuming
         self.checkpoint_data = self._load_checkpoint() if resume and checkpoint_file else None
     
-    def _build_comparator_kwargs(self, stages: List[str], extra_kwargs: Dict) -> Dict:
-        """Build JsonComparator kwargs from stage list."""
-        # Default: all off, cache disabled (cache doesn't track which stages were compared)
+    def _build_comparator_kwargs(self, stages: List[str], extra_kwargs: Dict) -> tuple:
+        """Build JsonComparator kwargs and check_types from stage list.
+        
+        Returns:
+            Tuple of (kwargs dict, check_types list)
+        """
+        # Default: all off
         kwargs = {
             'compare_atoms': False,
             'compare_frames': False,
@@ -226,14 +324,14 @@ class ValidationRunner:
             'compare_pairs': False,
             'compare_steps': False,
             'compare_residue_indices': False,
-            'enable_cache': False,  # Disable cache - it doesn't account for comparison flags
         }
+        check_types = []  # Stage-specific comparison types
         
         if not stages or 'all' in stages:
-            # Enable all comparison flags (but keep enable_cache=False)
+            # Enable all comparison flags
             for k in kwargs:
-                if k != 'enable_cache':
-                    kwargs[k] = True
+                kwargs[k] = True
+            check_types = []  # Empty means check all differences
         else:
             # Expand stage groups and individual stages
             expanded_stages = set()
@@ -257,15 +355,19 @@ class ValidationRunner:
                         if stage in stage_map:
                             expanded_stages.add(stage_map[stage])
             
-            # Enable comparison flags for all expanded stages
+            # Enable comparison flags and collect check_types for all expanded stages
             for stage in expanded_stages:
                 if stage in STAGE_CONFIG:
-                    compare_flag = STAGE_CONFIG[stage]['compare_flag']
+                    config = STAGE_CONFIG[stage]
+                    compare_flag = config['compare_flag']
                     kwargs[compare_flag] = True
+                    # Get the stage-specific check_type
+                    if 'check_type' in config:
+                        check_types.append(config['check_type'])
         
         # Override with any explicit kwargs
         kwargs.update(extra_kwargs)
-        return kwargs
+        return kwargs, check_types
     
     def _load_checkpoint(self) -> Optional[Dict]:
         """Load checkpoint file if it exists."""

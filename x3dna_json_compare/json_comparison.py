@@ -19,17 +19,15 @@ from .find_bestpair_comparison import compare_find_bestpair_selections
 from .hbond_comparison import compare_hbond_lists
 from .residue_indices_comparison import compare_residue_indices
 from .pdb_utils import PdbFileReader
-from .result_cache import ComparisonCache
 from .parallel_executor import ParallelExecutor, print_progress
 from .json_file_finder import find_json_file
 
 
 class JsonComparator:
-    """Main comparison engine with caching support."""
+    """Main comparison engine."""
     
-    def __init__(self, cache_dir: Path = Path(".comparison_cache"),
-                 tolerance: float = 1e-6, enable_cache: bool = True,
-                 force_recompute: bool = False,
+    def __init__(self,
+                 tolerance: float = 1e-5,  # 1e-5 handles normal FP variations
                  compare_atoms: bool = True,
                  compare_frames: bool = True,
                  compare_steps: bool = True,
@@ -37,13 +35,10 @@ class JsonComparator:
                  compare_hbond_list: bool = True,
                  compare_residue_indices: bool = True):
         """
-        Initialize comparator with caching support.
+        Initialize comparator.
         
         Args:
-            cache_dir: Directory to store cache files
             tolerance: Tolerance for floating point comparisons
-            enable_cache: Enable result caching
-            force_recompute: Force recomputation even if cache exists
             compare_atoms: If True, compare atom records (pdb_atoms)
             compare_frames: If True, compare frame calculations (base_frame_calc, frame_calc, ls_fitting)
             compare_steps: If True, compare step parameters (bpstep_params, helical_params)
@@ -51,17 +46,13 @@ class JsonComparator:
             compare_hbond_list: If True, compare hbond_list records
             compare_residue_indices: If True, compare residue_indices records
         """
-        self.cache_dir = Path(cache_dir)
         self.tolerance = tolerance
-        self.enable_cache = enable_cache
-        self.force_recompute = force_recompute
         self.compare_atoms = compare_atoms
         self.compare_frames = compare_frames
         self.compare_steps = compare_steps
         self.compare_pairs = compare_pairs
         self.compare_hbond_list = compare_hbond_list
         self.compare_residue_indices = compare_residue_indices
-        self.cache = ComparisonCache(self.cache_dir) if enable_cache else None
     
     def _load_json(self, json_file: Path) -> Optional[Dict]:
         """Load JSON file, handling both objects and arrays, and files with extra data."""
@@ -627,7 +618,7 @@ class JsonComparator:
     def compare_files(self, legacy_file: Path, modern_file: Path,
                      pdb_file: Path, pdb_id: str) -> ComparisonResult:
         """
-        Compare two JSON files, using cache if available.
+        Compare two JSON files.
         
         The types of comparisons performed are controlled by the compare_atoms
         and compare_frames options set during initialization.
@@ -642,11 +633,6 @@ class JsonComparator:
             ComparisonResult with atom_comparison and/or frame_comparison
             based on the enabled comparison options
         """
-        # Check cache first
-        if self.cache and not self.force_recompute:
-            cached_result = self.cache.get_cached_result(pdb_id)
-            if cached_result:
-                return cached_result
         
         # Load JSON files
         # If main legacy file doesn't exist, check for split files and create minimal wrapper
@@ -657,9 +643,9 @@ class JsonComparator:
             pdb_id = legacy_file.stem
             base_dir = legacy_file.parent
             
-            # Try new structure first - check essential record types (since pdb_atoms may have been deleted)
+            # Try new structure first - check essential record types
             split_file_found = None
-            for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+            for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms", "pair_validation", "distance_checks"]:
                 split_file = find_json_file(base_dir, pdb_id, record_type)
                 if split_file and split_file.exists():
                     split_file_found = split_file
@@ -667,7 +653,7 @@ class JsonComparator:
             
             # Fall back to old structure
             if not split_file_found:
-                for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+                for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms", "pair_validation", "distance_checks"]:
                     old_file = base_dir / f"{pdb_id}_{record_type}.json"
                     if old_file.exists():
                         split_file_found = old_file
@@ -689,9 +675,9 @@ class JsonComparator:
             pdb_id_from_file = modern_file.stem
             base_dir = modern_file.parent
             
-            # Try new structure first - check essential record types (since pdb_atoms may have been deleted)
+            # Try new structure first - check essential record types
             split_file_found = None
-            for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+            for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms", "pair_validation", "distance_checks"]:
                 split_file = find_json_file(base_dir, pdb_id_from_file, record_type)
                 if split_file and split_file.exists():
                     split_file_found = split_file
@@ -699,7 +685,7 @@ class JsonComparator:
             
             # Fall back to old structure
             if not split_file_found:
-                for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms"]:
+                for record_type in ["find_bestpair_selection", "base_pair", "hbond_list", "base_frame_calc", "pdb_atoms", "pair_validation", "distance_checks"]:
                     old_file = base_dir / f"{pdb_id_from_file}_{record_type}.json"
                     if old_file.exists():
                         split_file_found = old_file
@@ -717,7 +703,6 @@ class JsonComparator:
         result = ComparisonResult(
             pdb_id=pdb_id,
             status='pending',  # Use 'pending' initially so has_differences() works correctly
-            timestamp=time.time(),
             pdb_file_path=str(pdb_file)
         )
         
@@ -735,10 +720,7 @@ class JsonComparator:
                 result.errors.append(f"Modern JSON not found: {modern_file}")
             return result
         
-        # Generate cache key
-        result.cache_key = self.cache.get_cache_key(
-            legacy_file, modern_file, pdb_file
-        ) if self.cache else None
+        # No cache - removed for reliability
         
         # Initialize PDB reader (lazy - only if file exists)
         pdb_reader = None
@@ -937,10 +919,6 @@ class JsonComparator:
             result.status = 'diff'
         else:
             result.status = 'match'
-        
-        # Cache result
-        if self.cache and result.status != 'error':
-            self.cache.cache_result(result, legacy_file, modern_file, pdb_file)
         
         return result
     

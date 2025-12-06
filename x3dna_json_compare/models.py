@@ -119,8 +119,6 @@ class ComparisonResult:
     hbond_list_comparison: Optional[Any] = None  # HBondListComparison from hbond_comparison
     residue_indices_comparison: Optional[Any] = None  # ResidueIndicesComparison from residue_indices_comparison
     errors: List[str] = field(default_factory=list)
-    cache_key: Optional[str] = None
-    timestamp: float = 0.0
     pdb_file_path: Optional[str] = None
     
     def has_differences(self) -> bool:

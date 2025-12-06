@@ -24,7 +24,6 @@ from .models import (
 from .pdb_utils import PdbFileReader, get_pdb_line
 from .atom_comparison import compare_atoms
 from .frame_comparison import compare_frames
-from .result_cache import ComparisonCache
 from .json_comparison import JsonComparator
 from .json_validator import JsonValidator
 from .parallel_executor import ParallelExecutor, print_progress
@@ -55,7 +54,6 @@ __all__ = [
     # Comparison result models
     'HBondListComparison',
     # Main classes
-    'ComparisonCache',
     'JsonComparator',
     'JsonValidator',
     'ParallelExecutor',

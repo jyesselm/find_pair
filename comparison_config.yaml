@@ -13,8 +13,3 @@ comparisons:
 # Floating point comparison tolerance
 tolerance: 1.0e-6
 
-# Cache settings
-cache:
-  enabled: true             # Enable result caching
-  force_recompute: false    # Force recomputation even if cache exists
-

@@ -19,10 +19,6 @@ DEFAULT_CONFIG = {
         "residue_indices": True,  # residue_indices records
     },
     "tolerance": 1e-6,
-    "cache": {
-        "enabled": True,
-        "force_recompute": False,
-    },
 }
 
 
@@ -62,8 +58,6 @@ def load_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
                 merged_config["comparisons"].update(config["comparisons"])
             if "tolerance" in config:
                 merged_config["tolerance"] = config["tolerance"]
-            if "cache" in config:
-                merged_config["cache"].update(config.get("cache", {}))
         
         return merged_config
     except Exception as e:
