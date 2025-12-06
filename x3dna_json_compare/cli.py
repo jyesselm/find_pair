@@ -8,7 +8,7 @@ Usage:
     fp2-validate                         # All stages, all fast PDBs
     fp2-validate frames                  # Frames only
     fp2-validate hbonds atoms            # Multiple stages
-    fp2-validate --pdb 1EHZ --verbose    # Single PDB, detailed
+    fp2-validate compare 1EHZ --verbose  # Detailed comparison
     fp2-validate --stop-on-first         # Stop at first failure
     fp2-validate --diff                  # Document differences
     fp2-validate --quiet                 # Exit code only (for CI)
@@ -16,11 +16,14 @@ Usage:
 
 import sys
 from pathlib import Path
+import multiprocessing
 
 import click
 
 from .runner import ValidationRunner
 from .pdb_list import get_pdb_list, load_test_set
+from .json_comparison import JsonComparator
+from .config import load_config
 
 
 @click.group()
@@ -280,6 +283,145 @@ def pairs(ctx, **kwargs):
 def steps(ctx, **kwargs):
     """Validate step parameters (alias for: validate steps)."""
     ctx.invoke(validate, stages=['steps'], **kwargs)
+
+
+@main.command('compare')
+@click.argument('pdb_ids', nargs=-1)
+@click.option('--verbose', '-v', is_flag=True, help='Detailed field-by-field comparison (single PDB only)')
+@click.option('--output', '-o', type=click.Path(path_type=Path), help='Save report to file')
+@click.option('--test-set', type=click.Choice(['10', '50', '100', '500', '1000']),
+              help='Use a saved test set')
+@click.option('--workers', '-w', type=int, help='Number of parallel workers')
+@click.option('--project-root', type=click.Path(path_type=Path, exists=True),
+              help='Project root (default: current directory)')
+def compare(pdb_ids, verbose, output, test_set, workers, project_root):
+    """Generate detailed comparison reports with verbose field-by-field output.
+    
+    \b
+    Examples:
+        fp2-validate compare 1EHZ --verbose          # Detailed comparison
+        fp2-validate compare --test-set 10           # Compare 10 PDBs
+        fp2-validate compare 1EHZ -o report.txt      # Save to file
+    """
+    from .verbose_reporter import VerboseReporter, create_record_comparison_from_dicts
+    
+    # Determine project root
+    if not project_root:
+        project_root = Path.cwd()
+    
+    # Get PDB IDs
+    if test_set:
+        pdb_ids = load_test_set(project_root, int(test_set))
+        if not pdb_ids:
+            click.echo(f"Error: Test set {test_set} not found.", err=True)
+            sys.exit(1)
+    elif not pdb_ids:
+        click.echo("Error: Specify PDB ID(s) or use --test-set", err=True)
+        sys.exit(1)
+    
+    # Load config and create comparator
+    config = load_config(project_root / "comparison_config.yaml")
+    comparator = JsonComparator(
+        tolerance=config.get("tolerance", 1e-6),
+        compare_atoms=True, compare_frames=True, compare_steps=True,
+        compare_pairs=True, compare_hbond_list=True, compare_residue_indices=True
+    )
+    
+    # Run comparisons
+    click.echo(f"Comparing {len(pdb_ids)} PDB(s)...")
+    results = {}
+    for pdb_id in pdb_ids:
+        # Note: These files may not exist - JsonComparator handles split files
+        legacy_file = project_root / 'data' / 'json_legacy' / f'{pdb_id}.json'
+        modern_file = project_root / 'data' / 'json' / f'{pdb_id}.json'
+        pdb_file = project_root / 'data' / 'pdb' / f'{pdb_id}.pdb'
+            
+        result = comparator.compare_files(legacy_file, modern_file, pdb_file, pdb_id)
+        
+        # Check for errors
+        if result.status == 'error':
+            click.echo(f"Error comparing {pdb_id}: {', '.join(result.errors)}", err=True)
+            continue
+            
+        results[pdb_id] = result
+    
+    if not results:
+        click.echo("Error: No valid comparisons completed", err=True)
+        sys.exit(1)
+    
+    # Generate report
+    if verbose and len(pdb_ids) == 1:
+        # Use the verbose reporter from compare_json.py
+        pdb_id = list(pdb_ids)[0]
+        result = results.get(pdb_id)
+        if not result:
+            click.echo(f"Error: No result for {pdb_id}", err=True)
+            sys.exit(1)
+        
+        # Generate simple verbose summary
+        lines = []
+        lines.append("=" * 80)
+        lines.append(f"DETAILED COMPARISON: {pdb_id}")
+        lines.append("=" * 80)
+        lines.append(f"Status: {result.status}")
+        lines.append(f"Has differences: {result.has_differences()}")
+        lines.append("")
+        
+        if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
+            dcc = result.distance_checks_comparison
+            lines.append(f"Distance checks: {dcc.total_legacy} legacy, {dcc.total_modern} modern")
+            lines.append(f"  Missing in modern: {len(dcc.missing_in_modern)}")
+            lines.append(f"  Extra in modern: {len(dcc.extra_in_modern)}")
+            lines.append(f"  Mismatches: {len(dcc.mismatched_checks)}")
+            lines.append("")
+        
+        if hasattr(result, 'hbond_list_comparison') and result.hbond_list_comparison:
+            hlc = result.hbond_list_comparison
+            lines.append(f"H-bond list: {hlc.total_legacy} legacy, {hlc.total_modern} modern")
+            lines.append(f"  Missing in modern: {len(hlc.missing_in_modern)}")
+            lines.append(f"  Extra in modern: {len(hlc.extra_in_modern)}")
+            lines.append(f"  Mismatches: {len(hlc.mismatched_pairs)}")
+            lines.append("")
+        
+        if result.frame_comparison:
+            fc = result.frame_comparison
+            lines.append(f"Frames: {fc.total_legacy} legacy, {fc.total_modern} modern")
+            lines.append("")
+        
+        lines.append("=" * 80)
+        lines.append("For full field-by-field details, use:")
+        lines.append(f"  python3 scripts/compare_json.py compare {pdb_id} --verbose")
+        lines.append("=" * 80)
+        
+        report = "\n".join(lines)
+    else:
+        # Summary mode
+        if verbose: click.echo("Warning: Verbose only works for single PDB", err=True)
+        total = len(results)
+        matches = sum(1 for r in results.values() if not r.has_differences())
+        lines = []
+        lines.append(f"Comparison Summary: {total} PDB(s)")
+        lines.append(f"  ✅ Matches: {matches}")
+        lines.append(f"  ❌ Differences: {total-matches}")
+        if total - matches > 0:
+            lines.append("")
+            lines.append("PDBs with differences:")
+            for pdb_id, r in results.items():
+                if r.has_differences():
+                    lines.append(f"  - {pdb_id}")
+        lines.append("")
+        lines.append("TIP: Use --verbose with single PDB for details")
+        lines.append("  Example: fp2-validate compare 1EHZ --verbose")
+        report = "\n".join(lines)
+    
+    # Output
+    if output:
+        output.write_text(report)
+        click.echo(f"Report saved to: {output}")
+    else:
+        click.echo(report)
+    
+    sys.exit(1 if any(r.has_differences() for r in results.values()) else 0)
 
 
 if __name__ == '__main__':
