@@ -49,6 +49,11 @@ from datetime import datetime
 
 from x3dna_json_compare import JsonComparator, ComparisonResult, JsonValidator
 from x3dna_json_compare.config import load_config, get_comparison_flags
+from x3dna_json_compare.verbose_reporter import (
+    VerboseReporter, 
+    RecordComparison,
+    create_record_comparison_from_dicts
+)
 
 
 def get_all_pdb_files(project_root: Path) -> List[str]:
@@ -738,6 +743,184 @@ def analyze_results(results: Dict[str, ComparisonResult]) -> Dict:
             stats["residue_indices_mismatched_entries"] += len(ric.mismatched_entries)
 
     return stats
+
+
+def generate_verbose_report(
+    pdb_id: str,
+    result: ComparisonResult,
+    project_root: Path,
+    tolerance: float = 1e-6
+) -> str:
+    """Generate a detailed verbose report for a single PDB."""
+    reporter = VerboseReporter(
+        tolerance=tolerance,
+        show_provenance=False,
+        show_related=True,
+        diff_only=False
+    )
+    
+    # Add header
+    stages = []
+    if result.atom_comparison:
+        stages.append("atoms")
+    if result.frame_comparison:
+        stages.append("frames")
+    if result.step_comparison:
+        stages.append("steps")
+    if result.helical_comparison:
+        stages.append("helical")
+    if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
+        stages.append("distance_checks")
+    if hasattr(result, 'hbond_list_comparison') and result.hbond_list_comparison:
+        stages.append("hbond_list")
+    if hasattr(result, 'pair_validation_comparison') and result.pair_validation_comparison:
+        stages.append("pair_validation")
+    if hasattr(result, 'find_bestpair_comparison') and result.find_bestpair_comparison:
+        stages.append("find_bestpair_selection")
+    if hasattr(result, 'base_pair_comparison') and result.base_pair_comparison:
+        stages.append("base_pair")
+    
+    reporter.add_header(pdb_id, stages)
+    
+    # Add distance checks comparison (if available)
+    if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
+        dcc = result.distance_checks_comparison
+        reporter.add_stage_header("distance_checks", 3)
+        reporter.add_stage_summary(
+            dcc.total_legacy,
+            dcc.total_modern,
+            dcc.total_legacy - len(dcc.missing_in_modern),
+            len(dcc.missing_in_modern),
+            len(dcc.extra_in_modern),
+            len(dcc.mismatched_checks)
+        )
+        
+        # Show mismatched checks
+        for mismatch in dcc.mismatched_checks[:reporter.max_mismatches_per_stage]:
+            pair_key = (mismatch.get('base_i'), mismatch.get('base_j'))
+            legacy_rec = mismatch.get('legacy_record', {})
+            modern_rec = mismatch.get('modern_record', {})
+            
+            fields = ['dorg', 'dNN', 'plane_angle', 'd_v', 'overlap_area']
+            
+            rec_comp = create_record_comparison_from_dicts(
+                record_key=pair_key,
+                record_type="distance_checks",
+                legacy_record=legacy_rec,
+                modern_record=modern_rec,
+                fields_to_compare=fields,
+                tolerance=tolerance,
+                legacy_source=f"data/json_legacy/distance_checks/{pdb_id}.json",
+                modern_source=f"data/json/distance_checks/{pdb_id}.json"
+            )
+            reporter.add_record_comparison(rec_comp)
+    
+    # Add h-bond list comparison (if available)
+    if hasattr(result, 'hbond_list_comparison') and result.hbond_list_comparison:
+        hlc = result.hbond_list_comparison
+        reporter.add_stage_header("hbond_list", 4)
+        reporter.add_stage_summary(
+            hlc.total_legacy,
+            hlc.total_modern,
+            hlc.total_legacy - len(hlc.missing_in_modern),
+            len(hlc.missing_in_modern),
+            len(hlc.extra_in_modern),
+            len(hlc.mismatched_pairs)
+        )
+        
+        # Show mismatched pairs
+        for mismatch in hlc.mismatched_pairs[:reporter.max_mismatches_per_stage]:
+            pair_key = (mismatch.get('base_i'), mismatch.get('base_j'))
+            legacy_rec = mismatch.get('legacy_record', {})
+            modern_rec = mismatch.get('modern_record', {})
+            
+            fields = ['num_hbonds']
+            
+            rec_comp = create_record_comparison_from_dicts(
+                record_key=pair_key,
+                record_type="hbond_list",
+                legacy_record=legacy_rec,
+                modern_record=modern_rec,
+                fields_to_compare=fields,
+                tolerance=tolerance,
+                legacy_source=f"data/json_legacy/hbond_list/{pdb_id}.json",
+                modern_source=f"data/json/hbond_list/{pdb_id}.json"
+            )
+            reporter.add_record_comparison(rec_comp)
+    
+    # Add frame comparison (if available)
+    if result.frame_comparison:
+        fc = result.frame_comparison
+        reporter.add_stage_header("frames", 2)
+        reporter.add_stage_summary(
+            fc.total_legacy,
+            fc.total_modern,
+            fc.total_legacy - len(fc.missing_residues),
+            len(fc.missing_residues),
+            0,  # No extra in modern for frames
+            len(fc.mismatched_calculations)
+        )
+        
+        # Show mismatched calculations
+        for mismatch in fc.mismatched_calculations[:reporter.max_mismatches_per_stage]:
+            residue_key = mismatch.residue_key
+            legacy_rec = mismatch.legacy_record
+            modern_rec = mismatch.modern_record
+            
+            # Determine which type of frame record this is
+            record_type = "unknown"
+            mismatches_dict = mismatch.mismatches
+            if 'base_frame_calc' in mismatches_dict:
+                record_type = "base_frame_calc"
+                fields = ['rms_fit', 'num_matched_atoms', 'base_type']
+            elif 'ls_fitting' in mismatches_dict:
+                record_type = "ls_fitting"
+                fields = ['rms_fit', 'num_points']
+            elif 'frame_calc' in mismatches_dict:
+                record_type = "frame_calc"
+                fields = ['rms_fit', 'num_matched_atoms']
+            else:
+                fields = ['rms_fit']
+            
+            rec_comp = create_record_comparison_from_dicts(
+                record_key=residue_key,
+                record_type=record_type,
+                legacy_record=legacy_rec,
+                modern_record=modern_rec,
+                fields_to_compare=fields,
+                tolerance=tolerance,
+                legacy_source=f"data/json_legacy/{record_type}/{pdb_id}.json",
+                modern_source=f"data/json/{record_type}/{pdb_id}.json"
+            )
+            reporter.add_record_comparison(rec_comp)
+    
+    # Add summary
+    stages_compared = len(stages)
+    stages_with_diffs = 0
+    diff_details = []
+    
+    if result.frame_comparison and len(result.frame_comparison.mismatched_calculations) > 0:
+        stages_with_diffs += 1
+        diff_details.append(f"frames: {len(result.frame_comparison.mismatched_calculations)} mismatches")
+    
+    if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
+        if len(result.distance_checks_comparison.mismatched_checks) > 0:
+            stages_with_diffs += 1
+            diff_details.append(f"distance_checks: {len(result.distance_checks_comparison.mismatched_checks)} mismatches")
+    
+    if hasattr(result, 'hbond_list_comparison') and result.hbond_list_comparison:
+        if len(result.hbond_list_comparison.mismatched_pairs) > 0:
+            stages_with_diffs += 1
+            diff_details.append(f"hbond_list: {len(result.hbond_list_comparison.mismatched_pairs)} mismatches")
+    
+    reporter.add_summary(
+        stages_compared=stages_compared,
+        perfect_matches=stages_compared - stages_with_diffs,
+        stages_with_diffs=stages_with_diffs,
+        diff_details=diff_details
+    )
+    
+    return reporter.generate_report()
 
 
 def generate_report(
@@ -1546,8 +1729,21 @@ def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenera
         pdb_ids, project_root, legacy_mode, comparator, max_workers, regenerate
     )
 
-    stats = analyze_results(results)
-    report = generate_report(stats, results, verbose, diff_only)
+    # Generate report based on mode
+    if verbose and len(pdb_ids) == 1:
+        # Verbose mode for single PDB
+        pdb_id = pdb_ids[0]
+        result = results.get(pdb_id)
+        if result:
+            report = generate_verbose_report(pdb_id, result, project_root, comparator.tolerance)
+        else:
+            report = f"Error: No comparison result for {pdb_id}"
+    else:
+        # Standard summary report
+        if verbose and len(pdb_ids) > 1:
+            click.echo("Warning: Verbose mode only supported for single PDB. Using standard report.", err=True)
+        stats = analyze_results(results)
+        report = generate_report(stats, results, verbose, diff_only)
 
     if output:
         output.write_text(report)

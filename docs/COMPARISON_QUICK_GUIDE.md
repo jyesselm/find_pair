@@ -102,7 +102,7 @@ print(f"Diff: {abs(leg_rec['dorg'] - mod_rec['dorg'])}")
 
 ---
 
-## How Debugging WILL Work (With Verbose Mode)
+## How Debugging NOW Works (With Verbose Mode) ✅ IMPLEMENTED
 
 ### One Command, All Details
 ```bash
@@ -115,39 +115,39 @@ python3 scripts/compare_json.py compare 1EHZ --verbose
 VERBOSE COMPARISON: 1EHZ
 ================================================================================
 
-STAGE 3: distance_checks
-------------------------
-✅ MATCH (base_i=1, base_j=2)
-  dorg:         14.523 == 14.523  ✓
-  dNN:          15.234 == 15.234  ✓
-  plane_angle:  12.456 == 12.456  ✓
-  d_v:          2.345  == 2.345   ✓
-  overlap_area: 45.678 == 45.678  ✓
+STAGE 4: hbond_list
+-------------------
+Total legacy records: 35
+Total modern records: 35
+Common records: 34
 
-❌ MISMATCH (base_i=3, base_j=4)
-  dorg:         14.523 == 14.524  ✗ (diff: 0.001 > tolerance 1e-6)
-  
-  Legacy calculation:
-    File: org/src/pair_geometry.c:234
-    Function: calculate_pair_dorg()
-    Residues: A:15 + A:18
-  
-  Modern calculation:
-    File: src/x3dna/algorithms/base_pair_validator.cpp:456
-    Function: BasePairValidator::calculate_dorg()
-    Residues: legacy_idx=3, legacy_idx=4
-  
-  Related Records:
-    base_frame_calc: RMS 0.023 == 0.023 ✓
-    hbond_list: num_hbonds 2 == 2 ✓
+❌ MISMATCH (base_i=18, base_j=55)
+  Legacy source: data/json_legacy/hbond_list/1EHZ.json
+  Modern source: data/json/hbond_list/1EHZ.json
+
+  Fields:
+    num_hbonds:          4               vs 7               ✗ (diff: 3.000000e+00, tolerance: 1.000000e-06)
+      ℹ️  Exceeds tolerance by 2.999999e+00
+
+SUMMARY
+-------
+Stages compared: 7
+Perfect matches: 6
+Stages with differences: 1
+
+Overall: ⚠️  DIFFERENCES FOUND
 ```
 
-**Benefits:**
+**Features:**
 - ✅ See everything in one place
-- ✅ Know WHERE values come from
-- ✅ See related records
-- ✅ Clear diff highlighting
-- ✅ No code modification needed
+- ✅ Field-by-field comparison
+- ✅ Clear diff highlighting with ✓/✗
+- ✅ Difference amounts shown
+- ✅ Source file paths
+- ✅ Summary statistics
+- ✅ Save to file option
+
+**See**: `VERBOSE_MODE_GUIDE.md` for complete documentation
 
 ---
 

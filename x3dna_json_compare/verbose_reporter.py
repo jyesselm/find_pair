@@ -1,0 +1,466 @@
+"""
+Verbose comparison reporter for detailed field-by-field analysis.
+
+Generates human-readable detailed comparison reports showing:
+- Field-by-field comparisons
+- Diff highlighting
+- JSON source paths
+- Related record lookups
+- Calculation provenance (when available)
+"""
+
+from typing import Dict, List, Any, Optional, Tuple
+from pathlib import Path
+from dataclasses import dataclass
+from datetime import datetime
+import json
+
+
+@dataclass
+class FieldComparison:
+    """Result of comparing a single field."""
+    field_name: str
+    legacy_value: Any
+    modern_value: Any
+    matches: bool
+    diff: Optional[float] = None
+    tolerance: Optional[float] = None
+    notes: List[str] = None
+    
+    def __post_init__(self):
+        if self.notes is None:
+            self.notes = []
+
+
+@dataclass
+class RecordComparison:
+    """Result of comparing a single record (e.g., one base pair)."""
+    record_key: Any  # e.g., (base_i, base_j) or residue_key
+    record_type: str  # e.g., "distance_checks", "base_pair"
+    matches: bool
+    field_comparisons: List[FieldComparison]
+    legacy_source: Optional[str] = None
+    modern_source: Optional[str] = None
+    related_records: Dict[str, Any] = None
+    
+    def __post_init__(self):
+        if self.related_records is None:
+            self.related_records = {}
+
+
+class VerboseReporter:
+    """Generate detailed verbose comparison reports."""
+    
+    def __init__(
+        self,
+        tolerance: float = 1e-6,
+        show_provenance: bool = False,
+        show_related: bool = True,
+        max_mismatches_per_stage: int = 20,
+        diff_only: bool = False
+    ):
+        """
+        Initialize verbose reporter.
+        
+        Args:
+            tolerance: Default numerical tolerance
+            show_provenance: Show calculation source info (if available)
+            show_related: Show related records for context
+            max_mismatches_per_stage: Maximum mismatches to show per stage
+            diff_only: Only show records with differences
+        """
+        self.tolerance = tolerance
+        self.show_provenance = show_provenance
+        self.show_related = show_related
+        self.max_mismatches_per_stage = max_mismatches_per_stage
+        self.diff_only = diff_only
+        self.sections: List[str] = []
+    
+    def add_header(self, pdb_id: str, stages: List[str] = None):
+        """Add report header."""
+        lines = []
+        lines.append("=" * 80)
+        lines.append(f"VERBOSE COMPARISON: {pdb_id}")
+        lines.append("=" * 80)
+        lines.append(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(f"Tolerance: {self.tolerance}")
+        if stages:
+            lines.append(f"Stages: {', '.join(stages)}")
+        lines.append(f"Mode: {'Differences only' if self.diff_only else 'All records'}")
+        lines.append("")
+        
+        self.sections.append("\n".join(lines))
+    
+    def add_stage_header(self, stage_name: str, stage_number: int = None):
+        """Add stage section header."""
+        lines = []
+        lines.append("-" * 80)
+        if stage_number is not None:
+            lines.append(f"STAGE {stage_number}: {stage_name}")
+        else:
+            lines.append(f"STAGE: {stage_name}")
+        lines.append("-" * 80)
+        
+        self.sections.append("\n".join(lines))
+    
+    def add_stage_summary(
+        self,
+        total_legacy: int,
+        total_modern: int,
+        common: int,
+        missing_in_modern: int,
+        extra_in_modern: int,
+        mismatches: int
+    ):
+        """Add stage-level summary statistics."""
+        lines = []
+        lines.append(f"Total legacy records: {total_legacy}")
+        lines.append(f"Total modern records: {total_modern}")
+        lines.append(f"Common records: {common}")
+        
+        if missing_in_modern > 0:
+            lines.append(f"⚠️  Missing in modern: {missing_in_modern}")
+        if extra_in_modern > 0:
+            lines.append(f"⚠️  Extra in modern: {extra_in_modern}")
+        if mismatches > 0:
+            lines.append(f"❌ Mismatched records: {mismatches}")
+        
+        if missing_in_modern == 0 and extra_in_modern == 0 and mismatches == 0:
+            lines.append("✅ All records match perfectly")
+        
+        lines.append("")
+        
+        self.sections.append("\n".join(lines))
+    
+    def add_record_comparison(self, comparison: RecordComparison):
+        """Add detailed record comparison."""
+        if self.diff_only and comparison.matches:
+            return  # Skip matching records in diff-only mode
+        
+        lines = []
+        
+        # Record header
+        status = "✅ MATCH" if comparison.matches else "❌ MISMATCH"
+        lines.append(f"{status} {self._format_record_key(comparison.record_key, comparison.record_type)}")
+        
+        # Source paths
+        if comparison.legacy_source:
+            lines.append(f"  Legacy source: {comparison.legacy_source}")
+        if comparison.modern_source:
+            lines.append(f"  Modern source: {comparison.modern_source}")
+        
+        # Field comparisons
+        if comparison.field_comparisons:
+            lines.append("")
+            lines.append("  Fields:")
+            
+            for field_comp in comparison.field_comparisons:
+                field_line = self._format_field_comparison(field_comp)
+                lines.append(f"    {field_line}")
+                
+                # Add notes if any
+                for note in field_comp.notes:
+                    lines.append(f"      ℹ️  {note}")
+        
+        # Related records (if enabled and available)
+        if self.show_related and comparison.related_records:
+            lines.append("")
+            lines.append("  Related records:")
+            for record_type, info in comparison.related_records.items():
+                lines.append(f"    └─ {record_type}: {self._format_related_info(info)}")
+        
+        lines.append("")
+        
+        self.sections.append("\n".join(lines))
+    
+    def add_summary(
+        self,
+        stages_compared: int,
+        perfect_matches: int,
+        stages_with_diffs: int,
+        diff_details: List[str]
+    ):
+        """Add final summary."""
+        lines = []
+        lines.append("-" * 80)
+        lines.append("SUMMARY")
+        lines.append("-" * 80)
+        lines.append(f"Stages compared: {stages_compared}")
+        lines.append(f"Perfect matches: {perfect_matches}")
+        lines.append(f"Stages with differences: {stages_with_diffs}")
+        
+        if diff_details:
+            lines.append("")
+            lines.append("Differences found:")
+            for detail in diff_details:
+                lines.append(f"  - {detail}")
+        
+        lines.append("")
+        
+        if stages_with_diffs == 0:
+            lines.append("Overall: ✅ ALL STAGES MATCH PERFECTLY")
+        else:
+            lines.append("Overall: ⚠️  DIFFERENCES FOUND")
+        
+        lines.append("")
+        
+        self.sections.append("\n".join(lines))
+    
+    def generate_report(self) -> str:
+        """Generate final verbose report."""
+        return "\n".join(self.sections)
+    
+    def _format_record_key(self, key: Any, record_type: str) -> str:
+        """Format record key for display."""
+        if isinstance(key, tuple):
+            if len(key) == 2 and all(isinstance(x, int) for x in key):
+                # Pair key: (base_i, base_j)
+                return f"(base_i={key[0]}, base_j={key[1]})"
+            elif len(key) == 3:
+                # Residue key: (chain_id, residue_seq, insertion)
+                chain_id, residue_seq, insertion = key
+                ins_str = f":{insertion}" if insertion and insertion != ' ' else ""
+                return f"(chain {chain_id}, seq {residue_seq}{ins_str})"
+        
+        return str(key)
+    
+    def _format_field_comparison(self, field: FieldComparison) -> str:
+        """Format a single field comparison."""
+        name_width = 20
+        value_width = 15
+        
+        # Format field name
+        name_str = f"{field.field_name}:".ljust(name_width)
+        
+        # Format values
+        legacy_str = self._format_value(field.legacy_value, value_width)
+        modern_str = self._format_value(field.modern_value, value_width)
+        
+        # Status indicator
+        if field.matches:
+            status = "✓"
+            comparison = "=="
+        else:
+            status = "✗"
+            comparison = "vs"
+        
+        result = f"{name_str} {legacy_str} {comparison} {modern_str} {status}"
+        
+        # Add diff info for mismatches
+        if not field.matches and field.diff is not None:
+            if field.tolerance is not None:
+                result += f" (diff: {field.diff:.6e}, tolerance: {field.tolerance:.6e})"
+            else:
+                result += f" (diff: {field.diff:.6e})"
+        
+        return result
+    
+    def _format_value(self, value: Any, width: int = 15) -> str:
+        """Format a value for display."""
+        if value is None:
+            return "None".ljust(width)
+        elif isinstance(value, float):
+            # Format float with appropriate precision
+            if abs(value) < 1e-10:
+                return "0.0".ljust(width)
+            elif abs(value) < 0.001 or abs(value) > 1e6:
+                return f"{value:.6e}".ljust(width)
+            else:
+                return f"{value:.6f}".ljust(width)
+        elif isinstance(value, (list, tuple)) and len(value) <= 3:
+            # Format short arrays (e.g., xyz coordinates)
+            formatted = "[" + ", ".join(f"{v:.3f}" if isinstance(v, float) else str(v) for v in value) + "]"
+            return formatted.ljust(width) if len(formatted) <= width else formatted
+        elif isinstance(value, str):
+            # Truncate long strings
+            if len(value) > width:
+                return value[:width-3] + "..."
+            return value.ljust(width)
+        else:
+            # Default string representation
+            s = str(value)
+            if len(s) > width:
+                return s[:width-3] + "..."
+            return s.ljust(width)
+    
+    def _format_related_info(self, info: Any) -> str:
+        """Format related record information."""
+        if isinstance(info, dict):
+            # Show key fields
+            parts = []
+            for key, value in list(info.items())[:3]:  # Limit to 3 fields
+                parts.append(f"{key}={self._format_value(value, 10).strip()}")
+            return ", ".join(parts)
+        return str(info)
+
+
+def compare_values_verbose(
+    field_name: str,
+    legacy_val: Any,
+    modern_val: Any,
+    tolerance: float = 1e-6
+) -> FieldComparison:
+    """
+    Compare two values and return detailed FieldComparison.
+    
+    Args:
+        field_name: Name of the field being compared
+        legacy_val: Legacy value
+        modern_val: Modern value
+        tolerance: Numerical tolerance for floats
+    
+    Returns:
+        FieldComparison with detailed results
+    """
+    notes = []
+    
+    # Handle None values
+    if legacy_val is None and modern_val is None:
+        return FieldComparison(
+            field_name=field_name,
+            legacy_value=legacy_val,
+            modern_value=modern_val,
+            matches=True
+        )
+    
+    if legacy_val is None or modern_val is None:
+        notes.append(f"One value is None")
+        return FieldComparison(
+            field_name=field_name,
+            legacy_value=legacy_val,
+            modern_value=modern_val,
+            matches=False,
+            notes=notes
+        )
+    
+    # Numerical comparison
+    if isinstance(legacy_val, (int, float)) and isinstance(modern_val, (int, float)):
+        diff = abs(float(legacy_val) - float(modern_val))
+        matches = diff <= tolerance
+        
+        if not matches and diff > 0:
+            notes.append(f"Exceeds tolerance by {diff - tolerance:.6e}")
+        
+        return FieldComparison(
+            field_name=field_name,
+            legacy_value=legacy_val,
+            modern_value=modern_val,
+            matches=matches,
+            diff=diff,
+            tolerance=tolerance,
+            notes=notes
+        )
+    
+    # String comparison
+    if isinstance(legacy_val, str) and isinstance(modern_val, str):
+        matches = legacy_val.strip() == modern_val.strip()
+        return FieldComparison(
+            field_name=field_name,
+            legacy_value=legacy_val,
+            modern_value=modern_val,
+            matches=matches,
+            notes=notes
+        )
+    
+    # List/array comparison
+    if isinstance(legacy_val, (list, tuple)) and isinstance(modern_val, (list, tuple)):
+        if len(legacy_val) != len(modern_val):
+            notes.append(f"Length mismatch: {len(legacy_val)} vs {len(modern_val)}")
+            return FieldComparison(
+                field_name=field_name,
+                legacy_value=legacy_val,
+                modern_value=modern_val,
+                matches=False,
+                notes=notes
+            )
+        
+        # Element-wise comparison
+        all_match = True
+        max_diff = 0.0
+        
+        for i, (l, m) in enumerate(zip(legacy_val, modern_val)):
+            if isinstance(l, (int, float)) and isinstance(m, (int, float)):
+                diff = abs(float(l) - float(m))
+                max_diff = max(max_diff, diff)
+                if diff > tolerance:
+                    all_match = False
+                    notes.append(f"Element {i}: diff={diff:.6e} > tolerance={tolerance:.6e}")
+            elif l != m:
+                all_match = False
+                notes.append(f"Element {i}: {l} != {m}")
+        
+        return FieldComparison(
+            field_name=field_name,
+            legacy_value=legacy_val,
+            modern_value=modern_val,
+            matches=all_match,
+            diff=max_diff if max_diff > 0 else None,
+            tolerance=tolerance,
+            notes=notes
+        )
+    
+    # Direct equality for other types
+    matches = legacy_val == modern_val
+    if not matches:
+        notes.append(f"Type mismatch or unequal: {type(legacy_val).__name__} vs {type(modern_val).__name__}")
+    
+    return FieldComparison(
+        field_name=field_name,
+        legacy_value=legacy_val,
+        modern_value=modern_val,
+        matches=matches,
+        notes=notes
+    )
+
+
+def create_record_comparison_from_dicts(
+    record_key: Any,
+    record_type: str,
+    legacy_record: Dict,
+    modern_record: Dict,
+    fields_to_compare: List[str],
+    tolerance: float = 1e-6,
+    legacy_source: Optional[str] = None,
+    modern_source: Optional[str] = None,
+    related_records: Optional[Dict[str, Any]] = None
+) -> RecordComparison:
+    """
+    Create a RecordComparison by comparing specified fields in two record dicts.
+    
+    Args:
+        record_key: Key identifying the record (e.g., pair tuple)
+        record_type: Type of record (e.g., "distance_checks")
+        legacy_record: Legacy record dictionary
+        modern_record: Modern record dictionary
+        fields_to_compare: List of field names to compare
+        tolerance: Numerical tolerance
+        legacy_source: Source path for legacy record
+        modern_source: Source path for modern record
+        related_records: Related records for context
+    
+    Returns:
+        RecordComparison with field-by-field results
+    """
+    field_comparisons = []
+    all_match = True
+    
+    for field_name in fields_to_compare:
+        legacy_val = legacy_record.get(field_name)
+        modern_val = modern_record.get(field_name)
+        
+        field_comp = compare_values_verbose(field_name, legacy_val, modern_val, tolerance)
+        field_comparisons.append(field_comp)
+        
+        if not field_comp.matches:
+            all_match = False
+    
+    return RecordComparison(
+        record_key=record_key,
+        record_type=record_type,
+        matches=all_match,
+        field_comparisons=field_comparisons,
+        legacy_source=legacy_source,
+        modern_source=modern_source,
+        related_records=related_records
+    )
+
