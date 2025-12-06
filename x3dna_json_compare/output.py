@@ -8,6 +8,7 @@ import sys
 from dataclasses import dataclass
 from typing import List, Optional, TextIO
 from pathlib import Path
+from .verbose_reporter import VerboseReporter
 
 
 @dataclass
@@ -69,7 +70,7 @@ class OutputFormatter:
         status_val = result.get('status') if isinstance(result, dict) else result.status
             
         if self.verbose:
-            # Show every PDB
+            # Show detailed comparison for each PDB
             if status_val == 'match':
                 status = '✅'
             elif status_val == 'skip':
@@ -77,7 +78,33 @@ class OutputFormatter:
             else:
                 status = '❌'
                 self._current_failures.append(pdb_id)
-            self._print(f"{status} {pdb_id}")
+            
+            self._print(f"\n{status} {pdb_id}")
+            
+            # Show detailed verbose report if available
+            full_result = result.get('full_result') if isinstance(result, dict) else None
+            
+            if full_result:
+                # Generate verbose report for detailed comparison
+                try:
+                    reporter = VerboseReporter(pdb_id, full_result)
+                    verbose_output = reporter.generate_report()
+                    
+                    # VerboseReporter returns empty string for single-stage comparisons
+                    # TODO: Enhance VerboseReporter to handle single-stage comparisons
+                    if verbose_output:
+                        self._print(verbose_output)
+                    else:
+                        # Fallback: show basic comparison info
+                        self._print(f"  Run 'python3 scripts/compare_json.py compare {pdb_id} --verbose' for full details")
+                except Exception as e:
+                    # Fallback if VerboseReporter fails
+                    self._print(f"  Run 'python3 scripts/compare_json.py compare {pdb_id} --verbose' for full details")
+            elif status_val == 'match':
+                self._print(f"  All comparisons passed")
+            else:
+                # Show basic info for non-verbose mode
+                self._print(f"  Status: {status_val}")
         else:
             # Summary mode - progress every 100 or at end
             if current % 100 == 0 or current == total:

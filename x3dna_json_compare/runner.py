@@ -599,6 +599,7 @@ class ValidationRunner:
             'atom_comparison': _summarize_atom_comparison(result.atom_comparison),
             'frame_comparison': _summarize_frame_comparison(result.frame_comparison),
             'hbond_comparison': _summarize_hbond_comparison(result.hbond_list_comparison),
+            'full_result': result if self.verbose else None,  # Store full result for verbose mode
         }
     
     def _validate_parallel(self, pdb_ids: List[str]) -> List[tuple]:
