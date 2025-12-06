@@ -180,16 +180,49 @@ def _read_json_file(path: Path) -> Optional[List[Dict[str, Any]]]:
     try:
         with open(path) as f:
             data = json.load(f)
-        # Handle both list format and wrapped format
-        if isinstance(data, list):
-            return data
-        if isinstance(data, dict) and "atoms" in data:
-            return data["atoms"]
-        if isinstance(data, dict) and "records" in data:
-            return data["records"]
-        return [data] if isinstance(data, dict) else None
+        return _extract_records(data)
     except (json.JSONDecodeError, IOError):
         return None
+
+
+def _extract_records(data: Any) -> Optional[List[Dict[str, Any]]]:
+    """
+    Extract list of records from various JSON formats.
+    
+    Handles:
+    - List of records: [{...}, {...}]
+    - Wrapped in dict: {atoms: [{...}]} or {records: [{...}]} or {seidx: [{...}]}
+    - List with wrapped dict: [{atoms: [{...}]}] (legacy format)
+    - Single record: {...}
+    """
+    # Direct list of records
+    if isinstance(data, list):
+        if not data:
+            return []
+        # Check if it's a list of wrapped dicts (legacy format)
+        first = data[0]
+        if isinstance(first, dict):
+            if "atoms" in first:
+                return first["atoms"]
+            if "records" in first:
+                return first["records"]
+            if "seidx" in first:
+                return first["seidx"]
+        # Regular list of records
+        return data
+    
+    # Dict with atoms/records/seidx key
+    if isinstance(data, dict):
+        if "atoms" in data:
+            return data["atoms"]
+        if "records" in data:
+            return data["records"]
+        if "seidx" in data:
+            return data["seidx"]
+        # Single record
+        return [data]
+    
+    return None
 
 
 def print_stage_result(result: StageResult, show_errors: bool = True) -> None:

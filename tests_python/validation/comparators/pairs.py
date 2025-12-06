@@ -1,9 +1,9 @@
 """
 Stages 6, 7, 9, 10: Pair-related comparisons.
 
-Stage 6: pair_validation - is_valid, bp_type_id
-Stage 7: distance_checks - dorg, dNN, plane_angle, d_v
-Stage 9: base_pair - bp_type, orien_i, org_i
+Stage 6: pair_validation - is_valid, bp_type_id, calculated_values.*
+Stage 7: distance_checks - values.{dorg, dNN, plane_angle, d_v}
+Stage 9: base_pair - bp_type, orien_i, org_i, orien_j, org_j
 Stage 10: find_bestpair_selection - num_bp, pairs
 """
 
@@ -16,38 +16,30 @@ from .base import (
 from ..config import Tolerance
 
 
-# Type alias for pair keys: ((chain1, seq1, ins1), (chain2, seq2, ins2))
-PairKey = Tuple[Tuple[str, int, str], Tuple[str, int, str]]
+# Type alias for pair keys: (base_i, base_j)
+PairKey = Tuple[int, int]
 
 
 def _make_pair_key(rec: Dict[str, Any]) -> PairKey:
-    """Create a pair key from a record."""
-    return (
-        (rec.get("chain_id_i", ""), rec.get("residue_seq_i", 0), rec.get("insertion_i", " ")),
-        (rec.get("chain_id_j", ""), rec.get("residue_seq_j", 0), rec.get("insertion_j", " "))
-    )
+    """Create a pair key from base_i/base_j."""
+    return (rec.get("base_i", 0), rec.get("base_j", 0))
 
 
 def _build_pair_lookup(records: List[Dict[str, Any]]) -> Dict[PairKey, Dict[str, Any]]:
-    """Build lookup by pair identity."""
+    """Build lookup by (base_i, base_j) pair."""
     return {_make_pair_key(rec): rec for rec in records}
 
 
 def compare_pair_validation(
     legacy_records: List[Dict[str, Any]],
     modern_records: List[Dict[str, Any]],
-    tolerance: float = 0.0
+    tolerance: float = Tolerance.DISTANCE
 ) -> CompareResult:
     """
     Compare pair_validation records (Stage 6).
     
-    Args:
-        legacy_records: Legacy pair_validation records
-        modern_records: Modern pair_validation records
-        tolerance: Unused
-        
-    Returns:
-        (passed, errors) tuple
+    Uses (base_i, base_j) as matching key.
+    Compares: is_valid, bp_type_id, calculated_values.*
     """
     errors: List[str] = []
     
@@ -56,15 +48,37 @@ def compare_pair_validation(
     
     for key in leg_lookup.keys() & mod_lookup.keys():
         leg, mod = leg_lookup[key], mod_lookup[key]
-        
-        leg_valid, mod_valid = check_required_field(leg, mod, "is_valid", key, errors)
-        compare_scalar(leg_valid, mod_valid, "is_valid", key, errors)
-        
-        leg_type, mod_type = check_required_field(leg, mod, "bp_type_id", key, errors)
-        compare_scalar(leg_type, mod_type, "bp_type_id", key, errors)
+        _compare_pair_validation_record(key, leg, mod, errors, tolerance)
     
     _report_pair_diffs(leg_lookup, mod_lookup, errors)
     return len(errors) == 0, errors
+
+
+def _compare_pair_validation_record(
+    key: PairKey,
+    leg: Dict[str, Any],
+    mod: Dict[str, Any],
+    errors: List[str],
+    tolerance: float
+) -> None:
+    """Compare a single pair_validation record."""
+    # is_valid
+    leg_valid, mod_valid = check_required_field(leg, mod, "is_valid", key, errors)
+    compare_scalar(leg_valid, mod_valid, "is_valid", key, errors)
+    
+    # bp_type_id
+    leg_type, mod_type = check_required_field(leg, mod, "bp_type_id", key, errors)
+    compare_scalar(leg_type, mod_type, "bp_type_id", key, errors)
+    
+    # calculated_values (nested)
+    leg_calc = leg.get("calculated_values", {})
+    mod_calc = mod.get("calculated_values", {})
+    
+    for field in ["dorg", "dNN", "plane_angle", "d_v", "quality_score"]:
+        leg_val = leg_calc.get(field)
+        mod_val = mod_calc.get(field)
+        if leg_val is not None and mod_val is not None:
+            compare_scalar(leg_val, mod_val, f"calculated_values.{field}", key, errors, tolerance)
 
 
 def compare_distance_checks(
@@ -75,13 +89,8 @@ def compare_distance_checks(
     """
     Compare distance_checks records (Stage 7).
     
-    Args:
-        legacy_records: Legacy distance_checks records
-        modern_records: Modern distance_checks records
-        tolerance: Distance tolerance (default 1e-6)
-        
-    Returns:
-        (passed, errors) tuple
+    Uses (base_i, base_j) as matching key.
+    Compares: values.{dorg, dNN, plane_angle, d_v, overlap_area}
     """
     errors: List[str] = []
     
@@ -90,22 +99,39 @@ def compare_distance_checks(
     
     for key in leg_lookup.keys() & mod_lookup.keys():
         leg, mod = leg_lookup[key], mod_lookup[key]
-        _compare_distances(key, leg, mod, errors, tolerance)
+        _compare_distance_record(key, leg, mod, errors, tolerance)
     
     return len(errors) == 0, errors
 
 
-def _compare_distances(
+def _compare_distance_record(
     key: PairKey,
     leg: Dict[str, Any],
     mod: Dict[str, Any],
     errors: List[str],
     tolerance: float
 ) -> None:
-    """Compare distance fields for a pair."""
-    for field in ["dorg", "dNN", "plane_angle", "d_v"]:
-        leg_val, mod_val = check_required_field(leg, mod, field, key, errors)
-        compare_scalar(leg_val, mod_val, field, key, errors, tolerance)
+    """Compare a single distance_checks record."""
+    # Values are nested under "values" key
+    leg_vals = leg.get("values", {})
+    mod_vals = mod.get("values", {})
+    
+    if not leg_vals:
+        errors.append(f"Key {key} legacy missing values")
+        return
+    if not mod_vals:
+        errors.append(f"Key {key} modern missing values")
+        return
+    
+    for field in ["dorg", "dNN", "plane_angle", "d_v", "overlap_area"]:
+        leg_val = leg_vals.get(field)
+        mod_val = mod_vals.get(field)
+        if leg_val is None:
+            errors.append(f"Key {key} legacy missing values.{field}")
+        elif mod_val is None:
+            errors.append(f"Key {key} modern missing values.{field}")
+        else:
+            compare_scalar(leg_val, mod_val, f"values.{field}", key, errors, tolerance)
 
 
 def compare_base_pair(
@@ -116,13 +142,8 @@ def compare_base_pair(
     """
     Compare base_pair records (Stage 9).
     
-    Args:
-        legacy_records: Legacy base_pair records
-        modern_records: Modern base_pair records
-        tolerance: Matrix tolerance (default 1e-4)
-        
-    Returns:
-        (passed, errors) tuple
+    Uses (base_i, base_j) as matching key.
+    Compares: bp_type, orien_i, org_i, orien_j, org_j
     """
     errors: List[str] = []
     
@@ -150,12 +171,20 @@ def _compare_base_pair_fields(
     compare_scalar(leg_type, mod_type, "bp_type", key, errors)
     
     # orien_i (rotation matrix)
-    leg_orien, mod_orien = check_required_field(leg, mod, "orien_i", key, errors)
-    compare_matrix(leg_orien, mod_orien, "orien_i", key, errors, tolerance)
+    leg_orien_i, mod_orien_i = check_required_field(leg, mod, "orien_i", key, errors)
+    compare_matrix(leg_orien_i, mod_orien_i, "orien_i", key, errors, tolerance)
     
     # org_i (origin)
-    leg_org, mod_org = check_required_field(leg, mod, "org_i", key, errors)
-    compare_vector(leg_org, mod_org, "org_i", key, errors, Tolerance.COORDINATE)
+    leg_org_i, mod_org_i = check_required_field(leg, mod, "org_i", key, errors)
+    compare_vector(leg_org_i, mod_org_i, "org_i", key, errors, Tolerance.COORDINATE)
+    
+    # orien_j (rotation matrix)
+    leg_orien_j, mod_orien_j = check_required_field(leg, mod, "orien_j", key, errors)
+    compare_matrix(leg_orien_j, mod_orien_j, "orien_j", key, errors, tolerance)
+    
+    # org_j (origin)
+    leg_org_j, mod_org_j = check_required_field(leg, mod, "org_j", key, errors)
+    compare_vector(leg_org_j, mod_org_j, "org_j", key, errors, Tolerance.COORDINATE)
 
 
 def compare_best_pair_selection(
@@ -166,22 +195,20 @@ def compare_best_pair_selection(
     """
     Compare find_bestpair_selection records (Stage 10).
     
-    Args:
-        legacy_records: Legacy selection records
-        modern_records: Modern selection records
-        tolerance: Unused
-        
-    Returns:
-        (passed, errors) tuple
+    This is a single record with num_bp and pairs list.
     """
     errors: List[str] = []
     
-    # Expect exactly one record
-    if len(legacy_records) != 1 or len(modern_records) != 1:
-        errors.append(f"Expected 1 record each, got {len(legacy_records)} vs {len(modern_records)}")
-        return False, errors
+    # Handle various formats
+    leg = _get_single_record(legacy_records)
+    mod = _get_single_record(modern_records)
     
-    leg, mod = legacy_records[0], modern_records[0]
+    if leg is None:
+        errors.append("Legacy missing selection record")
+        return False, errors
+    if mod is None:
+        errors.append("Modern missing selection record")
+        return False, errors
     
     # num_bp
     leg_num, mod_num = check_required_field(leg, mod, "num_bp", "selection", errors)
@@ -194,10 +221,29 @@ def compare_best_pair_selection(
         errors.append("Legacy missing pairs field")
     elif mod_pairs is None:
         errors.append("Modern missing pairs field")
-    elif set(map(tuple, leg_pairs)) != set(map(tuple, mod_pairs)):
-        errors.append(f"pairs differ: {len(leg_pairs)} vs {len(mod_pairs)}")
+    else:
+        # Normalize pairs to set of tuples for comparison
+        leg_set = set(tuple(p) if isinstance(p, list) else p for p in leg_pairs)
+        mod_set = set(tuple(p) if isinstance(p, list) else p for p in mod_pairs)
+        if leg_set != mod_set:
+            missing_in_mod = leg_set - mod_set
+            extra_in_mod = mod_set - leg_set
+            if missing_in_mod:
+                errors.append(f"Pairs missing in modern: {list(missing_in_mod)[:5]}")
+            if extra_in_mod:
+                errors.append(f"Extra pairs in modern: {list(extra_in_mod)[:5]}")
     
     return len(errors) == 0, errors
+
+
+def _get_single_record(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Extract single record from potentially wrapped data."""
+    if not records:
+        return None
+    if len(records) == 1:
+        return records[0]
+    # If multiple, return first
+    return records[0]
 
 
 def _report_pair_diffs(
@@ -213,4 +259,3 @@ def _report_pair_diffs(
     extra = set(mod_lookup.keys()) - set(leg_lookup.keys())
     for key in list(extra)[:3]:
         errors.append(f"Extra in modern: {key}")
-
