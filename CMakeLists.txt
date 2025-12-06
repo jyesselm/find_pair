@@ -70,6 +70,11 @@ target_link_libraries(x3dna PUBLIC
     nlohmann_json::nlohmann_json
 )
 
+# Define source directory for finding config files at runtime
+target_compile_definitions(x3dna PRIVATE 
+    X3DNA_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
 # Add compile definitions for debug flags (optional, enable with -DDEBUG_BP_TYPE_ID=ON etc)
 if(DEBUG_BP_TYPE_ID)
     target_compile_definitions(x3dna PRIVATE DEBUG_BP_TYPE_ID)

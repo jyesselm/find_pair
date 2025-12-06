@@ -27,8 +27,11 @@ static ResidueType string_to_residue_type(const std::string& type_str) {
 static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> load_registry() {
     std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> registry;
     
-    // Try to find the config file
+    // Try to find the config file - prioritize the source directory path
     std::vector<std::string> search_paths = {
+#ifdef X3DNA_SOURCE_DIR
+        std::string(X3DNA_SOURCE_DIR) + "/resources/config/modified_nucleotides.json",
+#endif
         "resources/config/modified_nucleotides.json",
         "../resources/config/modified_nucleotides.json",
         "../../resources/config/modified_nucleotides.json",
