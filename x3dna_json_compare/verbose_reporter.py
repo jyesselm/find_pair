@@ -562,7 +562,18 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                             break
                         
                         atom_idx = legacy_rec.get('atom_idx')
-                        modern_rec = modern_dict.get(atom_idx, {})
+                        
+                        # Check if modern has this atom
+                        if atom_idx not in modern_dict:
+                            # Add a warning about missing atom
+                            reporter.sections.append(
+                                f"⚠️  WARNING: atom_{atom_idx} - "
+                                f"Legacy atom (atom_idx={atom_idx}) not found in modern output!\n"
+                            )
+                            shown_count += 1
+                            continue
+                        
+                        modern_rec = modern_dict.get(atom_idx)
                         
                         # Fields to compare for atoms
                         fields = ['atom_name', 'residue_name', 'chain_id', 'residue_seq', 'xyz']
@@ -624,7 +635,17 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                             break
                         
                         pair_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
-                        modern_rec = modern_dict.get(pair_key, {})
+                        
+                        # Check if modern has this pair
+                        if pair_key not in modern_dict:
+                            reporter.sections.append(
+                                f"⚠️  WARNING: (base_i={pair_key[0]}, base_j={pair_key[1]}) - "
+                                f"Legacy pair not found in modern output!\n"
+                            )
+                            shown_count += 1
+                            continue
+                        
+                        modern_rec = modern_dict.get(pair_key)
                         
                         rec_comp = create_record_comparison_from_dicts(
                             record_key=pair_key,
@@ -698,7 +719,17 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                             break
                         
                         pair_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
-                        modern_rec = modern_dict.get(pair_key, {})
+                        
+                        # Check if modern has this pair
+                        if pair_key not in modern_dict:
+                            reporter.sections.append(
+                                f"⚠️  WARNING: (base_i={pair_key[0]}, base_j={pair_key[1]}) - "
+                                f"Legacy hbond pair not found in modern output!\n"
+                            )
+                            shown_count += 1
+                            continue
+                        
+                        modern_rec = modern_dict.get(pair_key)
                         
                         rec_comp = create_record_comparison_from_dicts(
                             record_key=pair_key,
@@ -785,7 +816,17 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                             residue_key = (legacy_rec.get('chain_id'), 
                                          legacy_rec.get('residue_seq'), 
                                          legacy_rec.get('insertion_code', ' '))
-                            modern_rec = modern_dict.get(residue_key, {})
+                            
+                            # Check if modern has this residue
+                            if residue_key not in modern_dict:
+                                reporter.sections.append(
+                                    f"⚠️  WARNING: (chain {residue_key[0]}, seq {residue_key[1]}) - "
+                                    f"Legacy residue not found in modern output!\n"
+                                )
+                                shown_count += 1
+                                continue
+                            
+                            modern_rec = modern_dict.get(residue_key)
                             
                             rec_comp = create_record_comparison_from_dicts(
                                 record_key=residue_key,
@@ -881,7 +922,17 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                             break
                         
                         step_id = legacy_rec.get('step_id')
-                        modern_rec = modern_dict.get(step_id, {})
+                        
+                        # Check if modern has this step
+                        if step_id not in modern_dict:
+                            reporter.sections.append(
+                                f"⚠️  WARNING: step {step_id} - "
+                                f"Legacy step not found in modern output!\n"
+                            )
+                            shown_count += 1
+                            continue
+                        
+                        modern_rec = modern_dict.get(step_id)
                         
                         rec_comp = create_record_comparison_from_dicts(
                             record_key=step_id,
@@ -943,7 +994,17 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                             break
                         
                         step_id = legacy_rec.get('step_id')
-                        modern_rec = modern_dict.get(step_id, {})
+                        
+                        # Check if modern has this step
+                        if step_id not in modern_dict:
+                            reporter.sections.append(
+                                f"⚠️  WARNING: helical step {step_id} - "
+                                f"Legacy helical step not found in modern output!\n"
+                            )
+                            shown_count += 1
+                            continue
+                        
+                        modern_rec = modern_dict.get(step_id)
                         
                         rec_comp = create_record_comparison_from_dicts(
                             record_key=step_id,
