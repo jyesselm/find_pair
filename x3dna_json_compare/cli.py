@@ -389,7 +389,8 @@ def compare(pdb_ids, verbose, output, test_set, workers, project_root):
             lines.append("")
         
         lines.append("=" * 80)
-        lines.append("For full field-by-field details, use:")
+        lines.append("NOTE: This is a high-level summary.")
+        lines.append(f"For full field-by-field comparison, use compare_json.py:")
         lines.append(f"  python3 scripts/compare_json.py compare {pdb_id} --verbose")
         lines.append("=" * 80)
         

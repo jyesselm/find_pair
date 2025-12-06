@@ -96,10 +96,10 @@ class OutputFormatter:
                         self._print(verbose_output)
                     else:
                         # Fallback: show basic comparison info
-                        self._print(f"  Run 'python3 scripts/compare_json.py compare {pdb_id} --verbose' for full details")
+                        self._print(f"  For detailed comparison: fp2-validate compare {pdb_id} --verbose")
                 except Exception as e:
                     # Fallback if VerboseReporter fails
-                    self._print(f"  Run 'python3 scripts/compare_json.py compare {pdb_id} --verbose' for full details")
+                    self._print(f"  For detailed comparison: fp2-validate compare {pdb_id} --verbose")
             elif status_val == 'match':
                 self._print(f"  All comparisons passed")
             else:

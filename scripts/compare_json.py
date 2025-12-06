@@ -2,6 +2,10 @@
 """
 Unified JSON Comparison Script
 
+⚠️  DEPRECATION NOTICE ⚠️
+This script is being replaced by the unified fp2-validate CLI tool.
+Please use 'fp2-validate compare' instead for all new work.
+
 This script provides a comprehensive, multithreaded tool for comparing JSON files
 between legacy and modern implementations. It generates detailed human-readable reports.
 
