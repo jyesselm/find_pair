@@ -441,9 +441,14 @@ class JsonComparator:
                     records.append(calc)
         
         # If no records found and we have a file path, try split file format
+        # Try new structure first, then fall back to old structure
         if not records and json_file:
-            split_file = json_file.parent / f"{json_file.stem}_distance_checks.json"
-            if split_file.exists():
+            pdb_id = json_file.stem
+            base_dir = json_file.parent
+            
+            # Try new structure: distance_checks/<PDB_ID>.json
+            split_file = find_json_file(base_dir, pdb_id, "distance_checks")
+            if split_file and split_file.exists():
                 try:
                     split_data = self._load_json(split_file)
                     if isinstance(split_data, list):
@@ -701,7 +706,7 @@ class JsonComparator:
         
         result = ComparisonResult(
             pdb_id=pdb_id,
-            status='error',
+            status='pending',  # Use 'pending' initially so has_differences() works correctly
             timestamp=time.time(),
             pdb_file_path=str(pdb_file)
         )
