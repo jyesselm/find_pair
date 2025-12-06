@@ -127,6 +127,7 @@ FALLBACK_REGISTRY = {
     {"0G",   {'g', ResidueType::GUANINE, true,  "Numbered guanine variant"}},
     {"IGU",  {'g', ResidueType::GUANINE, true,  "Isoguanosine"}},
     {"DGP",  {'g', ResidueType::GUANINE, true,  "Deoxyguanosine phosphate"}},
+    {"G7M",  {'g', ResidueType::GUANINE, true,  "N7-methyl-guanosine-5'-monophosphate"}},
     
     // ========== INOSINES ==========
     {"IMP",  {'I', ResidueType::INOSINE, true,  "Inosine monophosphate"}},

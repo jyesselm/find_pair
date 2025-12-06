@@ -43,7 +43,8 @@
       "0G":   {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Numbered guanine variant"},
       "IGU":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Isoguanosine"},
       "DGP":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "Deoxyguanosine phosphate"},
-      "9DG":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "9-deazaguanine (legacy incorrectly maps to U)"}
+      "9DG":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "9-deazaguanine (legacy incorrectly maps to U)"},
+      "G7M":  {"code": "g", "type": "GUANINE", "is_purine": true,  "description": "N7-methyl-guanosine-5'-monophosphate"}
     },
     "inosines": {
       "IMP":  {"code": "I", "type": "INOSINE", "is_purine": true,  "description": "Inosine monophosphate (fixed: should be purine)"},

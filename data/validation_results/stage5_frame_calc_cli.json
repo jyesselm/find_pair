@@ -2,12 +2,12 @@
   "stage_num": 5,
   "stage_id": "frame_calc",
   "stage_name": "Frame Calc",
-  "test_date": "2025-12-06T15:41:25.139214",
-  "total_pdbs": 3602,
-  "passed": 3602,
+  "test_date": "2025-12-06T15:46:13.642183",
+  "total_pdbs": 100,
+  "passed": 100,
   "failed": 0,
   "skipped": 0,
   "failed_pdbs": [],
-  "elapsed_seconds": 10.353918,
+  "elapsed_seconds": 0.211413,
   "pass_rate": 100.0
 }
