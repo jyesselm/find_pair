@@ -181,13 +181,23 @@ def info(project_root):
             click.echo(f"  {size}: ❌ Not found")
 
 
-# Aliases for common operations
+# Common options for alias commands
+def alias_options(f):
+    """Decorator to add common options to alias commands."""
+    f = click.option('--pdb', '-p', multiple=True, help='Specific PDB(s) to validate')(f)
+    f = click.option('--max', '-n', 'max_count', type=int, help='Maximum number of PDBs')(f)
+    f = click.option('--test-set', type=click.Choice(['10', '50', '100', '500', '1000']),
+                     help='Use a saved test set')(f)
+    f = click.option('--workers', '-w', type=int, help='Number of parallel workers')(f)
+    f = click.option('--quiet', '-q', is_flag=True, help='Suppress output')(f)
+    f = click.option('--verbose', '-v', is_flag=True, help='Show per-PDB results')(f)
+    f = click.option('--stop-on-first', '-s', is_flag=True, help='Stop at first failure')(f)
+    f = click.option('--diff', is_flag=True, help='Document differences to file')(f)
+    return f
+
+
 @main.command('atoms')
-@click.option('--pdb', '-p', multiple=True)
-@click.option('--max', '-n', 'max_count', type=int)
-@click.option('--quiet', '-q', is_flag=True)
-@click.option('--verbose', '-v', is_flag=True)
-@click.option('--stop-on-first', '-s', is_flag=True)
+@alias_options
 @click.pass_context
 def atoms(ctx, **kwargs):
     """Validate atom records (alias for: validate atoms)."""
@@ -195,11 +205,7 @@ def atoms(ctx, **kwargs):
 
 
 @main.command('frames')
-@click.option('--pdb', '-p', multiple=True)
-@click.option('--max', '-n', 'max_count', type=int)
-@click.option('--quiet', '-q', is_flag=True)
-@click.option('--verbose', '-v', is_flag=True)
-@click.option('--stop-on-first', '-s', is_flag=True)
+@alias_options
 @click.pass_context
 def frames(ctx, **kwargs):
     """Validate frame calculations (alias for: validate frames)."""
@@ -207,11 +213,7 @@ def frames(ctx, **kwargs):
 
 
 @main.command('hbonds')
-@click.option('--pdb', '-p', multiple=True)
-@click.option('--max', '-n', 'max_count', type=int)
-@click.option('--quiet', '-q', is_flag=True)
-@click.option('--verbose', '-v', is_flag=True)
-@click.option('--stop-on-first', '-s', is_flag=True)
+@alias_options
 @click.pass_context
 def hbonds(ctx, **kwargs):
     """Validate H-bond lists (alias for: validate hbonds)."""
@@ -219,11 +221,7 @@ def hbonds(ctx, **kwargs):
 
 
 @main.command('pairs')
-@click.option('--pdb', '-p', multiple=True)
-@click.option('--max', '-n', 'max_count', type=int)
-@click.option('--quiet', '-q', is_flag=True)
-@click.option('--verbose', '-v', is_flag=True)
-@click.option('--stop-on-first', '-s', is_flag=True)
+@alias_options
 @click.pass_context
 def pairs(ctx, **kwargs):
     """Validate base pairs (alias for: validate pairs)."""
@@ -231,11 +229,7 @@ def pairs(ctx, **kwargs):
 
 
 @main.command('steps')
-@click.option('--pdb', '-p', multiple=True)
-@click.option('--max', '-n', 'max_count', type=int)
-@click.option('--quiet', '-q', is_flag=True)
-@click.option('--verbose', '-v', is_flag=True)
-@click.option('--stop-on-first', '-s', is_flag=True)
+@alias_options
 @click.pass_context
 def steps(ctx, **kwargs):
     """Validate step parameters (alias for: validate steps)."""

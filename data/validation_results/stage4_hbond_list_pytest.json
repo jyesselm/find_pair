@@ -1,0 +1,25 @@
+{
+  "stage_id": "stage4",
+  "stage_name": "H-bond List",
+  "test_date": "2025-12-05T21:32:32.515774",
+  "total_pdbs": 3602,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failed_pdbs": [
+    {
+      "pdb_id": "100D",
+      "errors": [
+        "No modern JSON for hbond_list"
+      ],
+      "details": {
+        "hbond_list": {
+          "legacy_exists": true,
+          "modern_exists": false
+        }
+      }
+    }
+  ],
+  "elapsed_seconds": 9.3e-05,
+  "pass_rate": 0.0
+}

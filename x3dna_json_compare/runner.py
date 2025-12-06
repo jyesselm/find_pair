@@ -58,9 +58,11 @@ def _summarize_frame_comparison(fc) -> Optional[Dict]:
     """Summarize frame comparison for serialization."""
     if fc is None:
         return None
+    # Compute matched as total - missing - mismatched
+    matched = fc.total_legacy - len(fc.missing_residues) - len(fc.mismatched_calculations)
     return {
         'total_legacy': fc.total_legacy,
-        'matched': fc.matched,
+        'matched': matched,
         'missing_residues': len(fc.missing_residues),
         'mismatched_calculations': len(fc.mismatched_calculations),
     }
@@ -119,7 +121,7 @@ class ValidationRunner:
     
     def _build_comparator_kwargs(self, stages: List[str], extra_kwargs: Dict) -> Dict:
         """Build JsonComparator kwargs from stage list."""
-        # Default: all off
+        # Default: all off, cache disabled (cache doesn't track which stages were compared)
         kwargs = {
             'compare_atoms': False,
             'compare_frames': False,
@@ -127,11 +129,14 @@ class ValidationRunner:
             'compare_pairs': False,
             'compare_steps': False,
             'compare_residue_indices': False,
+            'enable_cache': False,  # Disable cache - it doesn't account for comparison flags
         }
         
         if not stages or 'all' in stages:
-            # Enable all
-            kwargs = {k: True for k in kwargs}
+            # Enable all comparison flags (but keep enable_cache=False)
+            for k in kwargs:
+                if k != 'enable_cache':
+                    kwargs[k] = True
         else:
             # Enable only requested stages
             stage_map = {

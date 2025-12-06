@@ -1,0 +1,25 @@
+{
+  "stage_id": "stage9",
+  "stage_name": "Helical Parameters",
+  "test_date": "2025-12-05T21:32:32.585090",
+  "total_pdbs": 3602,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failed_pdbs": [
+    {
+      "pdb_id": "100D",
+      "errors": [
+        "No modern JSON for helical_params"
+      ],
+      "details": {
+        "helical_params": {
+          "legacy_exists": true,
+          "modern_exists": false
+        }
+      }
+    }
+  ],
+  "elapsed_seconds": 7.3e-05,
+  "pass_rate": 0.0
+}

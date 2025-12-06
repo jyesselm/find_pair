@@ -1,0 +1,25 @@
+{
+  "stage_id": "stage8",
+  "stage_name": "Step Parameters",
+  "test_date": "2025-12-05T21:32:32.576791",
+  "total_pdbs": 3602,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failed_pdbs": [
+    {
+      "pdb_id": "100D",
+      "errors": [
+        "No modern JSON for bpstep_params"
+      ],
+      "details": {
+        "bpstep_params": {
+          "legacy_exists": true,
+          "modern_exists": false
+        }
+      }
+    }
+  ],
+  "elapsed_seconds": 7.6e-05,
+  "pass_rate": 0.0
+}

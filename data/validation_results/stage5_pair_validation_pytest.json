@@ -1,0 +1,32 @@
+{
+  "stage_id": "stage5",
+  "stage_name": "Pair Validation",
+  "test_date": "2025-12-05T21:32:32.524319",
+  "total_pdbs": 3602,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failed_pdbs": [
+    {
+      "pdb_id": "100D",
+      "errors": [
+        "Pair (6, 18) dorg: Value mismatch: legacy=9.778854, modern=14.280411, diff=4.501557",
+        "Pair (6, 18) d_v: Value mismatch: legacy=9.295193, modern=13.619476, diff=4.324283000000001",
+        "Pair (6, 18) plane_angle: Value mismatch: legacy=27.143259, modern=44.282416, diff=17.139156999999997",
+        "Pair (6, 18) dNN: Value mismatch: legacy=11.272645, modern=17.877707, diff=6.605062",
+        "Pair (6, 18) quality_score: Value mismatch: legacy=29.726404, modern=43.733484, diff=14.007079999999998"
+      ],
+      "details": {
+        "pair_validation": {
+          "legacy_exists": true,
+          "modern_exists": true,
+          "legacy_count": 200,
+          "modern_count": 190,
+          "passed": false
+        }
+      }
+    }
+  ],
+  "elapsed_seconds": 0.003506,
+  "pass_rate": 0.0
+}

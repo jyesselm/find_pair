@@ -1,0 +1,32 @@
+{
+  "stage_id": "stage7",
+  "stage_name": "Base Pair Records",
+  "test_date": "2025-12-05T21:32:32.567707",
+  "total_pdbs": 3602,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failed_pdbs": [
+    {
+      "pdb_id": "100D",
+      "errors": [
+        "Pair (10, 11) bp_type: legacy=CG, modern=GC",
+        "Pair (10, 11) orien_i: Matrix element [0][0] differs: 0.388157 vs 0.4920150777880118 (diff=0.10385807778801182)",
+        "Pair (10, 11) orien_j: Matrix element [0][0] differs: 0.492015 vs 0.3881572064936336 (diff=0.10385779350636637)",
+        "Pair (10, 11) org_i: List element 0: Value mismatch: legacy=13.325116, modern=13.285073269637168, diff=0.040042730362831236",
+        "Pair (10, 11) org_j: List element 0: Value mismatch: legacy=13.285073, modern=13.325116218019819, diff=0.04004321801981803"
+      ],
+      "details": {
+        "base_pair": {
+          "legacy_exists": true,
+          "modern_exists": true,
+          "legacy_count": 20,
+          "modern_count": 10,
+          "passed": false
+        }
+      }
+    }
+  ],
+  "elapsed_seconds": 0.000549,
+  "pass_rate": 0.0
+}
