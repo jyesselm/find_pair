@@ -30,6 +30,10 @@ from .json_validator import JsonValidator
 from .parallel_executor import ParallelExecutor, print_progress
 from .hbond_comparison import compare_hbond_lists, HBondListComparison
 from .config import load_config, get_comparison_flags
+from .runner import ValidationRunner
+from .output import OutputFormatter, ValidationSummary
+from .pdb_list import get_pdb_list, load_valid_pdbs_fast, load_test_set
+from .executables import find_executables, generate_modern_json, generate_legacy_json
 
 __all__ = [
     # Models
@@ -59,6 +63,18 @@ __all__ = [
     # Configuration
     'load_config',
     'get_comparison_flags',
+    # Validation runner
+    'ValidationRunner',
+    'OutputFormatter',
+    'ValidationSummary',
+    # PDB list utilities
+    'get_pdb_list',
+    'load_valid_pdbs_fast',
+    'load_test_set',
+    # Executable utilities
+    'find_executables',
+    'generate_modern_json',
+    'generate_legacy_json',
 ]
 
 __version__ = '1.0.0'

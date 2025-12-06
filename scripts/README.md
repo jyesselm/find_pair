@@ -1,116 +1,107 @@
 # Scripts Directory
 
-This directory contains Python scripts for comparing, analyzing, and managing JSON data from legacy and modern codebases.
+This directory contains Python scripts for JSON management and specialized analysis.
 
-## Core Tools (Active)
+**For validation, use the unified CLI tool: `fp2-validate`**
 
-These are the main scripts that should be used for regular work:
+## Unified Validation CLI
 
-### Comparison
-- **`compare_json.py`** ⭐ - Main comparison tool for comparing legacy and modern JSON outputs
-  ```bash
-  python3 scripts/compare_json.py compare
-  python3 scripts/compare_json.py compare 1H4S
-  python3 scripts/compare_json.py compare --test-set 100
-  ```
+All validation tasks are now handled by a single tool:
+
+```bash
+# Install the CLI (from project root)
+pip install -e .
+
+# Basic usage
+fp2-validate                      # All stages, all fast PDBs
+fp2-validate frames               # Frames only
+fp2-validate hbonds atoms         # Multiple stages
+fp2-validate --pdb 1EHZ -v        # Single PDB, verbose
+fp2-validate --stop-on-first      # Stop at first failure (debug mode)
+fp2-validate --diff               # Document differences to file
+fp2-validate --max 100            # First 100 PDBs only
+fp2-validate --test-set 100       # Use saved test set
+fp2-validate --quiet              # Exit code only (for CI)
+
+# Stage-specific aliases
+fp2-validate atoms                # Alias for: fp2-validate validate atoms
+fp2-validate frames               # Alias for: fp2-validate validate frames
+fp2-validate hbonds               # Alias for: fp2-validate validate hbonds
+fp2-validate pairs                # Alias for: fp2-validate validate pairs
+fp2-validate steps                # Alias for: fp2-validate validate steps
+
+# Info commands
+fp2-validate info                 # Show environment info
+fp2-validate list-pdbs            # List available PDBs
+```
+
+## Core Scripts (Still Active)
 
 ### JSON Management
-- **`rebuild_json.py`** ⭐ - Unified tool for regenerating, validating, and cleaning JSON files
+- **`rebuild_json.py`** - Generate/regenerate JSON files
   ```bash
-  # Regenerate all JSON
-  python3 scripts/rebuild_json.py regenerate
-  
-  # Regenerate only modern JSON
   python3 scripts/rebuild_json.py regenerate --modern-only
-  
-  # Regenerate only legacy JSON
   python3 scripts/rebuild_json.py regenerate --legacy-only
-  
-  # Validate JSON files
-  python3 scripts/rebuild_json.py validate
-  
-  # Clean invalid JSON files
-  python3 scripts/rebuild_json.py clean --execute
   ```
 
 ### Data Management
-- **`download_pdbs.py`** - Download PDB files from RCSB database
-  ```bash
-  python3 scripts/download_pdbs.py --pdb-ids 1H4S 2BNA
-  python3 scripts/download_pdbs.py --list-file pdb_list.txt
-  ```
-  See `download_pdbs_README.md` for details.
+- **`download_pdbs.py`** - Download PDB files from RCSB
+- **`create_fast_pdbs_json.py`** - Generate valid_pdbs_fast.json
+- **`find_slow_pdbs.py`** - Identify slow-to-process PDBs
+
+### Specialized Analysis
+- **`compare_rmsd_calculation.py`** - RMSD comparison debugging
+- **`manual_rmsd_calc.py`** - Manual RMSD calculations
+- **`check_nucleotide_types.py`** - Nucleotide type analysis
+- **`find_modified_nucleotides.py`** - Modified nucleotide detection
 
 ## Cluster Computing
 
-### `cluster/` - Cluster Computing Scripts
+See `cluster/README.md` for cluster-based validation:
 
-Scripts for running large-scale comparisons on computing clusters:
-- `run_cluster_comparison.py` - Submit comparison jobs to cluster
-- `run_single_batch.py` - Process a single batch
-- `aggregate_results.py` - Collect and summarize results
-- See `cluster/README.md` and `cluster/QUICKSTART.md` for details
+```bash
+python3 scripts/cluster/run_cluster_comparison.py
+```
 
 ## Archived Scripts
 
-**December 2, 2025**: Major cleanup performed to reduce clutter.
+**December 6, 2025**: Scripts consolidated into unified CLI.
 
-The `archive/debugging/` directory contains ~40 one-off analysis, investigation, and debugging scripts that were used during development but are no longer actively maintained. These are kept for reference:
+Archived scripts are in `archive/`:
+- `archive/validation/` - Old validate_*.py scripts → use `fp2-validate`
+- `archive/testing/` - Old test_*.py scripts → use `fp2-validate`
+- `archive/debug/` - One-off debugging scripts
 
-- **Analysis scripts** (`analyze_*.py`) - Frame/index/validation analysis
-- **Investigation scripts** (`investigate_*.py`) - Pair difference investigations
-- **Comparison scripts** (`compare_*.py`) - Specific comparison tools
-- **Debug scripts** (`debug_*.py`) - Debugging utilities
-- **Extract scripts** (`extract_*.py`) - Data extraction tools
-- **Validate/Verify scripts** (`validate_*.py`, `verify_*.py`) - One-off validation
+## Migration from Old Scripts
 
-**Note**: If you need functionality from archived scripts, check the core tools first (`compare_json.py` and `rebuild_json.py`), as they have comprehensive features and are actively maintained.
+| Old Script | New Command |
+|------------|-------------|
+| `validate_hbonds_batch.py` | `fp2-validate hbonds` |
+| `validate_hbonds_200.py` | `fp2-validate hbonds --max 200` |
+| `validate_frames_batch.py` | `fp2-validate frames` |
+| `test_ls_fitting_stop_on_mismatch.py` | `fp2-validate frames --stop-on-first` |
+| `test_single_pdb_ls_fitting.py 1EHZ` | `fp2-validate frames --pdb 1EHZ -v` |
+| `test_all_stages_batch.py` | `fp2-validate` |
+| `find_first_mismatch.py` | `fp2-validate --stop-on-first` |
 
 ## Directory Structure
 
 ```
 scripts/
-├── README.md                    # This file
-├── compare_json.py ⭐           # Main comparison tool
-├── rebuild_json.py ⭐           # JSON management tool
-├── download_pdbs.py             # PDB download utility
-├── download_pdbs_README.md      # Download script docs
-├── cluster/                     # Cluster computing scripts
+├── README.md                # This file
+├── rebuild_json.py          # JSON generation
+├── download_pdbs.py         # PDB download
+├── create_fast_pdbs_json.py # Data prep
+├── find_slow_pdbs.py        # Data categorization
+├── compare_rmsd_calculation.py  # Specialized debugging
+├── manual_rmsd_calc.py          # Specialized debugging
+├── check_nucleotide_types.py    # Analysis
+├── find_modified_nucleotides.py # Analysis
+├── cluster/                 # Cluster computing
 │   ├── README.md
-│   ├── QUICKSTART.md
 │   └── *.py
-└── archive/debugging/           # Archived debugging scripts (~40 files)
-    ├── analyze_*.py
-    ├── compare_*.py
-    ├── debug_*.py
-    ├── extract_*.py
-    ├── investigate_*.py
-    ├── validate_*.py
-    ├── verify_*.py
-    └── *.sh
+└── archive/                 # Archived (consolidated into CLI)
+    ├── validation/          # validate_*.py
+    ├── testing/             # test_*.py
+    └── debug/               # debug_*.py
 ```
-
-## Usage Examples
-
-### Quick Comparison
-```bash
-# Compare all available PDBs
-python3 scripts/compare_json.py compare
-
-# Compare specific PDB
-python3 scripts/compare_json.py compare 1H4S
-
-# Compare with verbose output
-python3 scripts/compare_json.py compare 1H4S --verbose
-```
-
-### Regenerate JSON
-```bash
-# Regenerate modern JSON for a specific PDB
-python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
-
-# Regenerate for test set
-python3 scripts/rebuild_json.py regenerate --test-set 100
-```
-
-For more detailed documentation, see [docs/TESTING_GUIDE.md](../docs/TESTING_GUIDE.md).

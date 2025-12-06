@@ -33,6 +33,9 @@ dev = [
     "flake8>=5.0",
 ]
 
+[project.scripts]
+fp2-validate = "x3dna_json_compare.cli:main"
+
 [tool.pytest.ini_options]
 testpaths = ["tests_python"]
 python_files = ["test_*.py"]
