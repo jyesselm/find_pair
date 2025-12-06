@@ -508,6 +508,87 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
     
     reporter.add_header(pdb_id, stages)
     
+    # Add atoms - load JSON to show ALL records
+    if result.atom_comparison:
+        import json
+        from pathlib import Path
+        
+        ac = result.atom_comparison
+        reporter.add_stage_header("atoms", 1)
+        reporter.add_stage_summary(
+            ac.total_legacy, ac.total_modern,
+            ac.common_count,
+            len(ac.missing_in_modern), len(ac.extra_in_modern),
+            len(ac.mismatched_fields)
+        )
+        
+        # Load all atom records to show every record
+        if not diff_only:
+            legacy_file = Path(f"data/json_legacy/pdb_atoms/{pdb_id}.json")
+            modern_file = Path(f"data/json/pdb_atoms/{pdb_id}.json")
+            
+            if legacy_file.exists() and modern_file.exists():
+                try:
+                    with open(legacy_file) as f:
+                        legacy_data = json.load(f)
+                    with open(modern_file) as f:
+                        modern_data = json.load(f)
+                    
+                    # Extract atoms array from the wrapper structure
+                    # Legacy: [{num_atoms: ..., atoms: [...]}]
+                    # Modern: {atoms: [...]}
+                    if isinstance(legacy_data, list) and len(legacy_data) > 0:
+                        legacy_atoms = legacy_data[0].get('atoms', [])
+                    elif isinstance(legacy_data, dict):
+                        legacy_atoms = legacy_data.get('atoms', [])
+                    else:
+                        legacy_atoms = []
+                    
+                    if isinstance(modern_data, list) and len(modern_data) > 0:
+                        modern_atoms = modern_data[0].get('atoms', [])
+                    elif isinstance(modern_data, dict):
+                        modern_atoms = modern_data.get('atoms', [])
+                    else:
+                        modern_atoms = []
+                    
+                    # Create dict for quick modern lookup
+                    # Atoms are identified by atom_idx
+                    modern_dict = {}
+                    for rec in modern_atoms:
+                        atom_idx = rec.get('atom_idx')
+                        if atom_idx:
+                            modern_dict[atom_idx] = rec
+                    
+                    # Compare all legacy records
+                    shown_count = 0
+                    max_to_show = 1000
+                    
+                    for legacy_rec in legacy_atoms:
+                        if shown_count >= max_to_show:
+                            break
+                        
+                        atom_idx = legacy_rec.get('atom_idx')
+                        modern_rec = modern_dict.get(atom_idx, {})
+                        
+                        # Fields to compare for atoms
+                        fields = ['atom_name', 'residue_name', 'chain_id', 'residue_seq', 'xyz']
+                        
+                        rec_comp = create_record_comparison_from_dicts(
+                            record_key=f"atom_{atom_idx}",
+                            record_type="pdb_atoms",
+                            legacy_record=legacy_rec,
+                            modern_record=modern_rec,
+                            fields_to_compare=fields,
+                            tolerance=tolerance,
+                            legacy_source=str(legacy_file),
+                            modern_source=str(modern_file)
+                        )
+                        reporter.add_record_comparison(rec_comp)
+                        shown_count += 1
+                except Exception as e:
+                    # If loading fails, just continue without atom details
+                    pass
+    
     # Add distance checks - load JSON to show ALL records
     if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
         import json
@@ -761,14 +842,150 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                 )
                 reporter.add_record_comparison(rec_comp)
     
+    # Add steps (bpstep_params)
+    if result.step_comparison:
+        import json
+        from pathlib import Path
+        
+        sc = result.step_comparison
+        reporter.add_stage_header("steps", 5)
+        reporter.add_stage_summary(
+            sc.total_legacy, sc.total_modern,
+            sc.total_legacy - len(sc.missing_steps),
+            len(sc.missing_steps), 0,
+            len(sc.mismatched_steps)
+        )
+        
+        # Load all step records to show every record
+        if not diff_only:
+            legacy_file = Path(f"data/json_legacy/bpstep_params/{pdb_id}.json")
+            modern_file = Path(f"data/json/bpstep_params/{pdb_id}.json")
+            
+            if legacy_file.exists() and modern_file.exists():
+                try:
+                    with open(legacy_file) as f:
+                        legacy_data = json.load(f)
+                    with open(modern_file) as f:
+                        modern_data = json.load(f)
+                    
+                    # Create dict for quick modern lookup
+                    modern_dict = {}
+                    for rec in modern_data:
+                        step_id = rec.get('step_id')
+                        if step_id:
+                            modern_dict[step_id] = rec
+                    
+                    # Compare all legacy records
+                    shown_count = 0
+                    max_to_show = 1000
+                    
+                    # Common step parameter fields
+                    fields = ['shift', 'slide', 'rise', 'tilt', 'roll', 'twist']
+                    
+                    for legacy_rec in legacy_data:
+                        if shown_count >= max_to_show:
+                            break
+                        
+                        step_id = legacy_rec.get('step_id')
+                        modern_rec = modern_dict.get(step_id, {})
+                        
+                        rec_comp = create_record_comparison_from_dicts(
+                            record_key=step_id,
+                            record_type="bpstep_params",
+                            legacy_record=legacy_rec,
+                            modern_record=modern_rec,
+                            fields_to_compare=fields,
+                            tolerance=tolerance,
+                            legacy_source=str(legacy_file),
+                            modern_source=str(modern_file)
+                        )
+                        reporter.add_record_comparison(rec_comp)
+                        shown_count += 1
+                except Exception:
+                    pass
+    
+    # Add helical params
+    if result.helical_comparison:
+        import json
+        from pathlib import Path
+        
+        hc = result.helical_comparison
+        reporter.add_stage_header("helical", 6)
+        reporter.add_stage_summary(
+            hc.total_legacy, hc.total_modern,
+            hc.total_legacy - len(hc.missing_steps),
+            len(hc.missing_steps), 0,
+            len(hc.mismatched_steps)
+        )
+        
+        # Load all helical records to show every record
+        if not diff_only:
+            legacy_file = Path(f"data/json_legacy/helical_params/{pdb_id}.json")
+            modern_file = Path(f"data/json/helical_params/{pdb_id}.json")
+            
+            if legacy_file.exists() and modern_file.exists():
+                try:
+                    with open(legacy_file) as f:
+                        legacy_data = json.load(f)
+                    with open(modern_file) as f:
+                        modern_data = json.load(f)
+                    
+                    # Create dict for quick modern lookup
+                    modern_dict = {}
+                    for rec in modern_data:
+                        step_id = rec.get('step_id')
+                        if step_id:
+                            modern_dict[step_id] = rec
+                    
+                    # Compare all legacy records
+                    shown_count = 0
+                    max_to_show = 1000
+                    
+                    # Common helical parameter fields
+                    fields = ['x_disp', 'y_disp', 'h_rise', 'inclination', 'tip', 'h_twist']
+                    
+                    for legacy_rec in legacy_data:
+                        if shown_count >= max_to_show:
+                            break
+                        
+                        step_id = legacy_rec.get('step_id')
+                        modern_rec = modern_dict.get(step_id, {})
+                        
+                        rec_comp = create_record_comparison_from_dicts(
+                            record_key=step_id,
+                            record_type="helical_params",
+                            legacy_record=legacy_rec,
+                            modern_record=modern_rec,
+                            fields_to_compare=fields,
+                            tolerance=tolerance,
+                            legacy_source=str(legacy_file),
+                            modern_source=str(modern_file)
+                        )
+                        reporter.add_record_comparison(rec_comp)
+                        shown_count += 1
+                except Exception:
+                    pass
+    
     # Add summary
     stages_compared = len(stages)
     stages_with_diffs = 0
     diff_details = []
     
+    if result.atom_comparison and len(result.atom_comparison.mismatched_fields) > 0:
+        stages_with_diffs += 1
+        diff_details.append(f"atoms: {len(result.atom_comparison.mismatched_fields)} mismatches")
+    
     if result.frame_comparison and len(result.frame_comparison.mismatched_calculations) > 0:
         stages_with_diffs += 1
         diff_details.append(f"frames: {len(result.frame_comparison.mismatched_calculations)} mismatches")
+    
+    if result.step_comparison and len(result.step_comparison.mismatched_steps) > 0:
+        stages_with_diffs += 1
+        diff_details.append(f"steps: {len(result.step_comparison.mismatched_steps)} mismatches")
+    
+    if result.helical_comparison and len(result.helical_comparison.mismatched_steps) > 0:
+        stages_with_diffs += 1
+        diff_details.append(f"helical: {len(result.helical_comparison.mismatched_steps)} mismatches")
     
     if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
         if len(result.distance_checks_comparison.mismatched_checks) > 0:
