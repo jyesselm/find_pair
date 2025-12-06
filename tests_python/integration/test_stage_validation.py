@@ -6,30 +6,38 @@ This script validates each stage of the base pair finding algorithm by comparing
 legacy and modern JSON outputs. It supports stop-on-first-failure, parallel
 processing, and automatic cleanup of temp files.
 
+Stage Reference:
+    1. pdb_atoms           - Atom parsing
+    2. residue_indices     - Residue index mapping
+    3. base_frame_calc     - Base frame calculation
+    4. ls_fitting          - Least squares fitting
+    5. frame_calc          - Reference frame calculation
+    6. pair_validation     - Pair validation
+    7. distance_checks     - Distance measurements
+    8. hbond_list          - Hydrogen bond list
+    9. base_pair           - Base pair records
+    10. find_bestpair_selection - Final pair selection (PRIMARY OUTPUT)
+    11. bpstep_params      - Step parameters
+    12. helical_params     - Helical parameters
+
 Usage:
-    # Test a specific stage
-    pytest tests_python/integration/test_stage_validation.py -v -k "stage3"
-    
-    # Run with max PDBs limit
-    pytest tests_python/integration/test_stage_validation.py -v --max-pdbs=100
-    
-    # Stop on first failure  
-    pytest tests_python/integration/test_stage_validation.py -v -x
-    
-    # Test single PDB
-    pytest tests_python/integration/test_stage_validation.py::test_stage3_single -v
+    # CLI mode
+    python test_stage_validation.py 1 --max-pdbs 100        # Stage 1
+    python test_stage_validation.py frames --max-pdbs 100   # Stages 3,4,5
+    python test_stage_validation.py all --pdb 1EHZ          # All stages, single PDB
+
+    # pytest mode
+    pytest test_stage_validation.py -v -k "stage1"
+    pytest test_stage_validation.py -v --max-pdbs=100
 """
 
 import json
 import pytest
-import shutil
-import subprocess
+import sys
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Any
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
-from multiprocessing import Pool, cpu_count
-import sys
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -45,97 +53,166 @@ from scripts.test_utils import find_executables, load_valid_pdbs_fast
 @dataclass
 class StageConfig:
     """Configuration for a validation stage."""
+    stage_num: int
     stage_id: str
     name: str
     description: str
-    record_types: List[str]
-    dependencies: List[str]
+    json_type: str
     key_fields: List[str]
+    dependencies: List[int] = field(default_factory=list)
     tolerance: float = 1e-6
 
 
+# Stage definitions aligned with docs/JSON_DATA_TYPES_AND_COMPARISONS.md
 STAGES = {
-    "stage0": StageConfig(
-        stage_id="stage0",
+    1: StageConfig(
+        stage_num=1,
+        stage_id="pdb_atoms",
+        name="Atom Parsing",
+        description="Parse PDB file atoms and coordinates",
+        json_type="pdb_atoms",
+        key_fields=["atom_idx", "xyz", "atom_name", "residue_name", "chain_id"],
+        dependencies=[]
+    ),
+    2: StageConfig(
+        stage_num=2,
+        stage_id="residue_indices",
         name="Residue Indices",
-        description="PDB residue parsing and index mapping",
-        record_types=["residue_indices"],
-        dependencies=[],
-        key_fields=["chain_id", "residue_seq", "insertion", "legacy_residue_idx"]
+        description="Map residues to atom index ranges",
+        json_type="residue_indices",
+        key_fields=["chain_id", "residue_seq", "insertion", "legacy_residue_idx"],
+        dependencies=[1]
     ),
-    "stage1": StageConfig(
-        stage_id="stage1",
-        name="Atoms",
-        description="PDB atom parsing",
-        record_types=["pdb_atoms"],
-        dependencies=[],
-        key_fields=["atom_idx", "atom_name", "xyz", "chain_id", "residue_seq"]
+    3: StageConfig(
+        stage_num=3,
+        stage_id="base_frame_calc",
+        name="Base Frame Calc",
+        description="Calculate base frame via template matching",
+        json_type="base_frame_calc",
+        key_fields=["legacy_residue_idx", "rms_fit", "num_matched_atoms", "matched_atoms"],
+        dependencies=[1, 2],
+        tolerance=0.001
     ),
-    "stage2": StageConfig(
-        stage_id="stage2",
+    4: StageConfig(
+        stage_num=4,
+        stage_id="ls_fitting",
         name="LS Fitting",
-        description="Least-squares fitting for base frame calculation",
-        record_types=["ls_fitting"],
-        dependencies=["stage0", "stage1"],
-        key_fields=["chain_id", "residue_seq", "insertion", "rms", "num_points"]
+        description="Least squares fitting results",
+        json_type="ls_fitting",
+        key_fields=["legacy_residue_idx", "rms_fit", "num_points", "rotation_matrix", "translation"],
+        dependencies=[1, 2],
+        tolerance=0.001
     ),
-    "stage3": StageConfig(
-        stage_id="stage3",
-        name="Distance Checks",
-        description="Geometric measurements between base pairs",
-        record_types=["distance_checks"],
-        dependencies=["stage2"],
-        key_fields=["base_i", "base_j", "dorg", "dNN", "plane_angle", "d_v", "overlap_area"]
+    5: StageConfig(
+        stage_num=5,
+        stage_id="frame_calc",
+        name="Frame Calc",
+        description="Reference frame (rotation matrix + origin)",
+        json_type="frame_calc",
+        key_fields=["legacy_residue_idx", "orien", "org"],
+        dependencies=[3, 4],
+        tolerance=1e-4
     ),
-    "stage4": StageConfig(
-        stage_id="stage4",
-        name="H-bond List",
-        description="Hydrogen bond detection for base pairs",
-        record_types=["hbond_list"],
-        dependencies=["stage3"],
-        key_fields=["base_i", "base_j", "num_hbonds", "hbonds"]
-    ),
-    "stage5": StageConfig(
-        stage_id="stage5",
+    6: StageConfig(
+        stage_num=6,
+        stage_id="pair_validation",
         name="Pair Validation",
-        description="Validation results for each residue pair",
-        record_types=["pair_validation"],
-        dependencies=["stage3", "stage4"],
-        key_fields=["base_i", "base_j", "is_valid", "bp_type_id", "quality_score"]
+        description="Validate potential base pairs",
+        json_type="pair_validation",
+        key_fields=["base_i", "base_j", "is_valid", "bp_type_id", "quality_score"],
+        dependencies=[5]
     ),
-    "stage6": StageConfig(
-        stage_id="stage6",
-        name="Find Bestpair Selection",
-        description="THE PRIMARY OUTPUT - selected base pairs",
-        record_types=["find_bestpair_selection"],
-        dependencies=["stage5"],
-        key_fields=["num_bp", "pairs"]
+    7: StageConfig(
+        stage_num=7,
+        stage_id="distance_checks",
+        name="Distance Checks",
+        description="Geometric measurements between pairs",
+        json_type="distance_checks",
+        key_fields=["base_i", "base_j", "dorg", "dNN", "plane_angle", "d_v"],
+        dependencies=[5]
     ),
-    "stage7": StageConfig(
-        stage_id="stage7",
-        name="Base Pair Records",
-        description="Detailed base pair information",
-        record_types=["base_pair"],
-        dependencies=["stage6"],
-        key_fields=["base_i", "base_j", "bp_type", "orien_i", "orien_j", "org_i", "org_j"]
+    8: StageConfig(
+        stage_num=8,
+        stage_id="hbond_list",
+        name="H-bond List",
+        description="Hydrogen bond detection",
+        json_type="hbond_list",
+        key_fields=["base_i", "base_j", "num_hbonds", "hbonds"],
+        dependencies=[6, 7]
     ),
-    "stage8": StageConfig(
-        stage_id="stage8",
+    9: StageConfig(
+        stage_num=9,
+        stage_id="base_pair",
+        name="Base Pair",
+        description="Identified base pair records",
+        json_type="base_pair",
+        key_fields=["base_i", "base_j", "bp_type", "orien_i", "org_i"],
+        dependencies=[6, 7, 8]
+    ),
+    10: StageConfig(
+        stage_num=10,
+        stage_id="find_bestpair_selection",
+        name="Best Pair Selection",
+        description="Final selected base pairs (PRIMARY OUTPUT)",
+        json_type="find_bestpair_selection",
+        key_fields=["num_bp", "pairs"],
+        dependencies=[9]
+    ),
+    11: StageConfig(
+        stage_num=11,
+        stage_id="bpstep_params",
         name="Step Parameters",
-        description="6 step parameters for consecutive base pairs",
-        record_types=["bpstep_params"],
-        dependencies=["stage6"],
-        key_fields=["bp_idx1", "bp_idx2", "shift", "slide", "rise", "tilt", "roll", "twist"]
+        description="Base pair step parameters",
+        json_type="bpstep_params",
+        key_fields=["bp_idx1", "bp_idx2", "shift", "slide", "rise", "tilt", "roll", "twist"],
+        dependencies=[10]
     ),
-    "stage9": StageConfig(
-        stage_id="stage9",
+    12: StageConfig(
+        stage_num=12,
+        stage_id="helical_params",
         name="Helical Parameters",
         description="Helical axis parameters",
-        record_types=["helical_params"],
-        dependencies=["stage6", "stage8"],
-        key_fields=["bp_idx1", "bp_idx2", "x_displacement", "y_displacement", "rise", "inclination", "tip", "twist"]
+        json_type="helical_params",
+        key_fields=["bp_idx1", "bp_idx2", "x_displacement", "y_displacement", "rise", "inclination", "tip", "twist"],
+        dependencies=[10, 11]
     ),
 }
+
+# Stage groups for convenience
+STAGE_GROUPS = {
+    "atoms": [1],
+    "residue": [2],
+    "frames": [3, 4, 5],
+    "pairs": [6, 7, 9, 10],
+    "hbonds": [8],
+    "steps": [11, 12],
+    "all": list(range(1, 13)),
+}
+
+# Map stage IDs to numbers for lookup
+STAGE_ID_TO_NUM = {cfg.stage_id: cfg.stage_num for cfg in STAGES.values()}
+
+
+def resolve_stages(stage_args: List[str]) -> List[int]:
+    """Resolve stage arguments to list of stage numbers."""
+    if not stage_args:
+        return list(range(1, 13))  # All stages
+    
+    stages = []
+    for arg in stage_args:
+        # Try as group name
+        if arg.lower() in STAGE_GROUPS:
+            stages.extend(STAGE_GROUPS[arg.lower()])
+        # Try as stage number
+        elif arg.isdigit():
+            num = int(arg)
+            if 1 <= num <= 12:
+                stages.append(num)
+        # Try as stage ID
+        elif arg.lower() in STAGE_ID_TO_NUM:
+            stages.append(STAGE_ID_TO_NUM[arg.lower()])
+    
+    return sorted(set(stages))
 
 
 # ============================================================================
@@ -176,7 +253,7 @@ def compare_values(legacy_val: Any, modern_val: Any, tolerance: float = 1e-6) ->
     # Direct comparison for other types
     if legacy_val == modern_val:
         return True, ""
-    return False, f"Type/value mismatch: legacy={legacy_val} ({type(legacy_val)}), modern={modern_val} ({type(modern_val)})"
+    return False, f"Type/value mismatch: legacy={legacy_val} ({type(legacy_val).__name__}), modern={modern_val} ({type(modern_val).__name__})"
 
 
 def compare_matrix(legacy_mat: List[List[float]], modern_mat: List[List[float]], 
@@ -200,9 +277,78 @@ def compare_matrix(legacy_mat: List[List[float]], modern_mat: List[List[float]],
 # Stage-Specific Comparisons
 # ============================================================================
 
+def compare_pdb_atoms(legacy_records: List[Dict], modern_records: List[Dict],
+                      tolerance: float = 1e-6) -> Tuple[bool, List[str]]:
+    """Compare pdb_atoms records (Stage 1)."""
+    errors = []
+    
+    # Handle nested structure (atoms array inside record)
+    if legacy_records and isinstance(legacy_records[0], dict):
+        if 'atoms' in legacy_records[0]:
+            legacy_atoms = legacy_records[0].get('atoms', [])
+        elif legacy_records[0].get('type') == 'pdb_atoms':
+            legacy_atoms = legacy_records[0].get('atoms', [])
+        else:
+            legacy_atoms = legacy_records
+    else:
+        legacy_atoms = legacy_records
+    
+    if modern_records and isinstance(modern_records[0], dict):
+        if 'atoms' in modern_records[0]:
+            modern_atoms = modern_records[0].get('atoms', [])
+        elif modern_records[0].get('type') == 'pdb_atoms':
+            modern_atoms = modern_records[0].get('atoms', [])
+        else:
+            modern_atoms = modern_records
+    else:
+        modern_atoms = modern_records
+    
+    # Check count
+    if len(legacy_atoms) != len(modern_atoms):
+        errors.append(f"Atom count mismatch: legacy={len(legacy_atoms)}, modern={len(modern_atoms)}")
+        return False, errors
+    
+    # Build lookup by legacy_atom_idx
+    legacy_by_idx = {}
+    for atom in legacy_atoms:
+        idx = atom.get('atom_idx') or atom.get('legacy_atom_idx')
+        if idx is not None:
+            legacy_by_idx[idx] = atom
+    
+    modern_by_legacy_idx = {}
+    for atom in modern_atoms:
+        idx = atom.get('legacy_atom_idx')
+        if idx is not None:
+            modern_by_legacy_idx[idx] = atom
+    
+    # Compare atoms by index
+    for idx, legacy_atom in legacy_by_idx.items():
+        if idx not in modern_by_legacy_idx:
+            errors.append(f"Atom {idx} missing in modern")
+            continue
+        
+        modern_atom = modern_by_legacy_idx[idx]
+        
+        # Compare coordinates
+        leg_xyz = legacy_atom.get('xyz', [])
+        mod_xyz = modern_atom.get('xyz', [])
+        if len(leg_xyz) == 3 and len(mod_xyz) == 3:
+            for i, (l, m) in enumerate(zip(leg_xyz, mod_xyz)):
+                if abs(l - m) > tolerance:
+                    errors.append(f"Atom {idx} xyz[{i}]: {l} vs {m}")
+        
+        # Compare atom name
+        leg_name = legacy_atom.get('atom_name', '').strip()
+        mod_name = modern_atom.get('atom_name', '').strip()
+        if leg_name != mod_name:
+            errors.append(f"Atom {idx} name: '{leg_name}' vs '{mod_name}'")
+    
+    return len(errors) == 0, errors
+
+
 def compare_residue_indices(legacy_records: List[Dict], modern_records: List[Dict], 
                             tolerance: float = 1e-6) -> Tuple[bool, List[str]]:
-    """Compare residue indices records."""
+    """Compare residue indices records (Stage 2)."""
     errors = []
     
     if len(legacy_records) != len(modern_records):
@@ -237,9 +383,154 @@ def compare_residue_indices(legacy_records: List[Dict], modern_records: List[Dic
     return len(errors) == 0, errors
 
 
+def compare_base_frame_calc(legacy_records: List[Dict], modern_records: List[Dict],
+                            tolerance: float = 0.001) -> Tuple[bool, List[str]]:
+    """Compare base_frame_calc records (Stage 3)."""
+    errors = []
+    
+    # Build lookup by (chain_id, residue_seq, insertion)
+    legacy_by_key = {}
+    for rec in legacy_records:
+        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        legacy_by_key[key] = rec
+    
+    modern_by_key = {}
+    for rec in modern_records:
+        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        modern_by_key[key] = rec
+    
+    common_keys = set(legacy_by_key.keys()) & set(modern_by_key.keys())
+    
+    for key in common_keys:
+        leg_rec = legacy_by_key[key]
+        mod_rec = modern_by_key[key]
+        
+        # Compare rms_fit
+        leg_rms = leg_rec.get('rms_fit', 0.0)
+        mod_rms = mod_rec.get('rms_fit', 0.0)
+        if abs(leg_rms - mod_rms) > tolerance:
+            errors.append(f"Key {key} rms_fit: {leg_rms} vs {mod_rms}")
+        
+        # Compare num_matched_atoms
+        leg_num = leg_rec.get('num_matched_atoms', 0)
+        mod_num = mod_rec.get('num_matched_atoms', 0)
+        if leg_num != mod_num:
+            errors.append(f"Key {key} num_matched_atoms: {leg_num} vs {mod_num}")
+        
+        # Compare matched_atoms (as sets)
+        leg_atoms = set(leg_rec.get('matched_atoms', []))
+        mod_atoms = set(mod_rec.get('matched_atoms', []))
+        if leg_atoms != mod_atoms:
+            only_leg = leg_atoms - mod_atoms
+            only_mod = mod_atoms - leg_atoms
+            errors.append(f"Key {key} matched_atoms differ: only_legacy={only_leg}, only_modern={only_mod}")
+    
+    # Check for missing keys
+    missing_in_modern = set(legacy_by_key.keys()) - common_keys
+    if missing_in_modern:
+        for key in list(missing_in_modern)[:5]:
+            errors.append(f"Missing in modern: {key}")
+    
+    return len(errors) == 0, errors
+
+
+def compare_ls_fitting(legacy_records: List[Dict], modern_records: List[Dict],
+                       tolerance: float = 0.001) -> Tuple[bool, List[str]]:
+    """Compare ls_fitting records (Stage 4)."""
+    errors = []
+    
+    # Build lookup by (chain_id, residue_seq, insertion)
+    legacy_by_key = {}
+    for rec in legacy_records:
+        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        legacy_by_key[key] = rec
+    
+    modern_by_key = {}
+    for rec in modern_records:
+        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        modern_by_key[key] = rec
+    
+    common_keys = set(legacy_by_key.keys()) & set(modern_by_key.keys())
+    
+    for key in common_keys:
+        leg_rec = legacy_by_key[key]
+        mod_rec = modern_by_key[key]
+        
+        # Compare rms_fit
+        leg_rms = leg_rec.get('rms_fit', 0.0)
+        mod_rms = mod_rec.get('rms_fit', 0.0)
+        if abs(leg_rms - mod_rms) > tolerance:
+            errors.append(f"Key {key} rms_fit: {leg_rms} vs {mod_rms}")
+        
+        # Compare num_points
+        leg_num = leg_rec.get('num_points', 0)
+        mod_num = mod_rec.get('num_points', 0)
+        if leg_num != mod_num:
+            errors.append(f"Key {key} num_points: {leg_num} vs {mod_num}")
+        
+        # Compare rotation_matrix
+        leg_rot = leg_rec.get('rotation_matrix', [])
+        mod_rot = mod_rec.get('rotation_matrix', [])
+        if leg_rot and mod_rot:
+            match, msg = compare_matrix(leg_rot, mod_rot, tolerance=1e-4)
+            if not match:
+                errors.append(f"Key {key} rotation_matrix: {msg}")
+        
+        # Compare translation
+        leg_trans = leg_rec.get('translation', [])
+        mod_trans = mod_rec.get('translation', [])
+        if len(leg_trans) == 3 and len(mod_trans) == 3:
+            max_diff = max(abs(leg_trans[i] - mod_trans[i]) for i in range(3))
+            if max_diff > tolerance:
+                errors.append(f"Key {key} translation max_diff: {max_diff}")
+    
+    return len(errors) == 0, errors
+
+
+def compare_frame_calc(legacy_records: List[Dict], modern_records: List[Dict],
+                       tolerance: float = 1e-4) -> Tuple[bool, List[str]]:
+    """Compare frame_calc records (Stage 5)."""
+    errors = []
+    
+    # Build lookup by (chain_id, residue_seq, insertion)
+    legacy_by_key = {}
+    for rec in legacy_records:
+        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        legacy_by_key[key] = rec
+    
+    modern_by_key = {}
+    for rec in modern_records:
+        key = (rec.get('chain_id', ''), rec.get('residue_seq', 0), rec.get('insertion', ' '))
+        modern_by_key[key] = rec
+    
+    common_keys = set(legacy_by_key.keys()) & set(modern_by_key.keys())
+    
+    for key in common_keys:
+        leg_rec = legacy_by_key[key]
+        mod_rec = modern_by_key[key]
+        
+        # Compare orien (rotation matrix)
+        leg_orien = leg_rec.get('orien', [])
+        mod_orien = mod_rec.get('orien', [])
+        if leg_orien and mod_orien:
+            match, msg = compare_matrix(leg_orien, mod_orien, tolerance)
+            if not match:
+                errors.append(f"Key {key} orien: {msg}")
+        
+        # Compare org (origin)
+        leg_org = leg_rec.get('org', [])
+        mod_org = mod_rec.get('org', [])
+        if len(leg_org) == 3 and len(mod_org) == 3:
+            max_diff = max(abs(leg_org[i] - mod_org[i]) for i in range(3))
+            if max_diff > tolerance:
+                errors.append(f"Key {key} org max_diff: {max_diff}")
+    
+    return len(errors) == 0, errors
+
+
 def compare_distance_checks(legacy_records: List[Dict], modern_records: List[Dict],
                            tolerance: float = 1e-6) -> Tuple[bool, List[str]]:
-    """Compare distance checks records."""
+    """Compare distance checks records (Stage 7)."""
     errors = []
     
     # Build lookup by normalized pair
@@ -253,14 +544,12 @@ def compare_distance_checks(legacy_records: List[Dict], modern_records: List[Dic
         pair = normalize_pair(rec.get('base_i', 0), rec.get('base_j', 0))
         modern_by_pair[pair] = rec
     
-    # Find common pairs
     common_pairs = set(legacy_by_pair.keys()) & set(modern_by_pair.keys())
     
     if not common_pairs and (legacy_by_pair or modern_by_pair):
         errors.append(f"No common pairs found (legacy={len(legacy_by_pair)}, modern={len(modern_by_pair)})")
         return False, errors
     
-    # Compare common pairs
     fields_to_compare = ['dorg', 'dNN', 'plane_angle', 'd_v', 'overlap_area']
     
     for pair in common_pairs:
@@ -283,7 +572,7 @@ def compare_distance_checks(legacy_records: List[Dict], modern_records: List[Dic
 
 def compare_hbond_list(legacy_records: List[Dict], modern_records: List[Dict],
                        tolerance: float = 1e-6) -> Tuple[bool, List[str]]:
-    """Compare H-bond list records."""
+    """Compare H-bond list records (Stage 8)."""
     errors = []
     
     # Build lookup by normalized pair
@@ -320,7 +609,7 @@ def compare_hbond_list(legacy_records: List[Dict], modern_records: List[Dict],
             continue
         
         for i, (leg_hb, mod_hb) in enumerate(zip(leg_hbonds, mod_hbonds)):
-            # Compare donor, acceptor, distance, type
+            # Compare donor, acceptor, distance
             if leg_hb.get('donor_atom', '').strip() != mod_hb.get('donor_atom', '').strip():
                 errors.append(f"Pair {pair} hbond {i} donor: {leg_hb.get('donor_atom')} vs {mod_hb.get('donor_atom')}")
             if leg_hb.get('acceptor_atom', '').strip() != mod_hb.get('acceptor_atom', '').strip():
@@ -336,7 +625,7 @@ def compare_hbond_list(legacy_records: List[Dict], modern_records: List[Dict],
 
 def compare_pair_validation(legacy_records: List[Dict], modern_records: List[Dict],
                             tolerance: float = 1e-6) -> Tuple[bool, List[str]]:
-    """Compare pair validation records."""
+    """Compare pair validation records (Stage 6)."""
     errors = []
     
     # Build lookup by normalized pair
@@ -381,7 +670,7 @@ def compare_pair_validation(legacy_records: List[Dict], modern_records: List[Dic
 
 def compare_find_bestpair_selection(legacy_records: List[Dict], modern_records: List[Dict],
                                     tolerance: float = 1e-6) -> Tuple[bool, List[str]]:
-    """Compare find_bestpair_selection records - THE PRIMARY OUTPUT."""
+    """Compare find_bestpair_selection records - THE PRIMARY OUTPUT (Stage 10)."""
     errors = []
     
     if not legacy_records or not modern_records:
@@ -418,7 +707,7 @@ def compare_find_bestpair_selection(legacy_records: List[Dict], modern_records: 
 
 def compare_base_pair(legacy_records: List[Dict], modern_records: List[Dict],
                       tolerance: float = 1e-6) -> Tuple[bool, List[str]]:
-    """Compare base pair records."""
+    """Compare base pair records (Stage 9)."""
     errors = []
     
     # Build lookup by normalized pair
@@ -465,7 +754,7 @@ def compare_base_pair(legacy_records: List[Dict], modern_records: List[Dict],
 
 def compare_step_params(legacy_records: List[Dict], modern_records: List[Dict],
                         tolerance: float = 1e-6) -> Tuple[bool, List[str]]:
-    """Compare step parameter records."""
+    """Compare step parameter records (Stage 11)."""
     errors = []
     
     # Build lookup by (bp_idx1, bp_idx2)
@@ -505,7 +794,7 @@ def compare_step_params(legacy_records: List[Dict], modern_records: List[Dict],
 
 def compare_helical_params(legacy_records: List[Dict], modern_records: List[Dict],
                            tolerance: float = 1e-6) -> Tuple[bool, List[str]]:
-    """Compare helical parameter records."""
+    """Compare helical parameter records (Stage 12)."""
     errors = []
     
     # Build lookup by (bp_idx1, bp_idx2)
@@ -539,16 +828,20 @@ def compare_helical_params(legacy_records: List[Dict], modern_records: List[Dict
     return len(errors) == 0, errors
 
 
-# Map stage to comparison function
+# Map stage number to comparison function
 COMPARISON_FUNCTIONS = {
-    "residue_indices": compare_residue_indices,
-    "distance_checks": compare_distance_checks,
-    "hbond_list": compare_hbond_list,
-    "pair_validation": compare_pair_validation,
-    "find_bestpair_selection": compare_find_bestpair_selection,
-    "base_pair": compare_base_pair,
-    "bpstep_params": compare_step_params,
-    "helical_params": compare_helical_params,
+    1: compare_pdb_atoms,
+    2: compare_residue_indices,
+    3: compare_base_frame_calc,
+    4: compare_ls_fitting,
+    5: compare_frame_calc,
+    6: compare_pair_validation,
+    7: compare_distance_checks,
+    8: compare_hbond_list,
+    9: compare_base_pair,
+    10: compare_find_bestpair_selection,
+    11: compare_step_params,
+    12: compare_helical_params,
 }
 
 
@@ -571,12 +864,16 @@ def load_json_records(json_path: Path) -> List[Dict]:
     return []
 
 
-def test_single_pdb_stage(pdb_id: str, stage_config: StageConfig,
-                          project_root: Path) -> Dict:
+def test_single_pdb_stage(pdb_id: str, stage_num: int, project_root: Path) -> Dict:
     """Test a single PDB for a specific stage."""
+    stage_config = STAGES.get(stage_num)
+    if not stage_config:
+        return {"pdb_id": pdb_id, "stage": stage_num, "passed": False, "errors": ["Unknown stage"]}
+    
     result = {
         "pdb_id": pdb_id,
-        "stage": stage_config.stage_id,
+        "stage": stage_num,
+        "stage_name": stage_config.name,
         "passed": False,
         "errors": [],
         "details": {}
@@ -585,59 +882,61 @@ def test_single_pdb_stage(pdb_id: str, stage_config: StageConfig,
     legacy_base = project_root / "data" / "json_legacy"
     modern_base = project_root / "data" / "json"
     
-    for record_type in stage_config.record_types:
-        legacy_file = legacy_base / record_type / f"{pdb_id}.json"
-        modern_file = modern_base / record_type / f"{pdb_id}.json"
-        
-        # Check if legacy exists
-        if not legacy_file.exists():
-            result["errors"].append(f"No legacy JSON for {record_type}")
-            result["details"][record_type] = {"legacy_exists": False}
-            continue
-        
-        # Check if modern exists
-        if not modern_file.exists():
-            result["errors"].append(f"No modern JSON for {record_type}")
-            result["details"][record_type] = {"legacy_exists": True, "modern_exists": False}
-            continue
-        
-        # Load records
-        legacy_records = load_json_records(legacy_file)
-        modern_records = load_json_records(modern_file)
-        
-        result["details"][record_type] = {
-            "legacy_exists": True,
-            "modern_exists": True,
-            "legacy_count": len(legacy_records),
-            "modern_count": len(modern_records)
-        }
-        
-        # Get comparison function
-        compare_fn = COMPARISON_FUNCTIONS.get(record_type)
-        if compare_fn:
-            passed, errors = compare_fn(legacy_records, modern_records, stage_config.tolerance)
-            result["details"][record_type]["passed"] = passed
-            result["errors"].extend(errors)
+    json_type = stage_config.json_type
+    legacy_file = legacy_base / json_type / f"{pdb_id}.json"
+    modern_file = modern_base / json_type / f"{pdb_id}.json"
+    
+    # Check if legacy exists
+    if not legacy_file.exists():
+        result["errors"].append(f"No legacy JSON for {json_type}")
+        result["details"]["legacy_exists"] = False
+        return result
+    
+    # Check if modern exists
+    if not modern_file.exists():
+        result["errors"].append(f"No modern JSON for {json_type}")
+        result["details"]["legacy_exists"] = True
+        result["details"]["modern_exists"] = False
+        return result
+    
+    # Load records
+    legacy_records = load_json_records(legacy_file)
+    modern_records = load_json_records(modern_file)
+    
+    result["details"] = {
+        "legacy_exists": True,
+        "modern_exists": True,
+        "legacy_count": len(legacy_records),
+        "modern_count": len(modern_records)
+    }
+    
+    # Get comparison function
+    compare_fn = COMPARISON_FUNCTIONS.get(stage_num)
+    if compare_fn:
+        passed, errors = compare_fn(legacy_records, modern_records, stage_config.tolerance)
+        result["details"]["passed"] = passed
+        result["errors"].extend(errors)
+    else:
+        # Generic comparison: just check counts match
+        if len(legacy_records) != len(modern_records):
+            result["errors"].append(f"{json_type} count mismatch: {len(legacy_records)} vs {len(modern_records)}")
         else:
-            # Generic comparison: just check counts match
-            if len(legacy_records) != len(modern_records):
-                result["errors"].append(f"{record_type} count mismatch: {len(legacy_records)} vs {len(modern_records)}")
-            else:
-                result["details"][record_type]["passed"] = True
+            result["details"]["passed"] = True
     
     result["passed"] = len(result["errors"]) == 0
     return result
 
 
-def run_stage_validation(stage_id: str, pdb_ids: List[str], project_root: Path,
-                         max_workers: int = 20, stop_on_failure: bool = True) -> Dict:
+def run_stage_validation(stage_num: int, pdb_ids: List[str], project_root: Path,
+                         stop_on_failure: bool = True, verbose: bool = False) -> Dict:
     """Run validation for a stage across all PDBs."""
-    stage_config = STAGES.get(stage_id)
+    stage_config = STAGES.get(stage_num)
     if not stage_config:
-        raise ValueError(f"Unknown stage: {stage_id}")
+        raise ValueError(f"Unknown stage: {stage_num}")
     
     results = {
-        "stage_id": stage_id,
+        "stage_num": stage_num,
+        "stage_id": stage_config.stage_id,
         "stage_name": stage_config.name,
         "test_date": datetime.now().isoformat(),
         "total_pdbs": len(pdb_ids),
@@ -651,12 +950,16 @@ def run_stage_validation(stage_id: str, pdb_ids: List[str], project_root: Path,
     start_time = datetime.now()
     
     for i, pdb_id in enumerate(pdb_ids):
-        result = test_single_pdb_stage(pdb_id, stage_config, project_root)
+        result = test_single_pdb_stage(pdb_id, stage_num, project_root)
         
         if result["passed"]:
             results["passed"] += 1
+            if verbose:
+                print(f"  ✅ [{i+1}/{len(pdb_ids)}] {pdb_id}")
         elif not result["details"]:
             results["skipped"] += 1
+            if verbose:
+                print(f"  ⏭️ [{i+1}/{len(pdb_ids)}] {pdb_id} (skipped)")
         else:
             results["failed"] += 1
             results["failed_pdbs"].append({
@@ -665,14 +968,19 @@ def run_stage_validation(stage_id: str, pdb_ids: List[str], project_root: Path,
                 "details": result["details"]
             })
             
+            if verbose:
+                print(f"  ❌ [{i+1}/{len(pdb_ids)}] {pdb_id}")
+                for error in result["errors"][:3]:
+                    print(f"       {error}")
+            
             if stop_on_failure:
-                print(f"\n❌ FAILED at PDB {pdb_id} [{i+1}/{len(pdb_ids)}]")
+                print(f"\n❌ FAILED at PDB {pdb_id}")
                 for error in result["errors"][:5]:
                     print(f"  - {error}")
                 break
         
-        # Progress update
-        if (i + 1) % 100 == 0:
+        # Progress update (if not verbose)
+        if not verbose and (i + 1) % 100 == 0:
             print(f"  Progress: {i+1}/{len(pdb_ids)} ({results['passed']} passed, {results['failed']} failed)")
     
     results["elapsed_seconds"] = (datetime.now() - start_time).total_seconds()
@@ -686,132 +994,92 @@ def run_stage_validation(stage_id: str, pdb_ids: List[str], project_root: Path,
 # ============================================================================
 
 @pytest.fixture(scope="session")
-def valid_pdbs(project_root_path):
+def valid_pdbs():
     """Load valid fast PDBs."""
-    return load_valid_pdbs_fast(project_root_path)
+    return load_valid_pdbs_fast(project_root)
 
 
-@pytest.fixture(scope="session")
-def project_root_path():
-    """Return project root."""
-    return project_root
+def _run_stage_test(stage_num: int, valid_pdbs: List[str], request) -> Dict:
+    """Helper to run a stage test with pytest options."""
+    max_pdbs = request.config.getoption("--max-pdbs", default=None)
+    verbose = request.config.getoption("--verbose", default=False)
+    pdb_list = valid_pdbs[:int(max_pdbs)] if max_pdbs else valid_pdbs
+    
+    results = run_stage_validation(stage_num, pdb_list, project_root, 
+                                   stop_on_failure=True, verbose=verbose)
+    
+    # Save results
+    stage_config = STAGES[stage_num]
+    results_file = project_root / "data" / "validation_results" / f"stage{stage_num}_{stage_config.stage_id}_pytest.json"
+    results_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(results_file, 'w') as f:
+        json.dump(results, f, indent=2)
+    
+    return results
 
 
 class TestStageValidation:
     """Test class for stage validation."""
     
-    def test_stage0_residue_indices(self, valid_pdbs, project_root_path, request):
-        """Stage 0: Validate residue indices matching."""
-        max_pdbs = request.config.getoption("--max-pdbs", default=None)
-        pdb_list = valid_pdbs[:int(max_pdbs)] if max_pdbs else valid_pdbs
-        
-        results = run_stage_validation("stage0", pdb_list, project_root_path)
-        
-        # Save results
-        results_file = project_root_path / "data" / "validation_results" / "stage0_residue_indices_pytest.json"
-        results_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(results_file, 'w') as f:
-            json.dump(results, f, indent=2)
-        
-        assert results["failed"] == 0, f"Stage 0 failed: {results['failed']} PDBs"
+    def test_stage1_pdb_atoms(self, valid_pdbs, request):
+        """Stage 1: Validate atom parsing."""
+        results = _run_stage_test(1, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 1 (pdb_atoms) failed: {results['failed']} PDBs"
     
-    def test_stage3_distance_checks(self, valid_pdbs, project_root_path, request):
-        """Stage 3: Validate distance checks matching."""
-        max_pdbs = request.config.getoption("--max-pdbs", default=None)
-        pdb_list = valid_pdbs[:int(max_pdbs)] if max_pdbs else valid_pdbs
-        
-        results = run_stage_validation("stage3", pdb_list, project_root_path)
-        
-        results_file = project_root_path / "data" / "validation_results" / "stage3_distance_checks_pytest.json"
-        results_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(results_file, 'w') as f:
-            json.dump(results, f, indent=2)
-        
-        assert results["failed"] == 0, f"Stage 3 failed: {results['failed']} PDBs"
+    def test_stage2_residue_indices(self, valid_pdbs, request):
+        """Stage 2: Validate residue indices."""
+        results = _run_stage_test(2, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 2 (residue_indices) failed: {results['failed']} PDBs"
     
-    def test_stage4_hbond_list(self, valid_pdbs, project_root_path, request):
-        """Stage 4: Validate H-bond list matching."""
-        max_pdbs = request.config.getoption("--max-pdbs", default=None)
-        pdb_list = valid_pdbs[:int(max_pdbs)] if max_pdbs else valid_pdbs
-        
-        results = run_stage_validation("stage4", pdb_list, project_root_path)
-        
-        results_file = project_root_path / "data" / "validation_results" / "stage4_hbond_list_pytest.json"
-        results_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(results_file, 'w') as f:
-            json.dump(results, f, indent=2)
-        
-        assert results["failed"] == 0, f"Stage 4 failed: {results['failed']} PDBs"
+    def test_stage3_base_frame_calc(self, valid_pdbs, request):
+        """Stage 3: Validate base frame calculation."""
+        results = _run_stage_test(3, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 3 (base_frame_calc) failed: {results['failed']} PDBs"
     
-    def test_stage5_pair_validation(self, valid_pdbs, project_root_path, request):
-        """Stage 5: Validate pair validation matching."""
-        max_pdbs = request.config.getoption("--max-pdbs", default=None)
-        pdb_list = valid_pdbs[:int(max_pdbs)] if max_pdbs else valid_pdbs
-        
-        results = run_stage_validation("stage5", pdb_list, project_root_path)
-        
-        results_file = project_root_path / "data" / "validation_results" / "stage5_pair_validation_pytest.json"
-        results_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(results_file, 'w') as f:
-            json.dump(results, f, indent=2)
-        
-        assert results["failed"] == 0, f"Stage 5 failed: {results['failed']} PDBs"
+    def test_stage4_ls_fitting(self, valid_pdbs, request):
+        """Stage 4: Validate least squares fitting."""
+        results = _run_stage_test(4, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 4 (ls_fitting) failed: {results['failed']} PDBs"
     
-    def test_stage6_find_bestpair_selection(self, valid_pdbs, project_root_path, request):
-        """Stage 6: Validate find_bestpair_selection - THE PRIMARY OUTPUT."""
-        max_pdbs = request.config.getoption("--max-pdbs", default=None)
-        pdb_list = valid_pdbs[:int(max_pdbs)] if max_pdbs else valid_pdbs
-        
-        results = run_stage_validation("stage6", pdb_list, project_root_path)
-        
-        results_file = project_root_path / "data" / "validation_results" / "stage6_find_bestpair_pytest.json"
-        results_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(results_file, 'w') as f:
-            json.dump(results, f, indent=2)
-        
-        assert results["failed"] == 0, f"Stage 6 (PRIMARY OUTPUT) failed: {results['failed']} PDBs"
+    def test_stage5_frame_calc(self, valid_pdbs, request):
+        """Stage 5: Validate frame calculation."""
+        results = _run_stage_test(5, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 5 (frame_calc) failed: {results['failed']} PDBs"
     
-    def test_stage7_base_pair(self, valid_pdbs, project_root_path, request):
-        """Stage 7: Validate base pair records matching."""
-        max_pdbs = request.config.getoption("--max-pdbs", default=None)
-        pdb_list = valid_pdbs[:int(max_pdbs)] if max_pdbs else valid_pdbs
-        
-        results = run_stage_validation("stage7", pdb_list, project_root_path)
-        
-        results_file = project_root_path / "data" / "validation_results" / "stage7_base_pair_pytest.json"
-        results_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(results_file, 'w') as f:
-            json.dump(results, f, indent=2)
-        
-        assert results["failed"] == 0, f"Stage 7 failed: {results['failed']} PDBs"
+    def test_stage6_pair_validation(self, valid_pdbs, request):
+        """Stage 6: Validate pair validation."""
+        results = _run_stage_test(6, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 6 (pair_validation) failed: {results['failed']} PDBs"
     
-    def test_stage8_step_params(self, valid_pdbs, project_root_path, request):
-        """Stage 8: Validate step parameters matching."""
-        max_pdbs = request.config.getoption("--max-pdbs", default=None)
-        pdb_list = valid_pdbs[:int(max_pdbs)] if max_pdbs else valid_pdbs
-        
-        results = run_stage_validation("stage8", pdb_list, project_root_path)
-        
-        results_file = project_root_path / "data" / "validation_results" / "stage8_step_params_pytest.json"
-        results_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(results_file, 'w') as f:
-            json.dump(results, f, indent=2)
-        
-        assert results["failed"] == 0, f"Stage 8 failed: {results['failed']} PDBs"
+    def test_stage7_distance_checks(self, valid_pdbs, request):
+        """Stage 7: Validate distance checks."""
+        results = _run_stage_test(7, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 7 (distance_checks) failed: {results['failed']} PDBs"
     
-    def test_stage9_helical_params(self, valid_pdbs, project_root_path, request):
-        """Stage 9: Validate helical parameters matching."""
-        max_pdbs = request.config.getoption("--max-pdbs", default=None)
-        pdb_list = valid_pdbs[:int(max_pdbs)] if max_pdbs else valid_pdbs
-        
-        results = run_stage_validation("stage9", pdb_list, project_root_path)
-        
-        results_file = project_root_path / "data" / "validation_results" / "stage9_helical_params_pytest.json"
-        results_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(results_file, 'w') as f:
-            json.dump(results, f, indent=2)
-        
-        assert results["failed"] == 0, f"Stage 9 failed: {results['failed']} PDBs"
+    def test_stage8_hbond_list(self, valid_pdbs, request):
+        """Stage 8: Validate H-bond list."""
+        results = _run_stage_test(8, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 8 (hbond_list) failed: {results['failed']} PDBs"
+    
+    def test_stage9_base_pair(self, valid_pdbs, request):
+        """Stage 9: Validate base pair records."""
+        results = _run_stage_test(9, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 9 (base_pair) failed: {results['failed']} PDBs"
+    
+    def test_stage10_find_bestpair_selection(self, valid_pdbs, request):
+        """Stage 10: Validate find_bestpair_selection - THE PRIMARY OUTPUT."""
+        results = _run_stage_test(10, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 10 (PRIMARY OUTPUT) failed: {results['failed']} PDBs"
+    
+    def test_stage11_bpstep_params(self, valid_pdbs, request):
+        """Stage 11: Validate step parameters."""
+        results = _run_stage_test(11, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 11 (bpstep_params) failed: {results['failed']} PDBs"
+    
+    def test_stage12_helical_params(self, valid_pdbs, request):
+        """Stage 12: Validate helical parameters."""
+        results = _run_stage_test(12, valid_pdbs, request)
+        assert results["failed"] == 0, f"Stage 12 (helical_params) failed: {results['failed']} PDBs"
 
 
 def pytest_addoption(parser):
@@ -838,56 +1106,113 @@ def main():
     """CLI interface for running validation."""
     import argparse
     
-    parser = argparse.ArgumentParser(description="Stage validation CLI")
-    parser.add_argument("stage", help="Stage to validate (e.g., stage3)")
+    parser = argparse.ArgumentParser(
+        description="Stage validation CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+    python test_stage_validation.py 1 --max-pdbs 100        # Stage 1
+    python test_stage_validation.py frames --max-pdbs 100   # Stages 3,4,5
+    python test_stage_validation.py all --pdb 1EHZ          # All stages, single PDB
+    python test_stage_validation.py 3 -v -s                 # Stage 3, verbose, stop on first
+
+Stage Groups:
+    atoms   = 1         (atom parsing)
+    residue = 2         (residue indices)
+    frames  = 3,4,5     (frame calculations)
+    pairs   = 6,7,9,10  (pair validation/selection)
+    hbonds  = 8         (hydrogen bonds)
+    steps   = 11,12     (step/helical parameters)
+    all     = 1-12      (all stages)
+"""
+    )
+    parser.add_argument("stages", nargs="*", default=["all"],
+                        help="Stage(s) to validate: number (1-12), name (pdb_atoms), or group (frames)")
     parser.add_argument("--max-pdbs", type=int, help="Maximum number of PDBs to test")
-    parser.add_argument("--stop-on-failure", action="store_true", default=True,
-                        help="Stop on first failure (default: True)")
+    parser.add_argument("--pdb", help="Test a specific PDB ID")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    parser.add_argument("-s", "--stop-on-failure", action="store_true", default=True,
+                        help="Stop on first failure (default)")
     parser.add_argument("--no-stop-on-failure", dest="stop_on_failure", action="store_false",
                         help="Don't stop on first failure")
-    parser.add_argument("--pdb", help="Test a specific PDB ID")
     
     args = parser.parse_args()
+    
+    # Resolve stages
+    stage_nums = resolve_stages(args.stages)
+    if not stage_nums:
+        print(f"Error: No valid stages found in: {args.stages}")
+        sys.exit(1)
     
     # Load PDB list
     if args.pdb:
         pdb_ids = [args.pdb.upper()]
     else:
-        pdb_ids = load_valid_pdbs_fast(project_root)
+        try:
+            pdb_ids = load_valid_pdbs_fast(project_root)
+        except (FileNotFoundError, ValueError) as e:
+            print(f"Error: {e}")
+            sys.exit(1)
         if args.max_pdbs:
             pdb_ids = pdb_ids[:args.max_pdbs]
     
-    print(f"Running {args.stage} validation on {len(pdb_ids)} PDBs...")
+    print(f"Running validation for stages: {stage_nums}")
+    print(f"PDBs: {len(pdb_ids)}")
     print()
     
-    results = run_stage_validation(args.stage, pdb_ids, project_root, 
-                                   stop_on_failure=args.stop_on_failure)
+    all_results = []
+    any_failures = False
     
-    # Print summary
-    print("\n" + "=" * 60)
-    print(f"STAGE {args.stage.upper()} VALIDATION SUMMARY")
-    print("=" * 60)
-    print(f"Total PDBs: {results['total_pdbs']}")
-    print(f"Passed: {results['passed']} ({results['pass_rate']:.2f}%)")
-    print(f"Failed: {results['failed']}")
-    print(f"Skipped: {results['skipped']}")
-    print(f"Elapsed: {results['elapsed_seconds']:.2f}s")
+    for stage_num in stage_nums:
+        stage_config = STAGES[stage_num]
+        print(f"{'='*60}")
+        print(f"STAGE {stage_num}: {stage_config.name}")
+        print(f"{'='*60}")
+        
+        results = run_stage_validation(
+            stage_num, pdb_ids, project_root,
+            stop_on_failure=args.stop_on_failure,
+            verbose=args.verbose
+        )
+        all_results.append(results)
+        
+        # Print summary
+        print(f"\nResults:")
+        print(f"  Total: {results['total_pdbs']}")
+        print(f"  Passed: {results['passed']} ({results['pass_rate']:.1f}%)")
+        print(f"  Failed: {results['failed']}")
+        print(f"  Skipped: {results['skipped']}")
+        print(f"  Time: {results['elapsed_seconds']:.2f}s")
+        
+        if results['failed_pdbs']:
+            print(f"\nFailed PDBs (first 5):")
+            for fail in results['failed_pdbs'][:5]:
+                print(f"  {fail['pdb_id']}: {fail['errors'][0] if fail['errors'] else 'Unknown'}")
+        
+        # Save results
+        results_file = project_root / "data" / "validation_results" / f"stage{stage_num}_{stage_config.stage_id}_cli.json"
+        results_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(results_file, 'w') as f:
+            json.dump(results, f, indent=2)
+        
+        if results['failed'] > 0:
+            any_failures = True
+            if args.stop_on_failure:
+                print(f"\nStopping due to failures in stage {stage_num}")
+                break
+        
+        print()
     
-    if results['failed_pdbs']:
-        print(f"\nFailed PDBs (first 10):")
-        for fail in results['failed_pdbs'][:10]:
-            print(f"  {fail['pdb_id']}: {fail['errors'][0] if fail['errors'] else 'Unknown error'}")
+    # Overall summary
+    print(f"\n{'='*60}")
+    print("OVERALL SUMMARY")
+    print(f"{'='*60}")
+    for r in all_results:
+        status = "✅" if r['failed'] == 0 else "❌"
+        print(f"  {status} Stage {r['stage_num']} ({r['stage_id']}): {r['passed']}/{r['total_pdbs']} passed")
     
-    # Save results
-    results_file = project_root / "data" / "validation_results" / f"{args.stage}_validation_cli.json"
-    results_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(results_file, 'w') as f:
-        json.dump(results, f, indent=2)
-    print(f"\nResults saved to: {results_file}")
-    
-    return 0 if results['failed'] == 0 else 1
+    return 1 if any_failures else 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
-

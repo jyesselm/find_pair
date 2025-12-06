@@ -1,113 +1,118 @@
 # Python Tests
 
-This directory contains Python tests for X3DNA JSON generation and comparison.
+This directory contains Python tests for validating X3DNA modern C++ implementation against legacy C code.
 
-**All Python tests use pytest.** This is enforced by project rules - see `.cursorrules`.
+**For complete testing documentation, see [../docs/TESTING_GUIDE.md](../docs/TESTING_GUIDE.md).**
 
-## Structure
+## Quick Reference
 
-- `integration/` - Integration tests that require executables and data files
-- `unit/` - Unit tests for utility functions
-- `conftest.py` - Shared pytest fixtures and configuration
-- `README.md` - This file
+### Running Tests
 
-## Running Tests
-
-### Run all tests
 ```bash
-pytest tests_python/
-```
-
-### Run only integration tests
-```bash
-pytest tests_python/integration/
-```
-
-### Run a specific test file
-```bash
-pytest tests_python/integration/test_atoms_batch.py
-```
-
-### Run tests with verbose output
-```bash
+# Run all tests
 pytest tests_python/ -v
+
+# Run stage validation
+pytest tests_python/integration/test_stage_validation.py -v
+
+# Run specific stage
+pytest tests_python/integration/test_stage_validation.py -v -k "stage3"
+
+# Limit PDBs tested
+pytest tests_python/integration/test_stage_validation.py -v --max-pdbs=50
+
+# Test single PDB
+pytest tests_python/integration/test_stage_validation.py -v --pdb=1EHZ
 ```
 
-### Run tests in parallel (if pytest-xdist is installed)
-```bash
-pytest tests_python/ -n auto
-```
+### CLI Mode
 
-## Test Scripts
-
-The integration tests can also be run as standalone scripts:
-
-```bash
-# Test atoms JSON generation
-python tests_python/integration/test_atoms_batch.py
-
-# Test residue indices
-python tests_python/integration/test_residue_indices_batch.py
-
-# Test ls_fitting (single PDB)
-python tests_python/integration/test_ls_fitting.py <PDB_ID>
-
-# Test ls_fitting (batch - all fast PDBs)
-python tests_python/integration/test_ls_fitting_batch.py
-
-# Test ls_fitting (batch - limited)
-python tests_python/integration/test_ls_fitting_batch.py --max-pdbs 100
-
-# Test frames
-python tests_python/integration/test_frames_batch.py
-```
-
-### Monitoring Batch Tests
-
-For long-running batch tests, use the monitoring scripts:
+The stage validation script can also run directly:
 
 ```bash
-# Monitor ls_fitting batch test
-python scripts/monitor_ls_fitting_batch.py
+# Run stage 1 (atoms) on 100 PDBs
+python tests_python/integration/test_stage_validation.py 1 --max-pdbs 100
 
-# Watch log file
-tail -f data/validation_results/ls_fitting_batch.log
+# Run all frame stages with verbose output
+python tests_python/integration/test_stage_validation.py frames -v
+
+# Run all stages on a single PDB
+python tests_python/integration/test_stage_validation.py all --pdb 1EHZ
 ```
 
-## Installation
+## Directory Structure
 
-Install pytest and development dependencies:
-
-```bash
-# From project root
-pip install -e ".[dev]"
+```
+tests_python/
+├── conftest.py          # Shared pytest fixtures
+├── README.md            # This file
+├── integration/         # Integration tests (require executables + data)
+│   ├── test_stage_validation.py   # Main stage validation (RECOMMENDED)
+│   ├── test_atoms_batch.py        # Atom comparison tests
+│   ├── test_frames_batch.py       # Frame calculation tests
+│   ├── test_ls_fitting_batch.py   # LS fitting tests
+│   └── test_residue_indices_batch.py
+└── unit/                # Unit tests (no external dependencies)
 ```
 
-This installs:
-- `pytest>=7.0` - Testing framework
-- `pytest-timeout>=2.0` - Timeout support
-- `black>=22.0` - Code formatting (optional)
-- `flake8>=5.0` - Linting (optional)
+## Validation Stages
 
-## Requirements
+| Stage | ID | Description |
+|-------|-----|-------------|
+| 1 | `pdb_atoms` | Atom parsing |
+| 2 | `residue_indices` | Residue index mapping |
+| 3 | `base_frame_calc` | Base frame calculation |
+| 4 | `ls_fitting` | Least squares fitting |
+| 5 | `frame_calc` | Reference frame calculation |
+| 6 | `pair_validation` | Pair validation |
+| 7 | `distance_checks` | Distance measurements |
+| 8 | `hbond_list` | H-bond detection |
+| 9 | `base_pair` | Base pair records |
+| 10 | `find_bestpair_selection` | Final pair selection (PRIMARY) |
+| 11 | `bpstep_params` | Step parameters |
+| 12 | `helical_params` | Helical parameters |
 
-Tests require:
-- Python 3.8+
-- pytest (install with `pip install -e ".[dev]"`)
-- Built executables in `build/` and `org/build/bin/`
-- PDB files in `data/pdb/`
-- Legacy JSON files in `data/json_legacy/` (optional, will be generated if missing)
+## Stage Groups
 
-## Test Markers
+| Group | Stages |
+|-------|--------|
+| `atoms` | 1 |
+| `residue` | 2 |
+| `frames` | 3, 4, 5 |
+| `pairs` | 6, 7, 9, 10 |
+| `hbonds` | 8 |
+| `steps` | 11, 12 |
+| `all` | 1-12 |
 
-Tests are marked with pytest markers:
-- `@pytest.mark.integration` - Integration tests
-- `@pytest.mark.slow` - Tests that take a long time
-- `@pytest.mark.requires_legacy` - Requires legacy executable
-- `@pytest.mark.requires_modern` - Requires modern executable
+## Prerequisites
 
-Run only fast tests:
-```bash
-pytest tests_python/ -m "not slow"
-```
+1. **Build executables:**
+   ```bash
+   # Modern
+   cd build && cmake .. && make -j
+   
+   # Legacy
+   cd org/build && cmake .. && make -j
+   ```
 
+2. **Install pytest:**
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+3. **Verify environment:**
+   ```bash
+   fp2-validate info
+   ```
+
+## Test Output
+
+Results are saved to `data/validation_results/`:
+- `stage{N}_{id}_pytest.json` - pytest results
+- `stage{N}_{id}_cli.json` - CLI results
+
+## See Also
+
+- [TESTING_GUIDE.md](../docs/TESTING_GUIDE.md) - Complete testing documentation
+- [JSON_DATA_TYPES_AND_COMPARISONS.md](../docs/JSON_DATA_TYPES_AND_COMPARISONS.md) - JSON schema reference
+- [x3dna_json_compare/](../x3dna_json_compare/) - Comparison library
