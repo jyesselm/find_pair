@@ -4,6 +4,7 @@ Frame calculation comparison utilities.
 Provides functions to compare frame calculations between legacy and modern JSON outputs.
 """
 
+import os
 from typing import Dict, List, Tuple, Optional
 from pathlib import Path
 from .models import FrameComparison, FrameRecord, FrameMismatch, AtomLineInfo
@@ -299,10 +300,13 @@ def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
                 'only_modern': list(set(mod_atoms) - set(leg_atoms))
             }
         
-        # Compare standard_template
+        # Compare standard_template (compare only filename, not full path)
         leg_template = leg_rec.get('template_file', leg_rec.get('standard_template', ''))
         mod_template = mod_rec.get('template_file', mod_rec.get('standard_template', ''))
-        if leg_template != mod_template:
+        # Normalize to just filename for comparison (paths differ between legacy/modern)
+        leg_template_name = os.path.basename(leg_template) if leg_template else ''
+        mod_template_name = os.path.basename(mod_template) if mod_template else ''
+        if leg_template_name != mod_template_name:
             mismatches['template_file'] = {'legacy': leg_template, 'modern': mod_template}
         
         if mismatches:
@@ -515,10 +519,13 @@ def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
         if leg_num != mod_num:
             mismatches['num_matched_atoms'] = {'legacy': leg_num, 'modern': mod_num}
         
-        # Compare template_file
+        # Compare template_file (compare only filename, not full path)
         leg_template = leg_rec.get('template_file', '')
         mod_template = mod_rec.get('template_file', '')
-        if leg_template != mod_template:
+        # Normalize to just filename for comparison (paths differ between legacy/modern)
+        leg_template_name = os.path.basename(leg_template) if leg_template else ''
+        mod_template_name = os.path.basename(mod_template) if mod_template else ''
+        if leg_template_name != mod_template_name:
             mismatches['template_file'] = {'legacy': leg_template, 'modern': mod_template}
         
         # Compare matched_coordinates

@@ -22,14 +22,74 @@ from .output import OutputFormatter, ValidationSummary
 from .pdb_list import get_pdb_list
 
 
-# Stage to JSON subdirectory mapping
+# Linear stages in legacy execution order (12 stages)
+# Each stage maps to a comparison flag and the JSON directories it validates
+STAGE_CONFIG = {
+    # Stage 1: Atom parsing
+    '1': {'name': 'pdb_atoms', 'compare_flag': 'compare_atoms', 'json_dirs': ['pdb_atoms']},
+    'pdb_atoms': {'name': 'pdb_atoms', 'compare_flag': 'compare_atoms', 'json_dirs': ['pdb_atoms']},
+    
+    # Stage 2: Residue indices
+    '2': {'name': 'residue_indices', 'compare_flag': 'compare_residue_indices', 'json_dirs': ['residue_indices']},
+    'residue_indices': {'name': 'residue_indices', 'compare_flag': 'compare_residue_indices', 'json_dirs': ['residue_indices']},
+    
+    # Stage 3: Base frame calculation
+    '3': {'name': 'base_frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['base_frame_calc']},
+    'base_frame_calc': {'name': 'base_frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['base_frame_calc']},
+    
+    # Stage 4: LS fitting
+    '4': {'name': 'ls_fitting', 'compare_flag': 'compare_frames', 'json_dirs': ['ls_fitting']},
+    'ls_fitting': {'name': 'ls_fitting', 'compare_flag': 'compare_frames', 'json_dirs': ['ls_fitting']},
+    
+    # Stage 5: Frame calculation  
+    '5': {'name': 'frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['frame_calc']},
+    'frame_calc': {'name': 'frame_calc', 'compare_flag': 'compare_frames', 'json_dirs': ['frame_calc']},
+    
+    # Stage 6: Pair validation
+    '6': {'name': 'pair_validation', 'compare_flag': 'compare_pairs', 'json_dirs': ['pair_validation']},
+    'pair_validation': {'name': 'pair_validation', 'compare_flag': 'compare_pairs', 'json_dirs': ['pair_validation']},
+    
+    # Stage 7: Distance checks
+    '7': {'name': 'distance_checks', 'compare_flag': 'compare_pairs', 'json_dirs': ['distance_checks']},
+    'distance_checks': {'name': 'distance_checks', 'compare_flag': 'compare_pairs', 'json_dirs': ['distance_checks']},
+    
+    # Stage 8: H-bond list
+    '8': {'name': 'hbond_list', 'compare_flag': 'compare_hbond_list', 'json_dirs': ['hbond_list']},
+    'hbond_list': {'name': 'hbond_list', 'compare_flag': 'compare_hbond_list', 'json_dirs': ['hbond_list']},
+    
+    # Stage 9: Base pair
+    '9': {'name': 'base_pair', 'compare_flag': 'compare_pairs', 'json_dirs': ['base_pair']},
+    'base_pair': {'name': 'base_pair', 'compare_flag': 'compare_pairs', 'json_dirs': ['base_pair']},
+    
+    # Stage 10: Find bestpair selection
+    '10': {'name': 'find_bestpair_selection', 'compare_flag': 'compare_pairs', 'json_dirs': ['find_bestpair_selection']},
+    'find_bestpair_selection': {'name': 'find_bestpair_selection', 'compare_flag': 'compare_pairs', 'json_dirs': ['find_bestpair_selection']},
+    
+    # Stage 11: Step parameters
+    '11': {'name': 'bpstep_params', 'compare_flag': 'compare_steps', 'json_dirs': ['bpstep_params']},
+    'bpstep_params': {'name': 'bpstep_params', 'compare_flag': 'compare_steps', 'json_dirs': ['bpstep_params']},
+    
+    # Stage 12: Helical parameters  
+    '12': {'name': 'helical_params', 'compare_flag': 'compare_steps', 'json_dirs': ['helical_params']},
+    'helical_params': {'name': 'helical_params', 'compare_flag': 'compare_steps', 'json_dirs': ['helical_params']},
+}
+
+# Grouped stages (for backward compatibility)
+STAGE_GROUPS = {
+    'atoms': ['1'],
+    'frames': ['3', '4', '5'],
+    'hbonds': ['8'],
+    'pairs': ['6', '7', '9', '10'],
+    'steps': ['11', '12'],
+}
+
+# Stage to JSON subdirectory mapping (for backward compatibility)
 STAGE_JSON_DIRS = {
     'atoms': ['pdb_atoms'],
     'frames': ['base_frame_calc', 'frame_calc', 'ls_fitting'],
     'hbonds': ['hbond_list'],
     'pairs': ['base_pair', 'pair_validation', 'find_bestpair_selection', 'distance_checks'],
-    'steps': ['bpstep_params'],
-    'helical': ['helical_params'],
+    'steps': ['bpstep_params', 'helical_params'],
     'residue_indices': ['residue_indices'],
 }
 
@@ -175,18 +235,33 @@ class ValidationRunner:
                 if k != 'enable_cache':
                     kwargs[k] = True
         else:
-            # Enable only requested stages
-            stage_map = {
-                'atoms': 'compare_atoms',
-                'frames': 'compare_frames',
-                'hbonds': 'compare_hbond_list',
-                'pairs': 'compare_pairs',
-                'steps': 'compare_steps',
-                'residue_indices': 'compare_residue_indices',
-            }
+            # Expand stage groups and individual stages
+            expanded_stages = set()
             for stage in stages:
-                if stage in stage_map:
-                    kwargs[stage_map[stage]] = True
+                # Check if it's a group name
+                if stage in STAGE_GROUPS:
+                    expanded_stages.update(STAGE_GROUPS[stage])
+                # Check if it's an individual stage
+                elif stage in STAGE_CONFIG:
+                    expanded_stages.add(stage)
+                # Legacy support for old stage names
+                elif stage in ['atoms', 'frames', 'hbonds', 'pairs', 'steps', 'residue_indices']:
+                    if stage in STAGE_GROUPS:
+                        expanded_stages.update(STAGE_GROUPS[stage])
+                    else:
+                        # Map old stage name to new config
+                        stage_map = {
+                            'atoms': '1',
+                            'residue_indices': '2',
+                        }
+                        if stage in stage_map:
+                            expanded_stages.add(stage_map[stage])
+            
+            # Enable comparison flags for all expanded stages
+            for stage in expanded_stages:
+                if stage in STAGE_CONFIG:
+                    compare_flag = STAGE_CONFIG[stage]['compare_flag']
+                    kwargs[compare_flag] = True
         
         # Override with any explicit kwargs
         kwargs.update(extra_kwargs)
@@ -237,13 +312,23 @@ class ValidationRunner:
             return
         
         # Determine which directories to clean based on stages
-        dirs_to_clean = []
+        dirs_to_clean = set()
         if 'all' in self.stages:
-            dirs_to_clean = [d for dirs in STAGE_JSON_DIRS.values() for d in dirs]
+            for stage_info in STAGE_CONFIG.values():
+                dirs_to_clean.update(stage_info['json_dirs'])
         else:
             for stage in self.stages:
-                if stage in STAGE_JSON_DIRS:
-                    dirs_to_clean.extend(STAGE_JSON_DIRS[stage])
+                # Check individual stage config
+                if stage in STAGE_CONFIG:
+                    dirs_to_clean.update(STAGE_CONFIG[stage]['json_dirs'])
+                # Check stage groups
+                elif stage in STAGE_GROUPS:
+                    for sub_stage in STAGE_GROUPS[stage]:
+                        if sub_stage in STAGE_CONFIG:
+                            dirs_to_clean.update(STAGE_CONFIG[sub_stage]['json_dirs'])
+                # Legacy support
+                elif stage in STAGE_JSON_DIRS:
+                    dirs_to_clean.update(STAGE_JSON_DIRS[stage])
         
         # Delete files in each directory
         for subdir in dirs_to_clean:

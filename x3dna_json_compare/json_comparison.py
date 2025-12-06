@@ -155,11 +155,14 @@ class JsonComparator:
                 # Fall back to old structure: <PDB_ID>_<record_type>.json
                 split_file = base_dir / f"{pdb_name}_pdb_atoms.json"
             
-            if split_file.exists():
+            if split_file and split_file.exists():
                 try:
                     split_data = self._load_json(split_file)
-                    if isinstance(split_data, list) and len(split_data) > 0:
-                        # Split file contains array of entries, first entry has atoms
+                    if isinstance(split_data, dict):
+                        # Modern format: dict with 'atoms' key directly
+                        atoms = split_data.get('atoms', [])
+                    elif isinstance(split_data, list) and len(split_data) > 0:
+                        # Legacy format: array where first entry has atoms
                         atoms = split_data[0].get('atoms', [])
                 except Exception:
                     pass
@@ -188,11 +191,14 @@ class JsonComparator:
                 # Fall back to old structure: <PDB_ID>_<record_type>.json
                 split_file = base_dir / f"{pdb_id}_pdb_atoms.json"
             
-            if split_file.exists():
+            if split_file and split_file.exists():
                 try:
                     split_data = self._load_json(split_file)
-                    if isinstance(split_data, list) and len(split_data) > 0:
-                        # Split file contains array of entries, first entry has atoms
+                    if isinstance(split_data, dict):
+                        # Modern format: dict with 'atoms' key directly
+                        atoms = split_data.get('atoms', [])
+                    elif isinstance(split_data, list) and len(split_data) > 0:
+                        # Legacy format: array where first entry has atoms
                         atoms = split_data[0].get('atoms', [])
                 except Exception:
                     pass

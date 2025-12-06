@@ -167,7 +167,7 @@ def compare_atoms(legacy_atoms: List[Dict], modern_atoms: List[Dict],
         'chain_id',               # Chain identifier
         'residue_seq',            # Residue sequence number
         'line_number',            # PDB line number
-        'pdb_line',               # Original PDB line content (for debugging)
+        # 'pdb_line' intentionally excluded - modern doesn't store raw PDB lines
     ]
     
     # Special comparison: atom_idx (legacy) vs legacy_atom_idx (modern)

@@ -58,17 +58,39 @@ def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
              project_root):
     """Validate legacy vs modern JSON outputs.
     
-    STAGES: atoms, frames, hbonds, pairs, steps (default: all)
+    \b
+    STAGES (12 stages in legacy execution order):
+      1  pdb_atoms            - Atom parsing
+      2  residue_indices      - Residue to atom mapping  
+      3  base_frame_calc      - Base frame calculation
+      4  ls_fitting           - Least squares fitting
+      5  frame_calc           - Reference frame calculation
+      6  pair_validation      - Pair validation checks
+      7  distance_checks      - Distance measurements
+      8  hbond_list           - Hydrogen bond list
+      9  base_pair            - Base pair records
+      10 find_bestpair_selection - Final pair selection
+      11 bpstep_params        - Step parameters
+      12 helical_params       - Helical parameters
+    
+    \b
+    STAGE GROUPS (for convenience):
+      atoms     = 1
+      frames    = 3,4,5
+      pairs     = 6,7,9,10
+      hbonds    = 8
+      steps     = 11,12
+      all       = all stages
     
     \b
     Examples:
-        fp2-validate                      # All stages, all fast PDBs
-        fp2-validate frames               # Frames only
-        fp2-validate hbonds atoms         # Multiple stages
+        fp2-validate 1                    # Stage 1 (atoms) only
+        fp2-validate 3 4 5                # Stages 3-5 (frames)
+        fp2-validate frames               # Same as above (group)
+        fp2-validate pdb_atoms            # By stage name
         fp2-validate --pdb 1EHZ -v        # Single PDB, verbose
         fp2-validate --stop-on-first      # Debug mode
         fp2-validate --diff               # Document differences
-        fp2-validate --max 100            # First 100 PDBs only
         fp2-validate --test-set 100       # Use saved test set
     
     \b

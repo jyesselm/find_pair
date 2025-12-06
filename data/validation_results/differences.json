@@ -1,0 +1,22 @@
+{
+  "total_differences": 1,
+  "stages_tested": [
+    "frames"
+  ],
+  "differences": [
+    {
+      "pdb_id": "1D96",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "atom_comparison": null,
+      "frame_comparison": {
+        "total_legacy": 20,
+        "matched": 0,
+        "missing_residues": 0,
+        "mismatched_calculations": 20
+      },
+      "hbond_comparison": null
+    }
+  ]
+}
