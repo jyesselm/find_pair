@@ -1,21 +1,15 @@
 {
   "total_differences": 1,
   "stages_tested": [
-    "1"
+    "6"
   ],
   "differences": [
     {
-      "pdb_id": "5N9G",
+      "pdb_id": "1D96",
       "status": "diff",
       "has_differences": true,
       "errors": [],
-      "atom_comparison": {
-        "total_legacy": 11623,
-        "total_modern": 11623,
-        "missing_in_modern": 0,
-        "extra_in_modern": 0,
-        "mismatched_fields": 20
-      },
+      "atom_comparison": null,
       "frame_comparison": null,
       "hbond_comparison": null
     }
