@@ -304,7 +304,7 @@ class ValidationRunner:
         self.clean_on_match = clean_on_match
         
         # Build comparator kwargs from stages
-        self.comparator_kwargs = self._build_comparator_kwargs(stages, comparator_kwargs)
+        self.comparator_kwargs, self.check_types = self._build_comparator_kwargs(stages, comparator_kwargs)
         self.output = OutputFormatter(quiet=quiet, verbose=verbose)
         
         # Load checkpoint if resuming
@@ -607,7 +607,7 @@ class ValidationRunner:
         
         # Prepare arguments for worker function
         args_list = [
-            (pdb_id, str(self.project_root), self.comparator_kwargs)
+            (pdb_id, str(self.project_root), self.comparator_kwargs, self.check_types)
             for pdb_id in pdb_ids
         ]
         
