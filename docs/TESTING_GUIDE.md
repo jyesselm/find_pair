@@ -79,7 +79,7 @@ fp2-validate list-pdbs --test-set 50  # PDBs in test set 50
 | `--pdb, -p TEXT` | Specific PDB(s) to validate |
 | `--max, -n INT` | Maximum number of PDBs to process |
 | `--test-set [10\|50\|100\|500\|1000]` | Use a predefined test set |
-| `--workers, -w INT` | Number of parallel workers (default: 10) |
+| `--workers, -w INT` | Number of parallel workers (default: CPU cores - 1) |
 | `--quiet, -q` | Suppress output, exit code only |
 | `--verbose, -v` | Show per-PDB results |
 | `--stop-on-first, -s` | Stop at first failure |
@@ -773,7 +773,7 @@ python3 scripts/rebuild_json.py clean --execute
 ### Performance Issues
 
 1. **Use test sets**: Compare smaller test sets for faster iteration
-2. **Use parallel processing**: Default uses all CPU cores
+2. **Use parallel processing**: Default uses CPU cores - 1 (leaves one core free)
 3. **Profile slow tests**: Use profiling tools to identify bottlenecks
 
 ---
