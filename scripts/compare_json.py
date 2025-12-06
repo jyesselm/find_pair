@@ -1754,7 +1754,7 @@ def compare(verbose, diff_only, show_all, legacy_mode, output, threads, regenera
 @click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def atoms(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
+def atoms(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, config, pdb_ids):
     """Compare only atom records (skip frame calculations)."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
@@ -1808,7 +1808,7 @@ def atoms(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate
 @click.option("--show-all", is_flag=True, help="Show all files, including perfect matches")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def frames(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
+def frames(verbose, diff_only, show_all, legacy_mode, output, threads, regenerate, test_set, config, pdb_ids):
     """Compare only frame calculations (skip atom records)."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
@@ -1940,7 +1940,7 @@ def list(legacy_mode):
 @click.option("--output-dir", "-o", type=click.Path(path_type=Path), help="Directory to save output files")
 @common_options
 @click.argument("pdb_ids", nargs=-1)
-def ring_atoms(verbose, diff_only, show_all, show_pdb_lines, output_dir, legacy_mode, output, threads, regenerate, test_set, pdb_ids):
+def ring_atoms(verbose, diff_only, show_all, show_pdb_lines, output_dir, legacy_mode, output, threads, regenerate, test_set, config, pdb_ids):
     """Compare ring atom matching between legacy and modern code."""
     project_root = Path(__file__).parent.parent
     max_workers = threads or multiprocessing.cpu_count()
