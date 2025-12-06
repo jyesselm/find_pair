@@ -71,11 +71,11 @@ The algorithm has **12 stages** that must be validated in order:
 
 | Stage | CLI ID | Name | JSON Type | Status |
 |-------|--------|------|-----------|--------|
-| 1 | `pdb_atoms` | Atom Parsing | `pdb_atoms` | ✅ PASSED |
-| 2 | `residue_indices` | Residue Index Mapping | `residue_indices` | ✅ PASSED |
-| 3 | `base_frame_calc` | Base Frame Calculation | `base_frame_calc` | ✅ PASSED |
-| 4 | `ls_fitting` | Least Squares Fitting | `ls_fitting` | ✅ PASSED |
-| 5 | `frame_calc` | Reference Frame Calculation | `frame_calc` | ✅ PASSED |
+| 1 | `pdb_atoms` | Atom Parsing | `pdb_atoms` | ✅ PASSED (3602/3602) |
+| 2 | `residue_indices` | Residue Index Mapping | `residue_indices` | ✅ PASSED (3602/3602) |
+| 3 | `base_frame_calc` | Base Frame Calculation | `base_frame_calc` | ✅ PASSED (3602/3602) |
+| 4 | `ls_fitting` | Least Squares Fitting | `ls_fitting` | ✅ PASSED (3602/3602) |
+| 5 | `frame_calc` | Reference Frame Calculation | `frame_calc` | ✅ PASSED (3602/3602) |
 | 6 | `pair_validation` | Pair Validation | `pair_validation` | ⚠️ TESTING |
 | 7 | `distance_checks` | Distance Measurements | `distance_checks` | ⚠️ TESTING |
 | 8 | `hbond_list` | Hydrogen Bond List | `hbond_list` | ⏳ PENDING |

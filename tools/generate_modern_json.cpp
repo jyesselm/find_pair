@@ -1,7 +1,7 @@
 /**
  * @file generate_modern_json.cpp
  * @brief Standalone tool to generate modern JSON for PDB files
- * 
+ *
  * Supports single PDB or batch processing with automatic progress saving.
  */
 
@@ -38,22 +38,20 @@ struct Progress {
     std::vector<std::string> completed_pdbs;
     std::vector<std::string> failed_pdbs;
     std::vector<std::string> pending_pdbs;
-    
+
     json to_json() const {
-        return {
-            {"stage", stage},
-            {"start_time", start_time},
-            {"last_update", last_update},
-            {"total_pdbs", total_pdbs},
-            {"processed", processed},
-            {"succeeded", succeeded},
-            {"failed", failed},
-            {"completed_pdbs", completed_pdbs},
-            {"failed_pdbs", failed_pdbs},
-            {"pending_pdbs", pending_pdbs}
-        };
+        return {{"stage", stage},
+                {"start_time", start_time},
+                {"last_update", last_update},
+                {"total_pdbs", total_pdbs},
+                {"processed", processed},
+                {"succeeded", succeeded},
+                {"failed", failed},
+                {"completed_pdbs", completed_pdbs},
+                {"failed_pdbs", failed_pdbs},
+                {"pending_pdbs", pending_pdbs}};
     }
-    
+
     static Progress from_json(const json& j) {
         Progress p;
         p.stage = j.value("stage", "all");
@@ -107,8 +105,7 @@ bool detect_rna_structure(const Structure& structure) {
 
 // Helper function: Setup frame calculator with RNA detection
 BaseFrameCalculator setup_frame_calculator(const std::filesystem::path& template_path,
-                                           const Structure& structure,
-                                           bool verbose = true) {
+                                           const Structure& structure, bool verbose = true) {
     BaseFrameCalculator calculator(template_path);
 
     bool is_rna = detect_rna_structure(structure);
@@ -127,8 +124,7 @@ BaseFrameCalculator setup_frame_calculator(const std::filesystem::path& template
 
 // Process a single PDB file
 bool process_single_pdb(const std::filesystem::path& pdb_file,
-                        const std::filesystem::path& json_output_dir,
-                        const std::string& stage,
+                        const std::filesystem::path& json_output_dir, const std::string& stage,
                         bool verbose = true) {
     try {
         // Create output directory if needed
@@ -153,8 +149,8 @@ bool process_single_pdb(const std::filesystem::path& pdb_file,
         if (stage == "atoms" || stage == "all") {
             structure.write_atoms_json(json_output_dir);
             if (verbose) {
-                std::cout << "  ✅ pdb_atoms/" << pdb_name << ".json ("
-                          << structure.num_atoms() << " atoms)\n";
+                std::cout << "  ✅ pdb_atoms/" << pdb_name << ".json (" << structure.num_atoms()
+                          << " atoms)\n";
             }
         }
 
@@ -177,13 +173,14 @@ bool process_single_pdb(const std::filesystem::path& pdb_file,
         if (stage == "ls_fitting" || stage == "all") {
             JsonWriter writer(pdb_file);
             writer.record_residue_indices(structure);
-            BaseFrameCalculator calculator = setup_frame_calculator("data/templates", structure, verbose);
+            BaseFrameCalculator calculator =
+                setup_frame_calculator("data/templates", structure, verbose);
             FrameJsonRecorder recorder(calculator);
             size_t records_count = recorder.record_ls_fitting(structure, writer);
             writer.write_split_files(json_output_dir, true);
             if (verbose) {
-                std::cout << "  ✅ ls_fitting/" << pdb_name << ".json ("
-                          << records_count << " records)\n";
+                std::cout << "  ✅ ls_fitting/" << pdb_name << ".json (" << records_count
+                          << " records)\n";
             }
         }
 
@@ -191,30 +188,32 @@ bool process_single_pdb(const std::filesystem::path& pdb_file,
         if (stage == "frames" || stage == "all") {
             JsonWriter writer(pdb_file);
             writer.record_residue_indices(structure);
-            BaseFrameCalculator calculator = setup_frame_calculator("data/templates", structure, verbose);
+            BaseFrameCalculator calculator =
+                setup_frame_calculator("data/templates", structure, verbose);
             FrameJsonRecorder recorder(calculator);
             size_t base_frame_count = recorder.record_base_frame_calc(structure, writer);
             size_t frame_calc_count = recorder.record_frame_calc(structure, writer);
             writer.write_split_files(json_output_dir, true);
             if (verbose) {
-                std::cout << "  ✅ base_frame_calc/" << pdb_name << ".json ("
-                          << base_frame_count << " records)\n";
-                std::cout << "  ✅ frame_calc/" << pdb_name << ".json ("
-                          << frame_calc_count << " records)\n";
+                std::cout << "  ✅ base_frame_calc/" << pdb_name << ".json (" << base_frame_count
+                          << " records)\n";
+                std::cout << "  ✅ frame_calc/" << pdb_name << ".json (" << frame_calc_count
+                          << " records)\n";
             }
         }
 
-        if (stage == "atoms" || stage == "residue_indices" || 
-            stage == "ls_fitting" || stage == "frames") {
+        if (stage == "atoms" || stage == "residue_indices" || stage == "ls_fitting" ||
+            stage == "frames") {
             return true;
         }
 
         // Stages 4-8: Full processing
-        if (stage != "atoms" && stage != "residue_indices" && 
-            stage != "ls_fitting" && stage != "frames") {
+        if (stage != "atoms" && stage != "residue_indices" && stage != "ls_fitting" &&
+            stage != "frames") {
             JsonWriter writer(pdb_file);
             writer.record_residue_indices(structure);
-            BaseFrameCalculator calculator = setup_frame_calculator("data/templates", structure, verbose);
+            BaseFrameCalculator calculator =
+                setup_frame_calculator("data/templates", structure, verbose);
             calculator.calculate_all_frames(structure);
 
             BasePairFinder finder;
@@ -223,9 +222,10 @@ bool process_single_pdb(const std::filesystem::path& pdb_file,
                 writer.record_base_pair(pair);
             }
             writer.write_split_files(json_output_dir, true);
-            
+
             if (verbose) {
-                std::cout << "  ✅ Generated all JSON files (" << base_pairs.size() << " base pairs)\n";
+                std::cout << "  ✅ Generated all JSON files (" << base_pairs.size()
+                          << " base pairs)\n";
             }
         }
 
@@ -269,8 +269,10 @@ void print_usage(const char* prog_name) {
     std::cerr << "  Single PDB:\n";
     std::cerr << "    " << prog_name << " <input.pdb> <output_dir> [--stage=STAGE]\n\n";
     std::cerr << "  Multiple PDBs:\n";
-    std::cerr << "    " << prog_name << " --pdb-list=<file.txt> --pdb-dir=<pdb_dir> <output_dir> [options]\n";
-    std::cerr << "    " << prog_name << " --all-pdbs --pdb-dir=<pdb_dir> <output_dir> [options]\n\n";
+    std::cerr << "    " << prog_name
+              << " --pdb-list=<file.txt> --pdb-dir=<pdb_dir> <output_dir> [options]\n";
+    std::cerr << "    " << prog_name
+              << " --all-pdbs --pdb-dir=<pdb_dir> <output_dir> [options]\n\n";
     std::cerr << "Options:\n";
     std::cerr << "  --stage=STAGE       Stage to generate (atoms, frames, all, etc.)\n";
     std::cerr << "  --pdb-list=FILE     File with PDB IDs (one per line)\n";
@@ -285,8 +287,10 @@ void print_usage(const char* prog_name) {
     std::cerr << "  hbonds, validation, selection, steps, helical, all\n\n";
     std::cerr << "Examples:\n";
     std::cerr << "  " << prog_name << " data/pdb/1EHZ.pdb data/json --stage=atoms\n";
-    std::cerr << "  " << prog_name << " --pdb-list=fast_pdbs.txt --pdb-dir=data/pdb data/json --stage=frames\n";
-    std::cerr << "  " << prog_name << " --all-pdbs --pdb-dir=data/pdb data/json --resume --max=100\n";
+    std::cerr << "  " << prog_name
+              << " --pdb-list=fast_pdbs.txt --pdb-dir=data/pdb data/json --stage=frames\n";
+    std::cerr << "  " << prog_name
+              << " --all-pdbs --pdb-dir=data/pdb data/json --resume --max=100\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -308,10 +312,10 @@ int main(int argc, char* argv[]) {
     std::string single_pdb_file;
 
     std::vector<std::string> positional_args;
-    
+
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
-        
+
         if (arg.find("--stage=") == 0) {
             stage = arg.substr(8);
         } else if (arg.find("--pdb-list=") == 0) {
@@ -341,9 +345,8 @@ int main(int argc, char* argv[]) {
 
     // Validate stage
     const std::set<std::string> valid_stages = {
-        "atoms", "residue_indices", "ls_fitting", "frames", "distances", "hbonds",
-        "validation", "selection", "steps", "helical", "all"
-    };
+        "atoms",      "residue_indices", "ls_fitting", "frames",  "distances", "hbonds",
+        "validation", "selection",       "steps",      "helical", "all"};
     if (valid_stages.find(stage) == valid_stages.end()) {
         std::cerr << "Error: Invalid stage: " << stage << "\n";
         return 1;
@@ -351,7 +354,7 @@ int main(int argc, char* argv[]) {
 
     // Determine mode: single PDB or batch
     bool batch_mode = all_pdbs || !pdb_list_file.empty();
-    
+
     if (!batch_mode) {
         // Single PDB mode
         if (positional_args.size() < 2) {
@@ -361,18 +364,18 @@ int main(int argc, char* argv[]) {
         }
         single_pdb_file = positional_args[0];
         output_dir = positional_args[1];
-        
+
         if (!std::filesystem::exists(single_pdb_file)) {
             std::cerr << "Error: PDB file not found: " << single_pdb_file << "\n";
             return 1;
         }
-        
+
         std::cout << "Processing: " << single_pdb_file << " (stage: " << stage << ")\n";
         std::cout << "Input: " << single_pdb_file << "\n";
         std::cout << "Output: " << output_dir << "\n\n";
-        
+
         bool success = process_single_pdb(single_pdb_file, output_dir, stage, !quiet);
-        
+
         if (success) {
             std::cout << "\n✅ Success!\n";
             return 0;
@@ -380,19 +383,19 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-    
+
     // Batch mode
     if (positional_args.empty()) {
         std::cerr << "Error: Missing output directory\n";
         return 1;
     }
     output_dir = positional_args[0];
-    
+
     // Set default progress file
     if (progress_file.empty()) {
         progress_file = output_dir + "/progress.json";
     }
-    
+
     // Get list of PDBs to process
     std::vector<std::string> pdb_ids;
     if (!pdb_list_file.empty()) {
@@ -400,21 +403,21 @@ int main(int argc, char* argv[]) {
     } else if (all_pdbs) {
         pdb_ids = get_pdbs_from_dir(pdb_dir);
     }
-    
+
     if (pdb_ids.empty()) {
         std::cerr << "Error: No PDBs found to process\n";
         return 1;
     }
-    
+
     // Apply max limit
     if (max_pdbs > 0 && static_cast<int>(pdb_ids.size()) > max_pdbs) {
         pdb_ids.resize(max_pdbs);
     }
-    
+
     // Initialize or load progress
     Progress progress;
     std::set<std::string> completed_set;
-    
+
     if (resume && std::filesystem::exists(progress_file)) {
         progress = load_progress(progress_file);
         completed_set.insert(progress.completed_pdbs.begin(), progress.completed_pdbs.end());
@@ -427,47 +430,47 @@ int main(int argc, char* argv[]) {
         progress.total_pdbs = pdb_ids.size();
         progress.pending_pdbs = pdb_ids;
     }
-    
+
     // Create output directory
     std::filesystem::create_directories(output_dir);
-    
+
     std::cout << "Batch processing: " << pdb_ids.size() << " PDBs (stage: " << stage << ")\n";
     std::cout << "PDB directory: " << pdb_dir << "\n";
     std::cout << "Output directory: " << output_dir << "\n";
     std::cout << "Progress file: " << progress_file << "\n\n";
-    
+
     int processed = 0;
     int succeeded = 0;
     int failed = 0;
     int skipped = 0;
-    
+
     for (size_t i = 0; i < pdb_ids.size(); i++) {
         const auto& pdb_id = pdb_ids[i];
-        
+
         // Skip if already completed
         if (completed_set.count(pdb_id)) {
             skipped++;
             continue;
         }
-        
+
         std::filesystem::path pdb_path = std::filesystem::path(pdb_dir) / (pdb_id + ".pdb");
-        
+
         if (!std::filesystem::exists(pdb_path)) {
             if (!quiet) {
-                std::cout << "[" << (i + 1) << "/" << pdb_ids.size() << "] "
-                          << pdb_id << ": SKIP (file not found)\n";
+                std::cout << "[" << (i + 1) << "/" << pdb_ids.size() << "] " << pdb_id
+                          << ": SKIP (file not found)\n";
             }
             progress.failed_pdbs.push_back(pdb_id);
             failed++;
             continue;
         }
-        
+
         if (!quiet) {
             std::cout << "[" << (i + 1) << "/" << pdb_ids.size() << "] " << pdb_id << "...\n";
         }
-        
+
         bool success = process_single_pdb(pdb_path, output_dir, stage, !quiet);
-        
+
         processed++;
         if (success) {
             succeeded++;
@@ -480,23 +483,22 @@ int main(int argc, char* argv[]) {
             failed++;
             progress.failed_pdbs.push_back(pdb_id);
         }
-        
+
         // Update and save progress
         progress.processed = progress.completed_pdbs.size() + progress.failed_pdbs.size();
         progress.succeeded = progress.completed_pdbs.size();
         progress.failed = progress.failed_pdbs.size();
         progress.last_update = get_timestamp();
-        
+
         // Remove from pending
         progress.pending_pdbs.erase(
             std::remove(progress.pending_pdbs.begin(), progress.pending_pdbs.end(), pdb_id),
-            progress.pending_pdbs.end()
-        );
-        
+            progress.pending_pdbs.end());
+
         // Save progress after each PDB
         save_progress(progress, progress_file);
     }
-    
+
     // Final summary
     std::cout << "\n" << std::string(60, '=') << "\n";
     std::cout << "BATCH PROCESSING COMPLETE\n";
@@ -507,6 +509,6 @@ int main(int argc, char* argv[]) {
     std::cout << "Failed: " << failed << "\n";
     std::cout << "Skipped (already done): " << skipped << "\n";
     std::cout << "Progress saved to: " << progress_file << "\n";
-    
+
     return (failed > 0) ? 1 : 0;
 }

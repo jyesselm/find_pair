@@ -12,11 +12,11 @@ This document describes each type of JSON record produced by the X3DNA find_pair
 
 | Stage | Name | JSON Type | Key Fields | Status |
 |-------|------|-----------|------------|--------|
-| 1 | Atom Parsing | `pdb_atoms` | atom_idx, xyz, atom_name | ✅ PASSED |
-| 2 | Residue Indices | `residue_indices` | chain_id, residue_seq, start/end_atom_idx | ✅ PASSED |
-| 3 | Base Frame Calc | `base_frame_calc` | rms_fit, matched_atoms, template_file | ✅ PASSED |
-| 4 | LS Fitting | `ls_fitting` | rms_fit, rotation_matrix, translation | ✅ PASSED |
-| 5 | Frame Calc | `frame_calc` | orien (3x3), org (xyz) | ✅ PASSED |
+| 1 | Atom Parsing | `pdb_atoms` | atom_idx, xyz, atom_name | ✅ PASSED (3602/3602) |
+| 2 | Residue Indices | `residue_indices` | chain_id, residue_seq, start/end_atom_idx | ✅ PASSED (3602/3602) |
+| 3 | Base Frame Calc | `base_frame_calc` | rms_fit, matched_atoms, template_file | ✅ PASSED (3602/3602) |
+| 4 | LS Fitting | `ls_fitting` | rms_fit, rotation_matrix, translation | ✅ PASSED (3602/3602) |
+| 5 | Frame Calc | `frame_calc` | orien (3x3), org (xyz) | ✅ PASSED (3602/3602) |
 | 6 | Pair Validation | `pair_validation` | is_valid, bp_type_id, quality_score | ⚠️ TESTING |
 | 7 | Distance Checks | `distance_checks` | dorg, dNN, plane_angle, d_v | ⚠️ TESTING |
 | 8 | H-bond List | `hbond_list` | num_hbonds, hbonds[] | ⏳ PENDING |
