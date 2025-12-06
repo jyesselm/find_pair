@@ -1,16 +1,18 @@
 {
   "size": 10,
   "pdb_ids": [
-    "1Q96",
-    "1VBY",
-    "3AVY",
-    "3G8T",
-    "3KNC",
-    "4AL5",
-    "5UJ2",
-    "6CAQ",
-    "6LTU",
-    "8J1J"
+    "1D96",
+    "4IQX",
+    "4K4S",
+    "4WC2",
+    "5DV7",
+    "5N9G",
+    "6DPF",
+    "6MWN",
+    "8K1E",
+    "8RUJ"
   ],
-  "generated": "2025-11-23T17:26:32.068820"
+  "generated": "2025-12-05T21:58:42.798193",
+  "source": "data/valid_pdbs_fast.json (valid_pdbs_with_atoms_and_frames)",
+  "seed": 42
 }
