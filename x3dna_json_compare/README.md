@@ -1,27 +1,72 @@
-# X3DNA Comparison Library
+# X3DNA JSON Compare Package
 
 A Python package for comparing legacy and modern JSON outputs from X3DNA.
 
-## Installation
+## CLI Tool (`fp2-validate`)
 
-### Install as package (recommended)
+The primary way to use this package is through the `fp2-validate` CLI:
 
 ```bash
-# From project root
+# Install (from project root)
 pip install -e .
+
+# Basic validation
+fp2-validate                      # All stages, all 3602 fast PDBs
+fp2-validate --pdb 1EHZ -v        # Single PDB, verbose
+fp2-validate --test-set 100       # 100-PDB test set
+fp2-validate frames --max 50      # Frames only, first 50 PDBs
+
+# Debugging
+fp2-validate --stop-on-first      # Stop at first failure
+fp2-validate --pdb 1EHZ -v -s     # Single PDB, verbose, stop on first
+
+# CI/Scripts
+fp2-validate --quiet              # Exit code only (0=pass, 1=fail)
+fp2-validate --test-set 100 -q    # Quick CI check
+
+# Generate difference reports
+fp2-validate --diff               # Save to data/validation_results/
+fp2-validate --diff-file my.json  # Custom output file
+
+# Environment info
+fp2-validate info                 # Shows executables, PDB counts
+fp2-validate list-pdbs            # List all fast PDBs
+fp2-validate list-pdbs --test-set 50  # List PDBs in test set
 ```
 
-This installs the package in editable mode, so changes are immediately available.
+### Command Reference
 
-### Use without installation
+| Command | Description |
+|---------|-------------|
+| `fp2-validate` | Validate all stages, all fast PDBs |
+| `fp2-validate validate [STAGES]` | Validate specific stages |
+| `fp2-validate atoms` | Validate atom records |
+| `fp2-validate frames` | Validate frame calculations |
+| `fp2-validate hbonds` | Validate H-bond lists |
+| `fp2-validate pairs` | Validate base pairs |
+| `fp2-validate steps` | Validate step parameters |
+| `fp2-validate info` | Show environment info |
+| `fp2-validate list-pdbs` | List available PDBs |
 
-The package can also be imported directly if the project root is in your Python path:
+### Options Reference
 
-```python
-from x3dna_json_compare import JsonComparator, ComparisonResult
-```
+| Option | Description |
+|--------|-------------|
+| `--pdb, -p TEXT` | Specific PDB(s) to validate |
+| `--max, -n INT` | Maximum number of PDBs |
+| `--test-set [10\|50\|100\|500\|1000]` | Use predefined test set |
+| `--workers, -w INT` | Parallel workers (default: 10) |
+| `--quiet, -q` | Exit code only |
+| `--verbose, -v` | Show per-PDB results |
+| `--stop-on-first, -s` | Stop at first failure |
+| `--diff` | Document differences |
+| `--diff-file PATH` | Custom output file |
 
-## Usage
+---
+
+## Python API
+
+For programmatic use, you can import the package directly:
 
 ### Basic Comparison
 
@@ -29,16 +74,20 @@ from x3dna_json_compare import JsonComparator, ComparisonResult
 from pathlib import Path
 from x3dna_json_compare import JsonComparator
 
-# Default: compare both atoms and frames
+# Default: compare all stages
 comparator = JsonComparator()
 
 # Or selectively enable/disable comparisons
 comparator = JsonComparator(
-    compare_atoms=True,   # Compare atom records (pdb_atoms)
-    compare_frames=True    # Compare frame calculations (base_frame_calc, frame_calc, ls_fitting)
+    compare_atoms=True,
+    compare_frames=True,
+    compare_hbond_list=True,
+    compare_pairs=True,
+    compare_steps=True,
+    enable_cache=False  # Disable caching
 )
 
-# Compare single PDB file
+# Compare single PDB
 legacy_file = Path("data/json_legacy/1H4S.json")
 modern_file = Path("data/json/1H4S.json")
 pdb_file = Path("data/pdb/1H4S.pdb")
@@ -49,29 +98,40 @@ if result.status == 'error':
     print(f"Errors: {result.errors}")
 elif result.has_differences():
     if result.frame_comparison:
-        print(f"Found {len(result.frame_comparison.mismatched_calculations)} frame differences")
+        print(f"Frame differences: {len(result.frame_comparison.mismatched_calculations)}")
     if result.atom_comparison:
-        print(f"Found {len(result.atom_comparison.missing_in_modern)} missing atoms")
+        print(f"Missing atoms: {len(result.atom_comparison.missing_in_modern)}")
 else:
-    print("No differences found")
+    print("✅ No differences found")
 ```
 
-### Batch Comparison
+### Batch Validation
 
 ```python
-from x3dna_json_compare import JsonComparator
+from x3dna_json_compare.runner import ValidationRunner
 
-comparator = JsonComparator()
-pdb_ids = ["1H4S", "1A34", "1BNA"]
-
-results = comparator.batch_compare(
-    pdb_ids,
-    project_root=Path("."),
-    max_workers=4
+# Create runner
+runner = ValidationRunner(
+    stages=['frames'],           # Or ['all'] for everything
+    workers=10,
+    verbose=True,
+    stop_on_first=False
 )
 
-for pdb_id, result in results.items():
-    print(f"{pdb_id}: {result.status}")
+# Get PDB list
+pdb_ids = runner.get_pdb_list(
+    test_set=100,               # Use test set 100
+    # Or: specific=['1EHZ', '1BNA'],
+    # Or: max_count=50
+)
+
+# Run validation
+summary = runner.validate(pdb_ids)
+
+print(f"Passed: {summary.passed}/{summary.total}")
+print(f"Failed: {summary.failed}")
+if summary.all_passed:
+    print("✅ All validations passed!")
 ```
 
 ### PDB File Reading
@@ -90,55 +150,53 @@ for atom_name, line_num, line in atoms:
     print(f"{atom_name}: {line}")
 ```
 
-### Direct Comparison Functions
+---
 
-```python
-from x3dna_json_compare import compare_atoms, compare_frames, PdbFileReader
+## Package Structure
 
-# Load JSON data
-legacy_calcs = legacy_json.get('calculations', [])
-modern_calcs = modern_json.get('calculations', [])
-
-# Extract records
-legacy_frames = [r for r in legacy_calcs if r.get('type') == 'frame_calc']
-modern_frames = [r for r in modern_calcs if r.get('type') == 'frame_calc']
-
-# Compare
-pdb_reader = PdbFileReader(Path("data/pdb/1H4S.pdb"))
-frame_comparison = compare_frames(
-    legacy_frames, modern_frames, 
-    Path("data/pdb/1H4S.pdb"), 
-    pdb_reader
-)
+```
+x3dna_json_compare/
+├── __init__.py          # Package exports
+├── cli.py               # CLI entry point (fp2-validate)
+├── runner.py            # Validation runner
+├── output.py            # Output formatting
+├── pdb_list.py          # PDB list management
+├── executables.py       # Executable finding
+├── json_comparison.py   # Main JsonComparator class
+├── models.py            # Data models (ComparisonResult, etc.)
+├── atom_comparison.py   # Atom comparison
+├── frame_comparison.py  # Frame comparison
+├── hbond_comparison.py  # H-bond comparison
+├── pdb_utils.py         # PDB file utilities
+├── result_cache.py      # Comparison caching
+└── README.md            # This file
 ```
 
-## API Reference
+## Main Classes
 
-### Main Classes
+- **`JsonComparator`**: Main comparison engine
+- **`ValidationRunner`**: CLI validation runner  
+- **`OutputFormatter`**: Output formatting
+- **`PdbFileReader`**: Efficient PDB file reader
 
-- **`JsonComparator`**: Main comparison engine with caching support
-- **`PdbFileReader`**: Efficient PDB file reader with line indexing
-- **`JsonValidator`**: JSON file validation utilities
-- **`ComparisonCache`**: Result caching for performance
-
-### Models
+## Models
 
 - **`ComparisonResult`**: Complete comparison result for a PDB
-- **`FrameComparison`**: Frame calculation comparison results
-- **`AtomComparison`**: Atom-level comparison results
-- **`FrameMismatch`**: Details of a mismatched frame calculation
-- **`AtomInfo`**: Information about a single atom
+- **`ValidationSummary`**: Summary of batch validation
+- **`FrameComparison`**: Frame calculation comparison
+- **`AtomComparison`**: Atom-level comparison
+- **`HbondComparison`**: H-bond comparison
 
-### Functions
+---
 
-- **`compare_frames()`**: Compare frame calculations directly
-- **`compare_atoms()`**: Compare atom records directly
-- **`get_pdb_line()`**: Convenience function to get a PDB line
+## Migration from Old Scripts
 
-## Examples
+| Old Script | New CLI Command |
+|------------|-----------------|
+| `validate_hbonds_batch.py` | `fp2-validate hbonds` |
+| `validate_frames_batch.py` | `fp2-validate frames` |
+| `test_single_pdb_ls_fitting.py 1EHZ` | `fp2-validate frames --pdb 1EHZ -v` |
+| `find_first_mismatch.py` | `fp2-validate --stop-on-first` |
+| `test_all_stages_batch.py` | `fp2-validate` |
 
-See the scripts in `scripts/` for complete examples:
-- `compare_all_json_executed.py`: Compare all JSON files
-- `compare_problematic_pdbs.py`: Detailed comparison with reports
-- `analyze_ring_fitting_differences.py`: Ring fitting analysis
-
+See `scripts/README.md` for complete migration guide.

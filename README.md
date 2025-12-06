@@ -10,6 +10,30 @@ A modern C++ rewrite of the X3DNA v2.4 codebase with strong object-oriented desi
 
 ---
 
+## Quick Start: Validation CLI
+
+The primary tool for all validation is the `fp2-validate` CLI:
+
+```bash
+# Install
+pip install -e .
+
+# Run validation
+fp2-validate                      # All stages, all 3602 fast PDBs
+fp2-validate --pdb 1EHZ -v        # Single PDB, verbose output
+fp2-validate --test-set 100       # 100-PDB test set
+fp2-validate frames --max 50      # Frames only, first 50 PDBs
+fp2-validate --stop-on-first      # Debug mode - stop at first failure
+
+# Show info
+fp2-validate info                 # Environment & available test sets
+fp2-validate list-pdbs            # List all available PDBs
+```
+
+See [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) for complete CLI reference.
+
+---
+
 ## Getting Started
 
 ### Initial Setup

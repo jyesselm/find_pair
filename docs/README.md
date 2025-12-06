@@ -1,16 +1,31 @@
 # Documentation Index
 
-**Last Updated**: December 2, 2025  
+**Last Updated**: December 6, 2025  
 **Status**: Cleaned up and focused on essential documentation
 
 ---
 
 ## 🎯 Start Here
 
+### Quick Validation
+
+```bash
+# Install CLI
+pip install -e .
+
+# Run validation
+fp2-validate                      # All stages, all PDBs
+fp2-validate --pdb 1EHZ -v        # Single PDB, verbose
+fp2-validate --test-set 100       # 100-PDB test set
+fp2-validate info                 # Show environment
+```
+
+See **[TESTING_GUIDE.md](TESTING_GUIDE.md)** for complete CLI reference.
+
 ### New to the Project?
 1. **[QUICK_START.md](QUICK_START.md)** - Get up and running in 5 minutes
 2. **[../README.md](../README.md)** - Main project overview
-3. **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - How to test and compare results
+3. **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - How to test and compare results (includes CLI reference)
 4. **[CODE_FLOW.md](CODE_FLOW.md)** - Understand the code architecture
 
 ---

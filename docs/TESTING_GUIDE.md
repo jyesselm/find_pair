@@ -1,15 +1,115 @@
 # Testing Guide
 
-**Last Updated**: 2025-01-XX  
+**Last Updated**: December 6, 2025  
 **Purpose**: Centralized guide for all testing and JSON comparison workflows
 
 ---
 
-## Quick Start: JSON Comparison
+## Quick Start: Unified CLI (`fp2-validate`)
 
-The **primary tool** for JSON comparisons is `scripts/compare_json.py`. This is the unified, comprehensive comparison tool that should be used for all JSON comparison needs.
+The **primary tool** for all validation is the `fp2-validate` CLI. This unified tool replaces all the individual validation scripts.
+
+### Installation
+
+```bash
+# Install from project root
+pip install -e .
+```
 
 ### Basic Usage
+
+```bash
+# Validate everything (all stages, all fast PDBs)
+fp2-validate
+
+# Validate specific stages
+fp2-validate frames               # Frames only
+fp2-validate hbonds               # H-bonds only  
+fp2-validate atoms                # Atoms only
+fp2-validate pairs                # Pairs only
+fp2-validate steps                # Step parameters only
+
+# Validate specific PDB(s)
+fp2-validate --pdb 1EHZ -v        # Single PDB, verbose
+fp2-validate --pdb 1EHZ --pdb 1BNA --pdb 1H4S  # Multiple PDBs
+
+# Use test sets (predefined collections)
+fp2-validate --test-set 10        # Quick 10-PDB test
+fp2-validate --test-set 100       # 100-PDB test
+fp2-validate --test-set 1000      # Large 1000-PDB test
+
+# Limit number of PDBs
+fp2-validate --max 50             # First 50 PDBs
+
+# Debug mode - stop at first failure
+fp2-validate --stop-on-first      # Great for debugging
+
+# Document differences to file
+fp2-validate --diff               # Saves to data/validation_results/
+
+# Quiet mode (for CI/scripts)
+fp2-validate --quiet              # Exit code only: 0=pass, 1=fail
+
+# Show environment info
+fp2-validate info                 # Shows executables, PDB counts, test sets
+
+# List available PDBs
+fp2-validate list-pdbs            # All fast PDBs
+fp2-validate list-pdbs --test-set 50  # PDBs in test set 50
+```
+
+### Command Reference
+
+| Command | Description |
+|---------|-------------|
+| `fp2-validate` | Validate all stages, all fast PDBs |
+| `fp2-validate validate [STAGES]` | Validate specific stages |
+| `fp2-validate atoms` | Validate atom records |
+| `fp2-validate frames` | Validate frame calculations |
+| `fp2-validate hbonds` | Validate H-bond lists |
+| `fp2-validate pairs` | Validate base pairs |
+| `fp2-validate steps` | Validate step parameters |
+| `fp2-validate info` | Show environment info |
+| `fp2-validate list-pdbs` | List available PDBs |
+
+### Options Reference
+
+| Option | Description |
+|--------|-------------|
+| `--pdb, -p TEXT` | Specific PDB(s) to validate |
+| `--max, -n INT` | Maximum number of PDBs to process |
+| `--test-set [10\|50\|100\|500\|1000]` | Use a predefined test set |
+| `--workers, -w INT` | Number of parallel workers (default: 10) |
+| `--quiet, -q` | Suppress output, exit code only |
+| `--verbose, -v` | Show per-PDB results |
+| `--stop-on-first, -s` | Stop at first failure |
+| `--diff` | Document differences to file |
+| `--diff-file PATH` | Custom differences output file |
+
+### Common Workflows
+
+```bash
+# Quick validation during development
+fp2-validate frames --pdb 1EHZ -v
+
+# Full test before commit
+fp2-validate --test-set 100
+
+# Debug a failing PDB
+fp2-validate --pdb FAILING_PDB --stop-on-first -v
+
+# CI pipeline
+fp2-validate --test-set 100 --quiet
+
+# Generate difference report
+fp2-validate --test-set 100 --diff
+```
+
+---
+
+## Alternative: Python Scripts
+
+For specialized analysis, the `compare_json.py` script is still available:
 
 ```bash
 # Compare all available PDBs (atoms and frames)
