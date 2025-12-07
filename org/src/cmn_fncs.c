@@ -4642,7 +4642,7 @@ void check_pair(long i, long j, char *bseq, long **seidx, double **xyz,
             /* (Recording all N² pairs generates huge files) */
             if (*bpid != 0) {
                 json_writer_record_pair_validation(i, j, 1, *bpid,
-                                                     dir_x, dir_y, dir_z, rtn_val, misc_pars);
+                                                 dir_x, dir_y, dir_z, rtn_val, misc_pars);
             }
             /* Record distance checks */
             json_writer_record_distance_checks(i, j, rtn_val[1], rtn_val[4], rtn_val[3],

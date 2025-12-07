@@ -1681,12 +1681,15 @@ void json_writer_record_find_bestpair_selection(long num_bp, long **base_pairs) 
 }
 
 /* Record best partner candidates for debugging */
+/* Only stores candidates with actual scores (not default 1e18) to save disk space */
 void json_writer_record_best_partner_candidates(long res_i, long num_candidates, long *candidate_j,
                                                  double *candidate_scores, long *candidate_bp_type_ids,
                                                  long *is_eligible, long best_j, double best_score) {
     FILE *type_file;
     long is_first;
     long i;
+    int first_candidate = 1;
+    const double MAX_VALID_SCORE = 1e17;
     
     if (!json_writer_is_initialized()) return;
     
@@ -1704,12 +1707,22 @@ void json_writer_record_best_partner_candidates(long res_i, long num_candidates,
     fprintf(type_file, "      \"candidates\": [\n");
     
     for (i = 0; i < num_candidates; i++) {
-        if (i > 0) fprintf(type_file, ",\n");
+        double score = candidate_scores ? candidate_scores[i] : 0.0;
+        long bp_type_id = candidate_bp_type_ids ? candidate_bp_type_ids[i] : 0;
+        
+        /* Skip candidates with default/invalid scores to save space */
+        if (score >= MAX_VALID_SCORE && bp_type_id == 0) {
+            continue;
+        }
+        
+        if (!first_candidate) fprintf(type_file, ",\n");
+        first_candidate = 0;
+        
         fprintf(type_file, "        {\n");
         fprintf(type_file, "          \"res_j\": %ld,\n", candidate_j ? candidate_j[i] : 0);
         fprintf(type_file, "          \"is_eligible\": %ld,\n", is_eligible ? is_eligible[i] : 0);
-        fprintf(type_file, "          \"score\": %.6f,\n", candidate_scores ? candidate_scores[i] : 0.0);
-        fprintf(type_file, "          \"bp_type_id\": %ld,\n", candidate_bp_type_ids ? candidate_bp_type_ids[i] : 0);
+        fprintf(type_file, "          \"score\": %.6f,\n", score);
+        fprintf(type_file, "          \"bp_type_id\": %ld,\n", bp_type_id);
         fprintf(type_file, "          \"is_best\": %ld\n", (candidate_j && candidate_j[i] == best_j) ? 1 : 0);
         fprintf(type_file, "        }");
     }

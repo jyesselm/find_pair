@@ -294,10 +294,10 @@ def compare_hbond_lists(
             has_mismatch = False
         else:
             has_mismatch = (
-                pair_comp.missing_in_modern
-                or pair_comp.extra_in_modern
-                or pair_comp.mismatched_hbonds
-                or not pair_comp.num_hbonds_match
+            pair_comp.missing_in_modern
+            or pair_comp.extra_in_modern
+            or pair_comp.mismatched_hbonds
+            or not pair_comp.num_hbonds_match
             )
         if has_mismatch:
             result.mismatched_pairs.append(

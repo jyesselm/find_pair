@@ -65,8 +65,7 @@ def compare_base_pairs(
             key = normalize_pair(base_i, base_j)
             # Keep record where base_i < base_j (already normalized order)
             if key not in legacy_map:
-                if base_i <= base_j:
-                    legacy_map[key] = rec
+                legacy_map[key] = rec
             elif base_i <= base_j:
                 # Replace with the properly ordered version
                 legacy_map[key] = rec

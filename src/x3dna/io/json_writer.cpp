@@ -732,6 +732,10 @@ void JsonWriter::record_find_bestpair_selection(
 void JsonWriter::record_best_partner_candidates(
     int res_i, const std::vector<std::tuple<int, bool, double, int>>& candidates, int best_j,
     double best_score) {
+    // Only store candidates with actual scores (not default 1e18)
+    // This reduces file size dramatically (from ~74GB to ~1GB total)
+    constexpr double MAX_VALID_SCORE = 1e17;
+
     nlohmann::json record;
     record["type"] = "best_partner_candidates";
     record["res_i"] = res_i;
@@ -745,6 +749,11 @@ void JsonWriter::record_best_partner_candidates(
         bool is_eligible = std::get<1>(cand);
         double score = std::get<2>(cand);
         int bp_type_id = std::get<3>(cand);
+
+        // Skip candidates with default/invalid scores to save space
+        if (score >= MAX_VALID_SCORE && bp_type_id == 0) {
+            continue;
+        }
 
         nlohmann::json cand_json;
         cand_json["res_j"] = res_j;

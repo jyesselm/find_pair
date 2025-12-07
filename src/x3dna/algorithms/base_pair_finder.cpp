@@ -631,9 +631,9 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
         // Only record pair_validation for valid pairs to save disk space
         // (Recording all N² pairs generates 17GB+ of data)
         if (result.is_valid) {
-            writer->record_pair_validation(base_i, base_j, result.is_valid, bp_type_id, result.dir_x,
-                                           result.dir_y, result.dir_z, rtn_val,
-                                           validator_.parameters());
+        writer->record_pair_validation(base_i, base_j, result.is_valid, bp_type_id, result.dir_x,
+                                       result.dir_y, result.dir_z, rtn_val,
+                                       validator_.parameters());
         }
     }
 

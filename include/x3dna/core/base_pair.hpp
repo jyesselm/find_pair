@@ -239,8 +239,27 @@ public:
             j["orien_i"] = frame1_->rotation().to_json_legacy();
             j["org_i"] = frame1_->origin().to_json();
         }
+        
+        // For frame2 (orien_j), legacy code applies a sign flip when dir_z <= 0
+        // Legacy: r2[l][k] = (k == 1 || dir_z > 0) ? orien[j][...] : -orien[j][...]
+        // This negates columns 2 and 3 (y and z axes) when dir_z <= 0
         if (frame2_.has_value()) {
-            j["orien_j"] = frame2_->rotation().to_json_legacy();
+            double dir_z = 0.0;
+            if (frame1_.has_value()) {
+                dir_z = frame1_->z_axis().dot(frame2_->z_axis());
+            }
+            
+            if (dir_z <= 0.0 && frame1_.has_value()) {
+                // Apply legacy sign flip: negate y and z columns
+                geometry::Matrix3D rot2 = frame2_->rotation();
+                geometry::Vector3D y_col = rot2.column(1);
+                geometry::Vector3D z_col = rot2.column(2);
+                rot2.set_column(1, -y_col);
+                rot2.set_column(2, -z_col);
+                j["orien_j"] = rot2.to_json_legacy();
+            } else {
+                j["orien_j"] = frame2_->rotation().to_json_legacy();
+            }
             j["org_j"] = frame2_->origin().to_json();
         }
 

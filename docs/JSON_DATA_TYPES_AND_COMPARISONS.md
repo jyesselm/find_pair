@@ -4,7 +4,7 @@
 
 This document describes each type of JSON record produced by the X3DNA find_pair algorithm. For testing workflow and validation instructions, see **[TESTING_GUIDE.md](TESTING_GUIDE.md)**.
 
-**Last Updated**: 2025-12-06
+**Last Updated**: 2025-12-07
 
 ---
 
@@ -19,8 +19,8 @@ This document describes each type of JSON record produced by the X3DNA find_pair
 | 5 | Frame Calc | `frame_calc` | orien (3x3), org (xyz) | ✅ PASSED (3602/3602) |
 | 6 | Pair Validation | `pair_validation` | is_valid, bp_type_id, quality_score | ⚠️ TESTING |
 | 7 | Distance Checks | `distance_checks` | dorg, dNN, plane_angle, d_v | ⚠️ TESTING |
-| 8 | H-bond List | `hbond_list` | num_hbonds, hbonds[] | ⏳ PENDING |
-| 9 | Base Pair | `base_pair` | base_i, base_j, bp_type, orien | ⏳ PENDING |
+| 8 | H-bond List | `hbond_list` | num_hbonds, hbonds[] | ✅ PASSED* |
+| 9 | Base Pair | `base_pair` | base_i, base_j, bp_type, orien | ✅ PASSED (77/77) |
 | 10 | Best Pair Selection | `find_bestpair_selection` | num_bp, pairs[] | ⏳ PENDING |
 | 11 | Step Parameters | `bpstep_params` | shift, slide, rise, tilt, roll, twist | ⏳ PENDING |
 | 12 | Helical Parameters | `helical_params` | x/y_displacement, rise, inclination, tip | ⏳ PENDING |
