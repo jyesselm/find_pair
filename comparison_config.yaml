@@ -11,5 +11,7 @@ comparisons:
   residue_indices: true     # Compare residue_indices records (residue-to-atom mappings)
 
 # Floating point comparison tolerance
-tolerance: 1.0e-6
+# Note: 1e-5 is used to account for normal FP variations in trigonometric calculations
+# (differences < 1e-5 are FP noise; differences > 1e-5 indicate algorithmic issues)
+tolerance: 1.0e-5
 

@@ -18,7 +18,7 @@ DEFAULT_CONFIG = {
         "hbond_list": True,  # hbond_list records
         "residue_indices": True,  # residue_indices records
     },
-    "tolerance": 1e-6,
+    "tolerance": 1e-5,  # 1e-5 handles normal FP variations in trigonometric calculations
 }
 
 

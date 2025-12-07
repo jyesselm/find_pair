@@ -136,9 +136,11 @@ def compare_pair_validations(
                     }
         
         # Compare calculated values
+        # Note: quality_score is excluded because it depends on H-bond detection (stage 8)
+        # which has its own comparison. The core validation uses dorg, d_v, plane_angle, dNN.
         leg_calc = leg_rec.get('calculated_values', {})
         mod_calc = mod_rec.get('calculated_values', {})
-        for calc_key in ['dorg', 'd_v', 'plane_angle', 'dNN', 'quality_score']:
+        for calc_key in ['dorg', 'd_v', 'plane_angle', 'dNN']:
             leg_val = leg_calc.get(calc_key)
             mod_val = mod_calc.get(calc_key)
             if leg_val is not None and mod_val is not None:

@@ -1047,11 +1047,18 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                     with open(modern_file) as f:
                         modern_data = json.load(f)
                     
-                    # Create dict for quick modern lookup
+                    # Create dict for quick modern lookup - normalize keys (min, max)
+                    def normalize_pair(base_i, base_j):
+                        """Normalize pair to (min, max) for consistent lookup."""
+                        return (min(base_i, base_j), max(base_i, base_j))
+                    
                     modern_dict = {}
                     for rec in modern_data:
-                        key = (rec.get('base_i'), rec.get('base_j'))
+                        key = normalize_pair(rec.get('base_i'), rec.get('base_j'))
                         modern_dict[key] = rec
+                    
+                    # Track seen pairs to avoid duplicate output
+                    seen_pairs = set()
                     
                     # Compare all legacy records
                     shown_count = 0
@@ -1064,9 +1071,16 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                         if shown_count >= max_to_show:
                             break
                         
-                        pair_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
+                        # Normalize pair key for comparison
+                        raw_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
+                        pair_key = normalize_pair(raw_key[0], raw_key[1])
                         
-                        # Check if modern has this pair
+                        # Skip duplicate pairs (legacy outputs both (i,j) and (j,i) for some pairs)
+                        if pair_key in seen_pairs:
+                            continue
+                        seen_pairs.add(pair_key)
+                        
+                        # Check if modern has this pair (using normalized key)
                         if pair_key not in modern_dict:
                             reporter.sections.append(
                                 f"⚠️  WARNING: (base_i={pair_key[0]}, base_j={pair_key[1]}) - "
@@ -1075,7 +1089,7 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                             shown_count += 1
                             continue
                         
-                        modern_rec = modern_dict.get(pair_key)
+                        modern_rec = modern_dict[pair_key]
                         
                         rec_comp = create_record_comparison_from_dicts(
                             record_key=pair_key,
@@ -1118,11 +1132,18 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                     with open(modern_file) as f:
                         modern_data = json.load(f)
                     
-                    # Create dict for quick modern lookup
+                    # Create dict for quick modern lookup - normalize keys (min, max)
+                    def normalize_pair_bp(base_i, base_j):
+                        """Normalize pair to (min, max) for consistent lookup."""
+                        return (min(base_i, base_j), max(base_i, base_j))
+                    
                     modern_dict = {}
                     for rec in modern_data:
-                        key = (rec.get('base_i'), rec.get('base_j'))
+                        key = normalize_pair_bp(rec.get('base_i'), rec.get('base_j'))
                         modern_dict[key] = rec
+                    
+                    # Track seen pairs to avoid duplicate output
+                    seen_pairs = set()
                     
                     # Compare all legacy records
                     shown_count = 0
@@ -1135,9 +1156,16 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                         if shown_count >= max_to_show:
                             break
                         
-                        pair_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
+                        # Normalize pair key for comparison
+                        raw_key = (legacy_rec.get('base_i'), legacy_rec.get('base_j'))
+                        pair_key = normalize_pair_bp(raw_key[0], raw_key[1])
                         
-                        # Check if modern has this pair
+                        # Skip duplicate pairs
+                        if pair_key in seen_pairs:
+                            continue
+                        seen_pairs.add(pair_key)
+                        
+                        # Check if modern has this pair (using normalized key)
                         if pair_key not in modern_dict:
                             reporter.sections.append(
                                 f"⚠️  WARNING: (base_i={pair_key[0]}, base_j={pair_key[1]}) - "
@@ -1146,7 +1174,7 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
                             shown_count += 1
                             continue
                         
-                        modern_rec = modern_dict.get(pair_key)
+                        modern_rec = modern_dict[pair_key]
                         
                         rec_comp = create_record_comparison_from_dicts(
                             record_key=pair_key,

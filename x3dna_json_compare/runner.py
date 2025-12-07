@@ -119,10 +119,18 @@ def _validate_single_pdb(args) -> Dict[str, Any]:
         # If no specific check_types, use the general has_differences
         stage_has_diff = result.has_differences()
     
+    # Compute stage-specific status (not the global status from all comparisons)
+    if result.errors:
+        stage_status = 'error'
+    elif stage_has_diff:
+        stage_status = 'diff'
+    else:
+        stage_status = 'match'
+    
     # Convert to dict for pickling
     return {
         'pdb_id': pdb_id,
-        'status': result.status,
+        'status': stage_status,  # Use stage-specific status
         'has_differences': stage_has_diff,
         'errors': result.errors,
         'atom_comparison': _summarize_atom_comparison(result.atom_comparison),
@@ -591,10 +599,29 @@ class ValidationRunner:
         
         result = comparator.compare_files(legacy_file, modern_file, pdb_file, pdb_id)
         
+        # Check for stage-specific differences (same logic as _validate_single_pdb)
+        stage_has_diff = False
+        if self.check_types:
+            for ct in self.check_types:
+                if has_stage_differences(result, ct):
+                    stage_has_diff = True
+                    break
+        else:
+            # If no specific check_types, use the general has_differences
+            stage_has_diff = result.has_differences()
+        
+        # Compute stage-specific status (not the global status from all comparisons)
+        if result.errors:
+            stage_status = 'error'
+        elif stage_has_diff:
+            stage_status = 'diff'
+        else:
+            stage_status = 'match'
+        
         return {
             'pdb_id': pdb_id,
-            'status': result.status,
-            'has_differences': result.has_differences(),
+            'status': stage_status,  # Use stage-specific status
+            'has_differences': stage_has_diff,
             'errors': result.errors,
             'atom_comparison': _summarize_atom_comparison(result.atom_comparison),
             'frame_comparison': _summarize_frame_comparison(result.frame_comparison),
