@@ -100,68 +100,59 @@ class TestAtomComparator:
 
 
 class TestResidueComparator:
-    """Test Stage 2: residue_indices comparator."""
+    """Test Stage 2: residue_indices comparator.
+    
+    Key: residue_idx
+    Checks: start_atom, end_atom
+    """
     
     def test_matching_residues_pass(self):
         """Identical residues should pass."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "legacy_residue_idx": 1, "start_atom_idx": 1, "end_atom_idx": 23}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "legacy_residue_idx": 1, "legacy_start_atom_idx": 1, "legacy_end_atom_idx": 23}]
+        legacy = [{"residue_idx": 1, "start_atom": 1, "end_atom": 23}]
+        modern = [{"residue_idx": 1, "start_atom": 1, "end_atom": 23}]
         passed, errors = compare_residues(legacy, modern)
         assert passed, f"Should pass: {errors}"
     
-    def test_residue_idx_mismatch_detected(self):
-        """Residue index mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "legacy_residue_idx": 1, "start_atom_idx": 1, "end_atom_idx": 23}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "legacy_residue_idx": 2, "legacy_start_atom_idx": 1, "legacy_end_atom_idx": 23}]
+    def test_start_atom_mismatch_detected(self):
+        """Start atom mismatch should be detected."""
+        legacy = [{"residue_idx": 1, "start_atom": 1, "end_atom": 23}]
+        modern = [{"residue_idx": 1, "start_atom": 5, "end_atom": 23}]
         passed, errors = compare_residues(legacy, modern)
-        assert not passed, "Should fail on residue_idx mismatch"
-        assert any("residue_idx" in e for e in errors), f"Should mention residue_idx: {errors}"
+        assert not passed, "Should fail on start_atom mismatch"
+        assert any("start_atom" in e for e in errors), f"Should mention start_atom: {errors}"
     
-    def test_start_atom_idx_mismatch_detected(self):
-        """Start atom index mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "legacy_residue_idx": 1, "start_atom_idx": 1, "end_atom_idx": 23}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "legacy_residue_idx": 1, "legacy_start_atom_idx": 5, "legacy_end_atom_idx": 23}]
+    def test_end_atom_mismatch_detected(self):
+        """End atom mismatch should be detected."""
+        legacy = [{"residue_idx": 1, "start_atom": 1, "end_atom": 23}]
+        modern = [{"residue_idx": 1, "start_atom": 1, "end_atom": 25}]
         passed, errors = compare_residues(legacy, modern)
-        assert not passed, "Should fail on start_atom_idx mismatch"
-        assert any("start_atom_idx" in e for e in errors), f"Should mention start_atom_idx: {errors}"
-    
-    def test_end_atom_idx_mismatch_detected(self):
-        """End atom index mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "legacy_residue_idx": 1, "start_atom_idx": 1, "end_atom_idx": 23}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "legacy_residue_idx": 1, "legacy_start_atom_idx": 1, "legacy_end_atom_idx": 25}]
-        passed, errors = compare_residues(legacy, modern)
-        assert not passed, "Should fail on end_atom_idx mismatch"
-        assert any("end_atom_idx" in e for e in errors), f"Should mention end_atom_idx: {errors}"
+        assert not passed, "Should fail on end_atom mismatch"
+        assert any("end_atom" in e for e in errors), f"Should mention end_atom: {errors}"
 
 
 class TestBaseFrameCalcComparator:
-    """Test Stage 3: base_frame_calc comparator."""
+    """Test Stage 3: base_frame_calc comparator.
+    
+    Key: residue_idx (legacy) or legacy_residue_idx (modern)
+    """
     
     def test_matching_base_frame_pass(self):
         """Identical base_frame_calc should pass."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        legacy = [{"residue_idx": 1,
                    "base_type": "A", "rms_fit": 0.025, "num_matched_atoms": 10,
-                   "matched_atoms": ["N1", "C2", "N3"]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+                   "matched_atoms": ["N1", "C2", "N3"], "standard_template": "Atomic_A.pdb"}]
+        modern = [{"legacy_residue_idx": 1,
                    "base_type": "A", "rms_fit": 0.025, "num_matched_atoms": 10,
-                   "matched_atoms": ["N1", "C2", "N3"]}]
+                   "matched_atoms": ["N1", "C2", "N3"], "standard_template": "data/templates/Atomic_A.pdb"}]
         passed, errors = compare_base_frame_calc(legacy, modern)
         assert passed, f"Should pass: {errors}"
     
     def test_base_type_mismatch_detected(self):
         """Base type mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        legacy = [{"residue_idx": 1,
                    "base_type": "A", "rms_fit": 0.025, "num_matched_atoms": 10,
                    "matched_atoms": ["N1", "C2", "N3"]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        modern = [{"legacy_residue_idx": 1,
                    "base_type": "G", "rms_fit": 0.025, "num_matched_atoms": 10,
                    "matched_atoms": ["N1", "C2", "N3"]}]
         passed, errors = compare_base_frame_calc(legacy, modern)
@@ -170,10 +161,10 @@ class TestBaseFrameCalcComparator:
     
     def test_rms_fit_mismatch_detected(self):
         """RMS fit mismatch beyond tolerance should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        legacy = [{"residue_idx": 1,
                    "base_type": "A", "rms_fit": 0.025, "num_matched_atoms": 10,
                    "matched_atoms": ["N1", "C2", "N3"]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        modern = [{"legacy_residue_idx": 1,
                    "base_type": "A", "rms_fit": 0.030, "num_matched_atoms": 10,  # 0.005 diff > 0.001
                    "matched_atoms": ["N1", "C2", "N3"]}]
         passed, errors = compare_base_frame_calc(legacy, modern)
@@ -182,10 +173,10 @@ class TestBaseFrameCalcComparator:
     
     def test_num_matched_atoms_mismatch_detected(self):
         """Num matched atoms mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        legacy = [{"residue_idx": 1,
                    "base_type": "A", "rms_fit": 0.025, "num_matched_atoms": 10,
                    "matched_atoms": ["N1", "C2", "N3"]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        modern = [{"legacy_residue_idx": 1,
                    "base_type": "A", "rms_fit": 0.025, "num_matched_atoms": 9,
                    "matched_atoms": ["N1", "C2", "N3"]}]
         passed, errors = compare_base_frame_calc(legacy, modern)
@@ -194,10 +185,10 @@ class TestBaseFrameCalcComparator:
     
     def test_matched_atoms_mismatch_detected(self):
         """Matched atoms set mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        legacy = [{"residue_idx": 1,
                    "base_type": "A", "rms_fit": 0.025, "num_matched_atoms": 3,
                    "matched_atoms": ["N1", "C2", "N3"]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        modern = [{"legacy_residue_idx": 1,
                    "base_type": "A", "rms_fit": 0.025, "num_matched_atoms": 3,
                    "matched_atoms": ["N1", "C2", "C4"]}]  # C4 instead of N3
         passed, errors = compare_base_frame_calc(legacy, modern)
@@ -206,56 +197,65 @@ class TestBaseFrameCalcComparator:
     
     def test_missing_base_type_detected(self):
         """Missing base_type should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        legacy = [{"residue_idx": 1,
                    "base_type": "A", "rms_fit": 0.025, "num_matched_atoms": 10,
                    "matched_atoms": ["N1", "C2", "N3"]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
+        modern = [{"legacy_residue_idx": 1,
                    # Missing base_type
                    "rms_fit": 0.025, "num_matched_atoms": 10,
                    "matched_atoms": ["N1", "C2", "N3"]}]
         passed, errors = compare_base_frame_calc(legacy, modern)
         assert not passed, "Should fail on missing base_type"
         assert any("missing" in e.lower() and "base_type" in e for e in errors), f"Should mention missing base_type: {errors}"
+    
+    def test_standard_template_filename_only(self):
+        """standard_template should compare filename only, not full path."""
+        legacy = [{"residue_idx": 1, "base_type": "A", "rms_fit": 0.025, 
+                   "num_matched_atoms": 10, "matched_atoms": ["N1", "C2", "N3"],
+                   "standard_template": "/usr/local/x3dna/config/Atomic_A.pdb"}]
+        modern = [{"legacy_residue_idx": 1, "base_type": "A", "rms_fit": 0.025,
+                   "num_matched_atoms": 10, "matched_atoms": ["N1", "C2", "N3"],
+                   "standard_template": "data/templates/Atomic_A.pdb"}]  # Different path, same filename
+        passed, errors = compare_base_frame_calc(legacy, modern)
+        assert passed, f"Should pass (same filename): {errors}"
 
 
 class TestLSFittingComparator:
-    """Test Stage 4: ls_fitting comparator."""
+    """Test Stage 4: ls_fitting comparator.
+    
+    Key: residue_idx (legacy) or legacy_residue_idx (modern)
+    Note: Legacy does NOT have base_type field.
+    """
     
     def test_matching_ls_fitting_pass(self):
         """Identical ls_fitting should pass."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A", "rms_fit": 0.025, "num_points": 10,
+        legacy = [{"residue_idx": 1, "rms_fit": 0.025, "num_points": 10,
                    "rotation_matrix": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                    "translation": [1.0, 2.0, 3.0]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A", "rms_fit": 0.025, "num_points": 10,
+        modern = [{"legacy_residue_idx": 1, "rms_fit": 0.025, "num_points": 10,
                    "rotation_matrix": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                    "translation": [1.0, 2.0, 3.0]}]
         passed, errors = compare_ls_fitting(legacy, modern)
         assert passed, f"Should pass: {errors}"
     
-    def test_base_type_mismatch_detected(self):
-        """Base type mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A", "rms_fit": 0.025, "num_points": 10,
+    def test_rms_fit_mismatch_detected(self):
+        """RMS fit mismatch should be detected."""
+        legacy = [{"residue_idx": 1, "rms_fit": 0.025, "num_points": 10,
                    "rotation_matrix": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                    "translation": [1.0, 2.0, 3.0]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "?", "rms_fit": 0.025, "num_points": 10,
+        modern = [{"legacy_residue_idx": 1, "rms_fit": 0.030, "num_points": 10,  # 0.005 diff > 0.001
                    "rotation_matrix": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                    "translation": [1.0, 2.0, 3.0]}]
         passed, errors = compare_ls_fitting(legacy, modern)
-        assert not passed, "Should fail on base_type mismatch"
-        assert any("base_type" in e for e in errors), f"Should mention base_type: {errors}"
+        assert not passed, "Should fail on rms_fit mismatch"
+        assert any("rms_fit" in e for e in errors), f"Should mention rms_fit: {errors}"
     
     def test_rotation_matrix_mismatch_detected(self):
         """Rotation matrix mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A", "rms_fit": 0.025, "num_points": 10,
+        legacy = [{"residue_idx": 1, "rms_fit": 0.025, "num_points": 10,
                    "rotation_matrix": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                    "translation": [1.0, 2.0, 3.0]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A", "rms_fit": 0.025, "num_points": 10,
+        modern = [{"legacy_residue_idx": 1, "rms_fit": 0.025, "num_points": 10,
                    "rotation_matrix": [[0.9, 0, 0], [0, 1, 0], [0, 0, 1]],  # 0.1 diff > 1e-4
                    "translation": [1.0, 2.0, 3.0]}]
         passed, errors = compare_ls_fitting(legacy, modern)
@@ -264,12 +264,10 @@ class TestLSFittingComparator:
     
     def test_translation_mismatch_detected(self):
         """Translation mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A", "rms_fit": 0.025, "num_points": 10,
+        legacy = [{"residue_idx": 1, "rms_fit": 0.025, "num_points": 10,
                    "rotation_matrix": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                    "translation": [1.0, 2.0, 3.0]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A", "rms_fit": 0.025, "num_points": 10,
+        modern = [{"legacy_residue_idx": 1, "rms_fit": 0.025, "num_points": 10,
                    "rotation_matrix": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                    "translation": [1.1, 2.0, 3.0]}]  # 0.1 diff > 1e-6
         passed, errors = compare_ls_fitting(legacy, modern)
@@ -278,122 +276,104 @@ class TestLSFittingComparator:
 
 
 class TestFrameCalcComparator:
-    """Test Stage 5: frame_calc comparator."""
+    """Test Stage 5: frame_calc comparator.
+    
+    Key: residue_idx (legacy) or legacy_residue_idx (modern)
+    Checks: base_type, rms_fit, num_matched_atoms
+    """
     
     def test_matching_frame_calc_pass(self):
         """Identical frame_calc should pass."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A",
-                   "orien": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                   "org": [1.0, 2.0, 3.0]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A",
-                   "orien": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                   "org": [1.0, 2.0, 3.0]}]
+        legacy = [{"residue_idx": 1, "base_type": "A", "rms_fit": 0.025,
+                   "num_matched_atoms": 10}]
+        modern = [{"legacy_residue_idx": 1, "base_type": "A", "rms_fit": 0.025,
+                   "num_matched_atoms": 10}]
         passed, errors = compare_frame_calc(legacy, modern)
         assert passed, f"Should pass: {errors}"
     
     def test_base_type_mismatch_detected(self):
         """Base type mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "g",
-                   "orien": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                   "org": [1.0, 2.0, 3.0]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "?",  # Wrong!
-                   "orien": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                   "org": [1.0, 2.0, 3.0]}]
+        legacy = [{"residue_idx": 1, "base_type": "g", "rms_fit": 0.025,
+                   "num_matched_atoms": 10}]
+        modern = [{"legacy_residue_idx": 1, "base_type": "?", "rms_fit": 0.025,
+                   "num_matched_atoms": 10}]
         passed, errors = compare_frame_calc(legacy, modern)
         assert not passed, "Should fail on base_type mismatch"
         assert any("base_type" in e for e in errors), f"Should mention base_type: {errors}"
     
-    def test_orien_mismatch_detected(self):
-        """Orientation matrix mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A",
-                   "orien": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                   "org": [1.0, 2.0, 3.0]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A",
-                   "orien": [[0.9, 0, 0], [0, 1, 0], [0, 0, 1]],  # 0.1 diff
-                   "org": [1.0, 2.0, 3.0]}]
+    def test_rms_fit_mismatch_detected(self):
+        """RMS fit mismatch should be detected."""
+        legacy = [{"residue_idx": 1, "base_type": "A", "rms_fit": 0.025,
+                   "num_matched_atoms": 10}]
+        modern = [{"legacy_residue_idx": 1, "base_type": "A", "rms_fit": 0.030,  # 0.005 diff > 0.001
+                   "num_matched_atoms": 10}]
         passed, errors = compare_frame_calc(legacy, modern)
-        assert not passed, "Should fail on orien mismatch"
-        assert any("orien" in e for e in errors), f"Should mention orien: {errors}"
+        assert not passed, "Should fail on rms_fit mismatch"
+        assert any("rms_fit" in e for e in errors), f"Should mention rms_fit: {errors}"
     
-    def test_org_mismatch_detected(self):
-        """Origin mismatch should be detected."""
-        legacy = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A",
-                   "orien": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                   "org": [1.0, 2.0, 3.0]}]
-        modern = [{"chain_id": "A", "residue_seq": 1, "insertion": " ",
-                   "base_type": "A",
-                   "orien": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                   "org": [1.1, 2.0, 3.0]}]  # 0.1 diff
+    def test_num_matched_atoms_mismatch_detected(self):
+        """num_matched_atoms mismatch should be detected."""
+        legacy = [{"residue_idx": 1, "base_type": "A", "rms_fit": 0.025,
+                   "num_matched_atoms": 10}]
+        modern = [{"legacy_residue_idx": 1, "base_type": "A", "rms_fit": 0.025,
+                   "num_matched_atoms": 9}]
         passed, errors = compare_frame_calc(legacy, modern)
-        assert not passed, "Should fail on org mismatch"
-        assert any("org" in e for e in errors), f"Should mention org: {errors}"
+        assert not passed, "Should fail on num_matched_atoms mismatch"
+        assert any("num_matched_atoms" in e for e in errors), f"Should mention num_matched_atoms: {errors}"
 
 
 class TestDistanceChecksComparator:
-    """Test Stage 7: distance_checks comparator."""
+    """Test Stage 7: distance_checks comparator.
+    
+    Key: (base_i, base_j)
+    Checks: values.{dorg, dNN, plane_angle, d_v, overlap_area}
+    """
     
     def test_matching_distances_pass(self):
         """Identical distance checks should pass."""
-        legacy = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5}]
-        modern = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5}]
+        legacy = [{"base_i": 1, "base_j": 10,
+                   "values": {"dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5, "overlap_area": 0.0}}]
+        modern = [{"base_i": 1, "base_j": 10,
+                   "values": {"dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5, "overlap_area": 0.0}}]
         passed, errors = compare_distance_checks(legacy, modern)
         assert passed, f"Should pass: {errors}"
     
     def test_dorg_mismatch_detected(self):
         """dorg mismatch should be detected."""
-        legacy = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5}]
-        modern = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "dorg": 5.6, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5}]  # 0.1 diff
+        legacy = [{"base_i": 1, "base_j": 10,
+                   "values": {"dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5, "overlap_area": 0.0}}]
+        modern = [{"base_i": 1, "base_j": 10,
+                   "values": {"dorg": 5.6, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5, "overlap_area": 0.0}}]  # 0.1 diff
         passed, errors = compare_distance_checks(legacy, modern)
         assert not passed, "Should fail on dorg mismatch"
         assert any("dorg" in e for e in errors), f"Should mention dorg: {errors}"
     
     def test_dNN_mismatch_detected(self):
         """dNN mismatch should be detected."""
-        legacy = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5}]
-        modern = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "dorg": 5.5, "dNN": 9.0, "plane_angle": 15.0, "d_v": 0.5}]
+        legacy = [{"base_i": 1, "base_j": 10,
+                   "values": {"dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5, "overlap_area": 0.0}}]
+        modern = [{"base_i": 1, "base_j": 10,
+                   "values": {"dorg": 5.5, "dNN": 9.0, "plane_angle": 15.0, "d_v": 0.5, "overlap_area": 0.0}}]
         passed, errors = compare_distance_checks(legacy, modern)
         assert not passed, "Should fail on dNN mismatch"
         assert any("dNN" in e for e in errors), f"Should mention dNN: {errors}"
     
     def test_plane_angle_mismatch_detected(self):
         """plane_angle mismatch should be detected."""
-        legacy = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5}]
-        modern = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "dorg": 5.5, "dNN": 8.9, "plane_angle": 16.0, "d_v": 0.5}]
+        legacy = [{"base_i": 1, "base_j": 10,
+                   "values": {"dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5, "overlap_area": 0.0}}]
+        modern = [{"base_i": 1, "base_j": 10,
+                   "values": {"dorg": 5.5, "dNN": 8.9, "plane_angle": 16.0, "d_v": 0.5, "overlap_area": 0.0}}]
         passed, errors = compare_distance_checks(legacy, modern)
         assert not passed, "Should fail on plane_angle mismatch"
         assert any("plane_angle" in e for e in errors), f"Should mention plane_angle: {errors}"
     
     def test_d_v_mismatch_detected(self):
         """d_v mismatch should be detected."""
-        legacy = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5}]
-        modern = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.6}]
+        legacy = [{"base_i": 1, "base_j": 10,
+                   "values": {"dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.5, "overlap_area": 0.0}}]
+        modern = [{"base_i": 1, "base_j": 10,
+                   "values": {"dorg": 5.5, "dNN": 8.9, "plane_angle": 15.0, "d_v": 0.6, "overlap_area": 0.0}}]
         passed, errors = compare_distance_checks(legacy, modern)
         assert not passed, "Should fail on d_v mismatch"
         assert any("d_v" in e for e in errors), f"Should mention d_v: {errors}"
