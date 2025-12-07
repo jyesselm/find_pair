@@ -120,16 +120,22 @@ def _compare_base_frame_record(
     elif leg_num != mod_num:
         errors.append(f"{key}: num_matched_atoms {leg_num} vs {mod_num}")
     
-    # NOTE: matched_atoms comparison SKIPPED
-    # The legacy JSON has a known bug: ana_fncs.c calls json_writer_record_base_frame_calc
-    # with the full RingAtom[] array but uses 1-based indexing on a 0-based array,
-    # causing an off-by-one error (skips C4, includes wrong atom at end).
-    # Additionally, legacy writes DUPLICATE records per residue (from app_fncs.c and ana_fncs.c)
-    # and the comparator's dict lookup overwrites first (correct) with second (buggy).
-    # Since rms_fit and num_matched_atoms match, the actual calculation is correct.
-    # The modern code correctly outputs only the actually matched atoms.
+    # 4. matched_atoms (set equality)
+    leg_atoms = leg.get("matched_atoms")
+    mod_atoms = mod.get("matched_atoms")
+    if leg_atoms is None:
+        errors.append(f"{key}: legacy missing matched_atoms")
+    elif mod_atoms is None:
+        errors.append(f"{key}: modern missing matched_atoms")
+    else:
+        leg_set = set(a.strip() for a in leg_atoms)
+        mod_set = set(a.strip() for a in mod_atoms)
+        if leg_set != mod_set:
+            only_leg = leg_set - mod_set
+            only_mod = mod_set - leg_set
+            errors.append(f"{key}: matched_atoms differ - only_legacy={only_leg}, only_modern={only_mod}")
     
-    # 4. standard_template (filename only, path differences OK)
+    # 5. standard_template (filename only, path differences OK)
     leg_template = leg.get("standard_template", "")
     mod_template = mod.get("standard_template", "")
     leg_filename = os.path.basename(leg_template)

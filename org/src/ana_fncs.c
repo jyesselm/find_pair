@@ -1282,16 +1282,19 @@ void ref_frames(long ds, long num_bp, long **pair_num, char **bp_seq, long **sei
             }
             rms_fit[i][j] = ls_fitting(sRing_xyz, eRing_xyz, nmatch, fitted_xyz, R, orgi);
             ioffset9 = (j - 1) * 9;
-            /* Record frame calculation details in ref_frames */
-            json_writer_record_base_frame_calc(rnum, bp_seq[i][j], spdb, rms_fit[i][j], nmatch,
+            /* REMOVED: Duplicate base_frame_calc call - already recorded in app_fncs.c base_info()
+             * This call had a bug: passing 0-indexed RingAtom[] array to JSON writer that 
+             * expects 1-based indexing, causing off-by-one error in matched_atoms output */
+            /* json_writer_record_base_frame_calc(rnum, bp_seq[i][j], spdb, rms_fit[i][j], nmatch,
                                                  irna ? (char**)rRingAtom : (char**)RingAtom, RingAtom_num,
-                                                 ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
+                                                 ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]); */
             /* REMOVED: Duplicate ls_fitting call - already recorded in app_fncs.c base_info() */
             /* json_writer_record_ls_fitting(rnum, nmatch, rms_fit[i][j], R, orgi,
                                           ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]); */
-            json_writer_record_frame_calc(rnum, bp_seq[i][j], spdb, rms_fit[i][j], nmatch,
+            /* REMOVED: Duplicate frame_calc call - already recorded in app_fncs.c base_info() */
+            /* json_writer_record_frame_calc(rnum, bp_seq[i][j], spdb, rms_fit[i][j], nmatch,
                                            sRing_xyz, eRing_xyz,
-                                           ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]);
+                                           ResName[ib], ChainID[ib], ResSeq[ib], Miscs[ib][2]); */
             if (i == 2) {
                 for (k = 1; k <= 3; k++)
                     vz[k] = R[k][3];
