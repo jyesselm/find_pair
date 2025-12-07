@@ -4638,20 +4638,17 @@ void check_pair(long i, long j, char *bseq, long **seidx, double **xyz,
             rtn_val[5] +=
                 adjust_pairQuality(i, j, bseq[i], bseq[j], seidx, idx, AtomName, xyz,
                                    misc_pars);
-            /* Record pair validation results to JSON */
-            json_writer_record_pair_validation(i, j, (*bpid != 0) ? 1 : 0, *bpid,
-                                                 dir_x, dir_y, dir_z, rtn_val, misc_pars);
+            /* Record pair validation results to JSON - only for valid pairs */
+            /* (Recording all N² pairs generates huge files) */
+            if (*bpid != 0) {
+                json_writer_record_pair_validation(i, j, 1, *bpid,
+                                                     dir_x, dir_y, dir_z, rtn_val, misc_pars);
+            }
             /* Record distance checks */
             json_writer_record_distance_checks(i, j, rtn_val[1], rtn_val[4], rtn_val[3],
                                                  rtn_val[2], get_oarea(i, j, ring_atom, oave, zave, xyz, 0));
-        } else {
-            /* Record validation even for rejected pairs */
-            json_writer_record_pair_validation(i, j, 0, 0, dir_x, dir_y, dir_z, rtn_val, misc_pars);
         }
-    } else {
-        /* Record validation for pairs that fail cdns or overlap check (for debugging) */
-        /* This helps understand why legacy might select pairs that modern rejects */
-        json_writer_record_pair_validation(i, j, 0, 0, dir_x, dir_y, dir_z, rtn_val, misc_pars);
+        /* Skip recording invalid pairs to save disk space */
     }
 }
 

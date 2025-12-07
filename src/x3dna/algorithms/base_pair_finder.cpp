@@ -607,14 +607,6 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
     bool passes_cdns =
         result.distance_check && result.d_v_check && result.plane_angle_check && result.dNN_check;
 
-    // Record pair validation for ALL pairs (matches legacy - records even for failed pairs)
-    // Legacy: records validation in both cdns block (with is_valid) and else block (with
-    // is_valid=0)
-    // CRITICAL: Convert from 1-based legacy indices to 0-based for JSON consistency
-    // This matches how base_frame_calc records indices (legacy_residue_idx - 1)
-    size_t base_i = static_cast<size_t>(legacy_idx1 - 1); // Convert to 0-based
-    size_t base_j = static_cast<size_t>(legacy_idx2 - 1); // Convert to 0-based
-
     if (passes_cdns) {
         // Use 0-based indices for consistency with base_frame_calc
         size_t base_i = static_cast<size_t>(legacy_idx1 - 1); // Convert to 0-based
@@ -636,18 +628,13 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
             rtn_val[4] -= 2.0;
         }
 
-        // Record pair validation (legacy records this for all pairs passing cdns+overlap)
-        writer->record_pair_validation(base_i, base_j, result.is_valid, bp_type_id, result.dir_x,
-                                       result.dir_y, result.dir_z, rtn_val,
-                                       validator_.parameters());
-    } else {
-        // Legacy also records validation for pairs that FAIL cdns (for debugging)
-        // See legacy check_pair else block: json_writer_record_pair_validation(i, j, 0, 0, ...)
-        // We need to calculate rtn_val even for failed pairs
-        std::array<double, 5> rtn_val = {result.dorg, result.d_v, result.plane_angle, result.dNN,
-                                         result.quality_score};
-        writer->record_pair_validation(base_i, base_j, 0, 0, result.dir_x, result.dir_y,
-                                       result.dir_z, rtn_val, validator_.parameters());
+        // Only record pair_validation for valid pairs to save disk space
+        // (Recording all N² pairs generates 17GB+ of data)
+        if (result.is_valid) {
+            writer->record_pair_validation(base_i, base_j, result.is_valid, bp_type_id, result.dir_x,
+                                           result.dir_y, result.dir_z, rtn_val,
+                                           validator_.parameters());
+        }
     }
 
     // NOTE: base_pair records are now only recorded for pairs in the final selection
