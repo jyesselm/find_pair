@@ -47,6 +47,7 @@ See **[TESTING_GUIDE.md](TESTING_GUIDE.md)** for complete CLI reference.
 - **[JSON_DATA_TYPES_AND_COMPARISONS.md](JSON_DATA_TYPES_AND_COMPARISONS.md)** - JSON structure and comparison methodology
 - **[DATA_STRUCTURE.md](DATA_STRUCTURE.md)** - Data directory structure and organization
 - **[ALGORITHM_CRITICAL_GUIDE.md](ALGORITHM_CRITICAL_GUIDE.md)** - Critical algorithm details and edge cases
+- **[MODIFIED_RESIDUES.md](MODIFIED_RESIDUES.md)** ⭐ **NEW** - Modified nucleotide documentation and classification issues
 
 ---
 
@@ -124,6 +125,7 @@ archive/
 - **Understand legacy code**: [legacy/00_INDEX.md](legacy/00_INDEX.md)
 - **Understand modernization plan**: [modernization/README.md](modernization/README.md)
 - **See data organization**: [DATA_STRUCTURE.md](DATA_STRUCTURE.md)
+- **Understand modified nucleotides**: [MODIFIED_RESIDUES.md](MODIFIED_RESIDUES.md) ⭐ **NEW**
 
 ### By Topic
 
@@ -158,6 +160,7 @@ archive/
 | NEXT_STEPS.md | ✅ Active | ⭐⭐⭐ **NEW** |
 | TESTING_GUIDE.md | ✅ Active | ⭐⭐⭐ |
 | QUICK_START.md | ✅ Active | ⭐⭐⭐ |
+| MODIFIED_RESIDUES.md | 📚 Reference | ⭐⭐ **NEW** |
 | CODE_FLOW.md | 📚 Reference | ⭐⭐ |
 | BUILD_INSTRUCTIONS.md | 📚 Reference | ⭐⭐ |
 | JSON_DATA_TYPES_AND_COMPARISONS.md | 📚 Reference | ⭐⭐ |

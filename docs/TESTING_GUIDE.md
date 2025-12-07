@@ -375,6 +375,51 @@ fp2-validate compare <PDB_ID> --verbose
 
 ---
 
+## Expected Failures: Modified Residues
+
+Some PDBs will have validation failures due to **modified nucleotides**. These are **not bugs** in modern code - they reflect inconsistencies in legacy code's classification system.
+
+### What Are Modified Residues?
+
+Modified nucleotides are non-standard bases with 3-letter codes like `9DG`, `A23`, `5MU`. They're identified by lowercase `base_type` (e.g., `a`, `g`, `c`, `t`, `u`).
+
+### Why Do They Cause Failures?
+
+Legacy code has inconsistent classification:
+1. **Atom-based** (RY): Purine if N7/C8/N9 present
+2. **Template-based** (base_type): From RMSD template matching
+
+These can conflict, causing different N atoms to be used for dNN calculation:
+- Legacy: Uses RY → might select wrong atom (e.g., C9 instead of N1)
+- Modern: Uses base_type consistently → selects correct atom
+
+### Known Problematic Residues
+
+| Code | Name | Issue |
+|------|------|-------|
+| **9DG** | 9-Deazaguanine | Has N7/C8 but no N9; legacy uses C9 for dNN |
+| **A23** | Adenosine cyclic phosphate | 9-atom RMSD fails; legacy classifies as pyrimidine |
+| **EPE** | HEPES buffer | Not a nucleotide but gets processed as one |
+
+### Affected PDBs
+
+PDBs with known dNN mismatches due to modified residues:
+- 1Q2R, 1Q2S, 7NQ4, 8OMR (contain 9DG)
+- 2XD0, 2XDD (contain A23)
+- 4E8R (contains EPE)
+
+### Documenting Modified Residues
+
+Generate a comprehensive report:
+```bash
+python3 tools/document_modified_residues.py --workers 20
+# Output: data/modified_residues.json
+```
+
+📖 **See [docs/MODIFIED_RESIDUES.md](MODIFIED_RESIDUES.md) for complete documentation.**
+
+---
+
 ## Adding New Comparison Logic
 
 New stage comparisons should be added to:
@@ -415,4 +460,5 @@ def compare_new_stage(legacy_records: List[Dict], modern_records: List[Dict],
 For issues with testing:
 1. Check this guide first
 2. Review `docs/JSON_DATA_TYPES_AND_COMPARISONS.md`
-3. Check existing comparison modules in `x3dna_json_compare/`
+3. Check `docs/MODIFIED_RESIDUES.md` for modified nucleotide issues
+4. Check existing comparison modules in `x3dna_json_compare/`
