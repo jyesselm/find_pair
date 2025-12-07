@@ -116,7 +116,9 @@ std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Structu
 }
 
 bool RingAtomMatcher::is_purine(core::ResidueType type) {
-    return type == core::ResidueType::ADENINE || type == core::ResidueType::GUANINE;
+    return type == core::ResidueType::ADENINE || 
+           type == core::ResidueType::GUANINE ||
+           type == core::ResidueType::INOSINE;
 }
 
 } // namespace algorithms

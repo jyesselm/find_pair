@@ -1255,6 +1255,12 @@
         "type": "INOSINE",
         "is_purine": true,
         "description": "2'-deoxyinosine"
+      },
+      "I": {
+        "code": "I",
+        "type": "INOSINE",
+        "is_purine": true,
+        "description": "Inosine"
       }
     },
     "modified_cytosines": {

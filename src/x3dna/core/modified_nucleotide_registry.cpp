@@ -130,6 +130,8 @@ FALLBACK_REGISTRY = {
     {"G7M",  {'g', ResidueType::GUANINE, true,  "N7-methyl-guanosine-5'-monophosphate"}},
     
     // ========== INOSINES ==========
+    {"I",    {'I', ResidueType::INOSINE, true,  "Inosine"}},
+    {"DI",   {'I', ResidueType::INOSINE, true,  "2'-deoxyinosine"}},
     {"IMP",  {'I', ResidueType::INOSINE, true,  "Inosine monophosphate"}},
     
     // ========== MODIFIED CYTOSINES ==========
