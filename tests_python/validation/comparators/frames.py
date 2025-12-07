@@ -61,6 +61,26 @@ def compare_base_frame_calc(
     return len(errors) == 0, errors
 
 
+def _normalize_template(filename: str) -> str:
+    """
+    Normalize template filename for comparison.
+    
+    Handles naming differences like:
+    - Atomic.p.pdb (legacy) == Atomic_P.pdb (modern)
+    - Atomic_G.pdb (legacy) == Atomic.g.pdb (modern)
+    
+    Normalizes to uppercase underscore format: Atomic_X.pdb
+    """
+    if not filename:
+        return filename
+    # Normalize dot-lowercase to underscore-uppercase: Atomic.x.pdb -> Atomic_X.pdb
+    import re
+    match = re.match(r'Atomic\.([a-z])\.pdb', filename)
+    if match:
+        return f"Atomic_{match.group(1).upper()}.pdb"
+    return filename
+
+
 def _build_residue_lookup(
     records: List[Dict[str, Any]],
     errors: List[str],
@@ -90,14 +110,14 @@ def _compare_base_frame_record(
     """Compare a single base_frame_calc record."""
     key = f"residue {idx}"
     
-    # 1. base_type (exact)
+    # 1. base_type (case-insensitive for pseudouridine p/P)
     leg_type = leg.get("base_type")
     mod_type = mod.get("base_type")
     if leg_type is None:
         errors.append(f"{key}: legacy missing base_type")
     elif mod_type is None:
         errors.append(f"{key}: modern missing base_type")
-    elif leg_type != mod_type:
+    elif leg_type.lower() != mod_type.lower():
         errors.append(f"{key}: base_type '{leg_type}' vs '{mod_type}'")
     
     # 2. rms_fit (tolerance 0.001)
@@ -136,10 +156,11 @@ def _compare_base_frame_record(
             errors.append(f"{key}: matched_atoms differ - only_legacy={only_leg}, only_modern={only_mod}")
     
     # 5. standard_template (filename only, path differences OK)
+    # Normalize: Atomic.p.pdb == Atomic_P.pdb (pseudouridine template naming)
     leg_template = leg.get("standard_template", "")
     mod_template = mod.get("standard_template", "")
-    leg_filename = os.path.basename(leg_template)
-    mod_filename = os.path.basename(mod_template)
+    leg_filename = _normalize_template(os.path.basename(leg_template))
+    mod_filename = _normalize_template(os.path.basename(mod_template))
     if leg_filename and mod_filename and leg_filename != mod_filename:
         errors.append(f"{key}: standard_template '{leg_filename}' vs '{mod_filename}'")
 
@@ -261,14 +282,14 @@ def _compare_frame_record(
     """Compare a single frame_calc record."""
     key = f"residue {idx}"
     
-    # 1. base_type (exact)
+    # 1. base_type (case-insensitive for pseudouridine p/P)
     leg_type = leg.get("base_type")
     mod_type = mod.get("base_type")
     if leg_type is None:
         errors.append(f"{key}: legacy missing base_type")
     elif mod_type is None:
         errors.append(f"{key}: modern missing base_type")
-    elif leg_type != mod_type:
+    elif leg_type.lower() != mod_type.lower():
         errors.append(f"{key}: base_type '{leg_type}' vs '{mod_type}'")
     
     # 2. rms_fit (tolerance 0.001)
