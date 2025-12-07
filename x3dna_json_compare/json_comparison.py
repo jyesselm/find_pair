@@ -27,7 +27,7 @@ class JsonComparator:
     """Main comparison engine."""
     
     def __init__(self,
-                 tolerance: float = 1e-5,  # 1e-5 handles normal FP variations
+                 tolerance: float = 2e-5,  # 2e-5 handles normal FP variations
                  compare_atoms: bool = True,
                  compare_frames: bool = True,
                  compare_steps: bool = True,

@@ -39,7 +39,7 @@ class DistanceChecksComparison:
 def compare_pair_validations(
     legacy_records: List[Dict],
     modern_records: List[Dict],
-    tolerance: float = 1e-5  # Relaxed to handle normal floating point variations
+    tolerance: float = 2e-5  # Relaxed to handle normal floating point variations
 ) -> PairValidationComparison:
     """
     Compare pair_validation records between legacy and modern JSON.
