@@ -687,10 +687,10 @@ double BasePairFinder::adjust_pair_quality(const std::vector<core::hydrogen_bond
     // Legacy ONLY skips '*' types, all others (including ' ') are counted
     int num_good_hb = 0;
     for (const auto& hbond : hbonds) {
-        // Skip ONLY non-standard hydrogen bonds (type == '*')
-        // Legacy: if (num_list[k][0]) continue; where [0]=1 if type is '*'
-        // Types ' ' and '-' are BOTH counted if distance is in range
-        if (hbond.type == '*') {
+        // Legacy flow: hb_info string excludes type ' ' h-bonds (see get_hbond_ij)
+        // Then adjust_pairQuality skips type '*' via num_list[k][0]
+        // Net result: only type '-' h-bonds are counted for quality adjustment
+        if (hbond.type != '-') {
             continue;
         }
         // Check if distance is in good range [2.5, 3.5]

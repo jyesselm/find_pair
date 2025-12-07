@@ -2,14 +2,14 @@
 
 ## Summary
 
-After fixing the h-bond type filtering in `adjust_pair_quality`, Stage 6 passes for many PDBs, but there are still quality_score differences.
+After fixing the h-bond type filtering in `adjust_pair_quality`, Stage 6 now passes for most PDBs.
 
 | Metric | Count |
 |--------|-------|
 | Total PDBs tested | 100 |
-| Passed | 39 |
-| Failed | 61 |
-| **Pass Rate** | 39.0% |
+| Passed | 88 |
+| Failed | 12 |
+| **Pass Rate** | 88.0% |
 
 ## Root Cause Analysis
 
@@ -31,62 +31,49 @@ if (num_good_hb >= 2) return -3.0;
 else return -num_good_hb;  // Returns 0, -1, or -2
 ```
 
-### Error Categories
+### Remaining Error Categories
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| quality_score diff=2 | 46 | Modern has 2 more h-bonds counted than legacy |
-| quality_score diff=1 | 8 | Modern has 1 more h-bond counted than legacy |
-| quality_score diff=3 | 3 | Either 3 h-bond diff, or 1 h-bond + bp_type_id=2 |
+| quality_score diff=2 | 6 | Precision at [2.5, 3.5] boundary |
 | dNN | 3 | N-N distance calculation differs |
+| quality_score diff=1 | 2 | Precision at [2.5, 3.5] boundary |
 | other | 1 | Other differences |
 
-## Bug Fix Applied
+## Bug Fixes Applied
+
+### Fix 1: H-bond type filtering
 
 **File:** `src/x3dna/algorithms/base_pair_finder.cpp`
 
-**Change:** Updated `adjust_pair_quality` to skip only `'*'` type h-bonds:
+**Issue:** Modern was counting both type `'-'` and `' '` h-bonds, but legacy's `hb_info_string` excludes type `' '`.
 
 ```cpp
 // BEFORE (incorrect):
-if (hbond.type != '-') {
-    continue;  // Skipped too many h-bonds
+if (hbond.type == '*') {
+    continue;  // Only skip '*', count '-' and ' '
 }
 
 // AFTER (correct):
-if (hbond.type == '*') {
-    continue;  // Only skip non-standard h-bonds
+if (hbond.type != '-') {
+    continue;  // Only count '-', skip both '*' and ' '
 }
 ```
 
-## Remaining Issue
+### Root Cause of Remaining Failures
 
-The modern code counts more h-bonds as "good" than legacy, resulting in more negative adjustment and lower quality_scores.
+Legacy uses 2-decimal-place precision in `hb_info_string` (e.g., "2.50"), which is parsed back for quality adjustment. This causes h-bonds at the boundary (e.g., 2.4995 → 2.50) to be incorrectly included.
 
-### Hypothesis
+Example for 1ASZ pair (93, 130):
+- JSON distance: 2.4995 (NOT in [2.5, 3.5])
+- hb_info_string: "2.50" (IN range after rounding)
+- Legacy counts it as good, modern doesn't
 
-The h-bond lists passed to `adjust_pair_quality` in modern vs legacy may have different contents:
-
-1. **Legacy:** `adjust_pairQuality` calls `hb_numlist` which gets h-bonds directly from atom coordinates using `get_hbond_ij`
-
-2. **Modern:** Uses `result.hbonds` from `BasePairValidator::find_hydrogen_bonds`, which may include different h-bonds due to the validation logic
-
-### Investigation Needed
-
-1. Compare h-bond lists between legacy and modern for failing PDBs
-2. Check if `find_hydrogen_bonds` produces different h-bonds than `hb_numlist`
-3. Verify h-bond type assignment logic (`'-'`, `'*'`, `' '`)
-
-## Sample Failing PDBs
-
-| PDB | Pair | Legacy qs | Modern qs | Diff |
-|-----|------|-----------|-----------|------|
-| 1ASZ | (82, 139) | 6.062814 | 4.062814 | 2.0 |
-| 1B23 | (32, 35) | 12.557605 | 9.557605 | 3.0 |
-| 1FFZ | (315, 319) | 8.416968 | 7.416968 | 1.0 |
+This is a precision difference inherent in the legacy implementation.
 
 ## Next Steps
 
-1. Debug h-bond finder to ensure it produces the same h-bonds as legacy
-2. Add logging to compare h-bond lists between legacy and modern
-3. Check if h-bond types are being assigned correctly in the validation flow
+The remaining failures are due to floating-point precision at the [2.5, 3.5] boundary. Options:
+1. Accept as known precision difference (~12% failure rate)
+2. Round distances to 2 decimal places before range check (hack to match legacy)
+3. Widen tolerance for quality_score comparison (may mask real issues)
