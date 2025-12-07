@@ -872,6 +872,10 @@ char BasePairFinder::get_base_letter_from_type(core::ResidueType type) {
             return 'T';
         case ResidueType::URACIL:
             return 'U';
+        case ResidueType::INOSINE:
+            return 'I';
+        case ResidueType::PSEUDOURIDINE:
+            return 'P';
         default:
             // For modified nucleotides or unknown, try one_letter_code as fallback
             return '?';

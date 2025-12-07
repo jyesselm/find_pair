@@ -7,10 +7,10 @@ After multiple fixes to the pair validation logic, Stage 6 now passes for most P
 | Metric | Count |
 |--------|-------|
 | Total PDBs tested | 3602 |
-| Passed | 3567 |
-| Failed | 27 |
+| Passed | 3573 |
+| Failed | 21 |
 | Skipped | 8 |
-| **Pass Rate** | 99.0% |
+| **Pass Rate** | 99.2% |
 
 ## Root Cause Analysis
 
@@ -37,9 +37,9 @@ else return -num_good_hb;  // Returns 0, -1, or -2
 | Category | Count | Description |
 |----------|-------|-------------|
 | dNN | 8 | Modified nucleotide N1/N9 atom lookup |
-| other | 8 | bp_type_id differences, missing pairs |
-| quality_score diff=1 | 6 | Minor h-bond counting differences |
-| quality_score diff=3 | 5 | H-bond + bp_type_id combined differences |
+| quality_score diff<3 | 6 | Minor h-bond counting differences |
+| quality_score diff>=3 | 5 | H-bond conflict resolution differences |
+| is_valid | 2 | Validation result differences |
 
 ## Bug Fixes Applied
 
@@ -80,6 +80,19 @@ if (rounded_dist >= 2.5 && rounded_dist <= 3.5) {
 // Use one_letter_code to determine purine/pyrimidine (matches legacy bseq)
 char upper_letter = toupper(one_letter);
 bool is_purine = (upper_letter == 'A' || upper_letter == 'G' || upper_letter == 'I');
+```
+
+### Fix 4: bp_type_id for INOSINE and PSEUDOURIDINE
+
+**File:** `src/x3dna/algorithms/base_pair_finder.cpp`
+
+**Issue:** `get_base_letter_from_type` didn't handle INOSINE and PSEUDOURIDINE, returning '?' instead of 'I' or 'P', which broke WC_LIST matching for C-I pairs.
+
+```cpp
+case ResidueType::INOSINE:
+    return 'I';
+case ResidueType::PSEUDOURIDINE:
+    return 'P';
 ```
 
 ## Remaining Issues (~1% failure rate)
