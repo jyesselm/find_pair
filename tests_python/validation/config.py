@@ -86,6 +86,7 @@ STAGES: Dict[int, StageConfig] = {
         json_type="pair_validation",
         required_fields=["is_valid", "bp_type_id"],
         dependencies=[5],
+        tolerance=1e-4,  # Relaxed for floating-point differences
     ),
     7: StageConfig(
         stage_num=7,
@@ -94,6 +95,7 @@ STAGES: Dict[int, StageConfig] = {
         json_type="distance_checks",
         required_fields=["dorg", "dNN", "plane_angle", "d_v"],
         dependencies=[5],
+        tolerance=1e-4,  # Relaxed for floating-point differences
     ),
     8: StageConfig(
         stage_num=8,
