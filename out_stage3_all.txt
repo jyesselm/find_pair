@@ -1,0 +1,40 @@
+Running Stage 3 on 3602 PDBs...
+
+============================================================
+STAGE 3: Base Frame Calc
+============================================================
+
+Results:
+  Total: 3602
+  Passed: 0 (0.0%)
+  Failed: 3602
+  Skipped: 0
+
+Failed PDBs (first 5):
+  100D: residue 1: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+  157D: residue 1: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+  161D: residue 1: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+  165D: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+  168D: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+
+=== DETAILED FAILURES (first 20) ===
+100D: residue 1: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+157D: residue 1: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+161D: residue 1: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+165D: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+168D: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+1A34: residue 148: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+1A9N: residue 1: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+1AQ3: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+1AQ4: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+1ASY: residue 1: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+1ASZ: residue 1: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+1B23: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+1B7F: residue 9: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+1BNA: residue 1: matched_atoms differ - only_legacy={'N7'}, only_modern={'C4'}
+1BR3: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+1C0A: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+1CSL: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+1D4R: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+1D87: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
+1D88: residue 1: matched_atoms differ - only_legacy={"C1'"}, only_modern={'C4'}
