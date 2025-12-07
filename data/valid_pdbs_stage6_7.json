@@ -1066,7 +1066,6 @@
     "4IG8",
     "4ILL",
     "4ILM",
-    "4IQS",
     "4IQX",
     "4J1G",
     "4J50",
@@ -3529,13 +3528,14 @@
     "9N6B",
     "9N6C"
   ],
-  "total_count": 3528,
+  "total_count": 3527,
   "metadata": {
     "source": "data/valid_pdbs_fast.json",
     "excluded_problematic_residue_types": [
+      "9DG",
       "A23",
       "EPE",
-      "9DG"
+      "US5"
     ],
     "excluded_pdbs": [
       "1D4R",
@@ -3582,6 +3582,7 @@
       "4FAW",
       "4FAX",
       "4FB0",
+      "4IQS",
       "4NYB",
       "4NYC",
       "4NYD",
@@ -3613,7 +3614,7 @@
       "9DRS",
       "9DRV"
     ],
-    "excluded_count": 74,
-    "description": "PDBs for Stage 6/7 validation - excludes PDBs with modified residues that cause dNN classification issues"
+    "excluded_count": 75,
+    "description": "PDBs for Stage 6/7 validation - excludes PDBs with modified residues that cause classification issues"
   }
 }
