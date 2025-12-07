@@ -566,10 +566,6 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
                                         const algorithms::ValidationParameters& params) {
     // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
     // Legacy pair_validation records use 1-based indices (e.g., base_i=1 to 20 for 20 residues)
-    if ((base_i + 1 == 93 && base_j + 1 == 130) || (base_i + 1 == 130 && base_j + 1 == 93)) {
-        std::cerr << "[DEBUG JSON writer] pair_validation(" << base_i+1 << "," << base_j+1 
-                  << ") bp_type_id=" << bp_type_id << " qs=" << rtn_val[4] << std::endl;
-    }
     nlohmann::json record;
     record["type"] = "pair_validation";
     record["base_i"] = static_cast<long>(base_i + 1); // Convert to 1-based for legacy

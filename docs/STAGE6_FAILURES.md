@@ -2,14 +2,15 @@
 
 ## Summary
 
-After fixing the h-bond type filtering in `adjust_pair_quality`, Stage 6 now passes for most PDBs.
+After multiple fixes to the pair validation logic, Stage 6 now passes for most PDBs.
 
 | Metric | Count |
 |--------|-------|
-| Total PDBs tested | 100 |
-| Passed | 88 |
-| Failed | 12 |
-| **Pass Rate** | 88.0% |
+| Total PDBs tested | 3602 |
+| Passed | 3567 |
+| Failed | 27 |
+| Skipped | 8 |
+| **Pass Rate** | 99.0% |
 
 ## Root Cause Analysis
 
@@ -35,10 +36,10 @@ else return -num_good_hb;  // Returns 0, -1, or -2
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| quality_score diff=2 | 6 | Precision at [2.5, 3.5] boundary |
-| dNN | 3 | N-N distance calculation differs |
-| quality_score diff=1 | 2 | Precision at [2.5, 3.5] boundary |
-| other | 1 | Other differences |
+| dNN | 8 | Modified nucleotide N1/N9 atom lookup |
+| other | 8 | bp_type_id differences, missing pairs |
+| quality_score diff=1 | 6 | Minor h-bond counting differences |
+| quality_score diff=3 | 5 | H-bond + bp_type_id combined differences |
 
 ## Bug Fixes Applied
 
@@ -49,31 +50,43 @@ else return -num_good_hb;  // Returns 0, -1, or -2
 **Issue:** Modern was counting both type `'-'` and `' '` h-bonds, but legacy's `hb_info_string` excludes type `' '`.
 
 ```cpp
-// BEFORE (incorrect):
-if (hbond.type == '*') {
-    continue;  // Only skip '*', count '-' and ' '
-}
-
-// AFTER (correct):
+// Only count '-' type h-bonds (skip '*' and ' ')
 if (hbond.type != '-') {
-    continue;  // Only count '-', skip both '*' and ' '
+    continue;
 }
 ```
 
-### Root Cause of Remaining Failures
+### Fix 2: H-bond distance precision
 
-Legacy uses 2-decimal-place precision in `hb_info_string` (e.g., "2.50"), which is parsed back for quality adjustment. This causes h-bonds at the boundary (e.g., 2.4995 → 2.50) to be incorrectly included.
+**File:** `src/x3dna/algorithms/base_pair_finder.cpp`
 
-Example for 1ASZ pair (93, 130):
-- JSON distance: 2.4995 (NOT in [2.5, 3.5])
-- hb_info_string: "2.50" (IN range after rounding)
-- Legacy counts it as good, modern doesn't
+**Issue:** Legacy uses `%4.2f` format in `hb_info_string`, rounding distances to 2 decimals.
 
-This is a precision difference inherent in the legacy implementation.
+```cpp
+// Round to 2 decimals to match legacy %4.2f format
+double rounded_dist = std::round(hbond.distance * 100.0) / 100.0;
+if (rounded_dist >= 2.5 && rounded_dist <= 3.5) {
+    num_good_hb++;
+}
+```
 
-## Next Steps
+### Fix 3: N1/N9 atom lookup for modified nucleotides
 
-The remaining failures are due to floating-point precision at the [2.5, 3.5] boundary. Options:
-1. Accept as known precision difference (~12% failure rate)
-2. Round distances to 2 decimal places before range check (hack to match legacy)
-3. Widen tolerance for quality_score comparison (may mask real issues)
+**File:** `src/x3dna/algorithms/base_pair_validator.cpp`
+
+**Issue:** Modern was checking for C8 atom to determine purine, but some modified pyrimidines (e.g., 70U) have C8 as part of their modification.
+
+```cpp
+// Use one_letter_code to determine purine/pyrimidine (matches legacy bseq)
+char upper_letter = toupper(one_letter);
+bool is_purine = (upper_letter == 'A' || upper_letter == 'G' || upper_letter == 'I');
+```
+
+## Remaining Issues (~1% failure rate)
+
+The 27 remaining failures are due to:
+1. **dNN differences (8):** Complex modified nucleotides where N1/N9 lookup differs
+2. **bp_type_id differences (8):** Different WC/wobble pair classification
+3. **quality_score differences (11):** Edge cases in h-bond counting
+
+These represent edge cases that may require deeper investigation of the legacy algorithm.

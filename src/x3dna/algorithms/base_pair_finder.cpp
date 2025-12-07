@@ -694,7 +694,11 @@ double BasePairFinder::adjust_pair_quality(const std::vector<core::hydrogen_bond
             continue;
         }
         // Check if distance is in good range [2.5, 3.5]
-        if (hbond.distance >= 2.5 && hbond.distance <= 3.5) {
+        // CRITICAL: Legacy uses %4.2f format in hb_info string, which rounds to 2 decimals
+        // Then hb_numlist parses this string, so 2.4995 becomes 2.50
+        // To match legacy, round distance to 2 decimal places before range check
+        double rounded_dist = std::round(hbond.distance * 100.0) / 100.0;
+        if (rounded_dist >= 2.5 && rounded_dist <= 3.5) {
             num_good_hb++;
         }
     }

@@ -216,32 +216,21 @@ double BasePairValidator::z1_z2_angle_in_0_to_90(const Vector3D& z1, const Vecto
 
 std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& residue) {
     // Match legacy glyco_N logic exactly (org/src/cmn_fncs.c lines 4680-4730)
-    // Legacy determines is_purine via residue_ident(), which checks for N7/C8 atoms
+    // Legacy uses bseq (base type letter) to determine purine/pyrimidine:
+    //   - isR=1 for purines (A, G, I and their lowercase modified forms)
+    //   - isR=0 for pyrimidines (C, T, U, P and their lowercase modified forms)
     // Then glyco_N looks for N9 (purine) or N1 (pyrimidine)
     // If not found, legacy falls back to finding any atom with '9' or '1' in name
-
-    // For standard nucleotides, determine purine/pyrimidine by ResidueType
-    // For modified nucleotides, determine by checking for N7/C8 atoms (matches legacy residue_ident)
-    ResidueType res_type = residue.residue_type();
-    char one_letter = residue.one_letter_code();
-    bool is_modified = std::islower(static_cast<unsigned char>(one_letter));
     
-    bool is_purine = false;
-    if (is_modified || res_type == ResidueType::NONCANONICAL_RNA) {
-        // Modified nucleotide: determine purine/pyrimidine by checking for purine ring atoms
-        // Legacy residue_ident checks for N7/C8, but some modified purines (e.g., A7E = 7-deaza-adenine)
-        // have N9 but lack N7/C8 (A7E has C7 instead of N7, N8 instead of C8)
-        // So we also check for N9 to catch these cases
-        auto n7 = residue.find_atom(" N7 ");
-        auto c8 = residue.find_atom(" C8 ");
-        auto n9 = residue.find_atom(" N9 ");
-        if (n7.has_value() || c8.has_value() || n9.has_value()) {
-            is_purine = true;
-        }
-    } else {
-        // Standard nucleotide: use ResidueType
-        is_purine = (res_type == ResidueType::ADENINE || res_type == ResidueType::GUANINE);
-    }
+    // CRITICAL: Use one_letter_code (which matches legacy bseq) to determine purine/pyrimidine
+    // Do NOT use atom presence (e.g., C8) because some modified pyrimidines like 70U
+    // have C8 as part of their modification but should still use N1
+    char one_letter = residue.one_letter_code();
+    char upper_letter = static_cast<char>(std::toupper(static_cast<unsigned char>(one_letter)));
+    
+    // Purines: A, G, I (and their lowercase modified forms a, g, i)
+    // Pyrimidines: C, T, U, P (and their lowercase modified forms c, t, u, p)
+    bool is_purine = (upper_letter == 'A' || upper_letter == 'G' || upper_letter == 'I');
 
     if (is_purine) {
         // Purine: find N9
