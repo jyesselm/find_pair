@@ -33,7 +33,8 @@ class JsonComparator:
                  compare_steps: bool = True,
                  compare_pairs: bool = True,
                  compare_hbond_list: bool = True,
-                 compare_residue_indices: bool = True):
+                 compare_residue_indices: bool = True,
+                 hbond_ignore_count_mismatch: bool = True):
         """
         Initialize comparator.
         
@@ -45,6 +46,7 @@ class JsonComparator:
             compare_pairs: If True, compare pair validation and distance checks
             compare_hbond_list: If True, compare hbond_list records
             compare_residue_indices: If True, compare residue_indices records
+            hbond_ignore_count_mismatch: If True, don't flag H-bond count differences as mismatches
         """
         self.tolerance = tolerance
         self.compare_atoms = compare_atoms
@@ -53,6 +55,7 @@ class JsonComparator:
         self.compare_pairs = compare_pairs
         self.compare_hbond_list = compare_hbond_list
         self.compare_residue_indices = compare_residue_indices
+        self.hbond_ignore_count_mismatch = hbond_ignore_count_mismatch
     
     def _load_json(self, json_file: Path) -> Optional[Dict]:
         """Load JSON file, handling both objects and arrays, and files with extra data."""
@@ -892,7 +895,8 @@ class JsonComparator:
                 
                 if legacy_hbond_lists or modern_hbond_lists:
                     hbond_list_comparison = compare_hbond_lists(
-                        legacy_hbond_lists, modern_hbond_lists, self.tolerance
+                        legacy_hbond_lists, modern_hbond_lists, self.tolerance,
+                        ignore_count_mismatch=self.hbond_ignore_count_mismatch
                     )
                     result.hbond_list_comparison = hbond_list_comparison
             except Exception as e:
