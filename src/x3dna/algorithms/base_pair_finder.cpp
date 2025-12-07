@@ -678,10 +678,19 @@ double BasePairFinder::adjust_pair_quality(const std::vector<core::hydrogen_bond
     // Count good hydrogen bonds (distance in [2.5, 3.5] Angstroms)
     // Legacy: dval = num_list[k][3] / MFACTOR, then checks if in [2.5, 3.5]
     // Modern: hbonds already have distance calculated
+    //
+    // Legacy skips h-bonds with type '*' (num_list[k][0] == 1)
+    // In modern, we have three types:
+    //   '-' = standard (good) h-bond 
+    //   '*' = non-standard h-bond (SKIP)
+    //   ' ' = initially unvalidated but can still be counted
+    // Legacy ONLY skips '*' types, all others (including ' ') are counted
     int num_good_hb = 0;
     for (const auto& hbond : hbonds) {
-        // Skip non-standard hydrogen bonds (type != '-')
-        if (hbond.type != '-') {
+        // Skip ONLY non-standard hydrogen bonds (type == '*')
+        // Legacy: if (num_list[k][0]) continue; where [0]=1 if type is '*'
+        // Types ' ' and '-' are BOTH counted if distance is in range
+        if (hbond.type == '*') {
             continue;
         }
         // Check if distance is in good range [2.5, 3.5]
