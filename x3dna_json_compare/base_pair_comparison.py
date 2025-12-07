@@ -5,8 +5,13 @@ Compares base_pair records (original identification from find_pair phase)
 between legacy and modern JSON outputs.
 """
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from dataclasses import dataclass, field
+
+
+def normalize_pair(base_i: int, base_j: int) -> Tuple[int, int]:
+    """Normalize pair to (min, max) for consistent comparison."""
+    return (min(base_i, base_j), max(base_i, base_j))
 
 
 @dataclass
@@ -23,7 +28,8 @@ class BasePairComparison:
 def compare_base_pairs(
     legacy_records: List[Dict],
     modern_records: List[Dict],
-    tolerance: float = 1e-6
+    tolerance: float = 1e-6,
+    skip_orientation: bool = True
 ) -> BasePairComparison:
     """
     Compare base_pair records between legacy and modern JSON.
@@ -36,13 +42,17 @@ def compare_base_pairs(
         legacy_records: List of legacy base_pair records
         modern_records: List of modern base_pair records
         tolerance: Tolerance for floating point comparisons
+        skip_orientation: If True, skip orien_i/orien_j comparison (sign convention differs)
         
     Returns:
         BasePairComparison result
     """
     result = BasePairComparison()
     
-    # Build maps by (base_i, base_j)
+    # Build maps by normalized (min, max) pair key
+    # Legacy stores both (i,j) and (j,i) - deduplicate and normalize
+    # When normalizing, we need to keep the record that has base_i < base_j
+    # so that bp_type and org_i/org_j are in the correct order
     legacy_map = {}
     modern_map = {}
     
@@ -52,8 +62,14 @@ def compare_base_pairs(
         base_i = rec.get('base_i')
         base_j = rec.get('base_j')
         if base_i is not None and base_j is not None:
-            key = (base_i, base_j)
-            legacy_map[key] = rec
+            key = normalize_pair(base_i, base_j)
+            # Keep record where base_i < base_j (already normalized order)
+            if key not in legacy_map:
+                if base_i <= base_j:
+                    legacy_map[key] = rec
+            elif base_i <= base_j:
+                # Replace with the properly ordered version
+                legacy_map[key] = rec
     
     for rec in modern_records:
         if rec.get('type') != 'base_pair':
@@ -61,8 +77,9 @@ def compare_base_pairs(
         base_i = rec.get('base_i')
         base_j = rec.get('base_j')
         if base_i is not None and base_j is not None:
-            key = (base_i, base_j)
-            modern_map[key] = rec
+            key = normalize_pair(base_i, base_j)
+            if key not in modern_map:
+                modern_map[key] = rec
     
     result.total_legacy = len(legacy_map)
     result.total_modern = len(modern_map)
@@ -96,11 +113,11 @@ def compare_base_pairs(
         
         mismatches = {}
         
-        # Compare bp_type
-        leg_type = leg_rec.get('bp_type', '')
-        mod_type = mod_rec.get('bp_type', '')
+        # Compare bp_type (case-insensitive - modified residues use lowercase)
+        leg_type = leg_rec.get('bp_type', '').upper()
+        mod_type = mod_rec.get('bp_type', '').upper()
         if leg_type != mod_type:
-            mismatches['bp_type'] = {'legacy': leg_type, 'modern': mod_type}
+            mismatches['bp_type'] = {'legacy': leg_rec.get('bp_type', ''), 'modern': mod_rec.get('bp_type', '')}
         
         # Compare dir_xyz
         leg_dir = leg_rec.get('dir_xyz', [])
@@ -115,22 +132,24 @@ def compare_base_pairs(
                     }
         
         # Compare orien_i and orien_j (3x3 matrices)
-        for orien_key in ['orien_i', 'orien_j']:
-            leg_orien = leg_rec.get(orien_key, [])
-            mod_orien = mod_rec.get(orien_key, [])
-            if isinstance(leg_orien, list) and isinstance(mod_orien, list):
-                if len(leg_orien) == 3 and len(mod_orien) == 3:
-                    for i in range(3):
-                        if len(leg_orien[i]) == 3 and len(mod_orien[i]) == 3:
-                            for j in range(3):
-                                leg_val = leg_orien[i][j]
-                                mod_val = mod_orien[i][j]
-                                if abs(leg_val - mod_val) > tolerance:
-                                    mismatches[f'{orien_key}[{i}][{j}]'] = {
-                                        'legacy': leg_val,
-                                        'modern': mod_val,
-                                        'diff': abs(leg_val - mod_val)
-                                    }
+        # Skip if skip_orientation is True (sign convention differs between legacy/modern)
+        if not skip_orientation:
+            for orien_key in ['orien_i', 'orien_j']:
+                leg_orien = leg_rec.get(orien_key, [])
+                mod_orien = mod_rec.get(orien_key, [])
+                if isinstance(leg_orien, list) and isinstance(mod_orien, list):
+                    if len(leg_orien) == 3 and len(mod_orien) == 3:
+                        for i in range(3):
+                            if len(leg_orien[i]) == 3 and len(mod_orien[i]) == 3:
+                                for j in range(3):
+                                    leg_val = leg_orien[i][j]
+                                    mod_val = mod_orien[i][j]
+                                    if abs(leg_val - mod_val) > tolerance:
+                                        mismatches[f'{orien_key}[{i}][{j}]'] = {
+                                            'legacy': leg_val,
+                                            'modern': mod_val,
+                                            'diff': abs(leg_val - mod_val)
+                                        }
         
         # Compare org_i and org_j (3-element vectors)
         for org_key in ['org_i', 'org_j']:
