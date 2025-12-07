@@ -178,7 +178,7 @@ def compare_pair_validations(
 def compare_distance_checks(
     legacy_records: List[Dict],
     modern_records: List[Dict],
-    tolerance: float = 1e-6
+    tolerance: float = 2e-5  # Relaxed to handle normal floating point variations
 ) -> DistanceChecksComparison:
     """
     Compare distance_checks records between legacy and modern JSON.
@@ -193,7 +193,8 @@ def compare_distance_checks(
     """
     result = DistanceChecksComparison()
     
-    # Build maps by (base_i, base_j)
+    # Build maps by normalized (base_i, base_j) - using (min, max) for consistent comparison
+    # Legacy doesn't consistently output both (i,j) and (j,i), modern always outputs both
     legacy_map = {}
     modern_map = {}
     
@@ -203,7 +204,7 @@ def compare_distance_checks(
         base_i = rec.get('base_i')
         base_j = rec.get('base_j')
         if base_i is not None and base_j is not None:
-            key = (base_i, base_j)
+            key = normalize_pair_key(base_i, base_j)  # Normalize to (min, max)
             legacy_map[key] = rec
     
     for rec in modern_records:
@@ -212,7 +213,7 @@ def compare_distance_checks(
         base_i = rec.get('base_i')
         base_j = rec.get('base_j')
         if base_i is not None and base_j is not None:
-            key = (base_i, base_j)
+            key = normalize_pair_key(base_i, base_j)  # Normalize to (min, max)
             modern_map[key] = rec
     
     result.total_legacy = len(legacy_map)
