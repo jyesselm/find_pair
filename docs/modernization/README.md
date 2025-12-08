@@ -115,3 +115,38 @@ cat STAGE_00_SETUP.md
 
 *Last Updated: [Current Date]*
 
+
+---
+
+## Current Status (December 2025)
+
+### Validation Results (3602 PDBs)
+
+| Stage | Name | Pass Rate | Notes |
+|-------|------|-----------|-------|
+| 1 | Atom Parsing | **100%** | |
+| 2 | Residue Indices | **100%** | |
+| 3 | Base Frame Calc | **99.9%** | 2 skipped (missing legacy) |
+| 4 | LS Fitting | **96.0%** | 144 skipped |
+| 5 | Frame Calc | **96.9%** | 112 skipped |
+| 6 | Pair Validation | **99.8%** | 4 edge cases |
+| 7 | Distance Checks | **99.9%** | 1 edge case |
+| 8 | H-bond List | **99.8%** | 3 edge cases |
+| 9 | Base Pair | **99.9%** | |
+| 10 | Best Pair Selection | **99.9%** | 2 edge cases |
+| 11 | Step Parameters | 0% | Requires `analyze` integration |
+| 12 | Helical Parameters | 0% | Requires `analyze` integration |
+
+### Known Edge Cases
+
+- **2XD0**: dNN value difference (4.81 vs 6.98 Å)
+- **4E8R**: Missing pair (320, 452)
+- **4IQS**: Extra pair (28, 29)  
+- **8ANE**: Missing pair (2226, 2227)
+
+### Stage 11/12 Note
+
+Step and helical parameters require different frame handling:
+- Legacy `analyze.c` reads the `.inp` file and recalculates frames
+- Frame ordering may differ from `find_pair.c` output
+- Future work: Implement `AnalyzeProtocol` integration
