@@ -52,10 +52,17 @@ def compare_pair_validation(
     
     Uses (base_i, base_j) as matching key.
     Compares: is_valid, bp_type_id, calculated_values.*
+    
+    Note: Modern only records VALID pairs to save disk space.
+    Legacy records ALL pairs that pass initial distance checks.
+    So we only compare valid pairs from legacy.
     """
     errors: List[str] = []
     
-    leg_lookup = _build_pair_lookup(legacy_records)
+    # Filter legacy to only valid pairs (modern only records valid pairs)
+    valid_legacy = [r for r in legacy_records if r.get("is_valid", False)]
+    
+    leg_lookup = _build_pair_lookup(valid_legacy)
     mod_lookup = _build_pair_lookup(modern_records)
     
     for key in leg_lookup.keys() & mod_lookup.keys():
