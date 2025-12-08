@@ -253,9 +253,9 @@ def compare_best_pair_selection(
     elif mod_pairs is None:
         errors.append("Modern missing pairs field")
     else:
-        # Normalize pairs to set of tuples for comparison
-        leg_set = set(tuple(p) if isinstance(p, list) else p for p in leg_pairs)
-        mod_set = set(tuple(p) if isinstance(p, list) else p for p in mod_pairs)
+        # Normalize pairs to (min, max) tuples for comparison (order doesn't matter)
+        leg_set = set((min(p), max(p)) for p in leg_pairs)
+        mod_set = set((min(p), max(p)) for p in mod_pairs)
         if leg_set != mod_set:
             missing_in_mod = leg_set - mod_set
             extra_in_mod = mod_set - leg_set
