@@ -263,7 +263,7 @@ void HydrogenBondFinder::validate_hbonds(std::vector<HydrogenBondResult>& hbonds
         }
 
         // Process negative distances (conflicts)
-        hbond.type = donor_acceptor(base1, base2, hbond.donor_atom, hbond.acceptor_atom);
+        hbond.type = BasePairValidator::donor_acceptor(base1, base2, hbond.donor_atom, hbond.acceptor_atom);
 
         // Restore absolute distance (matches legacy line 3998: hb_dist[k] = fabs(hb_dist[k]))
         hbond.distance = std::abs(hbond.distance);
@@ -375,11 +375,6 @@ char HydrogenBondFinder::get_base_type_for_hbond(const core::Residue& residue) {
 
             return '?'; // Cannot determine
     }
-}
-
-char HydrogenBondFinder::donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2) {
-    // Call BasePairValidator's static donor_acceptor function
-    return BasePairValidator::donor_acceptor(base1, base2, atom1, atom2);
 }
 
 } // namespace algorithms

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <x3dna/core/residue.hpp>
-#include <x3dna/geometry/vector3d.hpp>
 #include <string>
 
 namespace x3dna {
@@ -40,23 +39,6 @@ public:
      */
     static void count_simple(const core::Residue& res1, const core::Residue& res2, double hb_lower, double hb_dist1,
                              const std::string& hb_atoms, int& num_base_hb, int& num_o2_hb);
-
-private:
-    /**
-     * @brief Check if distance is within limits
-     */
-    static bool within_limits(const geometry::Vector3D& pos1, const geometry::Vector3D& pos2, double lower,
-                              double upper);
-
-    /**
-     * @brief Check if atom is a base atom (matches legacy is_baseatom)
-     */
-    static bool is_base_atom(const std::string& atom_name);
-
-    /**
-     * @brief Check if two atoms can form a hydrogen bond (matches legacy good_hbatoms)
-     */
-    static bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std::string& hb_atoms);
 };
 
 } // namespace hydrogen_bond

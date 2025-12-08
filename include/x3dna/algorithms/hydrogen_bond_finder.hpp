@@ -110,12 +110,6 @@ private:
      * For modified nucleotides, returns appropriate base type (A, C, G, T, U)
      */
     static char get_base_type_for_hbond(const core::Residue& residue);
-
-    /**
-     * @brief Determine H-bond type using donor-acceptor
-     * Matches legacy donor_acceptor function
-     */
-    static char donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2);
 };
 
 } // namespace algorithms

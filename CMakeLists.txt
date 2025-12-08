@@ -54,6 +54,7 @@ add_library(x3dna
     src/x3dna/algorithms/hydrogen_bond_finder.cpp
     src/x3dna/algorithms/helix_detector.cpp
     src/x3dna/algorithms/residue_index_map.cpp
+    src/x3dna/algorithms/quality_score_calculator.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.cpp
     src/x3dna/config/config_manager.cpp
