@@ -79,3 +79,15 @@ endif()
 
 gtest_discover_tests(test_base_pair_finder)
 
+# Residue index map tests
+add_executable(test_residue_index_map
+    test_residue_index_map.cpp
+)
+
+target_link_libraries(test_residue_index_map
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_residue_index_map)
