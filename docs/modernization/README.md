@@ -20,6 +20,8 @@ modernization/
 ├── STAGE_08_APPLICATIONS.md    # Application executables
 ├── STAGE_09_TESTING.md         # Comprehensive testing and validation
 ├── STAGE_10_POLISH.md          # Documentation and final polish
+├── STAGE_11_OOP_REFACTORING.md # OOP refactoring & clean architecture
+├── STAGE_12_ADVANCED_FEATURES.md # Advanced features & extensions
 ├── TESTING_STRATEGY.md          # Overall testing strategy
 ├── INTEGRATION_TESTING.md       # Integration test framework
 ├── INTEGRATION_TEST_IMPLEMENTATION.md  # Integration test implementation guide
@@ -42,8 +44,10 @@ modernization/
 | **Stage 8** | Applications | 1 week | Stage 7 |
 | **Stage 9** | Testing & Validation | 2 weeks | Stage 8 |
 | **Stage 10** | Polish & Documentation | 1 week | Stage 9 |
+| **Stage 11** | OOP Refactoring | 2-3 weeks | Stage 10 |
+| **Stage 12** | Advanced Features | 2-3 weeks | Stage 11 |
 
-**Total Estimated Duration: 15 weeks (~4 months)**
+**Total Estimated Duration: 19-21 weeks (~5 months)**
 
 ## Progress Tracking
 
