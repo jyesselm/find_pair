@@ -22,8 +22,8 @@ This document describes each type of JSON record produced by the X3DNA find_pair
 | 8 | H-bond List | `hbond_list` | num_hbonds, hbonds[] | ✅ PASSED* |
 | 9 | Base Pair | `base_pair` | base_i, base_j, bp_type, orien | ✅ PASSED (77/77) |
 | 10 | Best Pair Selection | `find_bestpair_selection` | num_bp, pairs[] | ✅ PASSED (3896/3899)* |
-| 11 | Step Parameters | `bpstep_params` | shift, slide, rise, tilt, roll, twist | ⏳ PENDING |
-| 12 | Helical Parameters | `helical_params` | x/y_displacement, rise, inclination, tip | ⏳ PENDING |
+| 11 | Step Parameters | `bpstep_params` | shift, slide, rise, tilt, roll, twist | ⏳ NOT IMPLEMENTED |
+| 12 | Helical Parameters | `helical_params` | x/y_displacement, rise, inclination, tip | ⏳ NOT IMPLEMENTED |
 
 ---
 
