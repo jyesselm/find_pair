@@ -8,7 +8,10 @@
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/base_pair.hpp>
 #include <x3dna/algorithms/base_pair_validator.hpp>
-#include <x3dna/algorithms/parameter_calculator.hpp>
+#include <x3dna/algorithms/quality_score_calculator.hpp>
+#include <x3dna/algorithms/pair_candidate_cache.hpp>
+#include <x3dna/algorithms/pair_finding_observer.hpp>
+#include <x3dna/algorithms/pair_selection_strategy.hpp>
 #include <x3dna/io/json_writer.hpp>
 #include <vector>
 #include <memory>
@@ -30,6 +33,13 @@ enum class PairFindingStrategy {
 /**
  * @class BasePairFinder
  * @brief Finds base pairs in a structure using various strategies
+ *
+ * This class serves as a facade over several specialized components:
+ * - BasePairValidator: Validates individual base pairs
+ * - QualityScoreCalculator: Calculates adjusted quality scores
+ * - PairCandidateCache: Caches Phase 1 validation results
+ * - IPairSelectionStrategy: Implements pair selection algorithm
+ * - IPairFindingObserver: Records events during pair finding
  *
  * Implements the legacy find_bestpair algorithm which uses a greedy mutual
  * best match strategy: for each unpaired residue, find its best partner,
@@ -101,9 +111,13 @@ public:
     static bool is_nucleotide(const core::Residue& residue);
 
 private:
+    // Core components
     BasePairValidator validator_;
-    ParameterCalculator param_calculator_;
+    QualityScoreCalculator quality_calculator_;
     PairFindingStrategy strategy_;
+
+    // Mutable cache for const methods
+    mutable PairCandidateCache cache_;
 
     /**
      * @brief Find best pairs using greedy mutual best match (legacy find_bestpair)
