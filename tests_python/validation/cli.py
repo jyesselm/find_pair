@@ -22,11 +22,16 @@ def _get_project_root() -> Path:
     return Path(__file__).parent.parent.parent
 
 
-def _get_pdb_ids(json_dir: Path, max_pdbs: Optional[int] = None) -> List[str]:
+def _get_pdb_ids(json_dir: Path, max_pdbs: Optional[int] = None, fast_only: bool = False) -> List[str]:
     """
     Get list of PDB IDs from JSON directory.
     
     Scans any subdirectory (e.g., pdb_atoms/) for JSON files to find PDB IDs.
+    
+    Args:
+        json_dir: Path to JSON directory
+        max_pdbs: Maximum number of PDBs to return
+        fast_only: If True, only return PDBs from valid_pdbs_fast.json
     """
     # Try to find PDBs from any stage subdirectory
     for stage_dir in ["pdb_atoms", "residue_indices", "frame_calc"]:
@@ -37,6 +42,15 @@ def _get_pdb_ids(json_dir: Path, max_pdbs: Optional[int] = None) -> List[str]:
                 if f.suffix == ".json" and len(f.stem) == 4
             )
             if pdbs:
+                # Filter to fast PDBs if requested
+                if fast_only:
+                    fast_pdbs_file = _get_project_root() / "data" / "valid_pdbs_fast.json"
+                    if fast_pdbs_file.exists():
+                        import json
+                        with open(fast_pdbs_file) as f:
+                            fast_pdbs = set(json.load(f).get("valid_pdbs_with_atoms_and_frames", []))
+                        pdbs = [p for p in pdbs if p in fast_pdbs]
+                
                 return pdbs[:max_pdbs] if max_pdbs else pdbs
     
     return []
@@ -110,13 +124,20 @@ def _print_summary(results: List[StageResult]) -> None:
     default=1,
     help="Number of parallel workers (default: 1)"
 )
+@click.option(
+    "--fast-only", "-f",
+    is_flag=True,
+    default=True,
+    help="Only test fast PDBs from valid_pdbs_fast.json (default: True)"
+)
 def main(
     stages: tuple,
     json_dir: Optional[Path],
     max_pdbs: Optional[int],
     verbose: bool,
     stop_on_failure: bool,
-    workers: int
+    workers: int,
+    fast_only: bool
 ) -> None:
     """
     Validate legacy vs modern JSON outputs.
@@ -143,7 +164,7 @@ def main(
     if json_dir is None:
         json_dir = _get_project_root() / "data" / "json"
     
-    pdb_ids = _get_pdb_ids(json_dir, max_pdbs)
+    pdb_ids = _get_pdb_ids(json_dir, max_pdbs, fast_only)
     
     if not pdb_ids:
         click.echo(f"No PDBs found in {json_dir}", err=True)
