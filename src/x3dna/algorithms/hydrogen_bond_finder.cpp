@@ -47,7 +47,7 @@ DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(const Resid
             }
 
             // Check if atoms can form H-bond (matches legacy good_hbatoms)
-            if (HydrogenBondFinder::good_hb_atoms(atom1.name(), atom2.name())) {
+            if (hydrogen_bond::good_hb_atoms(atom1.name(), atom2.name(), ".O.N")) {
                 HydrogenBondResult hbond;
                 hbond.donor_atom = atom1.name();
                 hbond.acceptor_atom = atom2.name();
@@ -99,12 +99,6 @@ DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(const Resid
     }
 
     return result;
-}
-
-bool HydrogenBondFinder::good_hb_atoms(const std::string& atom1, const std::string& atom2) {
-    // Use hydrogen_bond utils version
-    // Default hb_atoms is ".O.N"
-    return x3dna::algorithms::hydrogen_bond::good_hb_atoms(atom1, atom2, ".O.N");
 }
 
 void HydrogenBondFinder::resolve_conflicts(std::vector<HydrogenBondResult>& hbonds, double hb_lower, double hb_dist2) {

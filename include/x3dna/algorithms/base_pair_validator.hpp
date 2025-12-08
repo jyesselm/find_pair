@@ -217,10 +217,6 @@ private:
      */
     static bool is_base_atom(const std::string& atom_name);
 
-    /**
-     * @brief Check if two atoms can form a good H-bond (matches legacy good_hbatoms)
-     */
-    bool good_hb_atoms(const std::string& atom1, const std::string& atom2) const;
 };
 
 } // namespace algorithms

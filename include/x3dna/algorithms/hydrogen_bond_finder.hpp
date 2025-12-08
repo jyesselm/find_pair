@@ -83,12 +83,6 @@ public:
 
 private:
     /**
-     * @brief Check if two atoms can form a hydrogen bond
-     * Matches legacy good_hbatoms logic
-     */
-    static bool good_hb_atoms(const std::string& atom1, const std::string& atom2);
-
-    /**
      * @brief Resolve conflicts when same atom has multiple H-bonds
      * Matches legacy hb_atompair logic with full iterative algorithm and linkage type calculation
      * @param hbonds H-bonds to resolve (distances may be negated to mark conflicts)
