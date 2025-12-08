@@ -47,7 +47,8 @@ def _run_stages(
     pdb_ids: List[str],
     json_dir: Path,
     verbose: bool,
-    stop_on_failure: bool
+    stop_on_failure: bool,
+    num_workers: int = 1
 ) -> List[StageResult]:
     """Run validation for all stages."""
     results = []
@@ -56,7 +57,7 @@ def _run_stages(
         start = time.time()
         result = validate_stage(
             stage_num, pdb_ids, json_dir,
-            verbose, stop_on_failure
+            verbose, stop_on_failure, num_workers
         )
         elapsed = time.time() - start
         
@@ -103,12 +104,19 @@ def _print_summary(results: List[StageResult]) -> None:
     is_flag=True,
     help="Stop on first failure"
 )
+@click.option(
+    "--workers", "-w",
+    type=int,
+    default=1,
+    help="Number of parallel workers (default: 1)"
+)
 def main(
     stages: tuple,
     json_dir: Optional[Path],
     max_pdbs: Optional[int],
     verbose: bool,
-    stop_on_failure: bool
+    stop_on_failure: bool,
+    workers: int
 ) -> None:
     """
     Validate legacy vs modern JSON outputs.
@@ -143,8 +151,10 @@ def main(
     
     click.echo(f"Running validation for stages: {resolved}")
     click.echo(f"PDBs: {len(pdb_ids)}")
+    if workers > 1:
+        click.echo(f"Workers: {workers}")
     
-    results = _run_stages(resolved, pdb_ids, json_dir, verbose, stop_on_failure)
+    results = _run_stages(resolved, pdb_ids, json_dir, verbose, stop_on_failure, workers)
     _print_summary(results)
     
     all_passed = all(r.failed == 0 for r in results)

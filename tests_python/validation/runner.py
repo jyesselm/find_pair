@@ -5,12 +5,14 @@ This module handles:
 - Loading JSON files
 - Running comparators
 - Collecting and reporting results
+- Parallel processing for large batches
 """
 
 import json
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .config import STAGES, StageConfig
 from .comparators import COMPARATORS
@@ -92,12 +94,19 @@ def validate_pdb(
     return ValidationResult(pdb_id, stage_num, passed, errors)
 
 
+def _validate_pdb_worker(args: Tuple[str, int, str, bool]) -> ValidationResult:
+    """Worker function for parallel validation (must be at module level for pickling)."""
+    pdb_id, stage_num, json_dir_str, verbose = args
+    return validate_pdb(pdb_id, stage_num, Path(json_dir_str), verbose)
+
+
 def validate_stage(
     stage_num: int,
     pdb_ids: List[str],
     json_dir: Path,
     verbose: bool = False,
-    stop_on_failure: bool = False
+    stop_on_failure: bool = False,
+    num_workers: int = 1
 ) -> StageResult:
     """
     Validate all PDBs for a specific stage.
@@ -108,6 +117,7 @@ def validate_stage(
         json_dir: Path to JSON directory
         verbose: Print verbose output
         stop_on_failure: Stop on first failure
+        num_workers: Number of parallel workers (1 = sequential)
         
     Returns:
         StageResult with aggregated statistics
@@ -118,22 +128,51 @@ def validate_stage(
     
     result = StageResult(stage_num, config.name)
     
-    for pdb_id in pdb_ids:
-        vr = validate_pdb(pdb_id, stage_num, json_dir, verbose)
-        result.total += 1
-        
-        if vr.skipped:
-            result.skipped += 1
-        elif vr.passed:
-            result.passed += 1
-        else:
-            result.failed += 1
-            result.failed_pdbs.append(pdb_id)
-            if vr.errors:
-                result.first_errors[pdb_id] = vr.errors[:3]
+    if num_workers <= 1:
+        # Sequential processing
+        for pdb_id in pdb_ids:
+            vr = validate_pdb(pdb_id, stage_num, json_dir, verbose)
+            result.total += 1
             
-            if stop_on_failure:
-                break
+            if vr.skipped:
+                result.skipped += 1
+            elif vr.passed:
+                result.passed += 1
+            else:
+                result.failed += 1
+                result.failed_pdbs.append(pdb_id)
+                if vr.errors:
+                    result.first_errors[pdb_id] = vr.errors[:3]
+                
+                if stop_on_failure:
+                    break
+    else:
+        # Parallel processing
+        json_dir_str = str(json_dir)
+        args_list = [(pdb_id, stage_num, json_dir_str, verbose) for pdb_id in pdb_ids]
+        
+        with ProcessPoolExecutor(max_workers=num_workers) as executor:
+            futures = {executor.submit(_validate_pdb_worker, args): args[0] 
+                       for args in args_list}
+            
+            for future in as_completed(futures):
+                pdb_id = futures[future]
+                try:
+                    vr = future.result()
+                except Exception as e:
+                    vr = ValidationResult(pdb_id, stage_num, False, [str(e)])
+                
+                result.total += 1
+                
+                if vr.skipped:
+                    result.skipped += 1
+                elif vr.passed:
+                    result.passed += 1
+                else:
+                    result.failed += 1
+                    result.failed_pdbs.append(pdb_id)
+                    if vr.errors:
+                        result.first_errors[pdb_id] = vr.errors[:3]
     
     return result
 
