@@ -19,6 +19,7 @@
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/io/frame_json_recorder.hpp>
 #include <x3dna/algorithms/base_pair_finder.hpp>
+#include <x3dna/algorithms/parameter_calculator.hpp>
 
 using namespace x3dna::core;
 using namespace x3dna::io;
@@ -199,7 +200,7 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
             return true;
         }
 
-        // Stages 4-8: Full processing
+        // Stages 4-10: Full pair finding
         if (stage != "atoms" && stage != "residue_indices" && stage != "ls_fitting" && stage != "frames") {
             JsonWriter writer(pdb_file);
             writer.record_residue_indices(structure);
@@ -211,6 +212,43 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
             for (const auto& pair : base_pairs) {
                 writer.record_base_pair(pair);
             }
+            
+            // Stages 11-12: Step and helical parameters
+            if (stage == "all" || stage == "steps" || stage == "helical") {
+                if (base_pairs.size() >= 2) {
+                    ParameterCalculator param_calc;
+                    for (size_t i = 0; i + 1 < base_pairs.size(); ++i) {
+                        const auto& pair1 = base_pairs[i];
+                        const auto& pair2 = base_pairs[i + 1];
+                        
+                        // Verify both pairs have frames
+                        if (!pair1.frame1().has_value() || !pair1.frame2().has_value() ||
+                            !pair2.frame1().has_value() || !pair2.frame2().has_value()) {
+                            continue;
+                        }
+                        
+                        // Use frame1() from each pair (matching legacy strand 1 frames)
+                        ReferenceFrame frame1 = pair1.frame1().value();
+                        ReferenceFrame frame2 = pair2.frame1().value();
+                        
+                        // Calculate step parameters
+                        auto step_params = param_calc.calculate_step_parameters(frame1, frame2);
+                        // Use 1-based base pair indices (matching legacy)
+                        size_t bp_idx1 = i + 1;
+                        size_t bp_idx2 = i + 2;
+                        writer.record_bpstep_params(bp_idx1, bp_idx2, step_params);
+                        
+                        // Calculate helical parameters
+                        auto helical_params = param_calc.calculate_helical_parameters(pair1, pair2);
+                        writer.record_helical_params(bp_idx1, bp_idx2, helical_params);
+                    }
+                    
+                    if (verbose) {
+                        std::cout << "  ✅ Generated step/helical params (" << (base_pairs.size() - 1) << " steps)\n";
+                    }
+                }
+            }
+            
             writer.write_split_files(json_output_dir, true);
 
             if (verbose) {
