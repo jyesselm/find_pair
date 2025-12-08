@@ -96,8 +96,8 @@ protected:
                     // Compare atom counts (basic validation)
                     if (structure.num_atoms() != legacy_structure.num_atoms()) {
                         std::cerr << "Warning: Atom count mismatch for " << pair.pdb_name
-                                  << ": parsed=" << structure.num_atoms()
-                                  << ", legacy=" << legacy_structure.num_atoms() << std::endl;
+                                  << ": parsed=" << structure.num_atoms() << ", legacy=" << legacy_structure.num_atoms()
+                                  << std::endl;
                     }
                 }
             } catch (const std::exception& e) {
@@ -184,8 +184,7 @@ TEST_F(JsonGenerationTest, GenerateAllJsonFiles) {
 
     // Process pairs in parallel
     std::vector<std::thread> threads;
-    size_t num_threads =
-        std::min(pairs_.size(), static_cast<size_t>(std::thread::hardware_concurrency()));
+    size_t num_threads = std::min(pairs_.size(), static_cast<size_t>(std::thread::hardware_concurrency()));
 
     auto process_batch = [&](size_t start_idx, size_t end_idx) {
         for (size_t i = start_idx; i < end_idx && i < pairs_.size(); ++i) {
@@ -243,8 +242,7 @@ TEST_F(JsonGenerationTest, GenerateSingleJsonFile) {
 
     // Verify file was created
     std::filesystem::path output_file = output_dir_ / (pair.pdb_name + ".json");
-    EXPECT_TRUE(std::filesystem::exists(output_file))
-        << "Output file was not created: " << output_file;
+    EXPECT_TRUE(std::filesystem::exists(output_file)) << "Output file was not created: " << output_file;
 
     // Verify file is valid JSON
     std::ifstream file(output_file);
@@ -270,8 +268,7 @@ TEST_F(JsonGenerationTest, GenerateFirstTenJsonFiles) {
 
     // Process pairs in parallel
     std::vector<std::thread> threads;
-    size_t num_threads =
-        std::min(num_to_process, static_cast<size_t>(std::thread::hardware_concurrency()));
+    size_t num_threads = std::min(num_to_process, static_cast<size_t>(std::thread::hardware_concurrency()));
 
     auto process_batch = [&](size_t start_idx, size_t end_idx) {
         for (size_t i = start_idx; i < end_idx && i < num_to_process; ++i) {

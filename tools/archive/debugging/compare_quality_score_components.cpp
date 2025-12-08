@@ -63,8 +63,7 @@ void print_quality_breakdown(const ValidationResult& result, int idx1, int idx2)
         std::cout << "  Good H-bonds (type='-' and 2.5-3.5 Å): " << num_good_hb << "\n";
         double adjust_pairQuality = (num_good_hb >= 2) ? -3.0 : -static_cast<double>(num_good_hb);
         std::cout << "  adjust_pairQuality: " << adjust_pairQuality << "\n";
-        std::cout << "  Adjusted quality (base + adjust): "
-                  << (result.quality_score + adjust_pairQuality) << "\n";
+        std::cout << "  Adjusted quality (base + adjust): " << (result.quality_score + adjust_pairQuality) << "\n";
     }
 
     std::cout << "\nVALIDATION CHECKS:\n";

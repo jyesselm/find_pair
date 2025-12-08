@@ -90,9 +90,8 @@ public:
      * @param atom_idx_map Map from (chain_id, residue_seq, insertion, atom_name) -> legacy_atom_idx
      * @param residue_idx_map Map from (chain_id, residue_seq, insertion) -> legacy_residue_idx
      */
-    void
-    set_legacy_indices(const std::map<std::tuple<char, int, char, std::string>, int>& atom_idx_map,
-                       const std::map<std::tuple<char, int, char>, int>& residue_idx_map) {
+    void set_legacy_indices(const std::map<std::tuple<char, int, char, std::string>, int>& atom_idx_map,
+                            const std::map<std::tuple<char, int, char>, int>& residue_idx_map) {
         for (auto& chain : chains_) {
             for (auto& residue : chain.residues()) {
                 char chain_id = residue.chain_id();
@@ -102,8 +101,7 @@ public:
                 // Get legacy residue index for this residue
                 auto residue_key = std::make_tuple(chain_id, residue_seq, insertion);
                 auto residue_it = residue_idx_map.find(residue_key);
-                int legacy_residue_idx =
-                    (residue_it != residue_idx_map.end()) ? residue_it->second : 0;
+                int legacy_residue_idx = (residue_it != residue_idx_map.end()) ? residue_it->second : 0;
 
                 // Set legacy indices on all atoms in this residue
                 for (auto& atom : residue.atoms()) {

@@ -26,8 +26,7 @@ public:
     /**
      * @brief Default constructor (identity rotation, zero origin)
      */
-    ReferenceFrame()
-        : rotation_(geometry::Matrix3D::identity()), origin_(geometry::Vector3D(0, 0, 0)) {}
+    ReferenceFrame() : rotation_(geometry::Matrix3D::identity()), origin_(geometry::Vector3D(0, 0, 0)) {}
 
     /**
      * @brief Constructor with rotation matrix and origin
@@ -43,11 +42,10 @@ public:
      * r21, r22])
      * @param origin_array Array of 3 elements [x, y, z]
      */
-    ReferenceFrame(const std::array<double, 9>& rotation_array,
-                   const std::array<double, 3>& origin_array)
-        : rotation_(geometry::Matrix3D(rotation_array[0], rotation_array[1], rotation_array[2],
-                                       rotation_array[3], rotation_array[4], rotation_array[5],
-                                       rotation_array[6], rotation_array[7], rotation_array[8])),
+    ReferenceFrame(const std::array<double, 9>& rotation_array, const std::array<double, 3>& origin_array)
+        : rotation_(geometry::Matrix3D(rotation_array[0], rotation_array[1], rotation_array[2], rotation_array[3],
+                                       rotation_array[4], rotation_array[5], rotation_array[6], rotation_array[7],
+                                       rotation_array[8])),
           origin_(geometry::Vector3D(origin_array[0], origin_array[1], origin_array[2])) {}
 
     // Getters
@@ -117,9 +115,8 @@ public:
      * @brief Get rotation matrix as 9-element array (row-major)
      */
     std::array<double, 9> rotation_as_array() const {
-        return {rotation_.at(0, 0), rotation_.at(0, 1), rotation_.at(0, 2),
-                rotation_.at(1, 0), rotation_.at(1, 1), rotation_.at(1, 2),
-                rotation_.at(2, 0), rotation_.at(2, 1), rotation_.at(2, 2)};
+        return {rotation_.at(0, 0), rotation_.at(0, 1), rotation_.at(0, 2), rotation_.at(1, 0), rotation_.at(1, 1),
+                rotation_.at(1, 2), rotation_.at(2, 0), rotation_.at(2, 1), rotation_.at(2, 2)};
     }
 
     /**

@@ -47,10 +47,8 @@ RmsdCheckResult ResidueTypeDetector::check_by_rmsd(const core::Residue& residue)
         for (const auto& atom : residue.atoms()) {
             if (atom.name() == atom_name) {
                 experimental_coords.push_back(atom.position());
-                standard_coords.push_back(geometry::Vector3D(
-                    STANDARD_RING_GEOMETRY[i][0],
-                    STANDARD_RING_GEOMETRY[i][1],
-                    STANDARD_RING_GEOMETRY[i][2]));
+                standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
+                                                             STANDARD_RING_GEOMETRY[i][2]));
 
                 // Count purine atoms (N7, C8, N9)
                 if (atom_name == std::string(" N7 ") || atom_name == std::string(" C8 ") ||
@@ -100,17 +98,15 @@ RmsdCheckResult ResidueTypeDetector::check_by_rmsd(const core::Residue& residue)
     geometry::LeastSquaresFitter fitter;
     try {
         auto fit_result = fitter.fit(standard_coords, experimental_coords);
-        return {fit_result.rms, purine_atom_count > 0, matched_names, experimental_coords,
-                standard_coords};
+        return {fit_result.rms, purine_atom_count > 0, matched_names, experimental_coords, standard_coords};
     } catch (const std::exception&) {
         return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
     }
 }
 
 bool ResidueTypeDetector::is_in_nt_list(const std::string& res_name) {
-    static const std::vector<std::string> NT_LIST = {
-        "A",   "C",   "G",   "T",   "U",   "PSU", "P5P", "PU", "I",  "DI",
-        "ADP", "GDP", "CDP", "UDP", "TDP", "DA",  "DC",  "DG", "DT", "DU"};
+    static const std::vector<std::string> NT_LIST = {"A",   "C",   "G",   "T",   "U",   "PSU", "P5P", "PU", "I",  "DI",
+                                                     "ADP", "GDP", "CDP", "UDP", "TDP", "DA",  "DC",  "DG", "DT", "DU"};
 
     std::string res_upper = res_name;
     for (char& c : res_upper)
@@ -158,7 +154,7 @@ TypeDetectionResult ResidueTypeDetector::detect_type(const core::Residue& residu
 
         // Use purine atom presence to determine type
         if (rmsd_result.found_purine_atoms) {
-            result.detected_type = core::ResidueType::ADENINE;  // Default purine
+            result.detected_type = core::ResidueType::ADENINE; // Default purine
         } else {
             result.detected_type = core::ResidueType::CYTOSINE; // Default pyrimidine
         }
@@ -169,4 +165,3 @@ TypeDetectionResult ResidueTypeDetector::detect_type(const core::Residue& residu
 
 } // namespace algorithms
 } // namespace x3dna
-

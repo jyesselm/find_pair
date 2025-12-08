@@ -28,8 +28,7 @@ protected:
 };
 
 // Helper function to extract point sets from frame_calc record
-std::pair<std::vector<Vector3D>, std::vector<Vector3D>>
-extract_point_sets(const nlohmann::json& frame_calc) {
+std::pair<std::vector<Vector3D>, std::vector<Vector3D>> extract_point_sets(const nlohmann::json& frame_calc) {
     std::vector<Vector3D> std_points;
     std::vector<Vector3D> exp_points;
 
@@ -42,12 +41,11 @@ extract_point_sets(const nlohmann::json& frame_calc) {
             const auto& std_xyz = coord["std_xyz"];
             const auto& exp_xyz = coord["exp_xyz"];
 
-            if (std_xyz.is_array() && std_xyz.size() == 3 && exp_xyz.is_array() &&
-                exp_xyz.size() == 3) {
-                std_points.push_back(Vector3D(std_xyz[0].get<double>(), std_xyz[1].get<double>(),
-                                              std_xyz[2].get<double>()));
-                exp_points.push_back(Vector3D(exp_xyz[0].get<double>(), exp_xyz[1].get<double>(),
-                                              exp_xyz[2].get<double>()));
+            if (std_xyz.is_array() && std_xyz.size() == 3 && exp_xyz.is_array() && exp_xyz.size() == 3) {
+                std_points.push_back(
+                    Vector3D(std_xyz[0].get<double>(), std_xyz[1].get<double>(), std_xyz[2].get<double>()));
+                exp_points.push_back(
+                    Vector3D(exp_xyz[0].get<double>(), exp_xyz[1].get<double>(), exp_xyz[2].get<double>()));
             }
         }
     }
@@ -188,12 +186,10 @@ TEST_F(LeastSquaresRegressionTest, Test157D_MultipleResidues) {
         double expected_rms = ls_fitting["rms_fit"].get<double>();
 
         // Check if they match
-        bool rotation_ok =
-            result.rotation.approximately_equals(expected_rotation, ROTATION_TOLERANCE);
-        bool translation_ok =
-            std::abs(result.translation.x() - expected_translation.x()) < TRANSLATION_TOLERANCE &&
-            std::abs(result.translation.y() - expected_translation.y()) < TRANSLATION_TOLERANCE &&
-            std::abs(result.translation.z() - expected_translation.z()) < TRANSLATION_TOLERANCE;
+        bool rotation_ok = result.rotation.approximately_equals(expected_rotation, ROTATION_TOLERANCE);
+        bool translation_ok = std::abs(result.translation.x() - expected_translation.x()) < TRANSLATION_TOLERANCE &&
+                              std::abs(result.translation.y() - expected_translation.y()) < TRANSLATION_TOLERANCE &&
+                              std::abs(result.translation.z() - expected_translation.z()) < TRANSLATION_TOLERANCE;
         bool rms_ok = std::abs(result.rms - expected_rms) < RMS_TOLERANCE;
 
         if (rotation_ok && translation_ok && rms_ok) {
@@ -205,8 +201,7 @@ TEST_F(LeastSquaresRegressionTest, Test157D_MultipleResidues) {
             if (!translation_ok)
                 std::cout << "  Translation mismatch" << std::endl;
             if (!rms_ok)
-                std::cout << "  RMS mismatch: expected " << expected_rms << ", got " << result.rms
-                          << std::endl;
+                std::cout << "  RMS mismatch: expected " << expected_rms << ", got " << result.rms << std::endl;
         }
     }
 
@@ -312,8 +307,7 @@ TEST_F(LeastSquaresRegressionTest, TestAllPDBPairs) {
                 double expected_rms = ls_fitting["rms_fit"].get<double>();
 
                 // Check matches
-                bool rotation_ok =
-                    result.rotation.approximately_equals(expected_rotation, ROTATION_TOLERANCE);
+                bool rotation_ok = result.rotation.approximately_equals(expected_rotation, ROTATION_TOLERANCE);
                 bool translation_ok = std::abs(result.translation.x() - expected_translation.x()) <
                                           TRANSLATION_TOLERANCE &&
                                       std::abs(result.translation.y() - expected_translation.y()) <
@@ -331,8 +325,7 @@ TEST_F(LeastSquaresRegressionTest, TestAllPDBPairs) {
                     if (!translation_ok)
                         std::cout << "  Translation mismatch" << std::endl;
                     if (!rms_ok)
-                        std::cout << "  RMS: expected " << expected_rms << ", got " << result.rms
-                                  << std::endl;
+                        std::cout << "  RMS: expected " << expected_rms << ", got " << result.rms << std::endl;
                 }
             }
         } catch (const std::exception& e) {
@@ -342,9 +335,8 @@ TEST_F(LeastSquaresRegressionTest, TestAllPDBPairs) {
 
     EXPECT_GT(total_tested, 0) << "No valid test cases found";
     double pass_rate = static_cast<double>(total_passed) / total_tested * 100.0;
-    EXPECT_GE(pass_rate, 95.0) << "Only " << pass_rate << "% passed (" << total_passed << "/"
-                               << total_tested << ")";
+    EXPECT_GE(pass_rate, 95.0) << "Only " << pass_rate << "% passed (" << total_passed << "/" << total_tested << ")";
 
-    std::cout << "Tested " << total_tested << " cases, " << total_passed << " passed (" << pass_rate
-              << "%)" << std::endl;
+    std::cout << "Tested " << total_tested << " cases, " << total_passed << " passed (" << pass_rate << "%)"
+              << std::endl;
 }

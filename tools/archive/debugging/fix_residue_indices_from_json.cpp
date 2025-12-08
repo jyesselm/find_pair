@@ -55,8 +55,8 @@ int main(int argc, char* argv[]) {
     for (auto& chain : structure.chains()) {
         for (auto& residue : chain.residues()) {
             if (!residue.atoms().empty()) {
-                ResidueKey key = std::make_tuple(residue.name(), residue.chain_id(),
-                                                 residue.seq_num(), residue.insertion());
+                ResidueKey key = std::make_tuple(residue.name(), residue.chain_id(), residue.seq_num(),
+                                                 residue.insertion());
                 residues_by_pdb_props[key] = &residue;
             }
         }
@@ -177,8 +177,8 @@ int main(int argc, char* argv[]) {
         auto it = residues_by_legacy_idx.find(idx);
         if (it != residues_by_legacy_idx.end()) {
             core::Residue* res = it->second;
-            std::cout << "Index " << idx << ": " << res->name() << " Chain " << res->chain_id()
-                      << " Seq " << res->seq_num() << "\n";
+            std::cout << "Index " << idx << ": " << res->name() << " Chain " << res->chain_id() << " Seq "
+                      << res->seq_num() << "\n";
         }
     }
     std::cout << "\n";
@@ -187,8 +187,7 @@ int main(int argc, char* argv[]) {
     std::cout << "STEP 5: Structure ready with fixed indices\n";
     std::cout << "-" << std::string(60, '-') << "\n";
     std::cout << "Structure has " << structure.num_atoms() << " atoms\n";
-    std::cout << "Structure has " << residues_by_legacy_idx.size()
-              << " residues with legacy indices\n";
+    std::cout << "Structure has " << residues_by_legacy_idx.size() << " residues with legacy indices\n";
     std::cout << "\n✅ Indices fixed! Structure is ready for use.\n";
     std::cout << "\nNote: To save the structure, uncomment the PDB writer code.\n";
 

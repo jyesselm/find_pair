@@ -123,8 +123,7 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
     }
 
     if (debug_enabled) {
-        std::cerr << "    Pattern for '" << atom_name << "': '" << aname_pattern << "'"
-                  << std::endl;
+        std::cerr << "    Pattern for '" << atom_name << "': '" << aname_pattern << "'" << std::endl;
     }
 
     // Step 2: Try to match against atomlist (matches legacy lines 4168-4170)
@@ -132,13 +131,11 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
     bool found_match = false;
     for (const auto& [pattern, sym] : atom_list_) {
         // str_pmatch(atomlist[i], aname) checks if atomlist[i] starts with aname
-        if (pattern.length() >= aname_pattern.length() &&
-            pattern.substr(0, aname_pattern.length()) == aname_pattern) {
+        if (pattern.length() >= aname_pattern.length() && pattern.substr(0, aname_pattern.length()) == aname_pattern) {
             my_asym = sym;
             found_match = true;
             if (debug_enabled) {
-                std::cerr << "    Atomlist match: pattern='" << pattern << "' -> sym='" << sym
-                          << "'" << std::endl;
+                std::cerr << "    Atomlist match: pattern='" << pattern << "' -> sym='" << sym << "'" << std::endl;
             }
             break;
         }
@@ -149,8 +146,7 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
         bool unknown = (aname_pattern == ".UNK");
 
         if (debug_enabled) {
-            std::cerr << "    No atomlist match, using fallback (unknown=" << unknown << ")"
-                      << std::endl;
+            std::cerr << "    No atomlist match, using fallback (unknown=" << unknown << ")" << std::endl;
         }
 
         // Fallback case 1: aname[0]!='.' && aname[1]!='.' && aname[2]=='.' && aname[3]=='.'
@@ -159,8 +155,7 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
             my_asym = std::string(" ") + aname_pattern[1]; // Space + second char
         }
         // Fallback case 2: aname[0]=='.' && aname[1]!='.' && !unknown
-        else if (aname_pattern.length() >= 2 && aname_pattern[0] == '.' &&
-                 aname_pattern[1] != '.' && !unknown) {
+        else if (aname_pattern.length() >= 2 && aname_pattern[0] == '.' && aname_pattern[1] != '.' && !unknown) {
             my_asym = std::string(" ") + aname_pattern[1];
         }
         // Fallback case 3: aname[0]=='H' -> " H"
@@ -197,17 +192,15 @@ bool is_base_atom(const std::string& atom_name) {
     }
 
     // Pattern: space, character (not H or P), digit, space
-    if (atom_name.length() >= 4 && atom_name[0] == ' ' && atom_name[1] != 'H' &&
-        atom_name[1] != 'P' && std::isdigit(static_cast<unsigned char>(atom_name[2])) &&
-        atom_name[3] == ' ') {
+    if (atom_name.length() >= 4 && atom_name[0] == ' ' && atom_name[1] != 'H' && atom_name[1] != 'P' &&
+        std::isdigit(static_cast<unsigned char>(atom_name[2])) && atom_name[3] == ' ') {
         return true;
     }
 
     return false;
 }
 
-bool good_hb_atoms(const std::string& atom1, const std::string& atom2,
-                   const std::string& hb_atoms) {
+bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std::string& hb_atoms) {
     // Match legacy good_hbatoms() logic EXACTLY (lines 3864-3877 in cmn_fncs.c)
     bool debug_enabled = should_debug_good_hb_atoms();
 
@@ -220,8 +213,7 @@ bool good_hb_atoms(const std::string& atom1, const std::string& atom2,
     bool atom1_in_po = std::find(PO.begin(), PO.end(), atom1) != PO.end();
     bool atom2_in_po = std::find(PO.begin(), PO.end(), atom2) != PO.end();
     if (debug_enabled) {
-        std::cerr << "  PO check: atom1_in_po=" << atom1_in_po << ", atom2_in_po=" << atom2_in_po
-                  << std::endl;
+        std::cerr << "  PO check: atom1_in_po=" << atom1_in_po << ", atom2_in_po=" << atom2_in_po << std::endl;
     }
     if (atom1_in_po && atom2_in_po) {
         if (debug_enabled) {
@@ -276,8 +268,7 @@ bool good_hb_atoms(const std::string& atom1, const std::string& atom2,
         bool idx1_in_hb = std::find(hb_idx.begin(), hb_idx.end(), idx1) != hb_idx.end();
         bool idx2_in_hb = std::find(hb_idx.begin(), hb_idx.end(), idx2) != hb_idx.end();
         if (debug_enabled) {
-            std::cerr << "  idx1_in_hb: " << idx1_in_hb << ", idx2_in_hb: " << idx2_in_hb
-                      << std::endl;
+            std::cerr << "  idx1_in_hb: " << idx1_in_hb << ", idx2_in_hb: " << idx2_in_hb << std::endl;
         }
         if (idx1_in_hb && idx2_in_hb) {
             if (debug_enabled) {

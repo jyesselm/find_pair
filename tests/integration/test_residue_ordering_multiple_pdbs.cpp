@@ -53,8 +53,7 @@ protected:
      * @return Legacy residue count, or 0 if not found
      */
     int get_legacy_residue_count(const std::string& pdb_id) {
-        std::filesystem::path json_file =
-            std::filesystem::path("data/json_legacy") / (pdb_id + ".json");
+        std::filesystem::path json_file = std::filesystem::path("data/json_legacy") / (pdb_id + ".json");
         if (!std::filesystem::exists(json_file)) {
             return 0;
         }
@@ -65,8 +64,7 @@ protected:
             return 0;
         }
 
-        std::string content((std::istreambuf_iterator<char>(file)),
-                            std::istreambuf_iterator<char>());
+        std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
         // Find all "base_i" values
         int max_base_i = 0;
@@ -141,8 +139,7 @@ TEST_F(ResidueOrderingMultiplePdbsTest, ResidueOrderingWorksForAllPdbs) {
 
         // Verify ordering is consistent (get twice, should be same)
         auto residues2 = get_residues_in_legacy_order(structure);
-        EXPECT_EQ(residues.size(), residues2.size())
-            << "PDB " << pdb_id << " residue count should be consistent";
+        EXPECT_EQ(residues.size(), residues2.size()) << "PDB " << pdb_id << " residue count should be consistent";
 
         // Verify all residues are unique (no duplicates)
         // Note: Some PDBs might have duplicate residue entries, which is a data issue
@@ -159,8 +156,7 @@ TEST_F(ResidueOrderingMultiplePdbsTest, ResidueOrderingWorksForAllPdbs) {
 
         if (has_duplicates) {
             // Log but don't fail - some PDBs have duplicate residue entries
-            std::cout << "[WARNING] PDB " << pdb_id
-                      << " has duplicate residues in ordering (data issue, not a bug)\n";
+            std::cout << "[WARNING] PDB " << pdb_id << " has duplicate residues in ordering (data issue, not a bug)\n";
         }
 
         if (residues.size() > 0 && residues.size() == residues2.size()) {
@@ -183,8 +179,7 @@ TEST_F(ResidueOrderingMultiplePdbsTest, ResidueOrderingWorksForAllPdbs) {
         parser.set_include_waters(true);
         Structure structure = parser.parse_file(test_pdb);
         auto residues = get_residues_in_legacy_order(structure);
-        EXPECT_EQ(residues.size(), 1070u)
-            << "3G8T should have exactly 1070 residues (known test case)";
+        EXPECT_EQ(residues.size(), 1070u) << "3G8T should have exactly 1070 residues (known test case)";
     }
 }
 
@@ -226,12 +221,11 @@ TEST_F(ResidueOrderingMultiplePdbsTest, OrderingIsConsistentForAllPdbs) {
         auto residues2 = get_residues_in_legacy_order(structure);
 
         // Verify consistency
-        ASSERT_EQ(residues1.size(), residues2.size())
-            << "PDB " << pdb_id << " residue count should be consistent";
+        ASSERT_EQ(residues1.size(), residues2.size()) << "PDB " << pdb_id << " residue count should be consistent";
 
         for (size_t i = 0; i < residues1.size(); i++) {
-            EXPECT_EQ(residues1[i], residues2[i]) << "PDB " << pdb_id << " residue at index " << i
-                                                  << " should be consistent across calls";
+            EXPECT_EQ(residues1[i], residues2[i])
+                << "PDB " << pdb_id << " residue at index " << i << " should be consistent across calls";
 
             if (residues1[i] != residues2[i]) {
                 break; // Stop after first mismatch
@@ -296,14 +290,12 @@ TEST_F(ResidueOrderingMultiplePdbsTest, GetResidueByIndexWorksForAllPdbs) {
 
         for (int idx : test_indices) {
             const Residue* res = get_residue_by_legacy_idx(structure, idx);
-            EXPECT_NE(res, nullptr)
-                << "PDB " << pdb_id << " residue at index " << idx << " should exist";
+            EXPECT_NE(res, nullptr) << "PDB " << pdb_id << " residue at index " << idx << " should exist";
 
             if (res != nullptr) {
                 // Verify reverse lookup
                 int reverse_idx = get_legacy_idx_for_residue(structure, res);
-                EXPECT_EQ(reverse_idx, idx)
-                    << "PDB " << pdb_id << " reverse lookup should return original index";
+                EXPECT_EQ(reverse_idx, idx) << "PDB " << pdb_id << " reverse lookup should return original index";
             }
         }
     }
@@ -349,7 +341,6 @@ TEST_F(ResidueOrderingMultiplePdbsTest, ParserSettingsRequiredForLegacyMatch) {
 
     // For 3G8T, verify exact count
     if (pdb_id == "3G8T") {
-        EXPECT_EQ(residues_included.size(), 1070u)
-            << "3G8T with HETATMs and waters should have 1070 residues";
+        EXPECT_EQ(residues_included.size(), 1070u) << "3G8T with HETATMs and waters should have 1070 residues";
     }
 }

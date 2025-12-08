@@ -15,8 +15,7 @@
 namespace x3dna {
 namespace protocols {
 
-AnalyzeProtocol::AnalyzeProtocol(const std::filesystem::path& template_path)
-    : frame_calculator_(template_path) {}
+AnalyzeProtocol::AnalyzeProtocol(const std::filesystem::path& template_path) : frame_calculator_(template_path) {}
 
 void AnalyzeProtocol::execute(const std::filesystem::path& input_file) {
     // Step 1: Parse .inp file
@@ -140,8 +139,7 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
 
                             // Compare origins
                             auto org_diff = current.origin() - original.origin();
-                            double org_dist = std::sqrt(org_diff.x() * org_diff.x() +
-                                                        org_diff.y() * org_diff.y() +
+                            double org_dist = std::sqrt(org_diff.x() * org_diff.x() + org_diff.y() * org_diff.y() +
                                                         org_diff.z() * org_diff.z());
 
                             // Compare rotation matrices (element-wise)
@@ -162,12 +160,10 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
                             } else {
                                 frames_differ++;
                                 if (frames_differ <= 5) { // Report first 5 differences
-                                    std::cerr << "Warning: Frame mismatch for residue "
-                                              << legacy_idx << "\n";
-                                    std::cerr << "  Origin diff: " << org_dist
-                                              << " (tolerance: " << tolerance << ")\n";
-                                    std::cerr << "  Rotation max diff: " << max_rot_diff
-                                              << " (tolerance: " << tolerance << ")\n";
+                                    std::cerr << "Warning: Frame mismatch for residue " << legacy_idx << "\n";
+                                    std::cerr << "  Origin diff: " << org_dist << " (tolerance: " << tolerance << ")\n";
+                                    std::cerr << "  Rotation max diff: " << max_rot_diff << " (tolerance: " << tolerance
+                                              << ")\n";
                                 }
                             }
                         }
@@ -233,8 +229,8 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         const auto& pair2 = base_pairs_[i + 1];
 
         // Verify both pairs have frames
-        if (!pair1.frame1().has_value() || !pair1.frame2().has_value() ||
-            !pair2.frame1().has_value() || !pair2.frame2().has_value()) {
+        if (!pair1.frame1().has_value() || !pair1.frame2().has_value() || !pair2.frame1().has_value() ||
+            !pair2.frame2().has_value()) {
             continue; // Skip pairs without frames
         }
 
@@ -281,8 +277,8 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         const auto& pair1 = base_pairs_.back();
         const auto& pair2 = base_pairs_.front();
 
-        if (pair1.frame1().has_value() && pair1.frame2().has_value() &&
-            pair2.frame1().has_value() && pair2.frame2().has_value()) {
+        if (pair1.frame1().has_value() && pair1.frame2().has_value() && pair2.frame1().has_value() &&
+            pair2.frame2().has_value()) {
             auto step_params = param_calculator_.calculate_step_parameters(pair1, pair2);
             step_parameters_.push_back(step_params);
 

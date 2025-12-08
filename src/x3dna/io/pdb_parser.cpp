@@ -20,8 +20,7 @@ namespace io {
 
 // ParseError implementation
 PdbParser::ParseError::ParseError(const std::string& message, size_t line_number)
-    : std::runtime_error(line_number > 0 ? message + " (line " + std::to_string(line_number) + ")"
-                                         : message),
+    : std::runtime_error(line_number > 0 ? message + " (line " + std::to_string(line_number) + ")" : message),
       line_number_(line_number) {}
 
 // Public methods
@@ -208,8 +207,7 @@ geometry::Vector3D PdbParser::parse_coordinates(const std::string& line) {
 }
 
 // Helper function to parse atom metadata (serial, b-factor, element)
-PdbParser::atom_metadata PdbParser::parse_atom_metadata(const std::string& line,
-                                                        size_t line_number) {
+PdbParser::atom_metadata PdbParser::parse_atom_metadata(const std::string& line, size_t line_number) {
     atom_metadata metadata;
     metadata.atom_serial = 0;
     metadata.b_factor = 0.0;
@@ -248,8 +246,7 @@ PdbParser::atom_metadata PdbParser::parse_atom_metadata(const std::string& line,
 }
 
 // Build atom from parsed data
-core::Atom PdbParser::build_atom_from_parsed_data(const std::string& line, size_t line_number,
-                                                  char atom_type) {
+core::Atom PdbParser::build_atom_from_parsed_data(const std::string& line, size_t line_number, char atom_type) {
     std::string atom_name = parse_atom_name(line);
     std::string residue_name = parse_residue_name(line);
     char chain_id = parse_chain_id(line);
@@ -525,9 +522,8 @@ bool PdbParser::should_keep_atom(const core::Atom& atom) const {
 // Record processing helpers
 void PdbParser::process_atom_record(
     const std::string& line, size_t line_number, int model_number,
-    std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms,
-    int& legacy_atom_idx, int& legacy_residue_idx,
-    std::map<std::tuple<std::string, char, int, char>, int>& legacy_residue_idx_map) {
+    std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms, int& legacy_atom_idx,
+    int& legacy_residue_idx, std::map<std::tuple<std::string, char, int, char>, int>& legacy_residue_idx_map) {
     try {
         core::Atom atom = parse_atom_line(line, line_number);
         atom.set_model_number(model_number);
@@ -542,8 +538,8 @@ void PdbParser::process_atom_record(
             // Assign legacy residue index (1-based) - assign new index when residue changes
             // CRITICAL: Legacy groups by (ResName, ChainID, ResSeq, insertion) - must include
             // ResName! Legacy code: sprintf(bidx, "%3s%c%4ld%c", ResName, ChainID, ResSeq, iCode)
-            auto residue_key = std::make_tuple(atom.residue_name(), atom.chain_id(),
-                                               atom.residue_seq(), atom.insertion());
+            auto residue_key = std::make_tuple(atom.residue_name(), atom.chain_id(), atom.residue_seq(),
+                                               atom.insertion());
             auto residue_it = legacy_residue_idx_map.find(residue_key);
             if (residue_it == legacy_residue_idx_map.end()) {
                 // New residue - assign next residue index
@@ -553,9 +549,7 @@ void PdbParser::process_atom_record(
 
             // Use (residue_name, chain_id, residue_seq, insertion_code) as key to match legacy
             // behavior Legacy uses ResName + ChainID + ResSeq + iCode to identify residues
-            residue_atoms[{atom.residue_name(), atom.chain_id(), atom.residue_seq(),
-                           atom.insertion()}]
-                .push_back(atom);
+            residue_atoms[{atom.residue_name(), atom.chain_id(), atom.residue_seq(), atom.insertion()}].push_back(atom);
         }
     } catch (const ParseError&) {
         // Skip malformed lines
@@ -564,9 +558,8 @@ void PdbParser::process_atom_record(
 
 void PdbParser::process_hetatm_record(
     const std::string& line, size_t line_number, int model_number,
-    std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms,
-    int& legacy_atom_idx, int& legacy_residue_idx,
-    std::map<std::tuple<std::string, char, int, char>, int>& legacy_residue_idx_map) {
+    std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms, int& legacy_atom_idx,
+    int& legacy_residue_idx, std::map<std::tuple<std::string, char, int, char>, int>& legacy_residue_idx_map) {
 
     try {
         core::Atom atom = parse_hetatm_line(line, line_number);
@@ -595,8 +588,8 @@ void PdbParser::process_hetatm_record(
             // Assign legacy residue index (1-based) - assign new index when residue changes
             // CRITICAL: Legacy groups by (ResName, ChainID, ResSeq, insertion) - must include
             // ResName! Legacy code: sprintf(bidx, "%3s%c%4ld%c", ResName, ChainID, ResSeq, iCode)
-            auto residue_key = std::make_tuple(atom.residue_name(), atom.chain_id(),
-                                               atom.residue_seq(), atom.insertion());
+            auto residue_key = std::make_tuple(atom.residue_name(), atom.chain_id(), atom.residue_seq(),
+                                               atom.insertion());
             auto residue_it = legacy_residue_idx_map.find(residue_key);
             if (residue_it == legacy_residue_idx_map.end()) {
                 // New residue - assign next residue index
@@ -606,9 +599,7 @@ void PdbParser::process_hetatm_record(
 
             // Use (residue_name, chain_id, residue_seq, insertion_code) as key to match legacy
             // behavior Legacy uses ResName + ChainID + ResSeq + iCode to identify residues
-            residue_atoms[{atom.residue_name(), atom.chain_id(), atom.residue_seq(),
-                           atom.insertion()}]
-                .push_back(atom);
+            residue_atoms[{atom.residue_name(), atom.chain_id(), atom.residue_seq(), atom.insertion()}].push_back(atom);
         }
     } catch (const ParseError&) {
         // Skip malformed lines
@@ -616,8 +607,7 @@ void PdbParser::process_hetatm_record(
 }
 
 // Model/END record handling
-void PdbParser::handle_model_record(const std::string& line, int& current_model_number,
-                                    bool& /* all_models */) {
+void PdbParser::handle_model_record(const std::string& line, int& current_model_number, bool& /* all_models */) {
     if (line.length() > 10) {
         try {
             std::string model_str = line.substr(6, 4);
@@ -634,8 +624,8 @@ void PdbParser::handle_model_record(const std::string& line, int& current_model_
 bool PdbParser::handle_end_record(const std::string& line, bool all_models) {
     // Optimized: Use direct character comparison instead of substr
     // If it's ENDMDL and we're processing all models, continue to next model
-    if (all_models && line.length() >= 6 && line[0] == 'E' && line[1] == 'N' && line[2] == 'D' &&
-        line[3] == 'M' && line[4] == 'D' && line[5] == 'L') {
+    if (all_models && line.length() >= 6 && line[0] == 'E' && line[1] == 'N' && line[2] == 'D' && line[3] == 'M' &&
+        line[4] == 'D' && line[5] == 'L') {
         return false; // Don't stop, continue
     }
     // Otherwise, stop at first END
@@ -645,8 +635,7 @@ bool PdbParser::handle_end_record(const std::string& line, bool all_models) {
 // Structure building - optimized for speed
 core::Structure PdbParser::build_structure_from_residues(
     const std::string& pdb_id,
-    const std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>&
-        residue_atoms) const {
+    const std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms) const {
 
     core::Structure structure(pdb_id);
     std::map<char, core::Chain> chains;
@@ -659,9 +648,8 @@ core::Structure PdbParser::build_structure_from_residues(
         auto [residue_name, chain_id, residue_seq, insertion_code] = key;
 
         // Use ResidueFactory to create residue with all properties initialized
-        core::Residue residue = core::ResidueFactory::create(
-            residue_name, residue_seq, chain_id, insertion_code, atoms
-        );
+        core::Residue residue = core::ResidueFactory::create(residue_name, residue_seq, chain_id, insertion_code,
+                                                             atoms);
 
         // Use try_emplace for efficiency (C++17) - avoids unnecessary chain copy
         auto [it, inserted] = chains.try_emplace(chain_id, chain_id);
@@ -716,10 +704,9 @@ core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& p
         // Fast prefix checks using direct character comparison instead of substr
         if (line.length() >= 4) {
             // ATOM records - most common case first
-            if (line[0] == 'A' && line[1] == 'T' && line[2] == 'O' && line[3] == 'M' &&
-                line.length() >= 52) {
-                process_atom_record(line, line_number, current_model_number, residue_atoms,
-                                    legacy_atom_idx, legacy_residue_idx, legacy_residue_idx_map);
+            if (line[0] == 'A' && line[1] == 'T' && line[2] == 'O' && line[3] == 'M' && line.length() >= 52) {
+                process_atom_record(line, line_number, current_model_number, residue_atoms, legacy_atom_idx,
+                                    legacy_residue_idx, legacy_residue_idx_map);
                 continue;
             }
 
@@ -732,24 +719,23 @@ core::Structure PdbParser::parse_impl(std::istream& stream, const std::string& p
             }
 
             // HETATM records
-            if (line.length() >= 6 && line[0] == 'H' && line[1] == 'E' && line[2] == 'T' &&
-                line[3] == 'A' && line[4] == 'T' && line[5] == 'M' && line.length() >= 52) {
-                process_hetatm_record(line, line_number, current_model_number, residue_atoms,
-                                      legacy_atom_idx, legacy_residue_idx, legacy_residue_idx_map);
+            if (line.length() >= 6 && line[0] == 'H' && line[1] == 'E' && line[2] == 'T' && line[3] == 'A' &&
+                line[4] == 'T' && line[5] == 'M' && line.length() >= 52) {
+                process_hetatm_record(line, line_number, current_model_number, residue_atoms, legacy_atom_idx,
+                                      legacy_residue_idx, legacy_residue_idx_map);
                 continue;
             }
 
             // MODEL records
-            if (line.length() >= 6 && line[0] == 'M' && line[1] == 'O' && line[2] == 'D' &&
-                line[3] == 'E' && line[4] == 'L' && line[5] == ' ') {
+            if (line.length() >= 6 && line[0] == 'M' && line[1] == 'O' && line[2] == 'D' && line[3] == 'E' &&
+                line[4] == 'L' && line[5] == ' ') {
                 handle_model_record(line, current_model_number, all_models);
                 continue;
             }
 
             // HEADER records
-            if (line.length() >= 6 && line[0] == 'H' && line[1] == 'E' && line[2] == 'A' &&
-                line[3] == 'D' && line[4] == 'E' && line[5] == 'R' && pdb_id.empty() &&
-                line.length() >= 66) {
+            if (line.length() >= 6 && line[0] == 'H' && line[1] == 'E' && line[2] == 'A' && line[3] == 'D' &&
+                line[4] == 'E' && line[5] == 'R' && pdb_id.empty() && line.length() >= 66) {
                 std::string header_id = line.substr(62, 4);
                 header_id.erase(0, header_id.find_first_not_of(" \t"));
                 header_id.erase(header_id.find_last_not_of(" \t") + 1);

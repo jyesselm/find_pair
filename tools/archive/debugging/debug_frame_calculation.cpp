@@ -24,8 +24,7 @@ void print_residue_info(const Residue& residue) {
     std::cout << "  Name: " << residue.name() << "\n";
     std::cout << "  Chain: " << residue.chain_id() << "\n";
     std::cout << "  Sequence: " << residue.seq_num() << "\n";
-    std::cout << "  Insertion: "
-              << (residue.insertion() == ' ' ? "(none)" : std::string(1, residue.insertion()))
+    std::cout << "  Insertion: " << (residue.insertion() == ' ' ? "(none)" : std::string(1, residue.insertion()))
               << "\n";
     std::cout << "  Residue Type: " << static_cast<int>(residue.residue_type()) << "\n";
     std::cout << "  One Letter: " << residue.one_letter_code() << "\n";
@@ -34,9 +33,8 @@ void print_residue_info(const Residue& residue) {
 
     std::cout << "\n  Atoms:\n";
     for (const auto& atom : residue.atoms()) {
-        std::cout << "    " << atom.name() << " at (" << std::fixed << std::setprecision(3)
-                  << atom.position().x() << ", " << atom.position().y() << ", "
-                  << atom.position().z() << ")\n";
+        std::cout << "    " << atom.name() << " at (" << std::fixed << std::setprecision(3) << atom.position().x()
+                  << ", " << atom.position().y() << ", " << atom.position().z() << ")\n";
     }
 }
 
@@ -45,8 +43,7 @@ void check_ring_atoms(const Residue& residue) {
     std::cout << "Ring Atom Detection\n";
     std::cout << "========================================\n";
 
-    static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
-                                                               " N1 ", " C6 ", " C5 "};
+    static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
     static const std::vector<std::string> purine_ring_atoms = {" N7 ", " C8 ", " N9 "};
 
     int ring_count = 0;
@@ -74,8 +71,7 @@ void check_ring_atoms(const Residue& residue) {
     }
 
     std::cout << "\n  Summary:\n";
-    std::cout << "    Common ring atoms found: " << ring_count << " / " << common_ring_atoms.size()
-              << "\n";
+    std::cout << "    Common ring atoms found: " << ring_count << " / " << common_ring_atoms.size() << "\n";
     std::cout << "    Has purine atoms: " << (has_purine ? "yes" : "no") << "\n";
     std::cout << "    Sufficient for nucleotide: " << (ring_count >= 3 ? "yes" : "no") << "\n";
 }
@@ -91,8 +87,7 @@ void debug_frame_calculation(const Residue& residue, BaseFrameCalculator& calcul
     FrameCalculationResult result = calculator.calculate_frame(mutable_residue);
 
     std::cout << "  Is Valid: " << (result.is_valid ? "yes" : "no") << "\n";
-    std::cout << "  Template File: "
-              << (result.template_file.empty() ? "(none)" : result.template_file) << "\n";
+    std::cout << "  Template File: " << (result.template_file.empty() ? "(none)" : result.template_file) << "\n";
     std::cout << "  RMS Fit: " << std::fixed << std::setprecision(6) << result.rms_fit << "\n";
     std::cout << "  Matched Atoms: " << result.num_matched << "\n";
 
@@ -104,9 +99,8 @@ void debug_frame_calculation(const Residue& residue, BaseFrameCalculator& calcul
     }
 
     if (result.is_valid) {
-        std::cout << "\n  Frame Origin: (" << std::fixed << std::setprecision(6)
-                  << result.frame.origin().x() << ", " << result.frame.origin().y() << ", "
-                  << result.frame.origin().z() << ")\n";
+        std::cout << "\n  Frame Origin: (" << std::fixed << std::setprecision(6) << result.frame.origin().x() << ", "
+                  << result.frame.origin().y() << ", " << result.frame.origin().z() << ")\n";
 
         auto rot = result.frame.rotation().as_array();
         std::cout << "  Rotation Matrix:\n";
@@ -125,8 +119,7 @@ void debug_frame_calculation(const Residue& residue, BaseFrameCalculator& calcul
         if (result.template_file.empty()) {
             std::cout << "  Reason: Template file not found or couldn't be loaded\n";
         } else if (result.num_matched < 3) {
-            std::cout << "  Reason: Insufficient atom matching (" << result.num_matched
-                      << " < 3 required)\n";
+            std::cout << "  Reason: Insufficient atom matching (" << result.num_matched << " < 3 required)\n";
         } else {
             std::cout << "  Reason: Unknown (template loaded, atoms matched, but still failed)\n";
         }

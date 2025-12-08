@@ -34,9 +34,7 @@ int main(int argc, char* argv[]) {
     std::string pdb_file = argv[1];
     int target_idx1 = std::stoi(argv[2]);
     int target_idx2 = (argc > 3 && std::isdigit(argv[3][0])) ? std::stoi(argv[3]) : -1;
-    std::string pdb_id = (argc > 3 && !std::isdigit(argv[argc - 1][0])) ? argv[argc - 1]
-                         : (argc > 4)                                   ? argv[4]
-                                                                        : "";
+    std::string pdb_id = (argc > 3 && !std::isdigit(argv[argc - 1][0])) ? argv[argc - 1] : (argc > 4) ? argv[4] : "";
 
     if (pdb_id.empty()) {
         // Extract PDB ID from filename
@@ -88,8 +86,8 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         target_residues.push_back(it->second);
-        std::cout << "Found residue " << idx << ": " << it->second->name() << " (Chain "
-                  << it->second->chain_id() << ", Seq " << it->second->seq_num() << ")\n";
+        std::cout << "Found residue " << idx << ": " << it->second->name() << " (Chain " << it->second->chain_id()
+                  << ", Seq " << it->second->seq_num() << ")\n";
     }
 
     // Step 2: Calculate frames
@@ -109,9 +107,8 @@ int main(int argc, char* argv[]) {
         if (frame_result.is_valid) {
             std::cout << "Frame calculated for " << residue->name() << " (legacy_idx "
                       << residue->atoms()[0].legacy_residue_idx() << ")\n";
-            std::cout << "  Origin: [" << frame_result.frame.origin().x() << ", "
-                      << frame_result.frame.origin().y() << ", " << frame_result.frame.origin().z()
-                      << "]\n";
+            std::cout << "  Origin: [" << frame_result.frame.origin().x() << ", " << frame_result.frame.origin().y()
+                      << ", " << frame_result.frame.origin().z() << "]\n";
             std::cout << "  RMS fit: " << frame_result.rms_fit << "\n";
             std::cout << "  Matched atoms: " << frame_result.num_matched << "\n";
         } else {
@@ -140,16 +137,14 @@ int main(int argc, char* argv[]) {
         char base_type = residue->one_letter_code();
 
         // Record base_frame_calc
-        writer.record_base_frame_calc(record_idx, base_type, frame_result.template_file,
-                                      frame_result.rms_fit, frame_result.matched_atoms,
-                                      residue->name(), residue->chain_id(), residue->seq_num(),
-                                      residue->insertion());
+        writer.record_base_frame_calc(record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
+                                      frame_result.matched_atoms, residue->name(), residue->chain_id(),
+                                      residue->seq_num(), residue->insertion());
 
         // Record ls_fitting
         writer.record_ls_fitting(record_idx, frame_result.num_matched, frame_result.rms_fit,
-                                 frame_result.rotation_matrix, frame_result.translation,
-                                 residue->name(), residue->chain_id(), residue->seq_num(),
-                                 residue->insertion());
+                                 frame_result.rotation_matrix, frame_result.translation, residue->name(),
+                                 residue->chain_id(), residue->seq_num(), residue->insertion());
 
         // Create frame_calc record manually (need matched coordinates)
         // For now, we'll create a simplified version
@@ -169,15 +164,13 @@ int main(int argc, char* argv[]) {
         frame_calc_record["num_matched_atoms"] = frame_result.num_matched;
 
         // Frame origin and rotation
-        frame_calc_record["frame_origin"] =
-            json::array({frame_result.frame.origin().x(), frame_result.frame.origin().y(),
-                         frame_result.frame.origin().z()});
+        frame_calc_record["frame_origin"] = json::array(
+            {frame_result.frame.origin().x(), frame_result.frame.origin().y(), frame_result.frame.origin().z()});
 
         auto rot = frame_result.frame.rotation();
-        frame_calc_record["rotation_matrix"] =
-            json::array({json::array({rot.at(0, 0), rot.at(0, 1), rot.at(0, 2)}),
-                         json::array({rot.at(1, 0), rot.at(1, 1), rot.at(1, 2)}),
-                         json::array({rot.at(2, 0), rot.at(2, 1), rot.at(2, 2)})});
+        frame_calc_record["rotation_matrix"] = json::array({json::array({rot.at(0, 0), rot.at(0, 1), rot.at(0, 2)}),
+                                                            json::array({rot.at(1, 0), rot.at(1, 1), rot.at(1, 2)}),
+                                                            json::array({rot.at(2, 0), rot.at(2, 1), rot.at(2, 2)})});
 
         output["calculations"].push_back(frame_calc_record);
     }
@@ -192,8 +185,7 @@ int main(int argc, char* argv[]) {
     std::ofstream out(debug_file);
     out << output.dump(2) << std::endl;
     std::cout << "\nDebug JSON written to: " << debug_file << "\n";
-    std::cout << "Standard JSON written to: " << output_dir << "/base_frame_calc/" << pdb_id
-              << ".json\n";
+    std::cout << "Standard JSON written to: " << output_dir << "/base_frame_calc/" << pdb_id << ".json\n";
 
     return 0;
 }

@@ -62,8 +62,7 @@ public:
      * @param json JSON object
      * @return Vector of reference frames with residue indices
      */
-    static std::vector<std::pair<size_t, core::ReferenceFrame>>
-    read_ref_frames(const nlohmann::json& json);
+    static std::vector<std::pair<size_t, core::ReferenceFrame>> read_ref_frames(const nlohmann::json& json);
 
     /**
      * @brief Find calculation records by type
@@ -71,8 +70,7 @@ public:
      * @param record_type Type string (e.g., "pdb_atoms", "base_pair")
      * @return Vector of matching records
      */
-    static std::vector<nlohmann::json> find_records_by_type(const nlohmann::json& json,
-                                                            const std::string& record_type);
+    static std::vector<nlohmann::json> find_records_by_type(const nlohmann::json& json, const std::string& record_type);
 
 private:
     /**

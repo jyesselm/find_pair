@@ -29,8 +29,7 @@ std::vector<BasePair> BasePairFinder::find_pairs(const Structure& structure) con
     return find_pairs_with_recording(const_cast<Structure&>(structure), nullptr);
 }
 
-std::vector<BasePair> BasePairFinder::find_pairs_with_recording(Structure& structure,
-                                                                io::JsonWriter* writer) const {
+std::vector<BasePair> BasePairFinder::find_pairs_with_recording(Structure& structure, io::JsonWriter* writer) const {
     switch (strategy_) {
         case PairFindingStrategy::BEST_PAIR:
             return find_best_pairs(structure, writer);
@@ -44,11 +43,9 @@ std::vector<BasePair> BasePairFinder::find_pairs_with_recording(Structure& struc
     return {};
 }
 
-std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
-                                                      io::JsonWriter* writer) const {
+std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::JsonWriter* writer) const {
     std::vector<BasePair> base_pairs;
-    std::vector<std::pair<size_t, size_t>>
-        selected_pairs_legacy_idx; // Store legacy indices for recording
+    std::vector<std::pair<size_t, size_t>> selected_pairs_legacy_idx; // Store legacy indices for recording
 
     // Build mapping from legacy residue index to residue pointer
     // Use the legacy_residue_idx already stored on atoms (set during PDB parsing, NOT from JSON)
@@ -119,12 +116,10 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
 
 // DEBUG: Log validation for specific pair to trace bug
 #ifdef DEBUG_PAIR_SELECTION
-            if ((legacy_idx1 == 3844 && legacy_idx2 == 3865) ||
-                (legacy_idx1 == 3865 && legacy_idx2 == 3844)) {
-                std::cerr << "[DEBUG] Phase 1 validation for (" << legacy_idx1 << ", "
-                          << legacy_idx2 << "): is_valid=" << result.is_valid
-                          << ", d_v_check=" << result.d_v_check << ", d_v=" << result.d_v
-                          << ", overlap_check=" << result.overlap_check << "\n";
+            if ((legacy_idx1 == 3844 && legacy_idx2 == 3865) || (legacy_idx1 == 3865 && legacy_idx2 == 3844)) {
+                std::cerr << "[DEBUG] Phase 1 validation for (" << legacy_idx1 << ", " << legacy_idx2
+                          << "): is_valid=" << result.is_valid << ", d_v_check=" << result.d_v_check
+                          << ", d_v=" << result.d_v << ", overlap_check=" << result.overlap_check << "\n";
             }
 #endif
 
@@ -173,8 +168,7 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
         // order
         for (int legacy_idx1 = 1; legacy_idx1 <= max_legacy_idx; ++legacy_idx1) {
             // Skip if already matched (matches legacy matched_idx[i] check)
-            if (legacy_idx1 >= static_cast<int>(matched_indices.size()) ||
-                matched_indices[legacy_idx1]) {
+            if (legacy_idx1 >= static_cast<int>(matched_indices.size()) || matched_indices[legacy_idx1]) {
                 continue;
             }
 
@@ -193,9 +187,8 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
             }
 
             // Find best partner for this residue (using legacy 1-based index from PDB parsing)
-            auto best_partner =
-                find_best_partner(legacy_idx1, structure, matched_indices, residue_by_legacy_idx,
-                                  phase1_validation_results, phase1_bp_type_ids, writer);
+            auto best_partner = find_best_partner(legacy_idx1, structure, matched_indices, residue_by_legacy_idx,
+                                                  phase1_validation_results, phase1_bp_type_ids, writer);
 
             if (!best_partner.has_value()) {
                 continue;
@@ -205,18 +198,15 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
             const ValidationResult& result1 = best_partner->second;
 
             // Check if res_idx2's best partner is res_idx1 (mutual best match)
-            auto partner_of_partner =
-                find_best_partner(legacy_idx2, structure, matched_indices, residue_by_legacy_idx,
-                                  phase1_validation_results, phase1_bp_type_ids, writer);
+            auto partner_of_partner = find_best_partner(legacy_idx2, structure, matched_indices, residue_by_legacy_idx,
+                                                        phase1_validation_results, phase1_bp_type_ids, writer);
 
-            bool is_mutual =
-                (partner_of_partner.has_value() && partner_of_partner->first == legacy_idx1);
+            bool is_mutual = (partner_of_partner.has_value() && partner_of_partner->first == legacy_idx1);
 
             if (is_mutual) {
                 // Mutual best match found - get second residue first
                 auto res2_it = residue_by_legacy_idx.find(legacy_idx2);
-                const Residue* res2_ptr =
-                    (res2_it != residue_by_legacy_idx.end()) ? res2_it->second : nullptr;
+                const Residue* res2_ptr = (res2_it != residue_by_legacy_idx.end()) ? res2_it->second : nullptr;
 
                 if (!res2_ptr) {
                     continue; // Safety check
@@ -226,9 +216,9 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
                 // CRITICAL: Use Phase 1 validation result instead of re-validating
                 // Re-validating can give different results due to floating-point precision
                 // or state changes. Phase 1 result is the source of truth.
-                std::pair<int, int> normalized_pair_check =
-                    (legacy_idx1 < legacy_idx2) ? std::make_pair(legacy_idx1, legacy_idx2)
-                                                : std::make_pair(legacy_idx2, legacy_idx1);
+                std::pair<int, int> normalized_pair_check = (legacy_idx1 < legacy_idx2)
+                                                                ? std::make_pair(legacy_idx1, legacy_idx2)
+                                                                : std::make_pair(legacy_idx2, legacy_idx1);
 
                 auto phase1_check_it = phase1_validation_results.find(normalized_pair_check);
                 if (phase1_check_it == phase1_validation_results.end()) {
@@ -242,8 +232,8 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
                 if (!phase1_check_it->second.is_valid) {
                     // Pair was invalid in Phase 1 - must not select it
                     // This is a safety check to prevent invalid pairs from being selected
-                    std::cerr << "Error: Attempted to select invalid pair (" << legacy_idx1 << ", "
-                              << legacy_idx2 << "). is_valid=" << phase1_check_it->second.is_valid
+                    std::cerr << "Error: Attempted to select invalid pair (" << legacy_idx1 << ", " << legacy_idx2
+                              << "). is_valid=" << phase1_check_it->second.is_valid
                               << ", d_v_check=" << phase1_check_it->second.d_v_check
                               << ", d_v=" << phase1_check_it->second.d_v << "\n";
                     continue;
@@ -300,20 +290,16 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
                 // Record mutual best decision (after selection)
                 if (writer) {
                     int best_j_for_i = legacy_idx2;
-                    int best_i_for_j =
-                        partner_of_partner.has_value() ? partner_of_partner->first : 0;
-                    writer->record_mutual_best_decision(legacy_idx1, legacy_idx2, best_j_for_i,
-                                                        best_i_for_j, is_mutual,
+                    int best_i_for_j = partner_of_partner.has_value() ? partner_of_partner->first : 0;
+                    writer->record_mutual_best_decision(legacy_idx1, legacy_idx2, best_j_for_i, best_i_for_j, is_mutual,
                                                         true); // was_selected = true
                 }
             } else {
                 // Record mutual best decision (not selected)
                 if (writer) {
                     int best_j_for_i = legacy_idx2;
-                    int best_i_for_j =
-                        partner_of_partner.has_value() ? partner_of_partner->first : 0;
-                    writer->record_mutual_best_decision(legacy_idx1, legacy_idx2, best_j_for_i,
-                                                        best_i_for_j, is_mutual,
+                    int best_i_for_j = partner_of_partner.has_value() ? partner_of_partner->first : 0;
+                    writer->record_mutual_best_decision(legacy_idx1, legacy_idx2, best_j_for_i, best_i_for_j, is_mutual,
                                                         false); // was_selected = false
                 }
             }
@@ -330,8 +316,8 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure,
         if (writer) {
             // Use pairs found in THIS iteration only (not all pairs found so far)
             writer->record_iteration_state(iteration_num, num_matched_curr,
-                                           static_cast<int>(matched_indices.size() - 1),
-                                           matched_indices, pairs_found_this_iteration);
+                                           static_cast<int>(matched_indices.size() - 1), matched_indices,
+                                           pairs_found_this_iteration);
         }
 
     } while (num_matched_curr > num_matched_prev);
@@ -408,8 +394,7 @@ std::vector<BasePair> BasePairFinder::find_all_pairs(const Structure& structure)
 std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partner(
     int legacy_idx1,                  // Legacy 1-based residue index
     const Structure& /* structure */, // Unused, kept for API compatibility
-    const std::vector<bool>& matched_indices,
-    const std::map<int, const Residue*>& residue_by_legacy_idx,
+    const std::vector<bool>& matched_indices, const std::map<int, const Residue*>& residue_by_legacy_idx,
     const std::map<std::pair<int, int>, ValidationResult>& phase1_validation_results,
     const std::map<std::pair<int, int>, int>& phase1_bp_type_ids, // Store bp_type_id from Phase 1
     io::JsonWriter* writer) const {
@@ -457,8 +442,7 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             matched_indices[legacy_idx2]) {
             is_eligible = false;
             if (collect_candidates) {
-                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score,
-                                                     candidate_bp_type_id));
+                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
             }
             continue;
         }
@@ -468,8 +452,7 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
         if (it == residue_by_legacy_idx.end() || !it->second) {
             is_eligible = false;
             if (collect_candidates) {
-                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score,
-                                                     candidate_bp_type_id));
+                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
             }
             continue; // Skip if residue doesn't exist (equivalent to RY[j] < 0)
         }
@@ -482,17 +465,15 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
         if (!is_nucleotide(*residue) || !residue->reference_frame().has_value()) {
             is_eligible = false;
             if (collect_candidates) {
-                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score,
-                                                     candidate_bp_type_id));
+                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
             }
             continue; // Skip non-nucleotide residues (RY[j] < 0 equivalent)
         }
 
         // Validate pair - use Phase 1 validation result if available
         // This ensures consistency: if Phase 1 said pair is invalid, don't select it
-        std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2)
-                                                  ? std::make_pair(legacy_idx1, legacy_idx2)
-                                                  : std::make_pair(legacy_idx2, legacy_idx1);
+        std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2) ? std::make_pair(legacy_idx1, legacy_idx2)
+                                                                          : std::make_pair(legacy_idx2, legacy_idx1);
 
         ValidationResult result;
         auto phase1_it = phase1_validation_results.find(normalized_pair);
@@ -504,17 +485,15 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             if (!result.is_valid) {
                 // Record eligible but invalid candidate
                 if (collect_candidates) {
-                    candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score,
-                                                         candidate_bp_type_id));
+                    candidates.push_back(
+                        std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
                 }
 // DEBUG: Log when invalid pair is being skipped (can help identify bugs)
 #ifdef DEBUG_PAIR_SELECTION
-                if ((legacy_idx1 == 3844 && legacy_idx2 == 3865) ||
-                    (legacy_idx1 == 3865 && legacy_idx2 == 3844)) {
-                    std::cerr << "[DEBUG] Skipping invalid pair (" << legacy_idx1 << ", "
-                              << legacy_idx2 << "): is_valid=" << result.is_valid
-                              << ", d_v_check=" << result.d_v_check << ", d_v=" << result.d_v
-                              << "\n";
+                if ((legacy_idx1 == 3844 && legacy_idx2 == 3865) || (legacy_idx1 == 3865 && legacy_idx2 == 3844)) {
+                    std::cerr << "[DEBUG] Skipping invalid pair (" << legacy_idx1 << ", " << legacy_idx2
+                              << "): is_valid=" << result.is_valid << ", d_v_check=" << result.d_v_check
+                              << ", d_v=" << result.d_v << "\n";
                 }
 #endif
                 continue; // Pair was invalid in Phase 1, skip it
@@ -531,8 +510,8 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             if (!result.is_valid) {
                 // Record eligible but invalid candidate
                 if (collect_candidates) {
-                    candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score,
-                                                         candidate_bp_type_id));
+                    candidates.push_back(
+                        std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
                 }
                 continue;
             }
@@ -574,8 +553,7 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             candidate_bp_type_id = bp_type_id;
 
             if (collect_candidates) {
-                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score,
-                                                     candidate_bp_type_id));
+                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
             }
 
             if (adjusted_quality_score < best_score) {
@@ -588,24 +566,21 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
     // Record candidates for JSON output
     if (writer && collect_candidates) {
         int best_j = best_result.has_value() ? best_result->first : 0;
-        writer->record_best_partner_candidates(
-            legacy_idx1, candidates, best_j,
-            best_score < std::numeric_limits<double>::max() ? best_score : 0.0);
+        writer->record_best_partner_candidates(legacy_idx1, candidates, best_j,
+                                               best_score < std::numeric_limits<double>::max() ? best_score : 0.0);
     }
 
     return best_result;
 }
 
-void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
-                                               const core::Residue* res1, const core::Residue* res2,
-                                               const ValidationResult& result,
+void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2, const core::Residue* res1,
+                                               const core::Residue* res2, const ValidationResult& result,
                                                io::JsonWriter* writer) const {
     // Check if passes distance/angle checks (cdns) - matches legacy behavior
     // Legacy records validation if cdns is true, regardless of overlap
     // BUT legacy also records validation for pairs that FAIL cdns (for debugging)
     // See legacy check_pair: it records validation in both the cdns block AND the else block
-    bool passes_cdns =
-        result.distance_check && result.d_v_check && result.plane_angle_check && result.dNN_check;
+    bool passes_cdns = result.distance_check && result.d_v_check && result.plane_angle_check && result.dNN_check;
 
     if (passes_cdns) {
         // Use 0-based indices for consistency with base_frame_calc
@@ -631,9 +606,8 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
         // Only record pair_validation for valid pairs to save disk space
         // (Recording all N² pairs generates 17GB+ of data)
         if (result.is_valid) {
-        writer->record_pair_validation(base_i, base_j, result.is_valid, bp_type_id, result.dir_x,
-                                       result.dir_y, result.dir_z, rtn_val,
-                                       validator_.parameters());
+            writer->record_pair_validation(base_i, base_j, result.is_valid, bp_type_id, result.dir_x, result.dir_y,
+                                           result.dir_z, rtn_val, validator_.parameters());
         }
     }
 
@@ -647,8 +621,8 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
         // Use 0-based indices for consistency with base_frame_calc
         size_t base_i = static_cast<size_t>(legacy_idx1 - 1);
         size_t base_j = static_cast<size_t>(legacy_idx2 - 1);
-        writer->record_distance_checks(base_i, base_j, result.dorg, result.dNN, result.plane_angle,
-                                       result.d_v, result.overlap_area);
+        writer->record_distance_checks(base_i, base_j, result.dorg, result.dNN, result.plane_angle, result.d_v,
+                                       result.overlap_area);
     }
 
     // Record hydrogen bonds if present
@@ -668,7 +642,7 @@ double BasePairFinder::adjust_pair_quality(const std::vector<core::hydrogen_bond
     //
     // Legacy skips h-bonds with type '*' (num_list[k][0] == 1)
     // In modern, we have three types:
-    //   '-' = standard (good) h-bond 
+    //   '-' = standard (good) h-bond
     //   '*' = non-standard h-bond (SKIP)
     //   ' ' = initially unvalidated but can still be counted
     // Legacy ONLY skips '*' types, all others (including ' ') are counted
@@ -698,8 +672,7 @@ double BasePairFinder::adjust_pair_quality(const std::vector<core::hydrogen_bond
     }
 }
 
-int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res2,
-                                         const ValidationResult& result,
+int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res2, const ValidationResult& result,
                                          double /* quality_score */) const {
     // Match legacy check_wc_wobble_pair logic
     // Legacy: *bpid = -1 initially in calculate_more_bppars
@@ -727,13 +700,10 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
 // This might indicate frames aren't set on residue objects
 // DEBUG: Log when frames are missing (can be removed after debugging)
 #ifdef DEBUG_BP_TYPE_ID
-            std::cerr << "[DEBUG] calculate_bp_type_id: Frames missing for pair (" << res1->name()
-                      << " " << res1->seq_num() << ", " << res2->name() << " " << res2->seq_num()
-                      << ")\n";
-            std::cerr << "  res1->reference_frame().has_value(): "
-                      << res1->reference_frame().has_value() << "\n";
-            std::cerr << "  res2->reference_frame().has_value(): "
-                      << res2->reference_frame().has_value() << "\n";
+            std::cerr << "[DEBUG] calculate_bp_type_id: Frames missing for pair (" << res1->name() << " "
+                      << res1->seq_num() << ", " << res2->name() << " " << res2->seq_num() << ")\n";
+            std::cerr << "  res1->reference_frame().has_value(): " << res1->reference_frame().has_value() << "\n";
+            std::cerr << "  res2->reference_frame().has_value(): " << res2->reference_frame().has_value() << "\n";
 #endif
             return bp_type_id; // Keep -1 if frames not available
         }
@@ -758,18 +728,14 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
         }
 
         // Use frame2 first, frame1 second (matches legacy order)
-        core::BasePairStepParameters params =
-            param_calculator_.calculate_step_parameters(frame2, frame1);
+        core::BasePairStepParameters params = param_calculator_.calculate_step_parameters(frame2, frame1);
 
 // DEBUG: Log step parameters for debugging (can be removed after debugging)
 #ifdef DEBUG_BP_TYPE_ID
-        std::cerr << "[DEBUG] calculate_bp_type_id: Step parameters for pair (" << res1->name()
-                  << " " << res1->seq_num() << ", " << res2->name() << " " << res2->seq_num()
-                  << "):\n";
-        std::cerr << "  shift=" << params.shift << ", slide=" << params.slide
-                  << ", rise=" << params.rise << "\n";
-        std::cerr << "  tilt=" << params.tilt << ", roll=" << params.roll
-                  << ", twist=" << params.twist << "\n";
+        std::cerr << "[DEBUG] calculate_bp_type_id: Step parameters for pair (" << res1->name() << " "
+                  << res1->seq_num() << ", " << res2->name() << " " << res2->seq_num() << "):\n";
+        std::cerr << "  shift=" << params.shift << ", slide=" << params.slide << ", rise=" << params.rise << "\n";
+        std::cerr << "  tilt=" << params.tilt << ", roll=" << params.roll << ", twist=" << params.twist << "\n";
 #endif
 
         // CRITICAL: Legacy has a bug - it passes wrong parameters to check_wc_wobble_pair!
@@ -794,8 +760,7 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
 
         // Implement check_wc_wobble_pair logic
         // WC_LIST: "XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"
-        static const std::vector<std::string> WC_LIST = {"XX", "AT", "AU", "TA", "UA",
-                                                         "GC", "IC", "CG", "CI"};
+        static const std::vector<std::string> WC_LIST = {"XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"};
 
         // Check stretch and opening thresholds (matches legacy: fabs(stretch) > 2.0 ||
         // fabs(opening) > 60) CRITICAL: Legacy uses fabs(opening) > 60 (not >=), and opening is in
@@ -819,10 +784,10 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
 #ifdef DEBUG_BP_TYPE_ID
                     std::cerr << "[DEBUG] calculate_bp_type_id: Assigned bp_type_id=2 "
                                  "(Watson-Crick) for pair ("
-                              << res1->name() << " " << res1->seq_num() << ", " << res2->name()
-                              << " " << res2->seq_num() << ")\n";
-                    std::cerr << "  bp_type=" << bp_type << ", shear=" << shear
-                              << ", stretch=" << stretch << ", opening=" << opening << "\n";
+                              << res1->name() << " " << res1->seq_num() << ", " << res2->name() << " "
+                              << res2->seq_num() << ")\n";
+                    std::cerr << "  bp_type=" << bp_type << ", shear=" << shear << ", stretch=" << stretch
+                              << ", opening=" << opening << "\n";
 #endif
                     break;
                 }
@@ -832,9 +797,8 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
 
 #ifdef DEBUG_BP_TYPE_ID
         if (bp_type_id == -1) {
-            std::cerr << "[DEBUG] calculate_bp_type_id: Kept bp_type_id=-1 for pair ("
-                      << res1->name() << " " << res1->seq_num() << ", " << res2->name() << " "
-                      << res2->seq_num() << ")\n";
+            std::cerr << "[DEBUG] calculate_bp_type_id: Kept bp_type_id=-1 for pair (" << res1->name() << " "
+                      << res1->seq_num() << ", " << res2->name() << " " << res2->seq_num() << ")\n";
             std::cerr << "  bp_type=" << bp_type << ", shear=" << shear << ", stretch=" << stretch
                       << ", opening=" << opening << "\n";
             std::cerr << "  stretch check: " << (std::abs(stretch) > 2.0)
@@ -914,8 +878,7 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
                 experimental_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
 
                 // Use corresponding standard geometry
-                standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0],
-                                                             STANDARD_RING_GEOMETRY[i][1],
+                standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
                                                              STANDARD_RING_GEOMETRY[i][2]));
 
                 // Count nitrogen atoms (indices 1=N3, 3=N1, 6=N7, 8=N9)
@@ -961,9 +924,8 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
     ResidueType type = residue.residue_type();
 
     // Check standard nucleotide types (always recognized)
-    if (type == ResidueType::ADENINE || type == ResidueType::CYTOSINE ||
-        type == ResidueType::GUANINE || type == ResidueType::THYMINE ||
-        type == ResidueType::URACIL) {
+    if (type == ResidueType::ADENINE || type == ResidueType::CYTOSINE || type == ResidueType::GUANINE ||
+        type == ResidueType::THYMINE || type == ResidueType::URACIL) {
         return true;
     }
 
@@ -985,8 +947,7 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
     // Legacy: All residues not in NT_LIST go through RMSD check (including H2U)
     if (type == ResidueType::UNKNOWN || type == ResidueType::NONCANONICAL_RNA) {
         // First check: find ring atoms and count them
-        static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
-                                                                   " N1 ", " C6 ", " C5 "};
+        static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
         static const std::vector<std::string> purine_ring_atoms = {" N7 ", " C8 ", " N9 "};
         static const std::vector<std::string> nitrogen_atoms = {" N1 ", " N3 "};
 

@@ -30,8 +30,7 @@ struct MatchedAtoms {
         // Check that we have matching experimental/standard vectors with at least 3 matched atoms
         // for fitting
         return experimental.size() == standard.size() && experimental.size() == atom_names.size() &&
-               experimental.size() == num_matched &&
-               num_matched >= 3; // Minimum 3 atoms required for fitting
+               experimental.size() == num_matched && num_matched >= 3; // Minimum 3 atoms required for fitting
     }
 };
 
@@ -53,8 +52,7 @@ public:
      * @param residue_type Optional residue type (if provided, overrides residue.residue_type())
      * @return MatchedAtoms structure with matched atom pairs
      */
-    static MatchedAtoms match(const core::Residue& residue,
-                              const core::Structure& standard_template,
+    static MatchedAtoms match(const core::Residue& residue, const core::Structure& standard_template,
                               std::optional<core::ResidueType> residue_type = std::nullopt);
 
     /**
@@ -71,8 +69,7 @@ private:
      * @param atom_name Atom name to find (must match exactly, including spaces)
      * @return Optional atom if found, nullopt otherwise
      */
-    static std::optional<core::Atom> find_atom_by_name(const core::Residue& residue,
-                                                       const std::string& atom_name);
+    static std::optional<core::Atom> find_atom_by_name(const core::Residue& residue, const std::string& atom_name);
 
     /**
      * @brief Find first atom with given name in a structure (checks all chains/residues)
@@ -80,8 +77,7 @@ private:
      * @param atom_name Atom name to find
      * @return Optional atom if found, nullopt otherwise
      */
-    static std::optional<core::Atom> find_atom_by_name(const core::Structure& structure,
-                                                       const std::string& atom_name);
+    static std::optional<core::Atom> find_atom_by_name(const core::Structure& structure, const std::string& atom_name);
 
     /**
      * @brief Check if residue type is a purine

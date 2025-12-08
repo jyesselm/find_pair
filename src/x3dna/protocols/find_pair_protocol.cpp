@@ -14,8 +14,7 @@
 namespace x3dna {
 namespace protocols {
 
-FindPairProtocol::FindPairProtocol(const std::filesystem::path& template_path,
-                                   const std::filesystem::path& output_dir)
+FindPairProtocol::FindPairProtocol(const std::filesystem::path& template_path, const std::filesystem::path& output_dir)
     : frame_calculator_(template_path), pair_finder_(algorithms::ValidationParameters::defaults()),
       output_dir_(output_dir) {}
 
@@ -122,8 +121,7 @@ void FindPairProtocol::detect_helices(core::Structure& /* structure */) {
     helices_ = helix_detector_.detect_helices(base_pairs_);
 }
 
-size_t FindPairProtocol::write_frames_json(core::Structure& structure,
-                                           const std::filesystem::path& pdb_file,
+size_t FindPairProtocol::write_frames_json(core::Structure& structure, const std::filesystem::path& pdb_file,
                                            const std::filesystem::path& output_dir) {
     io::JsonWriter writer(pdb_file);
 
@@ -147,15 +145,13 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure,
         core::ResidueType res_type = residue->residue_type();
 
         // Only process nucleotide residues
-        bool is_nucleotide =
-            (res_type != core::ResidueType::UNKNOWN && res_type != core::ResidueType::AMINO_ACID &&
-             res_type != core::ResidueType::WATER && res_type != core::ResidueType::ION &&
-             res_type != core::ResidueType::LIGAND);
+        bool is_nucleotide = (res_type != core::ResidueType::UNKNOWN && res_type != core::ResidueType::AMINO_ACID &&
+                              res_type != core::ResidueType::WATER && res_type != core::ResidueType::ION &&
+                              res_type != core::ResidueType::LIGAND);
 
         // Check for modified nucleotides that have ring atoms
         if (!is_nucleotide && res_type == core::ResidueType::UNKNOWN) {
-            static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
-                                                                       " N1 ", " C6 ", " C5 "};
+            static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
             int ring_atom_count = 0;
             for (const auto& atom_name : common_ring_atoms) {
                 for (const auto& atom : residue->atoms()) {
@@ -201,23 +197,20 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure,
             size_t record_idx = static_cast<size_t>(legacy_residue_idx);
 
             // Record base_frame_calc
-            writer.record_base_frame_calc(record_idx, base_type, frame_result.template_file,
-                                          frame_result.rms_fit, frame_result.matched_atoms,
-                                          residue->name(), residue->chain_id(), residue->seq_num(),
-                                          residue->insertion());
+            writer.record_base_frame_calc(record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
+                                          frame_result.matched_atoms, residue->name(), residue->chain_id(),
+                                          residue->seq_num(), residue->insertion());
 
             // Record ls_fitting
             writer.record_ls_fitting(record_idx, frame_result.num_matched, frame_result.rms_fit,
-                                     frame_result.rotation_matrix, frame_result.translation,
-                                     residue->name(), residue->chain_id(), residue->seq_num(),
-                                     residue->insertion());
+                                     frame_result.rotation_matrix, frame_result.translation, residue->name(),
+                                     residue->chain_id(), residue->seq_num(), residue->insertion());
 
             // Record frame_calc
             std::vector<geometry::Vector3D> standard_coords, experimental_coords;
-            writer.record_frame_calc(record_idx, base_type, frame_result.template_file,
-                                     frame_result.rms_fit, standard_coords, experimental_coords,
-                                     residue->name(), residue->chain_id(), residue->seq_num(),
-                                     residue->insertion());
+            writer.record_frame_calc(record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
+                                     standard_coords, experimental_coords, residue->name(), residue->chain_id(),
+                                     residue->seq_num(), residue->insertion());
 
             frames_recorded++;
         }

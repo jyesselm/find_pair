@@ -37,8 +37,8 @@ public:
     /**
      * @brief Constructor from individual elements (row-major)
      */
-    Matrix3D(double m00, double m01, double m02, double m10, double m11, double m12, double m20,
-             double m21, double m22) {
+    Matrix3D(double m00, double m01, double m02, double m10, double m11, double m12, double m20, double m21,
+             double m22) {
         data_ = {m00, m01, m02, m10, m11, m12, m20, m21, m22};
     }
 

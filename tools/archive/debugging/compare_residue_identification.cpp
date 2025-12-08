@@ -47,9 +47,8 @@ bool is_nucleotide_with_ring_check(const Residue& residue) {
     ResidueType type = residue.residue_type();
 
     // Check standard nucleotide types
-    if (type == ResidueType::ADENINE || type == ResidueType::CYTOSINE ||
-        type == ResidueType::GUANINE || type == ResidueType::THYMINE ||
-        type == ResidueType::URACIL) {
+    if (type == ResidueType::ADENINE || type == ResidueType::CYTOSINE || type == ResidueType::GUANINE ||
+        type == ResidueType::THYMINE || type == ResidueType::URACIL) {
         return true;
     }
 
@@ -58,8 +57,7 @@ bool is_nucleotide_with_ring_check(const Residue& residue) {
     // Legacy code treats residues with ring atoms as nucleotides (RY >= 0)
     if (type == ResidueType::UNKNOWN) {
         // Check for ring atoms (similar to legacy residue_ident and generate_modern_json)
-        static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ",
-                                                                   " N1 ", " C6 ", " C5 "};
+        static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
         int ring_atom_count = 0;
         for (const auto& atom_name : common_ring_atoms) {
             for (const auto& atom : residue.atoms()) {
@@ -126,13 +124,10 @@ std::vector<ResidueInfo> extract_legacy_residues(const std::filesystem::path& js
                 std::string type = calc["type"];
 
                 if (type == "base_frame_calc" || type == "frame_calc" || type == "ref_frame") {
-                    if (calc.contains("chain_id") && calc.contains("residue_seq") &&
-                        calc.contains("residue_name")) {
+                    if (calc.contains("chain_id") && calc.contains("residue_seq") && calc.contains("residue_name")) {
                         char chain_id = calc["chain_id"].get<std::string>()[0];
                         int residue_seq = calc["residue_seq"];
-                        char insertion = calc.contains("insertion")
-                                             ? calc["insertion"].get<std::string>()[0]
-                                             : ' ';
+                        char insertion = calc.contains("insertion") ? calc["insertion"].get<std::string>()[0] : ' ';
                         std::string residue_name = calc["residue_name"];
 
                         ResidueInfo info;
@@ -146,22 +141,20 @@ std::vector<ResidueInfo> extract_legacy_residues(const std::filesystem::path& js
 
                         // Determine residue type from name
                         std::string name_upper = residue_name;
-                        std::transform(name_upper.begin(), name_upper.end(), name_upper.begin(),
-                                       ::toupper);
-                        if (name_upper.find("A") != std::string::npos || name_upper == "  A" ||
-                            name_upper == " DA") {
+                        std::transform(name_upper.begin(), name_upper.end(), name_upper.begin(), ::toupper);
+                        if (name_upper.find("A") != std::string::npos || name_upper == "  A" || name_upper == " DA") {
                             info.residue_type = ResidueType::ADENINE;
-                        } else if (name_upper.find("C") != std::string::npos ||
-                                   name_upper == "  C" || name_upper == " DC") {
+                        } else if (name_upper.find("C") != std::string::npos || name_upper == "  C" ||
+                                   name_upper == " DC") {
                             info.residue_type = ResidueType::CYTOSINE;
-                        } else if (name_upper.find("G") != std::string::npos ||
-                                   name_upper == "  G" || name_upper == " DG") {
+                        } else if (name_upper.find("G") != std::string::npos || name_upper == "  G" ||
+                                   name_upper == " DG") {
                             info.residue_type = ResidueType::GUANINE;
-                        } else if (name_upper.find("T") != std::string::npos ||
-                                   name_upper == "  T" || name_upper == " DT") {
+                        } else if (name_upper.find("T") != std::string::npos || name_upper == "  T" ||
+                                   name_upper == " DT") {
                             info.residue_type = ResidueType::THYMINE;
-                        } else if (name_upper.find("U") != std::string::npos ||
-                                   name_upper == "  U" || name_upper == " DU") {
+                        } else if (name_upper.find("U") != std::string::npos || name_upper == "  U" ||
+                                   name_upper == " DU") {
                             info.residue_type = ResidueType::URACIL;
                         } else {
                             info.residue_type = ResidueType::UNKNOWN;
@@ -185,8 +178,8 @@ std::vector<ResidueInfo> extract_legacy_residues(const std::filesystem::path& js
     return residues;
 }
 
-void print_residue_comparison(const std::vector<ResidueInfo>& modern,
-                              const std::vector<ResidueInfo>& legacy, const std::string& pdb_id) {
+void print_residue_comparison(const std::vector<ResidueInfo>& modern, const std::vector<ResidueInfo>& legacy,
+                              const std::string& pdb_id) {
     std::cout << "\n========================================\n";
     std::cout << "Residue Identification Comparison: " << pdb_id << "\n";
     std::cout << "========================================\n\n";
@@ -221,8 +214,7 @@ void print_residue_comparison(const std::vector<ResidueInfo>& modern,
     std::cout << "  Modern: " << modern_nucleotides << " / " << modern.size() << " residues\n";
     std::cout << "  Legacy: " << legacy_nucleotides << " / " << legacy.size() << " residues\n";
     if (modern_nucleotides != legacy_nucleotides) {
-        std::cout << "  ⚠️  DIFFERENCE: "
-                  << std::abs((long long)modern_nucleotides - (long long)legacy_nucleotides)
+        std::cout << "  ⚠️  DIFFERENCE: " << std::abs((long long)modern_nucleotides - (long long)legacy_nucleotides)
                   << " nucleotides\n";
     } else {
         std::cout << "  ✅ Match\n";
@@ -250,18 +242,15 @@ void print_residue_comparison(const std::vector<ResidueInfo>& modern,
     }
 
     if (!different_recognition.empty()) {
-        std::cout << "Residues with Different Nucleotide Recognition ("
-                  << different_recognition.size() << "):\n";
+        std::cout << "Residues with Different Nucleotide Recognition (" << different_recognition.size() << "):\n";
         for (const auto& key : different_recognition) {
             const auto& modern_res = *modern_map[key];
             const auto& legacy_res = *legacy_map[key];
             std::cout << "  " << key << " (" << modern_res.residue_name << "):\n";
-            std::cout << "    Modern: "
-                      << (modern_res.is_nucleotide ? "nucleotide" : "not nucleotide")
-                      << " (type=" << static_cast<int>(modern_res.residue_type)
-                      << ", atoms=" << modern_res.num_atoms << ")\n";
-            std::cout << "    Legacy: "
-                      << (legacy_res.is_nucleotide ? "nucleotide" : "not nucleotide")
+            std::cout << "    Modern: " << (modern_res.is_nucleotide ? "nucleotide" : "not nucleotide")
+                      << " (type=" << static_cast<int>(modern_res.residue_type) << ", atoms=" << modern_res.num_atoms
+                      << ")\n";
+            std::cout << "    Legacy: " << (legacy_res.is_nucleotide ? "nucleotide" : "not nucleotide")
                       << " (type=" << static_cast<int>(legacy_res.residue_type) << ")\n";
         }
         std::cout << "\n";
@@ -271,8 +260,7 @@ void print_residue_comparison(const std::vector<ResidueInfo>& modern,
         std::cout << "Modern-only Nucleotides (" << modern_only_nuc.size() << "):\n";
         for (const auto& key : modern_only_nuc) {
             const auto& res = *modern_map[key];
-            std::cout << "  " << key << " (" << res.residue_name
-                      << ", type=" << static_cast<int>(res.residue_type)
+            std::cout << "  " << key << " (" << res.residue_name << ", type=" << static_cast<int>(res.residue_type)
                       << ", atoms=" << res.num_atoms << ")\n";
         }
         std::cout << "\n";
@@ -282,8 +270,8 @@ void print_residue_comparison(const std::vector<ResidueInfo>& modern,
         std::cout << "Legacy-only Nucleotides (" << legacy_only_nuc.size() << "):\n";
         for (const auto& key : legacy_only_nuc) {
             const auto* res = legacy_map[key];
-            std::cout << "  " << key << " (" << res->residue_name
-                      << ", type=" << static_cast<int>(res->residue_type) << ")\n";
+            std::cout << "  " << key << " (" << res->residue_name << ", type=" << static_cast<int>(res->residue_type)
+                      << ")\n";
         }
         std::cout << "\n";
     }
@@ -300,8 +288,7 @@ void print_residue_comparison(const std::vector<ResidueInfo>& modern,
         std::cout << "Nucleotides without Frames in Modern (" << modern_no_frame.size() << "):\n";
         for (const auto& key : modern_no_frame) {
             const auto& res = *modern_map[key];
-            std::cout << "  " << key << " (" << res.residue_name << ", atoms=" << res.num_atoms
-                      << ")\n";
+            std::cout << "  " << key << " (" << res.residue_name << ", atoms=" << res.num_atoms << ")\n";
         }
         std::cout << "\n";
     }

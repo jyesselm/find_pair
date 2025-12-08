@@ -140,11 +140,10 @@ TEST_F(ConfigManagerTest, X3DNAHome) {
 TEST_F(ConfigManagerTest, LoadFromJSON) {
     auto& config = ConfigManager::instance();
 
-    nlohmann::json json_config = {
-        {"thresholds", {{"max_dorg", 20.0}, {"min_base_hb", 2}, {"hb_lower", 2.0}}},
-        {"include_hetatm", true},
-        {"include_waters", true},
-        {"legacy_mode", true}};
+    nlohmann::json json_config = {{"thresholds", {{"max_dorg", 20.0}, {"min_base_hb", 2}, {"hb_lower", 2.0}}},
+                                  {"include_hetatm", true},
+                                  {"include_waters", true},
+                                  {"legacy_mode", true}};
 
     config.load_from_json(json_config);
 
@@ -188,8 +187,7 @@ TEST_F(ConfigManagerTest, LoadFromFile) {
     // Create a temporary config file
     std::filesystem::path temp_file = std::filesystem::temp_directory_path() / "test_config.json";
 
-    nlohmann::json json_config = {{"thresholds", {{"max_dorg", 18.0}, {"min_base_hb", 1}}},
-                                  {"legacy_mode", false}};
+    nlohmann::json json_config = {{"thresholds", {{"max_dorg", 18.0}, {"min_base_hb", 1}}}, {"legacy_mode", false}};
 
     std::ofstream file(temp_file);
     file << json_config.dump(4);

@@ -29,8 +29,8 @@ void print_separator(const std::string& title) {
 }
 
 void print_vector(const std::string& name, const geometry::Vector3D& v) {
-    std::cout << "  " << name << ": [" << std::fixed << std::setprecision(4) << v.x() << ", "
-              << v.y() << ", " << v.z() << "]\n";
+    std::cout << "  " << name << ": [" << std::fixed << std::setprecision(4) << v.x() << ", " << v.y() << ", " << v.z()
+              << "]\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -100,16 +100,14 @@ int main(int argc, char* argv[]) {
     std::cout << "  Seq: " << res1->seq_num() << "\n";
     std::cout << "  Chain: " << res1->chain_id() << "\n";
     std::cout << "  Num atoms: " << res1->num_atoms() << "\n";
-    std::cout << "  Has frame before calc: " << (res1->reference_frame().has_value() ? "YES" : "NO")
-              << "\n";
+    std::cout << "  Has frame before calc: " << (res1->reference_frame().has_value() ? "YES" : "NO") << "\n";
 
     std::cout << "Residue 2 (legacy_idx=" << target_idx2 << "):\n";
     std::cout << "  Name: " << res2->name() << "\n";
     std::cout << "  Seq: " << res2->seq_num() << "\n";
     std::cout << "  Chain: " << res2->chain_id() << "\n";
     std::cout << "  Num atoms: " << res2->num_atoms() << "\n";
-    std::cout << "  Has frame before calc: " << (res2->reference_frame().has_value() ? "YES" : "NO")
-              << "\n";
+    std::cout << "  Has frame before calc: " << (res2->reference_frame().has_value() ? "YES" : "NO") << "\n";
 
     // Step 3: Calculate frames
     print_separator("STEP 3: Calculate frames for target residues");
@@ -143,8 +141,8 @@ int main(int argc, char* argv[]) {
         print_vector("Origin", frame1.origin());
         std::cout << "  Rotation matrix:\n";
         for (int i = 0; i < 3; ++i) {
-            std::cout << "    [" << frame1.rotation().at(i, 0) << ", " << frame1.rotation().at(i, 1)
-                      << ", " << frame1.rotation().at(i, 2) << "]\n";
+            std::cout << "    [" << frame1.rotation().at(i, 0) << ", " << frame1.rotation().at(i, 1) << ", "
+                      << frame1.rotation().at(i, 2) << "]\n";
         }
     } else {
         std::cout << "  NO FRAME STORED!\n";
@@ -156,8 +154,8 @@ int main(int argc, char* argv[]) {
         print_vector("Origin", frame2.origin());
         std::cout << "  Rotation matrix:\n";
         for (int i = 0; i < 3; ++i) {
-            std::cout << "    [" << frame2.rotation().at(i, 0) << ", " << frame2.rotation().at(i, 1)
-                      << ", " << frame2.rotation().at(i, 2) << "]\n";
+            std::cout << "    [" << frame2.rotation().at(i, 0) << ", " << frame2.rotation().at(i, 1) << ", "
+                      << frame2.rotation().at(i, 2) << "]\n";
         }
     } else {
         std::cout << "  NO FRAME STORED!\n";
@@ -173,10 +171,10 @@ int main(int argc, char* argv[]) {
         geometry::Vector3D diff = frame1.origin() - frame2.origin();
         double dorg = diff.length();
 
-        std::cout << "Origin 1: [" << frame1.origin().x() << ", " << frame1.origin().y() << ", "
-                  << frame1.origin().z() << "]\n";
-        std::cout << "Origin 2: [" << frame2.origin().x() << ", " << frame2.origin().y() << ", "
-                  << frame2.origin().z() << "]\n";
+        std::cout << "Origin 1: [" << frame1.origin().x() << ", " << frame1.origin().y() << ", " << frame1.origin().z()
+                  << "]\n";
+        std::cout << "Origin 2: [" << frame2.origin().x() << ", " << frame2.origin().y() << ", " << frame2.origin().z()
+                  << "]\n";
         std::cout << "Difference: [" << diff.x() << ", " << diff.y() << ", " << diff.z() << "]\n";
         std::cout << "dorg (calculated from stored frames): " << dorg << " Å\n";
     }
@@ -204,12 +202,10 @@ int main(int argc, char* argv[]) {
     print_separator("STEP 7: Compare calculations");
 
     if (frame_result1.is_valid && frame_result2.is_valid) {
-        geometry::Vector3D diff_from_results =
-            frame_result1.translation - frame_result2.translation;
+        geometry::Vector3D diff_from_results = frame_result1.translation - frame_result2.translation;
         double dorg_from_results = diff_from_results.length();
 
-        std::cout << "dorg calculated from frame_result translations: " << dorg_from_results
-                  << " Å\n";
+        std::cout << "dorg calculated from frame_result translations: " << dorg_from_results << " Å\n";
         std::cout << "dorg from validation: " << result.dorg << " Å\n";
         std::cout << "Difference: " << std::abs(dorg_from_results - result.dorg) << " Å\n";
 
@@ -234,8 +230,7 @@ int main(int argc, char* argv[]) {
                       << " chain=" << res->chain_id();
             if (res->reference_frame().has_value()) {
                 auto origin = res->reference_frame().value().origin();
-                std::cout << " origin=[" << origin.x() << "," << origin.y() << "," << origin.z()
-                          << "]";
+                std::cout << " origin=[" << origin.x() << "," << origin.y() << "," << origin.z() << "]";
             }
             std::cout << "\n";
         }

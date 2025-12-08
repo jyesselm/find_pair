@@ -34,8 +34,7 @@ double ParameterCalculator::magang(const geometry::Vector3D& va, const geometry:
     return rad2deg(std::acos(dot_val));
 }
 
-geometry::Matrix3D ParameterCalculator::arb_rotation(const geometry::Vector3D& axis,
-                                                     double angle_deg) {
+geometry::Matrix3D ParameterCalculator::arb_rotation(const geometry::Vector3D& axis, double angle_deg) {
     double vlen = axis.length();
     if (vlen < XEPS) {
         return geometry::Matrix3D::identity();
@@ -82,8 +81,8 @@ double ParameterCalculator::vec_ang(const geometry::Vector3D& va, const geometry
     return ang_deg;
 }
 
-geometry::Vector3D ParameterCalculator::get_vector(const geometry::Vector3D& va,
-                                                   const geometry::Vector3D& vref, double deg_ang) {
+geometry::Vector3D ParameterCalculator::get_vector(const geometry::Vector3D& va, const geometry::Vector3D& vref,
+                                                   double deg_ang) {
     geometry::Vector3D va_proj = va;
     geometry::Vector3D vref_norm = vref / vref.length();
 
@@ -100,18 +99,15 @@ geometry::Vector3D ParameterCalculator::get_vector(const geometry::Vector3D& va,
     return vo;
 }
 
-geometry::Matrix3D ParameterCalculator::x_y_z_2_mtx(const geometry::Vector3D& x,
-                                                    const geometry::Vector3D& y,
+geometry::Matrix3D ParameterCalculator::x_y_z_2_mtx(const geometry::Vector3D& x, const geometry::Vector3D& y,
                                                     const geometry::Vector3D& z) {
     // Build matrix with x, y, z as columns
     return geometry::Matrix3D(x.x(), y.x(), z.x(), x.y(), y.y(), z.y(), x.z(), y.z(), z.z());
 }
 
 // Core bpstep_par implementation (matching legacy code exactly)
-void ParameterCalculator::bpstep_par_impl(const geometry::Matrix3D& r1,
-                                          const geometry::Vector3D& o1,
-                                          const geometry::Matrix3D& r2,
-                                          const geometry::Vector3D& o2,
+void ParameterCalculator::bpstep_par_impl(const geometry::Matrix3D& r1, const geometry::Vector3D& o1,
+                                          const geometry::Matrix3D& r2, const geometry::Vector3D& o2,
                                           core::BasePairStepParameters& params,
                                           core::ReferenceFrame& midstep_frame) const {
     // Legacy uses 1-based indexing, we use 0-based
@@ -178,22 +174,19 @@ void ParameterCalculator::bpstep_par_impl(const geometry::Matrix3D& r1,
     params.tilt = rolltilt * std::sin(phi);
 }
 
-core::BasePairStepParameters
-ParameterCalculator::calculate_step_parameters(const core::ReferenceFrame& frame1,
-                                               const core::ReferenceFrame& frame2) const {
+core::BasePairStepParameters ParameterCalculator::calculate_step_parameters(const core::ReferenceFrame& frame1,
+                                                                            const core::ReferenceFrame& frame2) const {
     core::BasePairStepParameters params;
     core::ReferenceFrame midstep_frame;
 
-    bpstep_par_impl(frame1.rotation(), frame1.origin(), frame2.rotation(), frame2.origin(), params,
-                    midstep_frame);
+    bpstep_par_impl(frame1.rotation(), frame1.origin(), frame2.rotation(), frame2.origin(), params, midstep_frame);
 
     params.midstep_frame = midstep_frame;
     return params;
 }
 
-core::BasePairStepParameters
-ParameterCalculator::calculate_step_parameters(const core::BasePair& pair1,
-                                               const core::BasePair& pair2) const {
+core::BasePairStepParameters ParameterCalculator::calculate_step_parameters(const core::BasePair& pair1,
+                                                                            const core::BasePair& pair2) const {
     // For step parameters between consecutive pairs:
     // Use frame1 from each pair (the first residue's frame)
     if (!pair1.frame1().has_value() || !pair2.frame1().has_value()) {
@@ -202,35 +195,30 @@ ParameterCalculator::calculate_step_parameters(const core::BasePair& pair1,
     return calculate_step_parameters(pair1.frame1().value(), pair2.frame1().value());
 }
 
-core::BasePairStepParameters
-ParameterCalculator::calculate_step_parameters_for_pair(const core::BasePair& pair) {
+core::BasePairStepParameters ParameterCalculator::calculate_step_parameters_for_pair(const core::BasePair& pair) {
     // For a single base pair (for bp_type_id calculation):
     // Legacy: bpstep_par(r2, org[j], r1, org[i], ...)
     // This means: frame2 (residue j) is first, frame1 (residue i) is second
     if (!pair.frame1().has_value() || !pair.frame2().has_value()) {
-        throw std::runtime_error(
-            "Base pair must have both reference frames for parameter calculation");
+        throw std::runtime_error("Base pair must have both reference frames for parameter calculation");
     }
     // Note: Legacy order is reversed (frame2 first, frame1 second)
     return calculate_step_parameters(pair.frame2().value(), pair.frame1().value());
 }
 
-core::HelicalParameters
-ParameterCalculator::calculate_helical_parameters(const core::BasePair& pair1,
-                                                  const core::BasePair& pair2) {
+core::HelicalParameters ParameterCalculator::calculate_helical_parameters(const core::BasePair& pair1,
+                                                                          const core::BasePair& pair2) {
     if (!pair1.frame1().has_value() || !pair1.frame2().has_value() || !pair2.frame1().has_value() ||
         !pair2.frame2().has_value()) {
-        throw std::runtime_error(
-            "Base pairs must have reference frames for helical parameter calculation");
+        throw std::runtime_error("Base pairs must have reference frames for helical parameter calculation");
     }
 
     // Use frame1 from each pair (matching legacy refs_i_j behavior)
     return calculate_helical_parameters_impl(pair1.frame1().value(), pair2.frame1().value());
 }
 
-core::HelicalParameters
-ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFrame& frame1,
-                                                       const core::ReferenceFrame& frame2) {
+core::HelicalParameters ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFrame& frame1,
+                                                                               const core::ReferenceFrame& frame2) {
     core::HelicalParameters params;
 
     // Get rotation matrices and origins
@@ -360,8 +348,8 @@ ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFram
     return params;
 }
 
-std::vector<core::BasePairStepParameters>
-ParameterCalculator::calculate_all_step_parameters(const std::vector<core::BasePair>& pairs) {
+std::vector<core::BasePairStepParameters> ParameterCalculator::calculate_all_step_parameters(
+    const std::vector<core::BasePair>& pairs) {
     std::vector<core::BasePairStepParameters> result;
     if (pairs.size() < 2) {
         return result;
@@ -374,14 +362,12 @@ ParameterCalculator::calculate_all_step_parameters(const std::vector<core::BaseP
     return result;
 }
 
-core::ReferenceFrame
-ParameterCalculator::calculate_midstep_frame(const core::ReferenceFrame& frame1,
-                                             const core::ReferenceFrame& frame2) {
+core::ReferenceFrame ParameterCalculator::calculate_midstep_frame(const core::ReferenceFrame& frame1,
+                                                                  const core::ReferenceFrame& frame2) {
     core::BasePairStepParameters params;
     core::ReferenceFrame midstep_frame;
 
-    bpstep_par_impl(frame1.rotation(), frame1.origin(), frame2.rotation(), frame2.origin(), params,
-                    midstep_frame);
+    bpstep_par_impl(frame1.rotation(), frame1.origin(), frame2.rotation(), frame2.origin(), params, midstep_frame);
 
     return midstep_frame;
 }
@@ -406,10 +392,9 @@ core::ReferenceFrame ParameterCalculator::calculate_pair_frame(const core::Refer
     if (z_dot < 0.0) {
         // Reverse y and z columns (legacy: reverse_y_z_columns)
         // Column 1 (y-axis) and Column 2 (z-axis) are negated
-        r2_modified =
-            geometry::Matrix3D(r2_modified.at(0, 0), -r2_modified.at(0, 1), -r2_modified.at(0, 2),
-                               r2_modified.at(1, 0), -r2_modified.at(1, 1), -r2_modified.at(1, 2),
-                               r2_modified.at(2, 0), -r2_modified.at(2, 1), -r2_modified.at(2, 2));
+        r2_modified = geometry::Matrix3D(r2_modified.at(0, 0), -r2_modified.at(0, 1), -r2_modified.at(0, 2),
+                                         r2_modified.at(1, 0), -r2_modified.at(1, 1), -r2_modified.at(1, 2),
+                                         r2_modified.at(2, 0), -r2_modified.at(2, 1), -r2_modified.at(2, 2));
     }
 
     // Calculate midstep frame using bpstep_par
@@ -418,8 +403,7 @@ core::ReferenceFrame ParameterCalculator::calculate_pair_frame(const core::Refer
     core::BasePairStepParameters params;
     core::ReferenceFrame midstep_frame;
 
-    bpstep_par_impl(r2_modified, frame2.origin(), frame1.rotation(), frame1.origin(), params,
-                    midstep_frame);
+    bpstep_par_impl(r2_modified, frame2.origin(), frame1.rotation(), frame1.origin(), params, midstep_frame);
 
     return midstep_frame;
 }

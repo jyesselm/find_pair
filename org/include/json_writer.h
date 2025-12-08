@@ -14,10 +14,10 @@ long json_writer_init(const char* pdbfile);
 void json_writer_finalize(void);
 
 /* Record base pair step parameters */
-void json_writer_record_bpstep_params(
-    long bp_idx1, long bp_idx2, double* pars, /* 6 params: Shift, Slide, Rise, Tilt, Roll, Twist */
-    double* mst_org,                          /* 3 coords */
-    double** mst_orien /* 3x3 matrix */);
+void json_writer_record_bpstep_params(long bp_idx1, long bp_idx2,
+                                      double* pars,    /* 6 params: Shift, Slide, Rise, Tilt, Roll, Twist */
+                                      double* mst_org, /* 3 coords */
+                                      double** mst_orien /* 3x3 matrix */);
 
 /* Record helical parameters */
 void json_writer_record_helical_params(long bp_idx1, long bp_idx2, double* pars, /* 6 params */
@@ -25,12 +25,11 @@ void json_writer_record_helical_params(long bp_idx1, long bp_idx2, double* pars,
                                        double** mst_orienH /* 3x3 matrix */);
 
 /* Record base pair information */
-void json_writer_record_base_pair(long i, long j, char* bp_type,
-                                  double* dir_xyz,  /* dir_x, dir_y, dir_z */
-                                  double** orien_i, /* 3x3 matrix for base i */
-                                  double** orien_j, /* 3x3 matrix for base j */
-                                  double* org_i,    /* 3 coords for base i */
-                                  double* org_j);   /* 3 coords for base j */
+void json_writer_record_base_pair(long i, long j, char* bp_type, double* dir_xyz, /* dir_x, dir_y, dir_z */
+                                  double** orien_i,                               /* 3x3 matrix for base i */
+                                  double** orien_j,                               /* 3x3 matrix for base j */
+                                  double* org_i,                                  /* 3 coords for base i */
+                                  double* org_j);                                 /* 3 coords for base j */
 
 /* Record reference frame calculation */
 void json_writer_record_ref_frame(long residue_idx, double** orien, double* org);
@@ -42,8 +41,8 @@ void json_writer_record_sequence(long num_residue, char* bseq);
 void json_writer_record_bp_sequence(long num_bp, char** bp_seq, long ds);
 
 /* Record PDB atom data */
-void json_writer_record_pdb_atoms(long num, char** AtomName, char** ResName, char* ChainID,
-                                  long* ResSeq, double** xyz, char** Miscs, long* line_numbers);
+void json_writer_record_pdb_atoms(long num, char** AtomName, char** ResName, char* ChainID, long* ResSeq, double** xyz,
+                                  char** Miscs, long* line_numbers);
 
 /* Record residue index mapping (seidx) */
 void json_writer_record_residue_indices(long num_residue, long** seidx);
@@ -73,50 +72,44 @@ void json_writer_record_input_parameters(miscPars* misc_pars, long ds, long heta
 void json_writer_record_global_variables(void);
 
 /* Record hydrogen bond details for a base pair */
-void json_writer_record_hbonds(long base_i, long base_j, long num_hbonds, char** hb_atom1,
-                               char** hb_atom2, double* hb_dist, char* hb_type, long* lkg_type);
+void json_writer_record_hbonds(long base_i, long base_j, long num_hbonds, char** hb_atom1, char** hb_atom2,
+                               double* hb_dist, char* hb_type, long* lkg_type);
 
 /* Record base frame calculation details (from base_frame or ref_frames) */
-void json_writer_record_base_frame_calc(long residue_idx, char base_type,
-                                        const char* standard_template, double rms_fit,
+void json_writer_record_base_frame_calc(long residue_idx, char base_type, const char* standard_template, double rms_fit,
                                         long num_matched, char** matched_atoms, long num_atoms,
-                                        const char* residue_name, char chain_id, long residue_seq,
-                                        char insertion_code);
+                                        const char* residue_name, char chain_id, long residue_seq, char insertion_code);
 
 /* Record pair validation results (from check_pair) */
-void json_writer_record_pair_validation(long base_i, long base_j, long is_valid, long bp_type_id,
-                                        double dir_x, double dir_y, double dir_z,
-                                        double* rtn_val, /* rtn_val[1..5] */
+void json_writer_record_pair_validation(long base_i, long base_j, long is_valid, long bp_type_id, double dir_x,
+                                        double dir_y, double dir_z, double* rtn_val, /* rtn_val[1..5] */
                                         miscPars* misc_pars);
 
 /* Record hydrogen bond list (detailed from get_hbond_ij) */
-void json_writer_record_hbond_list(long base_i, long base_j, long num_hbonds, char** hb_atom1,
-                                   char** hb_atom2, double* hb_dist, char* hb_type,
-                                   const char* hb_info_string);
+void json_writer_record_hbond_list(long base_i, long base_j, long num_hbonds, char** hb_atom1, char** hb_atom2,
+                                   double* hb_dist, char* hb_type, const char* hb_info_string);
 
 /* Record base frame calculation with full details (alternative signature) */
-void json_writer_record_frame_calc(long residue_idx, char base_type, const char* template_file,
-                                   double rms_fit, long num_matched_atoms, double** matched_std_xyz,
-                                   double** matched_exp_xyz, const char* residue_name,
-                                   char chain_id, long residue_seq, char insertion_code);
+void json_writer_record_frame_calc(long residue_idx, char base_type, const char* template_file, double rms_fit,
+                                   long num_matched_atoms, double** matched_std_xyz, double** matched_exp_xyz,
+                                   const char* residue_name, char chain_id, long residue_seq, char insertion_code);
 
 /* Record ring atom indices for a residue */
 void json_writer_record_ring_atoms(long residue_idx, long* ring_atom_indices, long num_ring_atoms);
 
 /* Record distance and angle checks */
-void json_writer_record_distance_checks(long base_i, long base_j, double dorg, double dNN,
-                                        double plane_angle, double d_v, double overlap_area);
+void json_writer_record_distance_checks(long base_i, long base_j, double dorg, double dNN, double plane_angle,
+                                        double d_v, double overlap_area);
 
 /* Record least squares fitting details */
-void json_writer_record_ls_fitting(long residue_idx, long num_points, double rms_fit,
-                                   double** rotation_matrix, double* translation,
-                                   const char* residue_name, char chain_id, long residue_seq,
+void json_writer_record_ls_fitting(long residue_idx, long num_points, double rms_fit, double** rotation_matrix,
+                                   double* translation, const char* residue_name, char chain_id, long residue_seq,
                                    char insertion_code);
 
 /* Record removed atoms during PDB parsing */
-void json_writer_record_removed_atom(const char* pdb_line, const char* reason, long atom_serial,
-                                     const char* atom_name, const char* residue_name, char chain_id,
-                                     long residue_seq, double* xyz, long model_num);
+void json_writer_record_removed_atom(const char* pdb_line, const char* reason, long atom_serial, const char* atom_name,
+                                     const char* residue_name, char chain_id, long residue_seq, double* xyz,
+                                     long model_num);
 
 /* Record all removed atoms (call after parsing) */
 void json_writer_record_removed_atoms_summary(long num_removed);
@@ -126,17 +119,16 @@ void json_writer_record_find_bestpair_selection(long num_bp, long** base_pairs);
 
 /* Record best partner finding for debugging - all candidates considered */
 void json_writer_record_best_partner_candidates(long res_i, long num_candidates, long* candidate_j,
-                                                double* candidate_scores,
-                                                long* candidate_bp_type_ids, long* is_eligible,
-                                                long best_j, double best_score);
+                                                double* candidate_scores, long* candidate_bp_type_ids,
+                                                long* is_eligible, long best_j, double best_score);
 
 /* Record mutual best match decision */
-void json_writer_record_mutual_best_decision(long res_i, long res_j, long best_j_for_i,
-                                             long best_i_for_j, long is_mutual, long was_selected);
+void json_writer_record_mutual_best_decision(long res_i, long res_j, long best_j_for_i, long best_i_for_j,
+                                             long is_mutual, long was_selected);
 
 /* Record iteration state after each find_bestpair iteration */
-void json_writer_record_iteration_state(long iteration_num, long num_matched, long num_total,
-                                        long* matched_indices, long num_pairs, long** pairs);
+void json_writer_record_iteration_state(long iteration_num, long num_matched, long num_total, long* matched_indices,
+                                        long num_pairs, long** pairs);
 
 /* Check if JSON writer is initialized */
 long json_writer_is_initialized(void);

@@ -84,8 +84,7 @@ std::optional<core::ResidueType> TemplateAssignment::get_type_for_modified(
     return core::ModifiedNucleotideRegistry::get_base_type(residue_name);
 }
 
-std::optional<std::vector<std::string>>
-TemplateAssignment::get_matching_atoms(const std::string& residue_name) {
+std::optional<std::vector<std::string>> TemplateAssignment::get_matching_atoms(const std::string& residue_name) {
     // Hardcoded atom lists for modified residues that need exact legacy matching
     // Format: residue_name -> list of atom names to match (in order)
     static const std::map<std::string, std::vector<std::string>> MATCHING_ATOMS = {

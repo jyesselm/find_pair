@@ -66,8 +66,7 @@ QualityScoreInfo extract_modern_quality(const json& validation_records, int idx1
                 rtn_val[2] = calc.value("plane_angle", 0.0);
                 rtn_val[3] = calc.value("dNN", 0.0);
                 rtn_val[4] = calc.value("quality_score", 0.0);
-            } else if (record.contains("rtn_val") && record["rtn_val"].is_array() &&
-                       record["rtn_val"].size() >= 5) {
+            } else if (record.contains("rtn_val") && record["rtn_val"].is_array() && record["rtn_val"].size() >= 5) {
                 auto rtn_val_array = record["rtn_val"];
                 for (size_t i = 0; i < 5 && i < rtn_val_array.size(); i++) {
                     rtn_val[i] = rtn_val_array[i].get<double>();
@@ -83,10 +82,8 @@ QualityScoreInfo extract_modern_quality(const json& validation_records, int idx1
             // The FINAL adjusted score = base_score + adjust_pairQuality - (bp_type_id == 2 ? 2.0 :
             // 0.0) We don't have adjust_pairQuality or final_score in pair_validation records These
             // would need to come from find_bestpair_selection or be calculated from H-bonds
-            info.final_score =
-                info.base_score; // Placeholder - actual final score not in pair_validation
-            info.adjust_pairQuality =
-                0.0; // Would need to be calculated from H-bonds or found elsewhere
+            info.final_score = info.base_score; // Placeholder - actual final score not in pair_validation
+            info.adjust_pairQuality = 0.0;      // Would need to be calculated from H-bonds or found elsewhere
 
             // Handle is_valid as either boolean or number
             if (record.contains("is_valid")) {
@@ -141,8 +138,7 @@ QualityScoreInfo extract_legacy_quality(const json& validation_records, int idx1
                 rtn_val[2] = calc.value("plane_angle", 0.0);
                 rtn_val[3] = calc.value("dNN", 0.0);
                 rtn_val[4] = calc.value("quality_score", 0.0);
-            } else if (record.contains("rtn_val") && record["rtn_val"].is_array() &&
-                       record["rtn_val"].size() >= 5) {
+            } else if (record.contains("rtn_val") && record["rtn_val"].is_array() && record["rtn_val"].size() >= 5) {
                 auto rtn_val_array = record["rtn_val"];
                 for (size_t i = 0; i < 5 && i < rtn_val_array.size(); i++) {
                     rtn_val[i] = rtn_val_array[i].get<double>();
@@ -158,10 +154,8 @@ QualityScoreInfo extract_legacy_quality(const json& validation_records, int idx1
             // The FINAL adjusted score = base_score + adjust_pairQuality - (bp_type_id == 2 ? 2.0 :
             // 0.0) We don't have adjust_pairQuality or final_score in pair_validation records These
             // would need to come from find_bestpair_selection or be calculated from H-bonds
-            info.final_score =
-                info.base_score; // Placeholder - actual final score not in pair_validation
-            info.adjust_pairQuality =
-                0.0; // Would need to be calculated from H-bonds or found elsewhere
+            info.final_score = info.base_score; // Placeholder - actual final score not in pair_validation
+            info.adjust_pairQuality = 0.0;      // Would need to be calculated from H-bonds or found elsewhere
 
             // Handle is_valid as either boolean or number
             if (record.contains("is_valid")) {
@@ -193,8 +187,7 @@ void print_quality_comparison(const QualityScoreInfo& modern, const QualityScore
     std::cout << "adjust_pairQuality:\n";
     std::cout << "  Modern: " << modern.adjust_pairQuality << "\n";
     std::cout << "  Legacy: " << legacy.adjust_pairQuality << "\n";
-    std::cout << "  Difference: " << (modern.adjust_pairQuality - legacy.adjust_pairQuality)
-              << "\n\n";
+    std::cout << "  Difference: " << (modern.adjust_pairQuality - legacy.adjust_pairQuality) << "\n\n";
 
     std::cout << "bp_type_id:\n";
     std::cout << "  Modern: " << modern.bp_type_id << "\n";
@@ -215,8 +208,7 @@ void print_quality_comparison(const QualityScoreInfo& modern, const QualityScore
 
     if (std::abs(modern.base_score - legacy.base_score) > 0.001) {
         std::cout << "⚠️  BASE QUALITY SCORE MISMATCH!\n";
-        std::cout
-            << "   This suggests differences in geometric calculations (dorg, d_v, plane_angle)\n";
+        std::cout << "   This suggests differences in geometric calculations (dorg, d_v, plane_angle)\n";
     } else {
         std::cout << "✓ Base quality scores match\n";
     }
@@ -279,8 +271,7 @@ json load_json_array(const std::filesystem::path& file_path) {
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0]
-                  << " <pdb_id> <legacy_residue1_idx> <legacy_residue2_idx>\n";
+        std::cerr << "Usage: " << argv[0] << " <pdb_id> <legacy_residue1_idx> <legacy_residue2_idx>\n";
         std::cerr << "  Note: Indices must be legacy indices (1-based) from legacy JSON files\n";
         std::cerr << "Example: " << argv[0] << " 3G8T 946 947\n";
         std::cerr << "Example: " << argv[0] << " 6CAQ 75 78\n";

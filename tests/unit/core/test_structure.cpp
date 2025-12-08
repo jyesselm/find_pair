@@ -163,11 +163,10 @@ TEST_F(StructureTest, ToJsonModern) {
 }
 
 TEST_F(StructureTest, FromJsonModern) {
-    nlohmann::json j = {
-        {"pdb_id", "100D"},
-        {"chains",
-         {{{"chain_id", "A"},
-           {"residues", {{{"name", "  C"}, {"seq_num", 1}, {"chain_id", "A"}, {"atoms", {}}}}}}}}};
+    nlohmann::json j = {{"pdb_id", "100D"},
+                        {"chains",
+                         {{{"chain_id", "A"},
+                           {"residues", {{{"name", "  C"}, {"seq_num", 1}, {"chain_id", "A"}, {"atoms", {}}}}}}}}};
 
     Structure structure = Structure::from_json(j);
 

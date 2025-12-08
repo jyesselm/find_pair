@@ -39,8 +39,8 @@ public:
      * @param insertion Insertion code (PDB column 27, default ' ')
      */
     Residue(const std::string& name, int seq_num, char chain_id, char insertion = ' ')
-        : name_(name), one_letter_code_('?'), type_(ResidueType::UNKNOWN), is_purine_(false),
-          seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {}
+        : name_(name), one_letter_code_('?'), type_(ResidueType::UNKNOWN), is_purine_(false), seq_num_(seq_num),
+          chain_id_(chain_id), insertion_(insertion) {}
 
     /**
      * @brief Full constructor with all properties (used by ResidueFactory)
@@ -53,10 +53,10 @@ public:
      * @param insertion Insertion code
      * @param atoms Vector of atoms
      */
-    Residue(const std::string& name, char one_letter_code, ResidueType type, bool is_purine,
-            int seq_num, char chain_id, char insertion, const std::vector<Atom>& atoms)
-        : name_(name), one_letter_code_(one_letter_code), type_(type), is_purine_(is_purine),
-          seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion), atoms_(atoms) {}
+    Residue(const std::string& name, char one_letter_code, ResidueType type, bool is_purine, int seq_num, char chain_id,
+            char insertion, const std::vector<Atom>& atoms)
+        : name_(name), one_letter_code_(one_letter_code), type_(type), is_purine_(is_purine), seq_num_(seq_num),
+          chain_id_(chain_id), insertion_(insertion), atoms_(atoms) {}
 
     // Getters
     const std::string& name() const {
@@ -196,8 +196,7 @@ public:
         }
         // Check if it's a nucleotide
         char code = one_letter_code();
-        if (code == 'C' || code == 'T' || code == 'U' || code == 'P' || code == 'c' ||
-            code == 't' || code == 'u') {
+        if (code == 'C' || code == 'T' || code == 'U' || code == 'P' || code == 'c' || code == 't' || code == 'u') {
             return 0; // Pyrimidine
         }
         return -1; // Not a nucleotide

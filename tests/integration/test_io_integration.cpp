@@ -59,8 +59,7 @@ protected:
             }
         }
 
-        size_t num_to_compare =
-            std::min(static_cast<size_t>(20), std::min(atoms1.size(), atoms2.size()));
+        size_t num_to_compare = std::min(static_cast<size_t>(20), std::min(atoms1.size(), atoms2.size()));
 
         for (size_t i = 0; i < num_to_compare; ++i) {
             SCOPED_TRACE("Atom index " + std::to_string(i));
@@ -288,10 +287,8 @@ TEST_F(IOIntegrationTest, JsonReadingWithRealFiles) {
             // Verify structure was created (some JSON files might not have valid structures)
             // Only verify if structure has data
             if (structure.num_atoms() > 0) {
-                EXPECT_GT(structure.num_residues(), 0)
-                    << "Structure from JSON has no residues for " << pair.pdb_name;
-                EXPECT_GT(structure.num_chains(), 0)
-                    << "Structure from JSON has no chains for " << pair.pdb_name;
+                EXPECT_GT(structure.num_residues(), 0) << "Structure from JSON has no residues for " << pair.pdb_name;
+                EXPECT_GT(structure.num_chains(), 0) << "Structure from JSON has no chains for " << pair.pdb_name;
             }
             // If structure is empty, that's okay - some JSON files might not have atoms arrays
         } catch (const std::exception& e) {
@@ -332,8 +329,7 @@ TEST_F(IOIntegrationTest, JsonWritingWithRealFiles) {
 
             // Verify pdb_atoms record exists
             auto atoms_records = find_records_by_type(json, "pdb_atoms");
-            EXPECT_GT(atoms_records.size(), 0)
-                << "No pdb_atoms record in JSON for " << pair.pdb_name;
+            EXPECT_GT(atoms_records.size(), 0) << "No pdb_atoms record in JSON for " << pair.pdb_name;
         } catch (const std::exception& e) {
             // Some PDB files might not be parseable - that's okay
         }

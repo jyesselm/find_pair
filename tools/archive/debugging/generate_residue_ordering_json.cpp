@@ -23,8 +23,7 @@ using json = nlohmann::json;
 int main(int argc, char* argv[]) {
     if (argc < 3) {
         std::cerr << "Usage: " << argv[0] << " <pdb_file> <output_json>\n";
-        std::cerr << "Example: " << argv[0]
-                  << " data/pdb/3G8T.pdb data/residue_ordering/3G8T.json\n";
+        std::cerr << "Example: " << argv[0] << " data/pdb/3G8T.pdb data/residue_ordering/3G8T.json\n";
         return 1;
     }
 

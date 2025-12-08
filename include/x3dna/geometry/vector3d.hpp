@@ -133,8 +133,7 @@ public:
      * @brief Calculate cross product with another vector
      */
     Vector3D cross(const Vector3D& other) const {
-        return Vector3D(y_ * other.z_ - z_ * other.y_, z_ * other.x_ - x_ * other.z_,
-                        x_ * other.y_ - y_ * other.x_);
+        return Vector3D(y_ * other.z_ - z_ * other.y_, z_ * other.x_ - x_ * other.z_, x_ * other.y_ - y_ * other.x_);
     }
 
     /**

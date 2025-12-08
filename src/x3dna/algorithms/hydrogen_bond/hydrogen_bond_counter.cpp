@@ -25,8 +25,7 @@ static bool should_debug_good_hb_atoms() {
     return enabled;
 }
 
-bool HydrogenBondCounter::within_limits(const geometry::Vector3D& pos1,
-                                        const geometry::Vector3D& pos2, double lower,
+bool HydrogenBondCounter::within_limits(const geometry::Vector3D& pos1, const geometry::Vector3D& pos2, double lower,
                                         double upper) {
     geometry::Vector3D diff = pos1 - pos2;
     double dist = diff.length();
@@ -42,10 +41,8 @@ bool HydrogenBondCounter::good_hb_atoms(const std::string& atom1, const std::str
     return hydrogen_bond::good_hb_atoms(atom1, atom2, hb_atoms);
 }
 
-void HydrogenBondCounter::count_simple(const core::Residue& res1, const core::Residue& res2,
-                                       double hb_lower, double hb_dist1,
-                                       const std::string& hb_atoms, int& num_base_hb,
-                                       int& num_o2_hb) {
+void HydrogenBondCounter::count_simple(const core::Residue& res1, const core::Residue& res2, double hb_lower,
+                                       double hb_dist1, const std::string& hb_atoms, int& num_base_hb, int& num_o2_hb) {
     // Matches legacy check_pair H-bond counting (lines 4605-4614 in cmn_fncs.c)
     // Counts H-bonds BEFORE validation - this is the key difference
 
@@ -83,12 +80,11 @@ void HydrogenBondCounter::count_simple(const core::Residue& res1, const core::Re
 
             // Debug output for H-bond counting
             if (debug_enabled && both_base && dist <= hb_dist1 && dist >= hb_lower) {
-                std::cerr << "[DEBUG count_hb] " << atom1.name() << " - " << atom2.name()
-                          << " (dist=" << std::fixed << std::setprecision(3) << dist << "): "
-                          << "atom1_is_base=" << atom1_is_base
-                          << ", atom2_is_base=" << atom2_is_base << ", not_o2prime=" << not_o2prime
-                          << ", good_hb_atoms=" << good_hb << ", num_base_hb=" << num_base_hb
-                          << std::endl;
+                std::cerr << "[DEBUG count_hb] " << atom1.name() << " - " << atom2.name() << " (dist=" << std::fixed
+                          << std::setprecision(3) << dist << "): "
+                          << "atom1_is_base=" << atom1_is_base << ", atom2_is_base=" << atom2_is_base
+                          << ", not_o2prime=" << not_o2prime << ", good_hb_atoms=" << good_hb
+                          << ", num_base_hb=" << num_base_hb << std::endl;
             }
 
             // Check if either atom is O2'
@@ -99,8 +95,8 @@ void HydrogenBondCounter::count_simple(const core::Residue& res1, const core::Re
     }
 
     if (debug_enabled) {
-        std::cerr << "[DEBUG count_hb] Final counts: num_base_hb=" << num_base_hb
-                  << ", num_o2_hb=" << num_o2_hb << std::endl;
+        std::cerr << "[DEBUG count_hb] Final counts: num_base_hb=" << num_base_hb << ", num_o2_hb=" << num_o2_hb
+                  << std::endl;
     }
 }
 

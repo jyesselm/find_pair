@@ -49,9 +49,8 @@ protected:
         }
     };
 
-    std::vector<ResidueInfo>
-    generate_residue_ordering_json(const std::filesystem::path& pdb_file,
-                                   const std::filesystem::path& json_file) {
+    std::vector<ResidueInfo> generate_residue_ordering_json(const std::filesystem::path& pdb_file,
+                                                            const std::filesystem::path& json_file) {
         // Parse PDB
         PdbParser parser;
         parser.set_include_hetatm(true);
@@ -176,8 +175,7 @@ TEST_F(ResidueOrderingJsonTest, JsonConsistency) {
 
     // Verify all residues match
     for (size_t i = 0; i < residues1.size(); i++) {
-        EXPECT_EQ(residues1[i], residues2[i])
-            << "Residue at index " << i << " should match between generations";
+        EXPECT_EQ(residues1[i], residues2[i]) << "Residue at index " << i << " should match between generations";
     }
 }
 

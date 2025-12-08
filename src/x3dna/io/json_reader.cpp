@@ -88,8 +88,7 @@ std::vector<core::BasePair> JsonReader::read_base_pairs(const nlohmann::json& js
     return pairs;
 }
 
-std::vector<std::pair<size_t, core::ReferenceFrame>>
-JsonReader::read_ref_frames(const nlohmann::json& json) {
+std::vector<std::pair<size_t, core::ReferenceFrame>> JsonReader::read_ref_frames(const nlohmann::json& json) {
     std::vector<std::pair<size_t, core::ReferenceFrame>> frames;
 
     if (!json.contains("calculations")) {
@@ -113,8 +112,7 @@ JsonReader::read_ref_frames(const nlohmann::json& json) {
             for (const auto& frame_json : record["frames"]) {
                 if (frame_json.contains("residue_idx") && frame_json.contains("frame")) {
                     size_t residue_idx = frame_json["residue_idx"].get<size_t>();
-                    core::ReferenceFrame frame =
-                        core::ReferenceFrame::from_json_legacy(frame_json["frame"]);
+                    core::ReferenceFrame frame = core::ReferenceFrame::from_json_legacy(frame_json["frame"]);
                     frames.emplace_back(residue_idx, frame);
                 }
             }

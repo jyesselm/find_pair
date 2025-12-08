@@ -48,9 +48,8 @@ public:
      * @param frame2 Second reference frame
      * @return BasePairStepParameters structure
      */
-    core::BasePairStepParameters
-    calculate_step_parameters(const core::ReferenceFrame& frame1,
-                              const core::ReferenceFrame& frame2) const;
+    core::BasePairStepParameters calculate_step_parameters(const core::ReferenceFrame& frame1,
+                                                           const core::ReferenceFrame& frame2) const;
 
     /**
      * @brief Calculate helical parameters from two base pairs
@@ -58,8 +57,7 @@ public:
      * @param pair2 Second base pair
      * @return HelicalParameters structure
      */
-    core::HelicalParameters calculate_helical_parameters(const core::BasePair& pair1,
-                                                         const core::BasePair& pair2);
+    core::HelicalParameters calculate_helical_parameters(const core::BasePair& pair1, const core::BasePair& pair2);
 
     /**
      * @brief Calculate helical parameters from two reference frames
@@ -75,8 +73,7 @@ public:
      * @param pairs Vector of base pairs
      * @return Vector of step parameters (one per consecutive pair)
      */
-    std::vector<core::BasePairStepParameters>
-    calculate_all_step_parameters(const std::vector<core::BasePair>& pairs);
+    std::vector<core::BasePairStepParameters> calculate_all_step_parameters(const std::vector<core::BasePair>& pairs);
 
     /**
      * @brief Calculate midstep reference frame
@@ -97,8 +94,7 @@ public:
      * - Checks if z-axes are anti-parallel and reverses y/z if needed
      * - Uses bpstep_par to compute the middle frame
      */
-    core::ReferenceFrame calculate_pair_frame(const core::ReferenceFrame& frame1,
-                                              const core::ReferenceFrame& frame2);
+    core::ReferenceFrame calculate_pair_frame(const core::ReferenceFrame& frame1, const core::ReferenceFrame& frame2);
 
 private:
     /**
@@ -110,18 +106,15 @@ private:
      * @param params Output: step parameters
      * @param midstep_frame Output: midstep reference frame
      */
-    void bpstep_par_impl(const geometry::Matrix3D& r1, const geometry::Vector3D& o1,
-                         const geometry::Matrix3D& r2, const geometry::Vector3D& o2,
-                         core::BasePairStepParameters& params,
+    void bpstep_par_impl(const geometry::Matrix3D& r1, const geometry::Vector3D& o1, const geometry::Matrix3D& r2,
+                         const geometry::Vector3D& o2, core::BasePairStepParameters& params,
                          core::ReferenceFrame& midstep_frame) const;
 
     // Geometry utility functions (matching legacy implementations)
     static double magang(const geometry::Vector3D& va, const geometry::Vector3D& vb);
-    static double vec_ang(const geometry::Vector3D& va, const geometry::Vector3D& vb,
-                          const geometry::Vector3D& vref);
+    static double vec_ang(const geometry::Vector3D& va, const geometry::Vector3D& vb, const geometry::Vector3D& vref);
     static geometry::Matrix3D arb_rotation(const geometry::Vector3D& axis, double angle_deg);
-    static geometry::Vector3D get_vector(const geometry::Vector3D& va,
-                                         const geometry::Vector3D& vref, double deg_ang);
+    static geometry::Vector3D get_vector(const geometry::Vector3D& va, const geometry::Vector3D& vref, double deg_ang);
     static geometry::Matrix3D x_y_z_2_mtx(const geometry::Vector3D& x, const geometry::Vector3D& y,
                                           const geometry::Vector3D& z);
     static double deg2rad(double ang);

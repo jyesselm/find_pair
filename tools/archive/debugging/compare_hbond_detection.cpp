@@ -67,8 +67,8 @@ std::vector<HydrogenBondInfo> extract_hbonds_from_json(const json& hbond_record)
     return hbonds;
 }
 
-HBondComparison extract_hbond_comparison(const json& modern_hbond_records,
-                                         const json& legacy_hbond_records, int idx1, int idx2) {
+HBondComparison extract_hbond_comparison(const json& modern_hbond_records, const json& legacy_hbond_records, int idx1,
+                                         int idx2) {
     HBondComparison comp;
     comp.residue1_idx = idx1;
     comp.residue2_idx = idx2;
@@ -145,9 +145,7 @@ void print_hbond_comparison(const HBondComparison& comp) {
     std::cout << "Modern H-bonds found: " << comp.modern_hbonds.size() << "\n";
     std::cout << "Legacy H-bonds found: " << comp.legacy_hbonds.size() << "\n";
     std::cout << "Difference: "
-              << (static_cast<int>(comp.modern_hbonds.size()) -
-                  static_cast<int>(comp.legacy_hbonds.size()))
-              << "\n\n";
+              << (static_cast<int>(comp.modern_hbonds.size()) - static_cast<int>(comp.legacy_hbonds.size())) << "\n\n";
 
     std::cout << "Good H-bonds (distance in [2.5, 3.5]):\n";
     std::cout << "  Modern: " << comp.modern_good_count << "\n";
@@ -158,8 +156,7 @@ void print_hbond_comparison(const HBondComparison& comp) {
     std::cout << "adjust_pairQuality:\n";
     std::cout << "  Modern: " << comp.modern_adjust_pairQuality << "\n";
     std::cout << "  Legacy: " << comp.legacy_adjust_pairQuality << "\n";
-    std::cout << "  Difference: "
-              << (comp.modern_adjust_pairQuality - comp.legacy_adjust_pairQuality) << "\n\n";
+    std::cout << "  Difference: " << (comp.modern_adjust_pairQuality - comp.legacy_adjust_pairQuality) << "\n\n";
 
     // Print detailed H-bond lists
     std::cout << "Modern H-bonds:\n";
@@ -221,18 +218,16 @@ void print_hbond_comparison(const HBondComparison& comp) {
             std::cout << "  Missing in modern (" << missing_in_modern.size() << "):\n";
             for (const auto& key : missing_in_modern) {
                 const auto& hb = legacy_map[key];
-                std::cout << "    - " << key << " (dist=" << std::setprecision(3) << hb.distance
-                          << ", type=" << hb.type << ", good=" << (hb.is_good ? "yes" : "no")
-                          << ")\n";
+                std::cout << "    - " << key << " (dist=" << std::setprecision(3) << hb.distance << ", type=" << hb.type
+                          << ", good=" << (hb.is_good ? "yes" : "no") << ")\n";
             }
         }
         if (!extra_in_modern.empty()) {
             std::cout << "  Extra in modern (" << extra_in_modern.size() << "):\n";
             for (const auto& key : extra_in_modern) {
                 const auto& hb = modern_map[key];
-                std::cout << "    + " << key << " (dist=" << std::setprecision(3) << hb.distance
-                          << ", type=" << hb.type << ", good=" << (hb.is_good ? "yes" : "no")
-                          << ")\n";
+                std::cout << "    + " << key << " (dist=" << std::setprecision(3) << hb.distance << ", type=" << hb.type
+                          << ", good=" << (hb.is_good ? "yes" : "no") << ")\n";
             }
         }
     }

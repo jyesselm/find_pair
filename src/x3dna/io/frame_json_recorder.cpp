@@ -11,8 +11,7 @@
 namespace x3dna {
 namespace io {
 
-FrameJsonRecorder::FrameJsonRecorder(algorithms::BaseFrameCalculator& calculator)
-    : calculator_(calculator) {}
+FrameJsonRecorder::FrameJsonRecorder(algorithms::BaseFrameCalculator& calculator) : calculator_(calculator) {}
 
 size_t FrameJsonRecorder::record_base_frame_calc(core::Structure& structure, JsonWriter& writer) {
     auto residues = structure.residues_in_legacy_order();
@@ -41,10 +40,9 @@ size_t FrameJsonRecorder::record_base_frame_calc(core::Structure& structure, Jso
 
         size_t record_idx = static_cast<size_t>(legacy_residue_idx);
         char base_type = residue->one_letter_code();
-        writer.record_base_frame_calc(record_idx, base_type, frame_result.template_file,
-                                      frame_result.rms_fit, frame_result.matched_atoms,
-                                      residue->name(), residue->chain_id(), residue->seq_num(),
-                                      residue->insertion());
+        writer.record_base_frame_calc(record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
+                                      frame_result.matched_atoms, residue->name(), residue->chain_id(),
+                                      residue->seq_num(), residue->insertion());
         count++;
     }
 
@@ -78,9 +76,8 @@ size_t FrameJsonRecorder::record_ls_fitting(core::Structure& structure, JsonWrit
 
         size_t record_idx = static_cast<size_t>(legacy_residue_idx);
         writer.record_ls_fitting(record_idx, frame_result.num_matched, frame_result.rms_fit,
-                                 frame_result.rotation_matrix, frame_result.translation,
-                                 residue->name(), residue->chain_id(), residue->seq_num(),
-                                 residue->insertion());
+                                 frame_result.rotation_matrix, frame_result.translation, residue->name(),
+                                 residue->chain_id(), residue->seq_num(), residue->insertion());
         count++;
     }
 
@@ -114,10 +111,9 @@ size_t FrameJsonRecorder::record_frame_calc(core::Structure& structure, JsonWrit
 
         size_t record_idx = static_cast<size_t>(legacy_residue_idx);
         char base_type = residue->one_letter_code();
-        writer.record_frame_calc(record_idx, base_type, frame_result.template_file,
-                                 frame_result.rms_fit, frame_result.matched_standard_coords,
-                                 frame_result.matched_experimental_coords, residue->name(),
-                                 residue->chain_id(), residue->seq_num(), residue->insertion());
+        writer.record_frame_calc(record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
+                                 frame_result.matched_standard_coords, frame_result.matched_experimental_coords,
+                                 residue->name(), residue->chain_id(), residue->seq_num(), residue->insertion());
         count++;
     }
 

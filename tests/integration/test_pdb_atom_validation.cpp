@@ -77,17 +77,13 @@ protected:
         EXPECT_EQ(expected.name(), actual.name()) << "Atom name mismatch";
         EXPECT_EQ(expected.residue_name(), actual.residue_name()) << "Residue name mismatch";
         EXPECT_EQ(expected.chain_id(), actual.chain_id()) << "Chain ID mismatch";
-        EXPECT_EQ(expected.residue_seq(), actual.residue_seq())
-            << "Residue sequence number mismatch";
+        EXPECT_EQ(expected.residue_seq(), actual.residue_seq()) << "Residue sequence number mismatch";
         EXPECT_EQ(expected.record_type(), actual.record_type()) << "Record type mismatch";
 
         // Compare coordinates with tolerance
-        EXPECT_NEAR(expected.position().x(), actual.position().x(), tolerance)
-            << "X coordinate mismatch";
-        EXPECT_NEAR(expected.position().y(), actual.position().y(), tolerance)
-            << "Y coordinate mismatch";
-        EXPECT_NEAR(expected.position().z(), actual.position().z(), tolerance)
-            << "Z coordinate mismatch";
+        EXPECT_NEAR(expected.position().x(), actual.position().x(), tolerance) << "X coordinate mismatch";
+        EXPECT_NEAR(expected.position().y(), actual.position().y(), tolerance) << "Y coordinate mismatch";
+        EXPECT_NEAR(expected.position().z(), actual.position().z(), tolerance) << "Z coordinate mismatch";
     }
 
     /**
@@ -133,8 +129,7 @@ protected:
                 if (atoms[i].name().empty()) {
                     return {0, 1};
                 }
-                if (!std::isfinite(atoms[i].position().x()) ||
-                    !std::isfinite(atoms[i].position().y()) ||
+                if (!std::isfinite(atoms[i].position().x()) || !std::isfinite(atoms[i].position().y()) ||
                     !std::isfinite(atoms[i].position().z())) {
                     return {0, 1};
                 }
@@ -231,8 +226,7 @@ TEST_F(PdbAtomValidationTest, MultiplePdbFiles) {
     }
 
     // Determine number of threads (use hardware concurrency, but cap at reasonable limit)
-    size_t num_threads =
-        std::min(static_cast<size_t>(std::thread::hardware_concurrency()), max_pairs);
+    size_t num_threads = std::min(static_cast<size_t>(std::thread::hardware_concurrency()), max_pairs);
     if (num_threads == 0)
         num_threads = 4; // Fallback if hardware_concurrency() returns 0
 
@@ -266,8 +260,7 @@ TEST_F(PdbAtomValidationTest, MultiplePdbFiles) {
 
                     // Verify all atoms have valid data
                     for (size_t i = 0; i < atoms.size(); ++i) {
-                        EXPECT_FALSE(atoms[i].name().empty())
-                            << "Atom " << i << " has empty name in " << pair.pdb_name;
+                        EXPECT_FALSE(atoms[i].name().empty()) << "Atom " << i << " has empty name in " << pair.pdb_name;
                         // Coordinates should be finite
                         EXPECT_TRUE(std::isfinite(atoms[i].position().x()));
                         EXPECT_TRUE(std::isfinite(atoms[i].position().y()));
@@ -279,8 +272,7 @@ TEST_F(PdbAtomValidationTest, MultiplePdbFiles) {
                     skipped++;
                     if (test_all_pdbs) {
                         std::lock_guard<std::mutex> lock(error_mutex);
-                        errors.push_back("Skipping " + pair.pdb_name +
-                                         " (JSON parse error): " + e.what());
+                        errors.push_back("Skipping " + pair.pdb_name + " (JSON parse error): " + e.what());
                     }
                 } catch (const std::exception& e) {
                     // Log other errors but continue

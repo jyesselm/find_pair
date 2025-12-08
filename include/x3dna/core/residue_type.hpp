@@ -30,4 +30,3 @@ enum class ResidueType {
 
 } // namespace core
 } // namespace x3dna
-

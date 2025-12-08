@@ -11,8 +11,7 @@
 
 using namespace x3dna::algorithms;
 
-void test_donor_acceptor(char base1, char base2, const std::string& atom1,
-                         const std::string& atom2) {
+void test_donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2) {
     char type = BasePairValidator::donor_acceptor(base1, base2, atom1, atom2);
 
     std::cout << "  Base pair: " << base1 << "-" << base2 << "\n";

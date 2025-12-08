@@ -154,8 +154,8 @@ TEST_F(JsonWriterTest, RecordBasePair) {
 // Removed atom recording
 TEST_F(JsonWriterTest, RecordRemovedAtom) {
     Vector3D xyz(1.0, 2.0, 3.0);
-    writer_->record_removed_atom("ATOM   1234  C1'  C   A   1 ", "line_too_short", 1234, " C1'",
-                                 "  C", 'A', 1, &xyz, 0);
+    writer_->record_removed_atom("ATOM   1234  C1'  C   A   1 ", "line_too_short", 1234, " C1'", "  C", 'A', 1, &xyz,
+                                 0);
 
     auto& json = writer_->json();
     bool found = false;

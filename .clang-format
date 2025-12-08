@@ -13,7 +13,7 @@ IndentPPDirectives: None
 IndentWrappedFunctionNames: false
 
 # Column limit
-ColumnLimit: 100
+ColumnLimit: 120
 AlwaysBreakAfterReturnType: None
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
@@ -113,6 +113,11 @@ AlignTrailingComments: true
 BinPackArguments: true
 BinPackParameters: true
 ExperimentalAutoDetectBinPacking: false
+
+# Penalties - prefer keeping things on one line if under column limit
+PenaltyBreakBeforeFirstCallParameter: 1000
+PenaltyBreakAssignment: 500
+PenaltyReturnTypeOnItsOwnLine: 1000
 
 # Other
 AllowAllParametersOfDeclarationOnNextLine: true

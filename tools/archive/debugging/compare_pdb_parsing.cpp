@@ -90,13 +90,10 @@ ParsingStats analyze_legacy_json(const std::filesystem::path& json_file) {
                 std::string type = calc["type"];
 
                 if (type == "base_frame_calc" || type == "frame_calc" || type == "ref_frame") {
-                    if (calc.contains("chain_id") && calc.contains("residue_seq") &&
-                        calc.contains("residue_name")) {
+                    if (calc.contains("chain_id") && calc.contains("residue_seq") && calc.contains("residue_name")) {
                         char chain_id = calc["chain_id"].get<std::string>()[0];
                         int residue_seq = calc["residue_seq"];
-                        char insertion = calc.contains("insertion")
-                                             ? calc["insertion"].get<std::string>()[0]
-                                             : ' ';
+                        char insertion = calc.contains("insertion") ? calc["insertion"].get<std::string>()[0] : ' ';
                         std::string residue_name = calc["residue_name"];
 
                         auto key = std::make_tuple(chain_id, residue_seq, insertion);
@@ -121,8 +118,7 @@ ParsingStats analyze_legacy_json(const std::filesystem::path& json_file) {
     return stats;
 }
 
-void print_comparison(const ParsingStats& modern, const ParsingStats& legacy,
-                      const std::string& pdb_id) {
+void print_comparison(const ParsingStats& modern, const ParsingStats& legacy, const std::string& pdb_id) {
     std::cout << "\n========================================\n";
     std::cout << "PDB Parsing Comparison: " << pdb_id << "\n";
     std::cout << "========================================\n\n";
@@ -132,8 +128,7 @@ void print_comparison(const ParsingStats& modern, const ParsingStats& legacy,
     std::cout << "  Modern: " << modern.total_atoms << "\n";
     std::cout << "  Legacy: " << legacy.total_atoms << "\n";
     if (modern.total_atoms != legacy.total_atoms) {
-        std::cout << "  ⚠️  DIFFERENCE: "
-                  << std::abs((long long)modern.total_atoms - (long long)legacy.total_atoms)
+        std::cout << "  ⚠️  DIFFERENCE: " << std::abs((long long)modern.total_atoms - (long long)legacy.total_atoms)
                   << " atoms\n";
     } else {
         std::cout << "  ✅ Match\n";
@@ -146,8 +141,7 @@ void print_comparison(const ParsingStats& modern, const ParsingStats& legacy,
     std::cout << "  Legacy: " << legacy.total_residues << "\n";
     if (modern.total_residues != legacy.total_residues) {
         std::cout << "  ⚠️  DIFFERENCE: "
-                  << std::abs((long long)modern.total_residues - (long long)legacy.total_residues)
-                  << " residues\n";
+                  << std::abs((long long)modern.total_residues - (long long)legacy.total_residues) << " residues\n";
     } else {
         std::cout << "  ✅ Match\n";
     }
@@ -159,8 +153,7 @@ void print_comparison(const ParsingStats& modern, const ParsingStats& legacy,
     std::cout << "  Legacy: " << legacy.nucleotide_residues << "\n";
     if (modern.nucleotide_residues != legacy.nucleotide_residues) {
         std::cout << "  ⚠️  DIFFERENCE: "
-                  << std::abs((long long)modern.nucleotide_residues -
-                              (long long)legacy.nucleotide_residues)
+                  << std::abs((long long)modern.nucleotide_residues - (long long)legacy.nucleotide_residues)
                   << " nucleotides\n";
     } else {
         std::cout << "  ✅ Match\n";
@@ -211,15 +204,13 @@ void print_comparison(const ParsingStats& modern, const ParsingStats& legacy,
 
     // Residue type distribution
     std::cout << "Residue Type Distribution (Top 10):\n";
-    std::vector<std::pair<std::string, size_t>> modern_types(modern.residue_types.begin(),
-                                                             modern.residue_types.end());
+    std::vector<std::pair<std::string, size_t>> modern_types(modern.residue_types.begin(), modern.residue_types.end());
     std::sort(modern_types.begin(), modern_types.end(), [](const auto& a, const auto& b) {
         return a.second > b.second;
     });
 
     for (size_t i = 0; i < std::min(modern_types.size(), size_t(10)); i++) {
-        std::cout << "  " << std::setw(6) << modern_types[i].first << ": " << std::setw(4)
-                  << modern_types[i].second;
+        std::cout << "  " << std::setw(6) << modern_types[i].first << ": " << std::setw(4) << modern_types[i].second;
         if (legacy.residue_types.count(modern_types[i].first)) {
             std::cout << " (legacy: " << legacy.residue_types.at(modern_types[i].first) << ")";
         } else {

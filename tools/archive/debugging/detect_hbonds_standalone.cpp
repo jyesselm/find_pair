@@ -84,8 +84,8 @@ std::vector<HBondInfo> detect_hbonds_standalone(const Residue& res1, const Resid
     double hb_dist2 = 4.5; // Default value (matches legacy)
 
     // Use HydrogenBondFinder directly - this is separate from pair validation
-    DetailedHBondResult detailed =
-        HydrogenBondFinder::find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1, hb_dist2);
+    DetailedHBondResult detailed = HydrogenBondFinder::find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1,
+                                                                                    hb_dist2);
 
     // Get ALL H-bonds found (after validation, but this is H-bond validation, not pair validation)
     for (const auto& hbond_result : detailed.after_validation) {
@@ -106,8 +106,7 @@ std::vector<HBondInfo> detect_hbonds_standalone(const Residue& res1, const Resid
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0]
-                  << " <pdb_file> <chain1> <seq1> <chain2> <seq2> [insertion1] [insertion2]\n";
+        std::cerr << "Usage: " << argv[0] << " <pdb_file> <chain1> <seq1> <chain2> <seq2> [insertion1] [insertion2]\n";
         std::cerr << "Example: " << argv[0] << " data/pdb/3G8T.pdb A 92 A 160\n";
         std::cerr << "Example: " << argv[0] << " data/pdb/6CAQ.pdb A 75 A 78\n";
         std::cerr << "\n";

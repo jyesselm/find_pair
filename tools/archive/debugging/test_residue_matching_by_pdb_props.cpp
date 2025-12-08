@@ -28,8 +28,7 @@ using ResidueKey = std::tuple<std::string, char, int, char>;
 int main(int argc, char* argv[]) {
     if (argc < 3) {
         std::cerr << "Usage: " << argv[0] << " <pdb_file> <legacy_json_file>\n";
-        std::cerr << "Example: " << argv[0]
-                  << " data/pdb/6CAQ.pdb data/json_legacy/base_frame_calc/6CAQ.json\n";
+        std::cerr << "Example: " << argv[0] << " data/pdb/6CAQ.pdb data/json_legacy/base_frame_calc/6CAQ.json\n";
         return 1;
     }
 
@@ -54,8 +53,8 @@ int main(int argc, char* argv[]) {
     for (auto& chain : structure.chains()) {
         for (auto& residue : chain.residues()) {
             if (!residue.atoms().empty()) {
-                ResidueKey key = std::make_tuple(residue.name(), residue.chain_id(),
-                                                 residue.seq_num(), residue.insertion());
+                ResidueKey key = std::make_tuple(residue.name(), residue.chain_id(), residue.seq_num(),
+                                                 residue.insertion());
                 residues_by_pdb_props[key] = &residue;
             }
         }
@@ -155,8 +154,7 @@ int main(int argc, char* argv[]) {
         } else {
             unmatched_count++;
             auto [resname, chain, seq, ins] = key;
-            std::cout << "⚠️  No match for legacy residue: " << resname << " Chain " << chain
-                      << " Seq " << seq;
+            std::cout << "⚠️  No match for legacy residue: " << resname << " Chain " << chain << " Seq " << seq;
             if (ins != ' ')
                 std::cout << " Ins '" << ins << "'";
             std::cout << " (legacy_idx=" << legacy_idx << ")\n";
@@ -177,8 +175,8 @@ int main(int argc, char* argv[]) {
         auto it = residues_by_legacy_idx.find(idx);
         if (it != residues_by_legacy_idx.end()) {
             core::Residue* res = it->second;
-            std::cout << "Index " << idx << ": " << res->name() << " Chain " << res->chain_id()
-                      << " Seq " << res->seq_num();
+            std::cout << "Index " << idx << ": " << res->name() << " Chain " << res->chain_id() << " Seq "
+                      << res->seq_num();
             if (res->insertion() != ' ') {
                 std::cout << " Ins '" << res->insertion() << "'";
             }

@@ -102,11 +102,10 @@ public:
      * @param residue_seq Residue sequence number
      * @param insertion Insertion code (default ' ')
      */
-    void record_base_frame_calc(size_t residue_idx, char base_type,
-                                const std::filesystem::path& standard_template, double rms_fit,
-                                const std::vector<std::string>& matched_atoms,
-                                const std::string& residue_name = "", char chain_id = ' ',
-                                int residue_seq = 0, char insertion = ' ');
+    void record_base_frame_calc(size_t residue_idx, char base_type, const std::filesystem::path& standard_template,
+                                double rms_fit, const std::vector<std::string>& matched_atoms,
+                                const std::string& residue_name = "", char chain_id = ' ', int residue_seq = 0,
+                                char insertion = ' ');
 
     /**
      * @brief Record least-squares fitting details
@@ -121,10 +120,9 @@ public:
      * @param insertion Insertion code (default ' ')
      */
     void record_ls_fitting(size_t residue_idx, size_t num_points, double rms_fit,
-                           const geometry::Matrix3D& rotation_matrix,
-                           const geometry::Vector3D& translation,
-                           const std::string& residue_name = "", char chain_id = ' ',
-                           int residue_seq = 0, char insertion = ' ');
+                           const geometry::Matrix3D& rotation_matrix, const geometry::Vector3D& translation,
+                           const std::string& residue_name = "", char chain_id = ' ', int residue_seq = 0,
+                           char insertion = ' ');
 
     /**
      * @brief Record frame calculation with matched coordinates
@@ -139,12 +137,10 @@ public:
      * @param residue_seq Residue sequence number
      * @param insertion Insertion code (default ' ')
      */
-    void record_frame_calc(size_t residue_idx, char base_type,
-                           const std::filesystem::path& template_file, double rms_fit,
-                           const std::vector<geometry::Vector3D>& matched_std_xyz,
-                           const std::vector<geometry::Vector3D>& matched_exp_xyz,
-                           const std::string& residue_name = "", char chain_id = ' ',
-                           int residue_seq = 0, char insertion = ' ');
+    void record_frame_calc(size_t residue_idx, char base_type, const std::filesystem::path& template_file,
+                           double rms_fit, const std::vector<geometry::Vector3D>& matched_std_xyz,
+                           const std::vector<geometry::Vector3D>& matched_exp_xyz, const std::string& residue_name = "",
+                           char chain_id = ' ', int residue_seq = 0, char insertion = ' ');
 
     /**
      * @brief Record base pair information
@@ -158,8 +154,7 @@ public:
      * @param bp_idx2 Second base pair index (0-based)
      * @param params Base pair step parameters
      */
-    void record_bpstep_params(size_t bp_idx1, size_t bp_idx2,
-                              const core::BasePairStepParameters& params);
+    void record_bpstep_params(size_t bp_idx1, size_t bp_idx2, const core::BasePairStepParameters& params);
 
     /**
      * @brief Record helical parameters
@@ -167,8 +162,7 @@ public:
      * @param bp_idx2 Second base pair index (0-based)
      * @param params Helical parameters
      */
-    void record_helical_params(size_t bp_idx1, size_t bp_idx2,
-                               const core::HelicalParameters& params);
+    void record_helical_params(size_t bp_idx1, size_t bp_idx2, const core::HelicalParameters& params);
 
     /**
      * @brief Record all reference frames
@@ -188,10 +182,9 @@ public:
      * @param xyz Coordinates (can be nullptr)
      * @param model_num Model number
      */
-    void record_removed_atom(const std::string& pdb_line, const std::string& reason,
-                             int atom_serial, const std::string& atom_name,
-                             const std::string& residue_name, char chain_id, int residue_seq,
-                             const geometry::Vector3D* xyz, int model_num);
+    void record_removed_atom(const std::string& pdb_line, const std::string& reason, int atom_serial,
+                             const std::string& atom_name, const std::string& residue_name, char chain_id,
+                             int residue_seq, const geometry::Vector3D* xyz, int model_num);
 
     /**
      * @brief Record summary of removed atoms
@@ -212,9 +205,8 @@ public:
      * [4]=quality_score)
      * @param params Validation parameters (for thresholds)
      */
-    void record_pair_validation(size_t base_i, size_t base_j, bool is_valid, int bp_type_id,
-                                double dir_x, double dir_y, double dir_z,
-                                const std::array<double, 5>& rtn_val,
+    void record_pair_validation(size_t base_i, size_t base_j, bool is_valid, int bp_type_id, double dir_x, double dir_y,
+                                double dir_z, const std::array<double, 5>& rtn_val,
                                 const algorithms::ValidationParameters& params);
 
     /**
@@ -227,8 +219,8 @@ public:
      * @param d_v Vertical distance
      * @param overlap_area Overlap area
      */
-    void record_distance_checks(size_t base_i, size_t base_j, double dorg, double dNN,
-                                double plane_angle, double d_v, double overlap_area);
+    void record_distance_checks(size_t base_i, size_t base_j, double dorg, double dNN, double plane_angle, double d_v,
+                                double overlap_area);
 
     /**
      * @brief Record hydrogen bond list
@@ -236,8 +228,7 @@ public:
      * @param base_j Second base index (0-based)
      * @param hbonds Vector of hydrogen bond information
      */
-    void record_hbond_list(size_t base_i, size_t base_j,
-                           const std::vector<core::hydrogen_bond>& hbonds);
+    void record_hbond_list(size_t base_i, size_t base_j, const std::vector<core::hydrogen_bond>& hbonds);
 
     /**
      * @brief Record the original base pair selection from find_bestpair
@@ -246,8 +237,7 @@ public:
      * This records the pairs actually selected by find_bestpair (mutual best matches),
      * which is the original base pair identification before any reordering.
      */
-    void
-    record_find_bestpair_selection(const std::vector<std::pair<size_t, size_t>>& selected_pairs);
+    void record_find_bestpair_selection(const std::vector<std::pair<size_t, size_t>>& selected_pairs);
 
     /**
      * @brief Record best partner candidates for debugging (all candidates considered)
@@ -256,9 +246,8 @@ public:
      * @param best_j Best partner residue index (legacy 1-based)
      * @param best_score Best score
      */
-    void record_best_partner_candidates(
-        int res_i, const std::vector<std::tuple<int, bool, double, int>>& candidates, int best_j,
-        double best_score);
+    void record_best_partner_candidates(int res_i, const std::vector<std::tuple<int, bool, double, int>>& candidates,
+                                        int best_j, double best_score);
 
     /**
      * @brief Record mutual best decision
@@ -269,8 +258,8 @@ public:
      * @param is_mutual Whether they are mutual best
      * @param was_selected Whether pair was selected
      */
-    void record_mutual_best_decision(int res_i, int res_j, int best_j_for_i, int best_i_for_j,
-                                     bool is_mutual, bool was_selected);
+    void record_mutual_best_decision(int res_i, int res_j, int best_j_for_i, int best_i_for_j, bool is_mutual,
+                                     bool was_selected);
 
     /**
      * @brief Record iteration state after each find_bestpair iteration

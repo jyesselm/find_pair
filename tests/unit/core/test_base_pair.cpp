@@ -137,17 +137,16 @@ TEST_F(BasePairTest, ToJsonLegacy) {
 }
 
 TEST_F(BasePairTest, FromJsonLegacy) {
-    nlohmann::json j = {
-        {"type", "base_pair"},
-        {"base_i", 1},
-        {"base_j", 24},
-        {"bp_type", "CG"},
-        {"orien_i", {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}},
-        {"orien_j", {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}},
-        {"org_i", {0.0, 0.0, 0.0}},
-        {"org_j", {10.0, 10.0, 10.0}},
-        {"hbonds",
-         {{{"donor_atom", " N3 "}, {"acceptor_atom", " O6 "}, {"distance", 2.88}, {"type", "-"}}}}};
+    nlohmann::json j = {{"type", "base_pair"},
+                        {"base_i", 1},
+                        {"base_j", 24},
+                        {"bp_type", "CG"},
+                        {"orien_i", {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}},
+                        {"orien_j", {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}},
+                        {"org_i", {0.0, 0.0, 0.0}},
+                        {"org_j", {10.0, 10.0, 10.0}},
+                        {"hbonds",
+                         {{{"donor_atom", " N3 "}, {"acceptor_atom", " O6 "}, {"distance", 2.88}, {"type", "-"}}}}};
 
     BasePair bp = BasePair::from_json_legacy(j);
 

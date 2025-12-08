@@ -96,8 +96,7 @@ std::string StandardBaseTemplates::type_to_filename(core::ResidueType type) {
     return type_to_filename(type, false); // Default to standard (uppercase) template
 }
 
-std::filesystem::path StandardBaseTemplates::get_template_path(core::ResidueType type,
-                                                               bool is_modified) const {
+std::filesystem::path StandardBaseTemplates::get_template_path(core::ResidueType type, bool is_modified) const {
     std::string filename = type_to_filename(type, is_modified);
     return template_path_ / filename;
 }
@@ -108,15 +107,13 @@ std::filesystem::path StandardBaseTemplates::get_template_path(core::ResidueType
 
 bool StandardBaseTemplates::template_exists(core::ResidueType type) const {
     std::filesystem::path template_file = get_template_path(type);
-    return std::filesystem::exists(template_file) &&
-           std::filesystem::is_regular_file(template_file);
+    return std::filesystem::exists(template_file) && std::filesystem::is_regular_file(template_file);
 }
 
 core::Structure StandardBaseTemplates::load_template(core::ResidueType type, bool is_modified) {
     // Create cache key that includes is_modified
     // Use a simple encoding: type * 2 + is_modified
-    auto cache_key =
-        static_cast<core::ResidueType>(static_cast<int>(type) * 2 + (is_modified ? 1 : 0));
+    auto cache_key = static_cast<core::ResidueType>(static_cast<int>(type) * 2 + (is_modified ? 1 : 0));
 
     // Check cache first
     auto it = cache_.find(cache_key);

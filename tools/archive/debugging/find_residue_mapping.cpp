@@ -46,16 +46,15 @@ int main(int argc, char* argv[]) {
 
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
-            std::tuple<std::string, char, int, char> key = std::make_tuple(
-                residue.name(), residue.chain_id(), residue.seq_num(), residue.insertion());
+            std::tuple<std::string, char, int, char> key = std::make_tuple(residue.name(), residue.chain_id(),
+                                                                           residue.seq_num(), residue.insertion());
             modern_residue_map[key] = modern_idx;
 
             if (target_legacy_idx > 0 && modern_idx == static_cast<size_t>(target_legacy_idx)) {
                 std::cout << ">>> ";
             }
-            std::cout << std::setw(4) << modern_idx << ". " << std::setw(3) << residue.name()
-                      << " (chain " << residue.chain_id() << ", seq " << std::setw(4)
-                      << residue.seq_num();
+            std::cout << std::setw(4) << modern_idx << ". " << std::setw(3) << residue.name() << " (chain "
+                      << residue.chain_id() << ", seq " << std::setw(4) << residue.seq_num();
             if (residue.insertion() != ' ') {
                 std::cout << ", ins='" << residue.insertion() << "'";
             }
@@ -87,11 +86,10 @@ int main(int argc, char* argv[]) {
         for (const auto& chain : structure.chains()) {
             for (const auto& residue : chain.residues()) {
                 if (modern_idx == static_cast<size_t>(target_legacy_idx)) {
-                    std::cout << residue.name() << " (chain " << residue.chain_id() << ", seq "
-                              << residue.seq_num() << ")\n";
+                    std::cout << residue.name() << " (chain " << residue.chain_id() << ", seq " << residue.seq_num()
+                              << ")\n";
                     std::cout << "\nBut legacy might count this differently!\n";
-                    std::cout
-                        << "Need to use legacy's residue_idx() function to get correct mapping.\n";
+                    std::cout << "Need to use legacy's residue_idx() function to get correct mapping.\n";
                     break;
                 }
                 modern_idx++;

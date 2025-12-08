@@ -123,8 +123,7 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
-        std::cout << "Residues with frames after protocol: " << residues_with_frames_after
-                  << std::endl;
+        std::cout << "Residues with frames after protocol: " << residues_with_frames_after << std::endl;
 
         // Check if any residues are nucleotides with frames and legacy_idx
         size_t nuc_with_frames = 0;
@@ -161,8 +160,7 @@ int main(int argc, char* argv[]) {
         }
         std::cout << std::endl;
         if (!legacy_indices_with_frames.empty()) {
-            std::cout << "Max legacy index with frame: " << legacy_indices_with_frames.back()
-                      << std::endl;
+            std::cout << "Max legacy index with frame: " << legacy_indices_with_frames.back() << std::endl;
         }
 
         // Find max legacy index overall
@@ -180,10 +178,8 @@ int main(int argc, char* argv[]) {
         std::cout << "Max legacy index in structure: " << max_legacy_idx << std::endl;
 
         // Check legacy expected pairs
-        std::cout << "\nExpected legacy pairs (from data/json_legacy/base_pair/6V9Q.json):"
-                  << std::endl;
-        std::cout << "  Residue indices: 42, 44, 46, 47, 48, 49, 50, 51, 55, 56, 57, 58, 59, 60"
-                  << std::endl;
+        std::cout << "\nExpected legacy pairs (from data/json_legacy/base_pair/6V9Q.json):" << std::endl;
+        std::cout << "  Residue indices: 42, 44, 46, 47, 48, 49, 50, 51, 55, 56, 57, 58, 59, 60" << std::endl;
         std::cout << "  Checking if these have frames and legacy_idx..." << std::endl;
         for (int expected_idx : {42, 44, 46, 47, 48, 49, 50, 51, 55, 56, 57, 58, 59, 60}) {
             bool found = false;
@@ -196,8 +192,7 @@ int main(int argc, char* argv[]) {
                             bool has_frame = residue.reference_frame().has_value();
                             bool is_nuc = residue.is_nucleotide();
                             std::cout << "  Residue " << expected_idx << ": found=" << found
-                                      << ", has_frame=" << has_frame << ", is_nucleotide=" << is_nuc
-                                      << std::endl;
+                                      << ", has_frame=" << has_frame << ", is_nucleotide=" << is_nuc << std::endl;
                             break;
                         }
                     }

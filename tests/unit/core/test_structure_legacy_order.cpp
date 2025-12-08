@@ -101,13 +101,11 @@ TEST_F(StructureLegacyOrderTest, ResidueOrderingIsConsistent) {
     auto residues1 = structure.residues_in_legacy_order();
     auto residues2 = structure.residues_in_legacy_order();
 
-    ASSERT_EQ(residues1.size(), residues2.size())
-        << "Both calls should return same number of residues";
+    ASSERT_EQ(residues1.size(), residues2.size()) << "Both calls should return same number of residues";
 
     // Verify all residues match
     for (size_t i = 0; i < residues1.size(); i++) {
-        EXPECT_EQ(residues1[i], residues2[i])
-            << "Residue at index " << i << " should be the same in both calls";
+        EXPECT_EQ(residues1[i], residues2[i]) << "Residue at index " << i << " should be the same in both calls";
 
         if (residues1[i] != residues2[i]) {
             break; // Stop after first mismatch for cleaner output
@@ -190,6 +188,5 @@ TEST_F(StructureLegacyOrderTest, ParserSettingsAffectCount) {
         << "Including HETATMs and waters should increase residue count";
 
     // Included should match legacy count (1070)
-    EXPECT_EQ(residues_included.size(), 1070)
-        << "With HETATMs and waters included, count should match legacy";
+    EXPECT_EQ(residues_included.size(), 1070) << "With HETATMs and waters included, count should match legacy";
 }

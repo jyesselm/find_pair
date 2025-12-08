@@ -156,15 +156,15 @@ extern struct_Gvars Gvars;
 #define WC_LIST "XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"
 #define CX_LIST "ACGITUX"
 #define CB_LIST "ACGITU"
-#define NT_LIST                                                                                    \
-    "  A", "  C", "  G", "  I", "  T", "  U", "ADE", "CYT", "GUA", "INO", "THY", "URA", " +A",     \
-        " +C", " +G", " +I", " +T", " +U"
+#define NT_LIST                                                                                                        \
+    "  A", "  C", "  G", "  I", "  T", "  U", "ADE", "CYT", "GUA", "INO", "THY", "URA", " +A", " +C", " +G", " +I",    \
+        " +T", " +U"
 #define WATER_LIST "H2O", "HHO", "OHH", "HOH", "OH2", "SOL", "WAT", "TIP"
 #define NUM_SAA 20
 #define NUM_ATM 12
-#define AA_LIST                                                                                    \
-    "ALA", "VAL", "PHE", "PRO", "MET", "ILE", "LEU", "ASP", "GLU", "LYS", "ARG", "SER", "THR",     \
-        "TYR", "HIS", "CYS", "ASN", "GLN", "TRP", "GLY"
+#define AA_LIST                                                                                                        \
+    "ALA", "VAL", "PHE", "PRO", "MET", "ILE", "LEU", "ASP", "GLU", "LYS", "ARG", "SER", "THR", "TYR", "HIS", "CYS",    \
+        "ASN", "GLN", "TRP", "GLY"
 #define OVERLAP 0.01
 #define PBLKALC_FILE "pblk_lkg.alc"
 #define SNAP_PEP_PDB "snap_pep.pdb"

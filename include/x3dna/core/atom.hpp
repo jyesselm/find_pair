@@ -28,8 +28,7 @@ public:
      * @param name Atom name (e.g., " C1'", " N3 ")
      * @param position 3D position vector
      */
-    Atom(const std::string& name, const geometry::Vector3D& position)
-        : name_(name), position_(position) {}
+    Atom(const std::string& name, const geometry::Vector3D& position) : name_(name), position_(position) {}
 
     /**
      * @brief Constructor with full metadata
@@ -40,10 +39,10 @@ public:
      * @param residue_seq Residue sequence number
      * @param record_type PDB record type (e.g., 'A' for ATOM, 'H' for HETATM)
      */
-    Atom(const std::string& name, const geometry::Vector3D& position,
-         const std::string& residue_name, char chain_id, int residue_seq, char record_type = 'A')
-        : name_(name), position_(position), residue_name_(residue_name), chain_id_(chain_id),
-          residue_seq_(residue_seq), record_type_(record_type) {}
+    Atom(const std::string& name, const geometry::Vector3D& position, const std::string& residue_name, char chain_id,
+         int residue_seq, char record_type = 'A')
+        : name_(name), position_(position), residue_name_(residue_name), chain_id_(chain_id), residue_seq_(residue_seq),
+          record_type_(record_type) {}
 
     // Getters
     const std::string& name() const {
@@ -173,9 +172,8 @@ public:
     bool is_ring_atom() const {
         // Common ring atoms in nucleic acids
         const std::string trimmed = trim_name();
-        return (trimmed == "N1" || trimmed == "C2" || trimmed == "N3" || trimmed == "C4" ||
-                trimmed == "C5" || trimmed == "C6" || trimmed == "N7" || trimmed == "C8" ||
-                trimmed == "N9");
+        return (trimmed == "N1" || trimmed == "C2" || trimmed == "N3" || trimmed == "C4" || trimmed == "C5" ||
+                trimmed == "C6" || trimmed == "N7" || trimmed == "C8" || trimmed == "N9");
     }
 
     /**

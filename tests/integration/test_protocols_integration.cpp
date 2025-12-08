@@ -105,10 +105,9 @@ protected:
             // selected pairs (not all valid pairs) Format: array with one record containing "pairs"
             // which is an array of [i, j] arrays We need to get the full pair data (frames,
             // origins, etc.) from base_pair file
-            fs::path legacy_selection_file =
-                fs::path("data/json_legacy/find_bestpair_selection") / (pdb_name + ".json");
-            fs::path legacy_base_pair_file =
-                fs::path("data/json_legacy/base_pair") / (pdb_name + ".json");
+            fs::path legacy_selection_file = fs::path("data/json_legacy/find_bestpair_selection") /
+                                             (pdb_name + ".json");
+            fs::path legacy_base_pair_file = fs::path("data/json_legacy/base_pair") / (pdb_name + ".json");
 
             std::set<std::pair<int, int>> selected_pairs_set;
 
@@ -150,8 +149,7 @@ protected:
                                 // Keep first occurrence of each unique pair
                                 bool already_added = false;
                                 for (const auto& existing : base_pairs) {
-                                    if (existing.contains("base_i") &&
-                                        existing.contains("base_j")) {
+                                    if (existing.contains("base_i") && existing.contains("base_j")) {
                                         int ei = existing["base_i"].get<int>();
                                         int ej = existing["base_j"].get<int>();
                                         if ((ei == i && ej == j) || (ei == j && ej == i)) {
@@ -171,8 +169,7 @@ protected:
                 // Fallback: use base_pair file directly if selection file doesn't exist
                 // Fallback: try base_pair file (but note it contains ALL valid pairs, not just
                 // selected)
-                fs::path legacy_base_pair_file =
-                    fs::path("data/json_legacy/base_pair") / (pdb_name + ".json");
+                fs::path legacy_base_pair_file = fs::path("data/json_legacy/base_pair") / (pdb_name + ".json");
                 if (fs::exists(legacy_base_pair_file)) {
                     std::ifstream file(legacy_base_pair_file);
                     nlohmann::json legacy_json;
@@ -198,8 +195,7 @@ protected:
      *
      * Verifies that modern protocol output matches legacy JSON from data/json_legacy/
      */
-    void compare_base_pairs(const std::vector<BasePair>& modern_pairs,
-                            const std::vector<nlohmann::json>& legacy_pairs,
+    void compare_base_pairs(const std::vector<BasePair>& modern_pairs, const std::vector<nlohmann::json>& legacy_pairs,
                             const std::string& pdb_name) {
         // Verify legacy pairs were loaded (from data/json_legacy/base_pair/)
         EXPECT_FALSE(legacy_pairs.empty())
@@ -244,13 +240,12 @@ protected:
         size_t modern_unique = modern_map.size();
         size_t legacy_unique = legacy_map.size();
 
-        std::cout << "Comparing " << pdb_name << ": modern=" << modern_pairs.size() << " pairs ("
-                  << modern_unique << " unique), legacy=" << legacy_pairs.size() << " pairs ("
-                  << legacy_unique << " unique)" << std::endl;
+        std::cout << "Comparing " << pdb_name << ": modern=" << modern_pairs.size() << " pairs (" << modern_unique
+                  << " unique), legacy=" << legacy_pairs.size() << " pairs (" << legacy_unique << " unique)"
+                  << std::endl;
 
-        EXPECT_EQ(modern_unique, legacy_unique)
-            << "Unique pair count mismatch for " << pdb_name << ": modern=" << modern_unique
-            << ", legacy=" << legacy_unique;
+        EXPECT_EQ(modern_unique, legacy_unique) << "Unique pair count mismatch for " << pdb_name
+                                                << ": modern=" << modern_unique << ", legacy=" << legacy_unique;
 
         if (modern_unique != legacy_unique) {
             return; // Can't compare parameters if counts don't match
@@ -287,9 +282,8 @@ protected:
             bool order_reversed = (legacy_i == modern_j && legacy_j == modern_i);
 
             EXPECT_TRUE(order_matches || order_reversed)
-                << "Pair order mismatch for (" << i << ", " << j << ") in " << pdb_name
-                << ": legacy=(" << legacy_i << ", " << legacy_j << "), modern=(" << modern_i << ", "
-                << modern_j << ")";
+                << "Pair order mismatch for (" << i << ", " << j << ") in " << pdb_name << ": legacy=(" << legacy_i
+                << ", " << legacy_j << "), modern=(" << modern_i << ", " << modern_j << ")";
 
             // Compare bp_type (handle reversed order: "UG" vs "GU" are the same pair)
             if (legacy_json.contains("bp_type")) {
@@ -300,22 +294,20 @@ protected:
                 bool bp_type_matches = (modern_bp_type == legacy_bp_type);
                 if (!bp_type_matches && modern_bp_type.size() == 2 && legacy_bp_type.size() == 2) {
                     // Check if reversed (e.g., "UG" vs "GU")
-                    std::string modern_reversed =
-                        std::string(1, modern_bp_type[1]) + std::string(1, modern_bp_type[0]);
+                    std::string modern_reversed = std::string(1, modern_bp_type[1]) + std::string(1, modern_bp_type[0]);
                     bp_type_matches = (modern_reversed == legacy_bp_type);
                 }
 
-                EXPECT_TRUE(bp_type_matches)
-                    << "bp_type mismatch for pair (" << i << ", " << j << ") in " << pdb_name
-                    << ": modern=" << modern_bp_type << ", legacy=" << legacy_bp_type;
+                EXPECT_TRUE(bp_type_matches) << "bp_type mismatch for pair (" << i << ", " << j << ") in " << pdb_name
+                                             << ": modern=" << modern_bp_type << ", legacy=" << legacy_bp_type;
             }
 
             // Compare frames and origins - need to handle order correctly
             // If order matches: legacy orien_i/org_i -> modern frame1, legacy orien_j/org_j ->
             // modern frame2 If order reversed: legacy orien_i/org_i -> modern frame2, legacy
             // orien_j/org_j -> modern frame1
-            if (legacy_json.contains("orien_i") && legacy_json.contains("org_i") &&
-                legacy_json.contains("orien_j") && legacy_json.contains("org_j")) {
+            if (legacy_json.contains("orien_i") && legacy_json.contains("org_i") && legacy_json.contains("orien_j") &&
+                legacy_json.contains("org_j")) {
 
                 const auto& orien_i = legacy_json["orien_i"];
                 const auto& org_i = legacy_json["org_i"];
@@ -348,14 +340,11 @@ protected:
                     // Compare origin and orientation for residue i
                     if (org_i.is_array() && org_i.size() == 3) {
                         EXPECT_NEAR(modern_frame_i.origin().x(), org_i[0].get<double>(), TOLERANCE)
-                            << "org_i[0] mismatch for pair (" << i << ", " << j << ") in "
-                            << pdb_name;
+                            << "org_i[0] mismatch for pair (" << i << ", " << j << ") in " << pdb_name;
                         EXPECT_NEAR(modern_frame_i.origin().y(), org_i[1].get<double>(), TOLERANCE)
-                            << "org_i[1] mismatch for pair (" << i << ", " << j << ") in "
-                            << pdb_name;
+                            << "org_i[1] mismatch for pair (" << i << ", " << j << ") in " << pdb_name;
                         EXPECT_NEAR(modern_frame_i.origin().z(), org_i[2].get<double>(), TOLERANCE)
-                            << "org_i[2] mismatch for pair (" << i << ", " << j << ") in "
-                            << pdb_name;
+                            << "org_i[2] mismatch for pair (" << i << ", " << j << ") in " << pdb_name;
                     }
 
                     if (orien_i.is_array() && orien_i.size() == 9) {
@@ -364,8 +353,8 @@ protected:
                             for (int col = 0; col < 3; ++col) {
                                 int idx = row * 3 + col;
                                 EXPECT_NEAR(rot.at(row, col), orien_i[idx].get<double>(), TOLERANCE)
-                                    << "orien_i[" << row << "][" << col << "] mismatch for pair ("
-                                    << i << ", " << j << ") in " << pdb_name;
+                                    << "orien_i[" << row << "][" << col << "] mismatch for pair (" << i << ", " << j
+                                    << ") in " << pdb_name;
                             }
                         }
                     }
@@ -373,14 +362,11 @@ protected:
                     // Compare origin and orientation for residue j
                     if (org_j.is_array() && org_j.size() == 3) {
                         EXPECT_NEAR(modern_frame_j.origin().x(), org_j[0].get<double>(), TOLERANCE)
-                            << "org_j[0] mismatch for pair (" << i << ", " << j << ") in "
-                            << pdb_name;
+                            << "org_j[0] mismatch for pair (" << i << ", " << j << ") in " << pdb_name;
                         EXPECT_NEAR(modern_frame_j.origin().y(), org_j[1].get<double>(), TOLERANCE)
-                            << "org_j[1] mismatch for pair (" << i << ", " << j << ") in "
-                            << pdb_name;
+                            << "org_j[1] mismatch for pair (" << i << ", " << j << ") in " << pdb_name;
                         EXPECT_NEAR(modern_frame_j.origin().z(), org_j[2].get<double>(), TOLERANCE)
-                            << "org_j[2] mismatch for pair (" << i << ", " << j << ") in "
-                            << pdb_name;
+                            << "org_j[2] mismatch for pair (" << i << ", " << j << ") in " << pdb_name;
                     }
 
                     if (orien_j.is_array() && orien_j.size() == 9) {
@@ -389,14 +375,13 @@ protected:
                             for (int col = 0; col < 3; ++col) {
                                 int idx = row * 3 + col;
                                 EXPECT_NEAR(rot.at(row, col), orien_j[idx].get<double>(), TOLERANCE)
-                                    << "orien_j[" << row << "][" << col << "] mismatch for pair ("
-                                    << i << ", " << j << ") in " << pdb_name;
+                                    << "orien_j[" << row << "][" << col << "] mismatch for pair (" << i << ", " << j
+                                    << ") in " << pdb_name;
                             }
                         }
                     }
                 } else {
-                    EXPECT_TRUE(false)
-                        << "Missing frames for pair (" << i << ", " << j << ") in " << pdb_name;
+                    EXPECT_TRUE(false) << "Missing frames for pair (" << i << ", " << j << ") in " << pdb_name;
                 }
             }
 
@@ -416,11 +401,9 @@ protected:
                     double modern_dir_z = frame1.z_axis().dot(frame2.z_axis());
 
                     EXPECT_NEAR(modern_dir_y, dir_xyz[0].get<double>(), TOLERANCE)
-                        << "dir_xyz[0] (dir_y) mismatch for pair (" << i << ", " << j << ") in "
-                        << pdb_name;
+                        << "dir_xyz[0] (dir_y) mismatch for pair (" << i << ", " << j << ") in " << pdb_name;
                     EXPECT_NEAR(modern_dir_z, dir_xyz[1].get<double>(), TOLERANCE)
-                        << "dir_xyz[1] (dir_z) mismatch for pair (" << i << ", " << j << ") in "
-                        << pdb_name;
+                        << "dir_xyz[1] (dir_z) mismatch for pair (" << i << ", " << j << ") in " << pdb_name;
                 }
             }
         }
@@ -473,17 +456,15 @@ TEST_F(ProtocolsIntegrationTest, FindPairProtocolSinglePDB) {
     auto legacy_pairs = load_legacy_base_pairs(pair.json_file);
 
     // Verify legacy values were loaded from data/json_legacy/
-    EXPECT_FALSE(legacy_pairs.empty())
-        << "Failed to load legacy base pairs from data/json_legacy/base_pair/ for "
-        << pair.pdb_name;
+    EXPECT_FALSE(legacy_pairs.empty()) << "Failed to load legacy base pairs from data/json_legacy/base_pair/ for "
+                                       << pair.pdb_name;
 
     // Verify legacy pairs have correct structure (from org code)
     if (!legacy_pairs.empty()) {
         const auto& first_legacy = legacy_pairs[0];
         EXPECT_TRUE(first_legacy.contains("base_i") && first_legacy.contains("base_j"))
             << "Legacy JSON missing base_i/base_j (not from org code output)";
-        EXPECT_TRUE(first_legacy.contains("bp_type"))
-            << "Legacy JSON missing bp_type (not from org code output)";
+        EXPECT_TRUE(first_legacy.contains("bp_type")) << "Legacy JSON missing bp_type (not from org code output)";
     }
 
     // Compare with legacy JSON from data/json_legacy/
@@ -562,16 +543,14 @@ TEST_F(ProtocolsIntegrationTest, FindPairProtocolMultiplePDBs) {
                 // Compare unique pair counts
                 if (modern_set.size() == legacy_set.size()) {
                     matched++;
-                    std::cout << "✓ " << pair.pdb_name << ": " << modern_set.size()
-                              << " unique pairs match" << std::endl;
+                    std::cout << "✓ " << pair.pdb_name << ": " << modern_set.size() << " unique pairs match"
+                              << std::endl;
                 } else {
                     std::cout << "✗ " << pair.pdb_name << ": modern=" << modern_set.size()
-                              << " unique, legacy=" << legacy_set.size() << " unique (MISMATCH)"
-                              << std::endl;
+                              << " unique, legacy=" << legacy_set.size() << " unique (MISMATCH)" << std::endl;
                 }
             } else {
-                std::cout << "⚠ " << pair.pdb_name << ": No legacy pairs found (skipped)"
-                          << std::endl;
+                std::cout << "⚠ " << pair.pdb_name << ": No legacy pairs found (skipped)" << std::endl;
             }
 
             successful++;

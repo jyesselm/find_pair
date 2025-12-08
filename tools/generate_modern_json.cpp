@@ -104,8 +104,8 @@ bool detect_rna_structure(const Structure& structure) {
 }
 
 // Helper function: Setup frame calculator with RNA detection
-BaseFrameCalculator setup_frame_calculator(const std::filesystem::path& template_path,
-                                           const Structure& structure, bool verbose = true) {
+BaseFrameCalculator setup_frame_calculator(const std::filesystem::path& template_path, const Structure& structure,
+                                           bool verbose = true) {
     BaseFrameCalculator calculator(template_path);
 
     bool is_rna = detect_rna_structure(structure);
@@ -123,9 +123,8 @@ BaseFrameCalculator setup_frame_calculator(const std::filesystem::path& template
 }
 
 // Process a single PDB file
-bool process_single_pdb(const std::filesystem::path& pdb_file,
-                        const std::filesystem::path& json_output_dir, const std::string& stage,
-                        bool verbose = true) {
+bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesystem::path& json_output_dir,
+                        const std::string& stage, bool verbose = true) {
     try {
         // Create output directory if needed
         std::filesystem::create_directories(json_output_dir);
@@ -149,8 +148,7 @@ bool process_single_pdb(const std::filesystem::path& pdb_file,
         if (stage == "atoms" || stage == "all") {
             structure.write_atoms_json(json_output_dir);
             if (verbose) {
-                std::cout << "  ✅ pdb_atoms/" << pdb_name << ".json (" << structure.num_atoms()
-                          << " atoms)\n";
+                std::cout << "  ✅ pdb_atoms/" << pdb_name << ".json (" << structure.num_atoms() << " atoms)\n";
             }
         }
 
@@ -160,8 +158,8 @@ bool process_single_pdb(const std::filesystem::path& pdb_file,
             writer.record_residue_indices(structure);
             writer.write_split_files(json_output_dir, true);
             if (verbose) {
-                std::cout << "  ✅ residue_indices/" << pdb_name << ".json ("
-                          << structure.num_residues() << " residues)\n";
+                std::cout << "  ✅ residue_indices/" << pdb_name << ".json (" << structure.num_residues()
+                          << " residues)\n";
             }
         }
 
@@ -173,14 +171,12 @@ bool process_single_pdb(const std::filesystem::path& pdb_file,
         if (stage == "ls_fitting" || stage == "all") {
             JsonWriter writer(pdb_file);
             writer.record_residue_indices(structure);
-            BaseFrameCalculator calculator =
-                setup_frame_calculator("data/templates", structure, verbose);
+            BaseFrameCalculator calculator = setup_frame_calculator("data/templates", structure, verbose);
             FrameJsonRecorder recorder(calculator);
             size_t records_count = recorder.record_ls_fitting(structure, writer);
             writer.write_split_files(json_output_dir, true);
             if (verbose) {
-                std::cout << "  ✅ ls_fitting/" << pdb_name << ".json (" << records_count
-                          << " records)\n";
+                std::cout << "  ✅ ls_fitting/" << pdb_name << ".json (" << records_count << " records)\n";
             }
         }
 
@@ -188,32 +184,26 @@ bool process_single_pdb(const std::filesystem::path& pdb_file,
         if (stage == "frames" || stage == "all") {
             JsonWriter writer(pdb_file);
             writer.record_residue_indices(structure);
-            BaseFrameCalculator calculator =
-                setup_frame_calculator("data/templates", structure, verbose);
+            BaseFrameCalculator calculator = setup_frame_calculator("data/templates", structure, verbose);
             FrameJsonRecorder recorder(calculator);
             size_t base_frame_count = recorder.record_base_frame_calc(structure, writer);
             size_t frame_calc_count = recorder.record_frame_calc(structure, writer);
             writer.write_split_files(json_output_dir, true);
             if (verbose) {
-                std::cout << "  ✅ base_frame_calc/" << pdb_name << ".json (" << base_frame_count
-                          << " records)\n";
-                std::cout << "  ✅ frame_calc/" << pdb_name << ".json (" << frame_calc_count
-                          << " records)\n";
+                std::cout << "  ✅ base_frame_calc/" << pdb_name << ".json (" << base_frame_count << " records)\n";
+                std::cout << "  ✅ frame_calc/" << pdb_name << ".json (" << frame_calc_count << " records)\n";
             }
         }
 
-        if (stage == "atoms" || stage == "residue_indices" || stage == "ls_fitting" ||
-            stage == "frames") {
+        if (stage == "atoms" || stage == "residue_indices" || stage == "ls_fitting" || stage == "frames") {
             return true;
         }
 
         // Stages 4-8: Full processing
-        if (stage != "atoms" && stage != "residue_indices" && stage != "ls_fitting" &&
-            stage != "frames") {
+        if (stage != "atoms" && stage != "residue_indices" && stage != "ls_fitting" && stage != "frames") {
             JsonWriter writer(pdb_file);
             writer.record_residue_indices(structure);
-            BaseFrameCalculator calculator =
-                setup_frame_calculator("data/templates", structure, verbose);
+            BaseFrameCalculator calculator = setup_frame_calculator("data/templates", structure, verbose);
             calculator.calculate_all_frames(structure);
 
             BasePairFinder finder;
@@ -224,8 +214,7 @@ bool process_single_pdb(const std::filesystem::path& pdb_file,
             writer.write_split_files(json_output_dir, true);
 
             if (verbose) {
-                std::cout << "  ✅ Generated all JSON files (" << base_pairs.size()
-                          << " base pairs)\n";
+                std::cout << "  ✅ Generated all JSON files (" << base_pairs.size() << " base pairs)\n";
             }
         }
 
@@ -269,10 +258,8 @@ void print_usage(const char* prog_name) {
     std::cerr << "  Single PDB:\n";
     std::cerr << "    " << prog_name << " <input.pdb> <output_dir> [--stage=STAGE]\n\n";
     std::cerr << "  Multiple PDBs:\n";
-    std::cerr << "    " << prog_name
-              << " --pdb-list=<file.txt> --pdb-dir=<pdb_dir> <output_dir> [options]\n";
-    std::cerr << "    " << prog_name
-              << " --all-pdbs --pdb-dir=<pdb_dir> <output_dir> [options]\n\n";
+    std::cerr << "    " << prog_name << " --pdb-list=<file.txt> --pdb-dir=<pdb_dir> <output_dir> [options]\n";
+    std::cerr << "    " << prog_name << " --all-pdbs --pdb-dir=<pdb_dir> <output_dir> [options]\n\n";
     std::cerr << "Options:\n";
     std::cerr << "  --stage=STAGE       Stage to generate (atoms, frames, all, etc.)\n";
     std::cerr << "  --pdb-list=FILE     File with PDB IDs (one per line)\n";
@@ -287,10 +274,8 @@ void print_usage(const char* prog_name) {
     std::cerr << "  hbonds, validation, selection, steps, helical, all\n\n";
     std::cerr << "Examples:\n";
     std::cerr << "  " << prog_name << " data/pdb/1EHZ.pdb data/json --stage=atoms\n";
-    std::cerr << "  " << prog_name
-              << " --pdb-list=fast_pdbs.txt --pdb-dir=data/pdb data/json --stage=frames\n";
-    std::cerr << "  " << prog_name
-              << " --all-pdbs --pdb-dir=data/pdb data/json --resume --max=100\n";
+    std::cerr << "  " << prog_name << " --pdb-list=fast_pdbs.txt --pdb-dir=data/pdb data/json --stage=frames\n";
+    std::cerr << "  " << prog_name << " --all-pdbs --pdb-dir=data/pdb data/json --resume --max=100\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -344,9 +329,9 @@ int main(int argc, char* argv[]) {
     }
 
     // Validate stage
-    const std::set<std::string> valid_stages = {
-        "atoms",      "residue_indices", "ls_fitting", "frames",  "distances", "hbonds",
-        "validation", "selection",       "steps",      "helical", "all"};
+    const std::set<std::string> valid_stages = {"atoms",     "residue_indices", "ls_fitting", "frames",
+                                                "distances", "hbonds",          "validation", "selection",
+                                                "steps",     "helical",         "all"};
     if (valid_stages.find(stage) == valid_stages.end()) {
         std::cerr << "Error: Invalid stage: " << stage << "\n";
         return 1;
@@ -457,8 +442,7 @@ int main(int argc, char* argv[]) {
 
         if (!std::filesystem::exists(pdb_path)) {
             if (!quiet) {
-                std::cout << "[" << (i + 1) << "/" << pdb_ids.size() << "] " << pdb_id
-                          << ": SKIP (file not found)\n";
+                std::cout << "[" << (i + 1) << "/" << pdb_ids.size() << "] " << pdb_id << ": SKIP (file not found)\n";
             }
             progress.failed_pdbs.push_back(pdb_id);
             failed++;
@@ -491,9 +475,8 @@ int main(int argc, char* argv[]) {
         progress.last_update = get_timestamp();
 
         // Remove from pending
-        progress.pending_pdbs.erase(
-            std::remove(progress.pending_pdbs.begin(), progress.pending_pdbs.end(), pdb_id),
-            progress.pending_pdbs.end());
+        progress.pending_pdbs.erase(std::remove(progress.pending_pdbs.begin(), progress.pending_pdbs.end(), pdb_id),
+                                    progress.pending_pdbs.end());
 
         // Save progress after each PDB
         save_progress(progress, progress_file);

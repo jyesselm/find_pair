@@ -42,8 +42,8 @@ std::vector<const Residue*> get_residues_in_legacy_order(const Structure& struct
 
     for (const auto& awr : atoms_with_residues) {
         // Legacy groups by (ResName, ChainID, ResSeq, insertion)
-        auto legacy_key = std::make_tuple(awr.atom->residue_name(), awr.atom->chain_id(),
-                                          awr.atom->residue_seq(), awr.atom->insertion());
+        auto legacy_key = std::make_tuple(awr.atom->residue_name(), awr.atom->chain_id(), awr.atom->residue_seq(),
+                                          awr.atom->insertion());
 
         // Only add residue when we first see it
         if (seen_residues.find(legacy_key) == seen_residues.end()) {

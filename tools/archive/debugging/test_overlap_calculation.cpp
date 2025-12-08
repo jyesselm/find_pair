@@ -43,8 +43,7 @@ void test_simple_overlap() {
     double overlap = validator.calculate_overlap_area(res1, res2, oave, zave);
 
     std::cout << "  Expected overlap: ~50.0 (5x10 rectangle)\n";
-    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap
-              << "\n\n";
+    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap << "\n\n";
 }
 
 // Test with non-overlapping polygons
@@ -73,8 +72,7 @@ void test_no_overlap() {
     double overlap = validator.calculate_overlap_area(res1, res2, oave, zave);
 
     std::cout << "  Expected overlap: 0.0\n";
-    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap
-              << "\n\n";
+    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap << "\n\n";
 }
 
 // Test with one polygon inside another
@@ -103,8 +101,7 @@ void test_inside_overlap() {
     double overlap = validator.calculate_overlap_area(res1, res2, oave, zave);
 
     std::cout << "  Expected overlap: ~36.0 (6x6 rectangle)\n";
-    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap
-              << "\n\n";
+    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap << "\n\n";
 }
 
 // Test with complex polygon shapes
@@ -138,8 +135,7 @@ void test_complex_shapes() {
     double overlap = validator.calculate_overlap_area(res1, res2, oave, zave);
 
     std::cout << "  Expected overlap: > 0.0 (triangle inside pentagon)\n";
-    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap
-              << "\n\n";
+    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap << "\n\n";
 
     // Test 4b: Star-like shape vs rectangle
     std::cout << "Test 4b: Star-like shape vs rectangle\n";
@@ -162,8 +158,7 @@ void test_complex_shapes() {
     overlap = validator.calculate_overlap_area(res1, res2, oave, zave);
 
     std::cout << "  Expected overlap: > 0.0 (partial overlap)\n";
-    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap
-              << "\n\n";
+    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap << "\n\n";
 
     // Test 4c: Concave polygon vs convex polygon
     std::cout << "Test 4c: Concave (L-shape) vs convex polygon\n";
@@ -186,8 +181,7 @@ void test_complex_shapes() {
     overlap = validator.calculate_overlap_area(res1, res2, oave, zave);
 
     std::cout << "  Expected overlap: > 0.0 (triangle overlaps L-shape)\n";
-    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap
-              << "\n\n";
+    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap << "\n\n";
 
     // Test 4d: Rotated shapes (test projection)
     std::cout << "Test 4d: Rotated shapes (test z-axis projection)\n";
@@ -211,8 +205,7 @@ void test_complex_shapes() {
     overlap = validator.calculate_overlap_area(res1, res2, oave, zave);
 
     std::cout << "  Expected overlap: > 0.0 (rotated squares overlap)\n";
-    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap
-              << "\n\n";
+    std::cout << "  Calculated overlap: " << std::fixed << std::setprecision(6) << overlap << "\n\n";
 
     // Test 4e: Very small overlap (near threshold)
     std::cout << "Test 4e: Very small overlap (near 0.01 threshold)\n";

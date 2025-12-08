@@ -51,7 +51,7 @@ private:
     std::optional<ReferenceFrame> frame1_;      // Reference frame for first residue
     std::optional<ReferenceFrame> frame2_;      // Reference frame for second residue
     std::vector<hydrogen_bond> hbonds_;         // Hydrogen bonds
-    std::optional<size_t> basepair_idx_; // Optional index for tracking (assigned when recording)
+    std::optional<size_t> basepair_idx_;        // Optional index for tracking (assigned when recording)
 
     /**
      * @brief Set base pair type from string and update enum
@@ -66,8 +66,8 @@ private:
      */
     void update_type_from_bp_type() {
         // Watson-Crick pairs from WC_LIST (excluding "XX" placeholder)
-        if (bp_type_ == "AT" || bp_type_ == "TA" || bp_type_ == "AU" || bp_type_ == "UA" ||
-            bp_type_ == "GC" || bp_type_ == "CG" || bp_type_ == "IC" || bp_type_ == "CI") {
+        if (bp_type_ == "AT" || bp_type_ == "TA" || bp_type_ == "AU" || bp_type_ == "UA" || bp_type_ == "GC" ||
+            bp_type_ == "CG" || bp_type_ == "IC" || bp_type_ == "CI") {
             type_ = BasePairType::WATSON_CRICK;
         }
         // Wobble pairs (not in WC_LIST, but commonly occur)
@@ -91,8 +91,7 @@ public:
      * @param idx2 Index of second residue
      * @param type Base pair type
      */
-    BasePair(size_t idx1, size_t idx2, BasePairType type)
-        : residue_idx1_(idx1), residue_idx2_(idx2), type_(type) {}
+    BasePair(size_t idx1, size_t idx2, BasePairType type) : residue_idx1_(idx1), residue_idx2_(idx2), type_(type) {}
 
     // Getters
     size_t residue_idx1() const {
@@ -239,7 +238,7 @@ public:
             j["orien_i"] = frame1_->rotation().to_json_legacy();
             j["org_i"] = frame1_->origin().to_json();
         }
-        
+
         // For frame2 (orien_j), legacy code applies a sign flip when dir_z <= 0
         // Legacy: r2[l][k] = (k == 1 || dir_z > 0) ? orien[j][...] : -orien[j][...]
         // This negates columns 2 and 3 (y and z axes) when dir_z <= 0
@@ -248,7 +247,7 @@ public:
             if (frame1_.has_value()) {
                 dir_z = frame1_->z_axis().dot(frame2_->z_axis());
             }
-            
+
             if (dir_z <= 0.0 && frame1_.has_value()) {
                 // Apply legacy sign flip: negate y and z columns
                 geometry::Matrix3D rot2 = frame2_->rotation();

@@ -11,8 +11,7 @@
 namespace x3dna {
 namespace algorithms {
 
-HelixDetector::HelixDetector(double helix_break_distance)
-    : helix_break_distance_(helix_break_distance) {}
+HelixDetector::HelixDetector(double helix_break_distance) : helix_break_distance_(helix_break_distance) {}
 
 std::vector<Helix> HelixDetector::detect_helices(const std::vector<core::BasePair>& pairs) {
     std::vector<Helix> helices;
@@ -89,8 +88,7 @@ void HelixDetector::reorder_base_pairs(std::vector<core::BasePair>& pairs) {
     }
 }
 
-void HelixDetector::ensure_five_to_three_ordering(std::vector<core::BasePair>& pairs,
-                                                  const Helix& helix) {
+void HelixDetector::ensure_five_to_three_ordering(std::vector<core::BasePair>& pairs, const Helix& helix) {
     // For now, this is a placeholder
     // Legacy code has complex logic for determining 5'→3' orientation
     // based on O3'→P linkage between consecutive residues
@@ -102,8 +100,7 @@ void HelixDetector::ensure_five_to_three_ordering(std::vector<core::BasePair>& p
     (void)helix;
 }
 
-double HelixDetector::calculate_pair_distance(const core::BasePair& pair1,
-                                              const core::BasePair& pair2) const {
+double HelixDetector::calculate_pair_distance(const core::BasePair& pair1, const core::BasePair& pair2) const {
     // Calculate distance between base pair origins
     // Use frame origins if available, otherwise use residue centers
 
@@ -126,8 +123,7 @@ bool HelixDetector::are_neighbors(const core::BasePair& pair1, const core::BaseP
     return distance <= helix_break_distance_;
 }
 
-bool HelixDetector::is_circular(const std::vector<core::BasePair>& pairs,
-                                const Helix& helix) const {
+bool HelixDetector::is_circular(const std::vector<core::BasePair>& pairs, const Helix& helix) const {
     if (helix.base_pair_indices.size() < 2) {
         return false;
     }
@@ -142,8 +138,7 @@ bool HelixDetector::is_circular(const std::vector<core::BasePair>& pairs,
     return are_neighbors(pairs[first_idx], pairs[last_idx]);
 }
 
-std::vector<size_t> HelixDetector::find_neighbors(const std::vector<core::BasePair>& pairs,
-                                                  size_t pair_index) const {
+std::vector<size_t> HelixDetector::find_neighbors(const std::vector<core::BasePair>& pairs, size_t pair_index) const {
     std::vector<size_t> neighbors;
 
     if (pair_index >= pairs.size()) {

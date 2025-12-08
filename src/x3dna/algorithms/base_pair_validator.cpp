@@ -110,8 +110,7 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
     // Perform validation checks
     result.distance_check = in_range(result.dorg, params_.min_dorg, params_.max_dorg);
     result.d_v_check = in_range(result.d_v, params_.min_dv, params_.max_dv);
-    result.plane_angle_check =
-        in_range(result.plane_angle, params_.min_plane_angle, params_.max_plane_angle);
+    result.plane_angle_check = in_range(result.plane_angle, params_.min_plane_angle, params_.max_plane_angle);
     result.dNN_check = in_range(result.dNN, params_.min_dNN, params_.max_dNN);
 
     // Check overlap area
@@ -119,15 +118,15 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
     result.overlap_check = (result.overlap_area < params_.overlap_threshold);
 
     // If all distance/angle checks pass and overlap is acceptable, check hydrogen bonds
-    bool cdns = result.distance_check && result.d_v_check && result.plane_angle_check &&
-                result.dNN_check && result.overlap_check;
+    bool cdns = result.distance_check && result.d_v_check && result.plane_angle_check && result.dNN_check &&
+                result.overlap_check;
 
     if (cdns) {
         // Count H-bonds simply (BEFORE validation) - matches legacy check_pair behavior
         // This is the key fix: legacy counts H-bonds before validation for pair validation
         using namespace x3dna::algorithms::hydrogen_bond;
-        HydrogenBondCounter::count_simple(res1, res2, params_.hb_lower, params_.hb_dist1,
-                                          params_.hb_atoms, result.num_base_hb, result.num_o2_hb);
+        HydrogenBondCounter::count_simple(res1, res2, params_.hb_lower, params_.hb_dist1, params_.hb_atoms,
+                                          result.num_base_hb, result.num_o2_hb);
 
         // Check H-bond requirement (matches legacy lines 4616-4617)
         if (params_.min_base_hb > 0) {
@@ -155,9 +154,8 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
     return result;
 }
 
-void BasePairValidator::calculate_direction_vectors(const ReferenceFrame& frame1,
-                                                    const ReferenceFrame& frame2, double& dir_x,
-                                                    double& dir_y, double& dir_z) {
+void BasePairValidator::calculate_direction_vectors(const ReferenceFrame& frame1, const ReferenceFrame& frame2,
+                                                    double& dir_x, double& dir_y, double& dir_z) {
 
     // Dot products of corresponding axes
     dir_x = frame1.x_axis().dot(frame2.x_axis());
@@ -165,8 +163,8 @@ void BasePairValidator::calculate_direction_vectors(const ReferenceFrame& frame1
     dir_z = frame1.z_axis().dot(frame2.z_axis());
 }
 
-void BasePairValidator::get_bp_zoave(const ReferenceFrame& frame1, const ReferenceFrame& frame2,
-                                     Vector3D& oave, Vector3D& zave) {
+void BasePairValidator::get_bp_zoave(const ReferenceFrame& frame1, const ReferenceFrame& frame2, Vector3D& oave,
+                                     Vector3D& zave) {
 
     // Average origin (matches legacy avexyz)
     oave = (frame1.origin() + frame2.origin()) * 0.5;
@@ -221,13 +219,13 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
     //   - isR=0 for pyrimidines (C, T, U, P and their lowercase modified forms)
     // Then glyco_N looks for N9 (purine) or N1 (pyrimidine)
     // If not found, legacy falls back to finding any atom with '9' or '1' in name
-    
+
     // CRITICAL: Use one_letter_code (which matches legacy bseq) to determine purine/pyrimidine
     // Do NOT use atom presence (e.g., C8) because some modified pyrimidines like 70U
     // have C8 as part of their modification but should still use N1
     char one_letter = residue.one_letter_code();
     char upper_letter = static_cast<char>(std::toupper(static_cast<unsigned char>(one_letter)));
-    
+
     // Purines: A, G, I (and their lowercase modified forms a, g, i)
     // Pyrimidines: C, T, U, P (and their lowercase modified forms c, t, u, p)
     bool is_purine = (upper_letter == 'A' || upper_letter == 'G' || upper_letter == 'I');
@@ -274,11 +272,10 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
 }
 
 // Forward declaration for helper function
-static double calculate_polygon_intersection_area(const std::vector<Point2D>& poly1,
-                                                  const std::vector<Point2D>& poly2);
+static double calculate_polygon_intersection_area(const std::vector<Point2D>& poly1, const std::vector<Point2D>& poly2);
 
-double BasePairValidator::calculate_overlap_area(const Residue& res1, const Residue& res2,
-                                                 const Vector3D& oave, const Vector3D& zave) const {
+double BasePairValidator::calculate_overlap_area(const Residue& res1, const Residue& res2, const Vector3D& oave,
+                                                 const Vector3D& zave) const {
     // Match legacy get_oarea() logic (org/src/ana_fncs.c lines 3327-3358)
     // Steps:
     // 1. Get ring atoms for both residues
@@ -485,8 +482,8 @@ static bool pia_ovl(const Point2D& p, const Point2D& q) {
     return p.x < q.y && q.x < p.y;
 }
 
-static void pia_cross(double* out_s, Vertex* a, Vertex* b, Vertex* c, Vertex* d, double a1,
-                      double a2, double a3, double a4) {
+static void pia_cross(double* out_s, Vertex* a, Vertex* b, Vertex* c, Vertex* d, double a1, double a2, double a3,
+                      double a4) {
     // Matches legacy pia_cross (line 3233-3248)
     double r1, r2;
     Point2D dp;
@@ -520,8 +517,8 @@ static void pia_inness(double* out_s, Vertex* P, long cP, Vertex* Q, long cQ) {
     }
 }
 
-static void pia_fit(double minx, double miny, const double mid, double sclx, double scly,
-                    const Point2D* x, long cx, Vertex* ix, long fudge) {
+static void pia_fit(double minx, double miny, const double mid, double sclx, double scly, const Point2D* x, long cx,
+                    Vertex* ix, long fudge) {
     // Matches legacy pia_fit (line 3188-3216)
     // Converts floating point coordinates to integer coordinates for precision
     long c, t;
@@ -629,11 +626,9 @@ static double calculate_polygon_intersection_area(const std::vector<Point2D>& po
                     a4 = -pia_area(ipb[k + 1].ip, ipa[j].ip, ipa[j + 1].ip);
                     if ((a3 < 0) == (a4 < 0)) {
                         if (o) {
-                            pia_cross(&out_s, &ipa[j], &ipa[j + 1], &ipb[k], &ipb[k + 1], a1, a2,
-                                      a3, a4);
+                            pia_cross(&out_s, &ipa[j], &ipa[j + 1], &ipb[k], &ipb[k + 1], a1, a2, a3, a4);
                         } else {
-                            pia_cross(&out_s, &ipb[k], &ipb[k + 1], &ipa[j], &ipa[j + 1], a3, a4,
-                                      a1, a2);
+                            pia_cross(&out_s, &ipb[k], &ipb[k + 1], &ipa[j], &ipa[j + 1], a3, a4, a1, a2);
                         }
                     }
                 }
@@ -668,11 +663,10 @@ std::vector<core::hydrogen_bond> BasePairValidator::find_hydrogen_bonds(const Re
 
     double hb_lower = params_.hb_lower;
     double hb_dist1 = params_.hb_dist1;
-    double hb_dist2 =
-        0.0; // Matches legacy OVERLAP behavior (Phase 3 conflict marking always false)
+    double hb_dist2 = 0.0; // Matches legacy OVERLAP behavior (Phase 3 conflict marking always false)
 
-    DetailedHBondResult detailed =
-        HydrogenBondFinder::find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1, hb_dist2);
+    DetailedHBondResult detailed = HydrogenBondFinder::find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1,
+                                                                                    hb_dist2);
 
     // Return after_validation which includes ALL H-bonds (including type=' ')
     // This matches legacy behavior where all H-bonds are recorded to JSON
@@ -692,8 +686,7 @@ std::vector<core::hydrogen_bond> BasePairValidator::find_hydrogen_bonds(const Re
     return all_hbonds;
 }
 
-char BasePairValidator::donor_acceptor(char base1, char base2, const std::string& atom1,
-                                       const std::string& atom2) {
+char BasePairValidator::donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2) {
     // Matches legacy donor_acceptor function
     // CB_LIST = "ACGITU" (A=0, C=1, G=2, I=3, T=4, U=5)
     static const char* CB_LIST = "ACGITU";
@@ -886,9 +879,8 @@ bool BasePairValidator::is_base_atom(const std::string& atom_name) {
     // Pattern: space, character (not H or P), digit, space
     // Legacy: atomname[0] == ' ' && strchr("HP", atomname[1]) == NULL
     //         && isdigit(atomname[2]) && atomname[3] == ' '
-    if (atom_name.length() >= 4 && atom_name[0] == ' ' && atom_name[1] != 'H' &&
-        atom_name[1] != 'P' && std::isdigit(static_cast<unsigned char>(atom_name[2])) &&
-        atom_name[3] == ' ') {
+    if (atom_name.length() >= 4 && atom_name[0] == ' ' && atom_name[1] != 'H' && atom_name[1] != 'P' &&
+        std::isdigit(static_cast<unsigned char>(atom_name[2])) && atom_name[3] == ' ') {
         return true;
     }
 

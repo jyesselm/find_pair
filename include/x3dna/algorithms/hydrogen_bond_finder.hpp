@@ -40,9 +40,8 @@ struct DetailedHBondResult {
     std::vector<HydrogenBondResult> after_conflict_resolution;
     std::vector<HydrogenBondResult> after_validation; // ALL H-bonds after validation (including
                                                       // type=' ') - matches legacy JSON recording
-    std::vector<HydrogenBondResult>
-        final_hbonds; // Only H-bonds with type != ' ' (for quality adjustment counting)
-    int num_good_hb;  // Count of H-bonds with type='-' and distance in [2.5, 3.5]
+    std::vector<HydrogenBondResult> final_hbonds;     // Only H-bonds with type != ' ' (for quality adjustment counting)
+    int num_good_hb;                                  // Count of H-bonds with type='-' and distance in [2.5, 3.5]
 };
 
 /**
@@ -68,8 +67,7 @@ public:
      * 3. Validate H-bonds (validate_hbonds)
      * 4. Return only H-bonds with type != ' '
      */
-    static std::vector<HydrogenBondResult> find_hydrogen_bonds(const core::Residue& res1,
-                                                               const core::Residue& res2,
+    static std::vector<HydrogenBondResult> find_hydrogen_bonds(const core::Residue& res1, const core::Residue& res2,
                                                                double hb_lower, double hb_dist1);
 
     /**
@@ -80,10 +78,8 @@ public:
      * @param hb_dist1 Upper distance limit
      * @return Detailed results including all steps
      */
-    static DetailedHBondResult find_hydrogen_bonds_detailed(const core::Residue& res1,
-                                                            const core::Residue& res2,
-                                                            double hb_lower, double hb_dist1,
-                                                            double hb_dist2 = 4.5);
+    static DetailedHBondResult find_hydrogen_bonds_detailed(const core::Residue& res1, const core::Residue& res2,
+                                                            double hb_lower, double hb_dist1, double hb_dist2 = 4.5);
 
 private:
     /**
@@ -99,8 +95,7 @@ private:
      * @param hb_lower Lower distance limit
      * @param hb_dist2 Upper distance limit for linkage type checking
      */
-    static void resolve_conflicts(std::vector<HydrogenBondResult>& hbonds, double hb_lower,
-                                  double hb_dist2);
+    static void resolve_conflicts(std::vector<HydrogenBondResult>& hbonds, double hb_lower, double hb_dist2);
 
     /**
      * @brief Validate H-bonds based on donor-acceptor relationship
@@ -120,8 +115,7 @@ private:
      * @brief Determine H-bond type using donor-acceptor
      * Matches legacy donor_acceptor function
      */
-    static char donor_acceptor(char base1, char base2, const std::string& atom1,
-                               const std::string& atom2);
+    static char donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2);
 };
 
 } // namespace algorithms

@@ -20,17 +20,16 @@ namespace algorithms {
 using namespace x3dna::core;
 using namespace x3dna::geometry;
 
-std::vector<HydrogenBondResult> HydrogenBondFinder::find_hydrogen_bonds(const Residue& res1,
-                                                                        const Residue& res2,
-                                                                        double hb_lower,
-                                                                        double hb_dist1) {
+std::vector<HydrogenBondResult> HydrogenBondFinder::find_hydrogen_bonds(const Residue& res1, const Residue& res2,
+                                                                        double hb_lower, double hb_dist1) {
     // Default hb_dist2 = 4.5 (typical value, can be overridden)
     auto detailed = find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1, 4.5);
     return detailed.final_hbonds;
 }
 
-DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(
-    const Residue& res1, const Residue& res2, double hb_lower, double hb_dist1, double hb_dist2) {
+DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(const Residue& res1, const Residue& res2,
+                                                                     double hb_lower, double hb_dist1,
+                                                                     double hb_dist2) {
     DetailedHBondResult result;
 
     // Step 1: Find all potential H-bonds (matches legacy get_hbond_ij initial loop)
@@ -108,8 +107,7 @@ bool HydrogenBondFinder::good_hb_atoms(const std::string& atom1, const std::stri
     return x3dna::algorithms::hydrogen_bond::good_hb_atoms(atom1, atom2, ".O.N");
 }
 
-void HydrogenBondFinder::resolve_conflicts(std::vector<HydrogenBondResult>& hbonds, double hb_lower,
-                                           double hb_dist2) {
+void HydrogenBondFinder::resolve_conflicts(std::vector<HydrogenBondResult>& hbonds, double hb_lower, double hb_dist2) {
     // Matches legacy hb_atompair logic exactly
     // Uses iterative algorithm that marks conflicts by negating distances
     // Also calculates linkage types (lkg_type)
@@ -237,8 +235,7 @@ void HydrogenBondFinder::resolve_conflicts(std::vector<HydrogenBondResult>& hbon
     }
 }
 
-void HydrogenBondFinder::validate_hbonds(std::vector<HydrogenBondResult>& hbonds, char base1,
-                                         char base2) {
+void HydrogenBondFinder::validate_hbonds(std::vector<HydrogenBondResult>& hbonds, char base1, char base2) {
     // Matches legacy validate_hbonds logic exactly (lines 3989-4019 in cmn_fncs.c)
     // KEY: Legacy only processes H-bonds with NEGATIVE distance (conflicts marked by negative)
     //      Positive distances are skipped (type remains ' ')
@@ -291,8 +288,7 @@ void HydrogenBondFinder::validate_hbonds(std::vector<HydrogenBondResult>& hbonds
 
             // Filter out non-standard H-bonds with lkg_type != 18 and distance outside [2.6, 3.2]
             // (matches legacy lines 4007-4008)
-            if (hbond.type == '*' && hbond.linkage_type != 18 &&
-                (hbond.distance < 2.6 || hbond.distance > 3.2)) {
+            if (hbond.type == '*' && hbond.linkage_type != 18 && (hbond.distance < 2.6 || hbond.distance > 3.2)) {
                 hbond.type = ' ';
                 continue;
             }
@@ -381,8 +377,7 @@ char HydrogenBondFinder::get_base_type_for_hbond(const core::Residue& residue) {
     }
 }
 
-char HydrogenBondFinder::donor_acceptor(char base1, char base2, const std::string& atom1,
-                                        const std::string& atom2) {
+char HydrogenBondFinder::donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2) {
     // Call BasePairValidator's static donor_acceptor function
     return BasePairValidator::donor_acceptor(base1, base2, atom1, atom2);
 }

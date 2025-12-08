@@ -11,19 +11,15 @@
 namespace x3dna {
 namespace io {
 
-void InputFileWriter::write(const std::filesystem::path& output_path,
-                            const std::filesystem::path& pdb_file,
-                            const std::vector<core::BasePair>& base_pairs, int duplex_number,
-                            int flags) {
+void InputFileWriter::write(const std::filesystem::path& output_path, const std::filesystem::path& pdb_file,
+                            const std::vector<core::BasePair>& base_pairs, int duplex_number, int flags) {
     std::string output_file_name = default_output_filename(pdb_file);
     write(output_path, pdb_file, output_file_name, base_pairs, duplex_number, flags);
 }
 
-void InputFileWriter::write(const std::filesystem::path& output_path,
-                            const std::filesystem::path& pdb_file,
-                            const std::string& output_file_name,
-                            const std::vector<core::BasePair>& base_pairs, int duplex_number,
-                            int flags) {
+void InputFileWriter::write(const std::filesystem::path& output_path, const std::filesystem::path& pdb_file,
+                            const std::string& output_file_name, const std::vector<core::BasePair>& base_pairs,
+                            int duplex_number, int flags) {
     std::ofstream out(output_path);
     if (!out.is_open()) {
         throw std::runtime_error("Cannot open output file: " + output_path.string());
@@ -44,8 +40,7 @@ void InputFileWriter::write(const std::filesystem::path& output_path,
     out << std::setw(5) << base_pairs.size() << "         # number of base-pairs\n";
 
     // Line 5: Flags
-    out << "    " << flags << " " << std::setw(5) << 0
-        << "    # explicit bp numbering/hetero atoms\n";
+    out << "    " << flags << " " << std::setw(5) << 0 << "    # explicit bp numbering/hetero atoms\n";
 
     // Base pair lines
     // Format: bp_num res1 res2 flag # comment
@@ -64,8 +59,8 @@ void InputFileWriter::write(const std::filesystem::path& output_path,
             comment = " # " + bp_type;
         }
 
-        out << std::setw(5) << bp_num << " " << std::setw(5) << res1 << " " << std::setw(5) << res2
-            << " " << std::setw(5) << flag << comment << "\n";
+        out << std::setw(5) << bp_num << " " << std::setw(5) << res1 << " " << std::setw(5) << res2 << " "
+            << std::setw(5) << flag << comment << "\n";
     }
 
     out.close();
@@ -116,8 +111,8 @@ void InputFileWriter::write_ref_frames(const std::filesystem::path& output_path,
         }
 
         // Line: ...     N bp_type   # res1_desc - res2_desc
-        out << "..." << std::setw(6) << bp_num << " " << formatted_bp_type << "   # " << res1_desc
-            << " - " << res2_desc << "\n";
+        out << "..." << std::setw(6) << bp_num << " " << formatted_bp_type << "   # " << res1_desc << " - " << res2_desc
+            << "\n";
 
         // Get the reference frames
         auto frame1 = bp.frame1();
@@ -142,30 +137,26 @@ void InputFileWriter::write_ref_frames(const std::filesystem::path& output_path,
             auto mid_z = mid_frame.z_axis();
 
             // Output origin
-            out << std::setw(10) << mid_org.x() << std::setw(10) << mid_org.y() << std::setw(10)
-                << mid_org.z() << "  # origin\n";
+            out << std::setw(10) << mid_org.x() << std::setw(10) << mid_org.y() << std::setw(10) << mid_org.z()
+                << "  # origin\n";
 
             // Output x-axis
-            out << std::setw(10) << mid_x.x() << std::setw(10) << mid_x.y() << std::setw(10)
-                << mid_x.z() << "  # x-axis\n";
+            out << std::setw(10) << mid_x.x() << std::setw(10) << mid_x.y() << std::setw(10) << mid_x.z()
+                << "  # x-axis\n";
 
             // Output y-axis
-            out << std::setw(10) << mid_y.x() << std::setw(10) << mid_y.y() << std::setw(10)
-                << mid_y.z() << "  # y-axis\n";
+            out << std::setw(10) << mid_y.x() << std::setw(10) << mid_y.y() << std::setw(10) << mid_y.z()
+                << "  # y-axis\n";
 
             // Output z-axis
-            out << std::setw(10) << mid_z.x() << std::setw(10) << mid_z.y() << std::setw(10)
-                << mid_z.z() << "  # z-axis\n";
+            out << std::setw(10) << mid_z.x() << std::setw(10) << mid_z.y() << std::setw(10) << mid_z.z()
+                << "  # z-axis\n";
         } else {
             // No frames available - output identity frame
-            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0
-                << "  # origin\n";
-            out << std::setw(10) << 1.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0
-                << "  # x-axis\n";
-            out << std::setw(10) << 0.0 << std::setw(10) << 1.0 << std::setw(10) << 0.0
-                << "  # y-axis\n";
-            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 1.0
-                << "  # z-axis\n";
+            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0 << "  # origin\n";
+            out << std::setw(10) << 1.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0 << "  # x-axis\n";
+            out << std::setw(10) << 0.0 << std::setw(10) << 1.0 << std::setw(10) << 0.0 << "  # y-axis\n";
+            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 1.0 << "  # z-axis\n";
         }
     }
 
@@ -213,8 +204,7 @@ std::string InputFileWriter::default_output_filename(const std::filesystem::path
     return stem + ".outp";
 }
 
-std::map<std::pair<int, int>, int>
-InputFileWriter::parse_legacy_inp_ordering(const std::filesystem::path& inp_file) {
+std::map<std::pair<int, int>, int> InputFileWriter::parse_legacy_inp_ordering(const std::filesystem::path& inp_file) {
 
     std::map<std::pair<int, int>, int> ordering;
 
@@ -271,10 +261,9 @@ InputFileWriter::parse_legacy_inp_ordering(const std::filesystem::path& inp_file
     return ordering;
 }
 
-void InputFileWriter::write_ref_frames(
-    const std::filesystem::path& output_path, const std::vector<core::BasePair>& base_pairs,
-    const core::Structure& structure,
-    const std::map<std::pair<int, int>, int>& legacy_pair_ordering) {
+void InputFileWriter::write_ref_frames(const std::filesystem::path& output_path,
+                                       const std::vector<core::BasePair>& base_pairs, const core::Structure& structure,
+                                       const std::map<std::pair<int, int>, int>& legacy_pair_ordering) {
     std::ofstream out(output_path);
     if (!out.is_open()) {
         throw std::runtime_error("Cannot open output file: " + output_path.string());
@@ -317,8 +306,8 @@ void InputFileWriter::write_ref_frames(
         }
 
         // Line: ...     N bp_type   # res1_desc - res2_desc
-        out << "..." << std::setw(6) << bp_num << " " << formatted_bp_type << "   # " << res1_desc
-            << " - " << res2_desc << "\n";
+        out << "..." << std::setw(6) << bp_num << " " << formatted_bp_type << "   # " << res1_desc << " - " << res2_desc
+            << "\n";
 
         // Get the reference frames
         auto frame1 = bp.frame1();
@@ -380,30 +369,26 @@ void InputFileWriter::write_ref_frames(
             auto mid_z = mid_frame.z_axis();
 
             // Output origin
-            out << std::setw(10) << mid_org.x() << std::setw(10) << mid_org.y() << std::setw(10)
-                << mid_org.z() << "  # origin\n";
+            out << std::setw(10) << mid_org.x() << std::setw(10) << mid_org.y() << std::setw(10) << mid_org.z()
+                << "  # origin\n";
 
             // Output x-axis
-            out << std::setw(10) << mid_x.x() << std::setw(10) << mid_x.y() << std::setw(10)
-                << mid_x.z() << "  # x-axis\n";
+            out << std::setw(10) << mid_x.x() << std::setw(10) << mid_x.y() << std::setw(10) << mid_x.z()
+                << "  # x-axis\n";
 
             // Output y-axis
-            out << std::setw(10) << mid_y.x() << std::setw(10) << mid_y.y() << std::setw(10)
-                << mid_y.z() << "  # y-axis\n";
+            out << std::setw(10) << mid_y.x() << std::setw(10) << mid_y.y() << std::setw(10) << mid_y.z()
+                << "  # y-axis\n";
 
             // Output z-axis
-            out << std::setw(10) << mid_z.x() << std::setw(10) << mid_z.y() << std::setw(10)
-                << mid_z.z() << "  # z-axis\n";
+            out << std::setw(10) << mid_z.x() << std::setw(10) << mid_z.y() << std::setw(10) << mid_z.z()
+                << "  # z-axis\n";
         } else {
             // No frames available - output identity frame
-            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0
-                << "  # origin\n";
-            out << std::setw(10) << 1.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0
-                << "  # x-axis\n";
-            out << std::setw(10) << 0.0 << std::setw(10) << 1.0 << std::setw(10) << 0.0
-                << "  # y-axis\n";
-            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 1.0
-                << "  # z-axis\n";
+            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0 << "  # origin\n";
+            out << std::setw(10) << 1.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0 << "  # x-axis\n";
+            out << std::setw(10) << 0.0 << std::setw(10) << 1.0 << std::setw(10) << 0.0 << "  # y-axis\n";
+            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 1.0 << "  # z-axis\n";
         }
     }
 

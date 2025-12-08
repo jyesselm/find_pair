@@ -21,8 +21,7 @@
 
 namespace fs = std::filesystem;
 
-void print_atom_diff(const nlohmann::json& gen_atom, const nlohmann::json& leg_atom,
-                     const std::string& key_str) {
+void print_atom_diff(const nlohmann::json& gen_atom, const nlohmann::json& leg_atom, const std::string& key_str) {
     std::cout << "  Key: " << key_str << "\n";
 
     // Helper to safely get string
@@ -50,8 +49,7 @@ void print_atom_diff(const nlohmann::json& gen_atom, const nlohmann::json& leg_a
     }
 
     // Check each field
-    std::vector<std::string> fields = {"atom_name",   "residue_name", "chain_id",
-                                       "record_type", "insertion",    "alt_loc"};
+    std::vector<std::string> fields = {"atom_name", "residue_name", "chain_id", "record_type", "insertion", "alt_loc"};
     for (const auto& field : fields) {
         std::string gen_val = get_str(gen_atom, field);
         std::string leg_val = get_str(leg_atom, field);
@@ -77,12 +75,10 @@ void print_atom_diff(const nlohmann::json& gen_atom, const nlohmann::json& leg_a
 
     // Check coordinates
     std::vector<double> gen_xyz, leg_xyz;
-    if (!gen_atom.is_null() && !gen_atom.empty() && gen_atom.contains("xyz") &&
-        gen_atom["xyz"].is_array()) {
+    if (!gen_atom.is_null() && !gen_atom.empty() && gen_atom.contains("xyz") && gen_atom["xyz"].is_array()) {
         gen_xyz = gen_atom["xyz"].get<std::vector<double>>();
     }
-    if (!leg_atom.is_null() && !leg_atom.empty() && leg_atom.contains("xyz") &&
-        leg_atom["xyz"].is_array()) {
+    if (!leg_atom.is_null() && !leg_atom.empty() && leg_atom.contains("xyz") && leg_atom["xyz"].is_array()) {
         leg_xyz = leg_atom["xyz"].get<std::vector<double>>();
     }
 
@@ -198,8 +194,7 @@ int main(int argc, char* argv[]) {
                                       return j.value("type", "") == "pdb_atoms";
                                   });
 
-    if (gen_atoms == gen_json["calculations"].end() ||
-        leg_atoms == leg_json["calculations"].end()) {
+    if (gen_atoms == gen_json["calculations"].end() || leg_atoms == leg_json["calculations"].end()) {
         std::cerr << "   ✗ Error: pdb_atoms record not found\n";
         return 1;
     }
@@ -209,12 +204,10 @@ int main(int argc, char* argv[]) {
 
     std::cout << "   Generated atoms: " << gen_atom_list.size() << "\n";
     std::cout << "   Legacy atoms:     " << leg_atom_list.size() << "\n";
-    std::cout << "   Difference:       " << (int(gen_atom_list.size()) - int(leg_atom_list.size()))
-              << "\n\n";
+    std::cout << "   Difference:       " << (int(gen_atom_list.size()) - int(leg_atom_list.size())) << "\n\n";
 
     // Helper function to safely get string value
-    auto get_string = [](const nlohmann::json& j, const std::string& key,
-                         const std::string& default_val = "") {
+    auto get_string = [](const nlohmann::json& j, const std::string& key, const std::string& default_val = "") {
         if (!j.contains(key))
             return default_val;
         if (j[key].is_string())
@@ -293,8 +286,7 @@ int main(int argc, char* argv[]) {
         const auto& leg_atom = leg_map[key];
 
         bool match = true;
-        for (const auto& field :
-             {"atom_name", "residue_name", "chain_id", "record_type", "insertion", "alt_loc"}) {
+        for (const auto& field : {"atom_name", "residue_name", "chain_id", "record_type", "insertion", "alt_loc"}) {
             std::string gen_val = get_string(gen_atom, field);
             std::string leg_val = get_string(leg_atom, field);
             if (gen_val != leg_val) {
@@ -336,8 +328,8 @@ int main(int argc, char* argv[]) {
             for (const auto& key : missing) {
                 if (count++ >= 10)
                     break;
-                std::string key_str = std::get<0>(key) + ":" + std::to_string(std::get<1>(key)) +
-                                      ":" + std::get<2>(key) + ":" + std::get<3>(key);
+                std::string key_str = std::get<0>(key) + ":" + std::to_string(std::get<1>(key)) + ":" +
+                                      std::get<2>(key) + ":" + std::get<3>(key);
                 print_atom_diff(nlohmann::json::object(), leg_map[key], key_str);
             }
             if (missing.size() > 10) {
@@ -351,8 +343,8 @@ int main(int argc, char* argv[]) {
             for (const auto& key : extra) {
                 if (count++ >= 10)
                     break;
-                std::string key_str = std::get<0>(key) + ":" + std::to_string(std::get<1>(key)) +
-                                      ":" + std::get<2>(key) + ":" + std::get<3>(key);
+                std::string key_str = std::get<0>(key) + ":" + std::to_string(std::get<1>(key)) + ":" +
+                                      std::get<2>(key) + ":" + std::get<3>(key);
                 print_atom_diff(gen_map[key], nlohmann::json::object(), key_str);
             }
             if (extra.size() > 10) {
@@ -368,8 +360,8 @@ int main(int argc, char* argv[]) {
                 const auto& leg_atom = leg_map[key];
 
                 bool match = true;
-                for (const auto& field : {"atom_name", "residue_name", "chain_id", "record_type",
-                                          "insertion", "alt_loc"}) {
+                for (const auto& field :
+                     {"atom_name", "residue_name", "chain_id", "record_type", "insertion", "alt_loc"}) {
                     std::string gen_val = get_string(gen_atom, field);
                     std::string leg_val = get_string(leg_atom, field);
                     if (gen_val != leg_val) {
@@ -396,8 +388,7 @@ int main(int argc, char* argv[]) {
                 if (!match) {
                     if (count++ >= 10)
                         break;
-                    std::string key_str = std::get<0>(key) + ":" +
-                                          std::to_string(std::get<1>(key)) + ":" +
+                    std::string key_str = std::get<0>(key) + ":" + std::to_string(std::get<1>(key)) + ":" +
                                           std::get<2>(key) + ":" + std::get<3>(key);
                     print_atom_diff(gen_atom, leg_atom, key_str);
                 }

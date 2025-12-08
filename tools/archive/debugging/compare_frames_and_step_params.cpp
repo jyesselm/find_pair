@@ -25,8 +25,8 @@ using namespace x3dna::geometry;
 void print_frame(const std::string& label, const ReferenceFrame& frame) {
     std::cout << std::fixed << std::setprecision(6);
     std::cout << "\n" << label << ":\n";
-    std::cout << "  Origin: [" << frame.origin().x() << ", " << frame.origin().y() << ", "
-              << frame.origin().z() << "]\n";
+    std::cout << "  Origin: [" << frame.origin().x() << ", " << frame.origin().y() << ", " << frame.origin().z()
+              << "]\n";
 
     Matrix3D rot = frame.rotation();
     std::cout << "  Rotation matrix:\n";
@@ -65,8 +65,8 @@ void print_step_parameters(const BasePairStepParameters& params) {
     // Print as array (legacy format: pars[1..6])
     // Legacy uses: pars[1]=Slide, pars[2]=Rise, pars[6]=Twist for bp_type_id
     std::cout << "\n  As array [pars[1], pars[2], pars[3], pars[4], pars[5], pars[6]]:\n";
-    std::cout << "    [" << params.shift << ", " << params.slide << ", " << params.rise << ", "
-              << params.tilt << ", " << params.roll << ", " << params.twist << "]\n";
+    std::cout << "    [" << params.shift << ", " << params.slide << ", " << params.rise << ", " << params.tilt << ", "
+              << params.roll << ", " << params.twist << "]\n";
     std::cout << "\n  Parameters used for bp_type_id:\n";
     std::cout << "    pars[1] (Slide/Shear): " << params.slide << "\n";
     std::cout << "    pars[2] (Rise/Stretch): " << params.rise << "\n";
@@ -186,8 +186,7 @@ int main(int argc, char* argv[]) {
                 char base1 = std::toupper(mutable_res1->one_letter_code());
                 char base2 = std::toupper(mutable_res2->one_letter_code());
                 std::string bp_type = std::string(1, base1) + std::string(1, base2);
-                static const std::vector<std::string> WC_LIST = {"XX", "AT", "AU", "TA", "UA",
-                                                                 "GC", "IC", "CG", "CI"};
+                static const std::vector<std::string> WC_LIST = {"XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"};
                 for (const auto& wc : WC_LIST) {
                     if (bp_type == wc) {
                         bp_type_id = 2;
@@ -201,17 +200,14 @@ int main(int argc, char* argv[]) {
     std::cout << "\n============================================================\n";
     std::cout << "bp_type_id CALCULATION:\n";
     std::cout << "  Direction condition (dir_x>0 && dir_y<0 && dir_z<0): "
-              << ((result.dir_x > 0.0 && result.dir_y < 0.0 && result.dir_z < 0.0) ? "PASS"
-                                                                                   : "FAIL")
-              << "\n";
+              << ((result.dir_x > 0.0 && result.dir_y < 0.0 && result.dir_z < 0.0) ? "PASS" : "FAIL") << "\n";
     std::cout << "  fabs(stretch) <= 2.0: " << (std::abs(params.rise) <= 2.0 ? "PASS" : "FAIL")
               << " (value: " << std::abs(params.rise) << ")\n";
     std::cout << "  fabs(opening) <= 60.0: " << (std::abs(params.twist) <= 60.0 ? "PASS" : "FAIL")
               << " (value: " << std::abs(params.twist) << ")\n";
     std::cout << "  fabs(shear) <= 1.8: " << (std::abs(params.slide) <= 1.8 ? "PASS" : "FAIL")
               << " (value: " << std::abs(params.slide) << ")\n";
-    std::cout << "  Base pair type: " << mutable_res1->one_letter_code()
-              << mutable_res2->one_letter_code() << "\n";
+    std::cout << "  Base pair type: " << mutable_res1->one_letter_code() << mutable_res2->one_letter_code() << "\n";
     std::cout << "  Final bp_type_id: " << bp_type_id << "\n";
 
     // Note: Legacy comparison can be done via Python script

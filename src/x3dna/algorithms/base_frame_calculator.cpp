@@ -48,8 +48,7 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
             if (atom.name() == atom_name) {
                 const auto& pos = atom.position();
                 experimental_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
-                standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0],
-                                                             STANDARD_RING_GEOMETRY[i][1],
+                standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
                                                              STANDARD_RING_GEOMETRY[i][2]));
                 if (i == 1 || i == 3 || i == 6 || i == 8) {
                     nN++;
@@ -93,8 +92,7 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
     geometry::LeastSquaresFitter fitter;
     try {
         auto fit_result = fitter.fit(standard_coords, experimental_coords);
-        return {fit_result.rms, purine_atom_count > 0, matched_names, experimental_coords,
-                standard_coords};
+        return {fit_result.rms, purine_atom_count > 0, matched_names, experimental_coords, standard_coords};
     } catch (const std::exception&) {
         return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
     }
@@ -102,16 +100,15 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
 
 // Known non-nucleotide molecules to exclude
 bool is_excluded_molecule(const std::string& res_name) {
-    static const std::vector<std::string> excluded = {
-        "MES", "HEPES", "TRIS", "EDO", "GOL", "SO4", "PO4", "ACT", "FMT", "EFZ", "LYA"};
+    static const std::vector<std::string> excluded = {"MES", "HEPES", "TRIS", "EDO", "GOL", "SO4",
+                                                      "PO4", "ACT",   "FMT",  "EFZ", "LYA"};
     return std::find(excluded.begin(), excluded.end(), res_name) != excluded.end();
 }
 
 // Standard nucleotide list
 bool is_in_nt_list(const std::string& res_name) {
-    static const std::vector<std::string> NT_LIST = {
-        "A",   "C",   "G",   "T",   "U",   "PSU", "P5P", "PU", "I",  "DI",
-        "ADP", "GDP", "CDP", "UDP", "TDP", "DA",  "DC",  "DG", "DT", "DU"};
+    static const std::vector<std::string> NT_LIST = {"A",   "C",   "G",   "T",   "U",   "PSU", "P5P", "PU", "I",  "DI",
+                                                     "ADP", "GDP", "CDP", "UDP", "TDP", "DA",  "DC",  "DG", "DT", "DU"};
     std::string upper = res_name;
     for (char& c : upper) {
         c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
@@ -128,10 +125,10 @@ bool is_in_nt_list(const std::string& res_name) {
 std::tuple<int, bool> count_ring_atoms(const core::Residue& residue) {
     static const std::vector<std::string> common_ring = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
     static const std::vector<std::string> purine_ring = {" N7 ", " C8 ", " N9 "};
-    
+
     int count = 0;
     bool has_purine = false;
-    
+
     for (const auto& atom_name : common_ring) {
         for (const auto& atom : residue.atoms()) {
             if (atom.name() == atom_name) {
@@ -156,9 +153,12 @@ std::tuple<int, bool> count_ring_atoms(const core::Residue& residue) {
 bool detect_purine_atoms(const core::Residue& residue) {
     bool has_n7 = false, has_c8 = false, has_n9 = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " N7 ") has_n7 = true;
-        if (atom.name() == " C8 ") has_c8 = true;
-        if (atom.name() == " N9 ") has_n9 = true;
+        if (atom.name() == " N7 ")
+            has_n7 = true;
+        if (atom.name() == " C8 ")
+            has_c8 = true;
+        if (atom.name() == " N9 ")
+            has_n9 = true;
     }
     return has_n7 || has_c8 || has_n9;
 }
@@ -167,9 +167,12 @@ bool detect_purine_atoms(const core::Residue& residue) {
 core::ResidueType determine_purine_type(const core::Residue& residue) {
     bool has_o6 = false, has_n6 = false, has_n2 = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " O6 ") has_o6 = true;
-        if (atom.name() == " N6 ") has_n6 = true;
-        if (atom.name() == " N2 ") has_n2 = true;
+        if (atom.name() == " O6 ")
+            has_o6 = true;
+        if (atom.name() == " N6 ")
+            has_n6 = true;
+        if (atom.name() == " N2 ")
+            has_n2 = true;
     }
     return (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE : core::ResidueType::ADENINE;
 }
@@ -178,8 +181,10 @@ core::ResidueType determine_purine_type(const core::Residue& residue) {
 core::ResidueType determine_pyrimidine_type(const core::Residue& residue, char one_letter) {
     bool has_n4 = false, has_c5m = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " N4 ") has_n4 = true;
-        if (atom.name() == " C5M" || atom.name() == " C7 ") has_c5m = true;
+        if (atom.name() == " N4 ")
+            has_n4 = true;
+        if (atom.name() == " C5M" || atom.name() == " C7 ")
+            has_c5m = true;
     }
 
     // Check for pseudouridine
@@ -194,8 +199,10 @@ core::ResidueType determine_pyrimidine_type(const core::Residue& residue, char o
         }
     }
 
-    if (has_n4) return core::ResidueType::CYTOSINE;
-    if (has_c5m && one_letter != 'u') return core::ResidueType::THYMINE;
+    if (has_n4)
+        return core::ResidueType::CYTOSINE;
+    if (has_c5m && one_letter != 'u')
+        return core::ResidueType::THYMINE;
     return core::ResidueType::URACIL;
 }
 
@@ -203,23 +210,23 @@ core::ResidueType determine_pyrimidine_type(const core::Residue& residue, char o
 std::optional<double> try_pyrimidine_rmsd(const core::Residue& residue) {
     std::vector<geometry::Vector3D> exp_coords;
     std::vector<geometry::Vector3D> std_coords;
-    
+
     for (size_t i = 0; i < 6; ++i) {
         const char* atom_name = RING_ATOM_NAMES[i];
         for (const auto& atom : residue.atoms()) {
             if (atom.name() == atom_name) {
                 const auto& pos = atom.position();
                 exp_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
-                std_coords.push_back(geometry::Vector3D(
-                    STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
-                    STANDARD_RING_GEOMETRY[i][2]));
+                std_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
+                                                        STANDARD_RING_GEOMETRY[i][2]));
                 break;
             }
         }
     }
-    
-    if (exp_coords.size() < 3) return std::nullopt;
-    
+
+    if (exp_coords.size() < 3)
+        return std::nullopt;
+
     geometry::LeastSquaresFitter fitter;
     try {
         auto result = fitter.fit(std_coords, exp_coords);
@@ -231,8 +238,7 @@ std::optional<double> try_pyrimidine_rmsd(const core::Residue& residue) {
 
 } // namespace
 
-BaseFrameCalculator::BaseFrameCalculator(const std::filesystem::path& template_path)
-    : templates_(template_path) {}
+BaseFrameCalculator::BaseFrameCalculator(const std::filesystem::path& template_path) : templates_(template_path) {}
 
 FrameCalculationResult BaseFrameCalculator::calculate_frame(core::Residue& residue) {
     FrameCalculationResult result = calculate_frame_impl(residue);
@@ -242,21 +248,21 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame(core::Residue& resid
     return result;
 }
 
-FrameCalculationResult
-BaseFrameCalculator::calculate_frame_const(const core::Residue& residue) const {
+FrameCalculationResult BaseFrameCalculator::calculate_frame_const(const core::Residue& residue) const {
     return calculate_frame_impl(residue);
 }
 
-FrameCalculationResult
-BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
+FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     FrameCalculationResult result;
     result.is_valid = false;
 
     // Get residue info
     core::ResidueType residue_type = residue.residue_type();
     std::string res_name = residue.name();
-    while (!res_name.empty() && res_name[0] == ' ') res_name.erase(0, 1);
-    while (!res_name.empty() && res_name.back() == ' ') res_name.pop_back();
+    while (!res_name.empty() && res_name[0] == ' ')
+        res_name.erase(0, 1);
+    while (!res_name.empty() && res_name.back() == ' ')
+        res_name.pop_back();
 
     char one_letter = residue.one_letter_code();
     if (one_letter == ' ' || is_excluded_molecule(res_name)) {
@@ -271,9 +277,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
     // Check for ring atoms if needed
     bool should_check_rings = (residue_type == core::ResidueType::UNKNOWN ||
                                residue_type == core::ResidueType::AMINO_ACID ||
-                               residue_type == core::ResidueType::NONCANONICAL_RNA ||
-                               needs_rmsd_check);
-    
+                               residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check);
+
     if (should_check_rings) {
         auto [ring_count, has_purine] = count_ring_atoms(residue);
         has_ring_atoms = (ring_count >= 3);
@@ -316,14 +321,13 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
 
     // Determine residue type
     bool is_registry_nucleotide = core::ModifiedNucleotideRegistry::contains(res_name);
-    
+
     if (!is_registry_nucleotide &&
-        (residue_type == core::ResidueType::UNKNOWN ||
-         residue_type == core::ResidueType::AMINO_ACID ||
+        (residue_type == core::ResidueType::UNKNOWN || residue_type == core::ResidueType::AMINO_ACID ||
          residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check)) {
         if (has_ring_atoms) {
-            bool is_purine_by_letter = (one_letter == 'A' || one_letter == 'G' ||
-                                        one_letter == 'a' || one_letter == 'g');
+            bool is_purine_by_letter = (one_letter == 'A' || one_letter == 'G' || one_letter == 'a' ||
+                                        one_letter == 'g');
             if (has_purine_atoms || is_purine_by_letter) {
                 residue_type = determine_purine_type(residue);
             } else {
@@ -346,16 +350,16 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
 
     // Match ring atoms
     core::ResidueType matching_type = residue_type;
-    if (used_pyrimidine_fallback && (residue_type == core::ResidueType::ADENINE ||
-                                     residue_type == core::ResidueType::GUANINE)) {
+    if (used_pyrimidine_fallback &&
+        (residue_type == core::ResidueType::ADENINE || residue_type == core::ResidueType::GUANINE)) {
         matching_type = core::ResidueType::URACIL;
     }
     MatchedAtoms matched = RingAtomMatcher::match(residue, standard_template,
                                                   std::optional<core::ResidueType>(matching_type));
 
     // Fallback to RMSD check atoms if template matching failed
-    if (!matched.is_valid() && has_ring_atoms && rmsd_result.has_value() &&
-        !rmsd_check.matched_atom_names.empty() && rmsd_check.matched_atom_names.size() >= 3) {
+    if (!matched.is_valid() && has_ring_atoms && rmsd_result.has_value() && !rmsd_check.matched_atom_names.empty() &&
+        rmsd_check.matched_atom_names.size() >= 3) {
         matched.num_matched = rmsd_check.matched_atom_names.size();
         matched.atom_names = rmsd_check.matched_atom_names;
         matched.experimental.clear();
@@ -370,9 +374,8 @@ BaseFrameCalculator::calculate_frame_impl(const core::Residue& residue) const {
                 }
             }
             const auto& std_coord = rmsd_check.matched_standard_coords[i];
-            core::Atom std_atom(atom_name,
-                                geometry::Vector3D(std_coord.x(), std_coord.y(), std_coord.z()),
-                                "", ' ', 0, 'A');
+            core::Atom std_atom(atom_name, geometry::Vector3D(std_coord.x(), std_coord.y(), std_coord.z()), "", ' ', 0,
+                                'A');
             matched.standard.push_back(std_atom);
         }
 

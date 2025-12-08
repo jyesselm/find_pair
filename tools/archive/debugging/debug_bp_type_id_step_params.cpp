@@ -31,12 +31,10 @@ void print_separator(const std::string& title) {
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0]
-                  << " <pdb_file> <legacy_idx1> <legacy_idx2> [pdb_id] [legacy_json_file]\n";
+        std::cerr << "Usage: " << argv[0] << " <pdb_file> <legacy_idx1> <legacy_idx2> [pdb_id] [legacy_json_file]\n";
         std::cerr << "Example: " << argv[0] << " data/pdb/6CAQ.pdb 1141 1151 6CAQ\n";
-        std::cerr
-            << "         " << argv[0]
-            << " data/pdb/6CAQ.pdb 1141 1151 6CAQ data/json_legacy/base_frame_calc/6CAQ.json\n";
+        std::cerr << "         " << argv[0]
+                  << " data/pdb/6CAQ.pdb 1141 1151 6CAQ data/json_legacy/base_frame_calc/6CAQ.json\n";
         return 1;
     }
 
@@ -65,9 +63,8 @@ int main(int argc, char* argv[]) {
         // Try to auto-detect legacy JSON file
         std::filesystem::path pdb_path(pdb_file);
         std::string pdb_id_from_file = pdb_path.stem().string();
-        std::filesystem::path auto_json =
-            std::filesystem::path("data/json_legacy/base_frame_calc") /
-            (pdb_id_from_file + ".json");
+        std::filesystem::path auto_json = std::filesystem::path("data/json_legacy/base_frame_calc") /
+                                          (pdb_id_from_file + ".json");
         if (std::filesystem::exists(auto_json)) {
             std::cout << "Auto-detected legacy JSON: " << auto_json << "\n";
             int fixed_count = io::fix_residue_indices_from_json(structure, auto_json.string());
@@ -147,18 +144,16 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "Frames calculated successfully\n";
-    std::cout << "Frame 1 origin: [" << frame_result1.frame.origin().x() << ", "
-              << frame_result1.frame.origin().y() << ", " << frame_result1.frame.origin().z()
-              << "]\n";
+    std::cout << "Frame 1 origin: [" << frame_result1.frame.origin().x() << ", " << frame_result1.frame.origin().y()
+              << ", " << frame_result1.frame.origin().z() << "]\n";
     std::cout << "Frame 1 RMS fit: " << frame_result1.rms_fit << "\n";
     std::cout << "Frame 1 matched atoms (" << frame_result1.num_matched << "): ";
     for (const auto& name : frame_result1.matched_atoms) {
         std::cout << name << " ";
     }
     std::cout << "\n";
-    std::cout << "Frame 2 origin: [" << frame_result2.frame.origin().x() << ", "
-              << frame_result2.frame.origin().y() << ", " << frame_result2.frame.origin().z()
-              << "]\n";
+    std::cout << "Frame 2 origin: [" << frame_result2.frame.origin().x() << ", " << frame_result2.frame.origin().y()
+              << ", " << frame_result2.frame.origin().z() << "]\n";
     std::cout << "Frame 2 RMS fit: " << frame_result2.rms_fit << "\n";
     std::cout << "Frame 2 matched atoms (" << frame_result2.num_matched << "): ";
     for (const auto& name : frame_result2.matched_atoms) {
@@ -178,15 +173,13 @@ int main(int argc, char* argv[]) {
     for (size_t i = 0; i < std::min(size_t(5), res1->atoms().size()); ++i) {
         const auto& atom = res1->atoms()[i];
         auto pos = atom.position();
-        std::cout << "  " << atom.name() << ": [" << pos.x() << ", " << pos.y() << ", " << pos.z()
-                  << "]\n";
+        std::cout << "  " << atom.name() << ": [" << pos.x() << ", " << pos.y() << ", " << pos.z() << "]\n";
     }
     std::cout << "Residue 2 atoms (first 5):\n";
     for (size_t i = 0; i < std::min(size_t(5), res2->atoms().size()); ++i) {
         const auto& atom = res2->atoms()[i];
         auto pos = atom.position();
-        std::cout << "  " << atom.name() << ": [" << pos.x() << ", " << pos.y() << ", " << pos.z()
-                  << "]\n";
+        std::cout << "  " << atom.name() << ": [" << pos.x() << ", " << pos.y() << ", " << pos.z() << "]\n";
     }
     std::cout << "\n";
 
@@ -247,8 +240,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Calculate step parameters (frame2 first, frame1 second - matches legacy order)
-    core::BasePairStepParameters params =
-        param_calculator.calculate_step_parameters(frame2, frame1);
+    core::BasePairStepParameters params = param_calculator.calculate_step_parameters(frame2, frame1);
 
     std::cout << "\nStep Parameters:\n";
     std::cout << "  Shift:  " << std::fixed << std::setprecision(6) << params.shift << "\n";
@@ -273,10 +265,8 @@ int main(int argc, char* argv[]) {
     std::cout << "\nThreshold Checks:\n";
     bool stretch_ok = (std::abs(stretch) <= 2.0);
     bool opening_ok = (std::abs(opening) <= 60.0);
-    std::cout << "  stretch <= 2.0:  " << (stretch_ok ? "PASS" : "FAIL")
-              << " (abs=" << std::abs(stretch) << ")\n";
-    std::cout << "  opening <= 60.0: " << (opening_ok ? "PASS" : "FAIL")
-              << " (abs=" << std::abs(opening) << ")\n";
+    std::cout << "  stretch <= 2.0:  " << (stretch_ok ? "PASS" : "FAIL") << " (abs=" << std::abs(stretch) << ")\n";
+    std::cout << "  opening <= 60.0: " << (opening_ok ? "PASS" : "FAIL") << " (abs=" << std::abs(opening) << ")\n";
 
     if (!stretch_ok || !opening_ok) {
         std::cout << "  ⚠️  Threshold check failed - bp_type_id should remain -1\n";
@@ -338,8 +328,7 @@ int main(int argc, char* argv[]) {
     std::cout << "  Residue 1: " << res1->name() << " -> " << base1_char << "\n";
     std::cout << "  Residue 2: " << res2->name() << " -> " << base2_char << "\n";
 
-    static const std::vector<std::string> WC_LIST = {"XX", "AT", "AU", "TA", "UA",
-                                                     "GC", "IC", "CG", "CI"};
+    static const std::vector<std::string> WC_LIST = {"XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"};
 
     bool in_wc_list = false;
     for (const auto& wc : WC_LIST) {

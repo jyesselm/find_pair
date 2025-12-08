@@ -256,15 +256,13 @@ private:
     };
 
     atom_metadata parse_atom_metadata(const std::string& line, size_t line_number);
-    core::Atom build_atom_from_parsed_data(const std::string& line, size_t line_number,
-                                           char atom_type);
+    core::Atom build_atom_from_parsed_data(const std::string& line, size_t line_number, char atom_type);
     bool should_keep_atom(const core::Atom& atom) const;
     bool check_alt_loc_filter(char alt_loc) const;
-    void process_atom_record(
-        const std::string& line, size_t line_number, int model_number,
-        std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms,
-        int& legacy_atom_idx, int& legacy_residue_idx,
-        std::map<std::tuple<std::string, char, int, char>, int>& legacy_residue_idx_map);
+    void process_atom_record(const std::string& line, size_t line_number, int model_number,
+                             std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms,
+                             int& legacy_atom_idx, int& legacy_residue_idx,
+                             std::map<std::tuple<std::string, char, int, char>, int>& legacy_residue_idx_map);
     void process_hetatm_record(
         const std::string& line, size_t line_number, int model_number,
         std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms,
@@ -272,10 +270,9 @@ private:
         std::map<std::tuple<std::string, char, int, char>, int>& legacy_residue_idx_map);
     void handle_model_record(const std::string& line, int& current_model_number, bool& all_models);
     bool handle_end_record(const std::string& line, bool all_models);
-    core::Structure
-    build_structure_from_residues(const std::string& pdb_id,
-                                  const std::map<std::tuple<std::string, char, int, char>,
-                                                 std::vector<core::Atom>>& residue_atoms) const;
+    core::Structure build_structure_from_residues(
+        const std::string& pdb_id,
+        const std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms) const;
 
     // Helper functions for atom name normalization
     std::string apply_atom_name_formatting_rules(const std::string& name) const;

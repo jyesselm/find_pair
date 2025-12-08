@@ -60,8 +60,7 @@ protected:
     /**
      * @brief Compare Structure hierarchy with legacy JSON
      */
-    void compare_structure_with_legacy(const Structure& structure,
-                                       const nlohmann::json& pdb_atoms_record,
+    void compare_structure_with_legacy(const Structure& structure, const nlohmann::json& pdb_atoms_record,
                                        double tolerance = 1e-6) {
         // Compare atom count - handle both int and long types
         long expected_atom_count = 0;
@@ -69,14 +68,12 @@ protected:
             if (pdb_atoms_record["num_atoms"].is_number_integer()) {
                 expected_atom_count = pdb_atoms_record["num_atoms"].get<long>();
             } else if (pdb_atoms_record["num_atoms"].is_number_unsigned()) {
-                expected_atom_count =
-                    static_cast<long>(pdb_atoms_record["num_atoms"].get<unsigned long>());
+                expected_atom_count = static_cast<long>(pdb_atoms_record["num_atoms"].get<unsigned long>());
             }
         }
 
         // If num_atoms is not present or invalid, use atoms array size
-        if (expected_atom_count == 0 && pdb_atoms_record.contains("atoms") &&
-            pdb_atoms_record["atoms"].is_array()) {
+        if (expected_atom_count == 0 && pdb_atoms_record.contains("atoms") && pdb_atoms_record["atoms"].is_array()) {
             expected_atom_count = static_cast<long>(pdb_atoms_record["atoms"].size());
         }
 
@@ -91,8 +88,8 @@ protected:
             if (pdb_atoms_record.contains("atoms") && pdb_atoms_record["atoms"].is_array()) {
                 expected_atom_count = static_cast<long>(pdb_atoms_record["atoms"].size());
                 EXPECT_EQ(static_cast<long>(structure.num_atoms()), expected_atom_count)
-                    << "Atom count mismatch (using atoms array size): structure has "
-                    << structure.num_atoms() << ", JSON array has " << expected_atom_count;
+                    << "Atom count mismatch (using atoms array size): structure has " << structure.num_atoms()
+                    << ", JSON array has " << expected_atom_count;
             }
         }
 
@@ -101,8 +98,7 @@ protected:
         // if atoms array is not present, but still verify structure can be created
         if (!pdb_atoms_record.contains("atoms") || !pdb_atoms_record["atoms"].is_array()) {
             // Legacy JSON might have atoms in split files - just verify structure was created
-            EXPECT_GT(structure.num_atoms(), 0)
-                << "Structure should have atoms even if JSON doesn't have atoms array";
+            EXPECT_GT(structure.num_atoms(), 0) << "Structure should have atoms even if JSON doesn't have atoms array";
             return;
         }
 
@@ -119,12 +115,10 @@ protected:
             }
         }
 
-        EXPECT_EQ(structure_atoms.size(), json_atom_count)
-            << "Structure atom count doesn't match JSON atom count";
+        EXPECT_EQ(structure_atoms.size(), json_atom_count) << "Structure atom count doesn't match JSON atom count";
 
         // Compare first 50 atoms (or all if fewer) to verify structure
-        size_t num_to_compare =
-            std::min(static_cast<size_t>(50), std::min(structure_atoms.size(), json_atom_count));
+        size_t num_to_compare = std::min(static_cast<size_t>(50), std::min(structure_atoms.size(), json_atom_count));
 
         for (size_t i = 0; i < num_to_compare; ++i) {
             SCOPED_TRACE("Atom index " + std::to_string(i));
@@ -138,24 +132,19 @@ protected:
             // Compare coordinates
             std::vector<double> xyz = atom_json["xyz"].get<std::vector<double>>();
             EXPECT_EQ(xyz.size(), 3);
-            EXPECT_NEAR(atom.position().x(), xyz[0], tolerance)
-                << "X coordinate mismatch at index " << i;
-            EXPECT_NEAR(atom.position().y(), xyz[1], tolerance)
-                << "Y coordinate mismatch at index " << i;
-            EXPECT_NEAR(atom.position().z(), xyz[2], tolerance)
-                << "Z coordinate mismatch at index " << i;
+            EXPECT_NEAR(atom.position().x(), xyz[0], tolerance) << "X coordinate mismatch at index " << i;
+            EXPECT_NEAR(atom.position().y(), xyz[1], tolerance) << "Y coordinate mismatch at index " << i;
+            EXPECT_NEAR(atom.position().z(), xyz[2], tolerance) << "Z coordinate mismatch at index " << i;
 
             // Compare residue info
             std::string expected_residue = atom_json["residue_name"].get<std::string>();
-            EXPECT_EQ(atom.residue_name(), expected_residue)
-                << "Residue name mismatch at index " << i;
+            EXPECT_EQ(atom.residue_name(), expected_residue) << "Residue name mismatch at index " << i;
 
             std::string chain_str = atom_json["chain_id"].get<std::string>();
             EXPECT_EQ(atom.chain_id(), chain_str[0]) << "Chain ID mismatch at index " << i;
 
             int expected_seq = atom_json["residue_seq"].get<int>();
-            EXPECT_EQ(atom.residue_seq(), expected_seq)
-                << "Residue sequence mismatch at index " << i;
+            EXPECT_EQ(atom.residue_seq(), expected_seq) << "Residue sequence mismatch at index " << i;
         }
     }
 };
@@ -202,8 +191,7 @@ TEST_F(CoreObjectsIntegrationTest, StructureHierarchy) {
 
     // Verify counts match
     EXPECT_EQ(total_atoms, structure.num_atoms()) << "Atom count mismatch in hierarchy traversal";
-    EXPECT_EQ(total_residues, structure.num_residues())
-        << "Residue count mismatch in hierarchy traversal";
+    EXPECT_EQ(total_residues, structure.num_residues()) << "Residue count mismatch in hierarchy traversal";
 }
 
 /**
@@ -252,12 +240,9 @@ TEST_F(CoreObjectsIntegrationTest, StructureJsonRoundTrip) {
     Structure restored = Structure::from_json_legacy(json);
 
     // Verify round-trip
-    EXPECT_EQ(structure.num_atoms(), restored.num_atoms())
-        << "Atom count mismatch after round-trip";
-    EXPECT_EQ(structure.num_residues(), restored.num_residues())
-        << "Residue count mismatch after round-trip";
-    EXPECT_EQ(structure.num_chains(), restored.num_chains())
-        << "Chain count mismatch after round-trip";
+    EXPECT_EQ(structure.num_atoms(), restored.num_atoms()) << "Atom count mismatch after round-trip";
+    EXPECT_EQ(structure.num_residues(), restored.num_residues()) << "Residue count mismatch after round-trip";
+    EXPECT_EQ(structure.num_chains(), restored.num_chains()) << "Chain count mismatch after round-trip";
 
     // Compare atom data
     std::vector<Atom> original_atoms;
@@ -282,8 +267,7 @@ TEST_F(CoreObjectsIntegrationTest, StructureJsonRoundTrip) {
     EXPECT_EQ(original_atoms.size(), restored_atoms.size());
 
     // Compare first 20 atoms
-    size_t num_to_compare =
-        std::min(static_cast<size_t>(20), std::min(original_atoms.size(), restored_atoms.size()));
+    size_t num_to_compare = std::min(static_cast<size_t>(20), std::min(original_atoms.size(), restored_atoms.size()));
 
     for (size_t i = 0; i < num_to_compare; ++i) {
         SCOPED_TRACE("Atom index " + std::to_string(i));
@@ -512,8 +496,7 @@ TEST_F(CoreObjectsIntegrationTest, MultiplePdbFiles) {
             Structure structure = parser.parse_file(pair.pdb_file);
 
             // Verify structure has data (skip if empty - some PDBs might be problematic)
-            if (structure.num_atoms() == 0 || structure.num_residues() == 0 ||
-                structure.num_chains() == 0) {
+            if (structure.num_atoms() == 0 || structure.num_residues() == 0 || structure.num_chains() == 0) {
                 skipped++;
                 std::lock_guard<std::mutex> lock(error_mutex);
                 errors.push_back("Skipping " + pair.pdb_name + " (empty structure after parsing)");

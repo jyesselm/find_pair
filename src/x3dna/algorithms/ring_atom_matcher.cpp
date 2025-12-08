@@ -14,26 +14,23 @@ namespace algorithms {
 static const std::vector<std::string> RING_ATOMS_PURINE = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
                                                            " C5 ", " N7 ", " C8 ", " N9 "};
 
-static const std::vector<std::string> RING_ATOMS_PYRIMIDINE = {" C4 ", " N3 ", " C2 ",
-                                                               " N1 ", " C6 ", " C5 "};
+static const std::vector<std::string> RING_ATOMS_PYRIMIDINE = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
 
 // C1' is a sugar atom, not a ring atom, so it should NOT be included in ring atom matching
 // (even for RNA). The legacy code confirms this - it never includes C1' in base_frame_calc.
 
-MatchedAtoms RingAtomMatcher::match(const core::Residue& residue,
-                                    const core::Structure& standard_template,
+MatchedAtoms RingAtomMatcher::match(const core::Residue& residue, const core::Structure& standard_template,
                                     std::optional<core::ResidueType> detected_type) {
     MatchedAtoms result;
 
     // Determine residue type and get appropriate ring atom list
     // Use detected type if provided, otherwise use residue's type
-    core::ResidueType residue_type =
-        detected_type.has_value() ? detected_type.value() : residue.residue_type();
+    core::ResidueType residue_type = detected_type.has_value() ? detected_type.value() : residue.residue_type();
     std::vector<std::string> ring_atom_names = get_ring_atom_names(residue_type);
 
 #ifdef DEBUG_FRAME_CALC
-    std::cerr << "DEBUG: RingAtomMatcher - residue: " << residue.name()
-              << " type: " << static_cast<int>(residue_type) << "\n";
+    std::cerr << "DEBUG: RingAtomMatcher - residue: " << residue.name() << " type: " << static_cast<int>(residue_type)
+              << "\n";
     std::cerr << "DEBUG: Looking for " << ring_atom_names.size() << " ring atoms\n";
     std::cerr << "DEBUG: Residue has " << residue.num_atoms() << " atoms\n";
 #endif
@@ -48,9 +45,8 @@ MatchedAtoms RingAtomMatcher::match(const core::Residue& residue,
         for (char c : atom_name) {
             std::cerr << static_cast<int>(c) << " ";
         }
-        std::cerr << std::dec << "): " << (exp_atom.has_value() ? "FOUND" : "NOT FOUND")
-                  << " in residue, " << (std_atom.has_value() ? "FOUND" : "NOT FOUND")
-                  << " in template\n";
+        std::cerr << std::dec << "): " << (exp_atom.has_value() ? "FOUND" : "NOT FOUND") << " in residue, "
+                  << (std_atom.has_value() ? "FOUND" : "NOT FOUND") << " in template\n";
         if (!exp_atom.has_value()) {
             // Show available atoms
             std::cerr << "DEBUG: Available atoms in residue: ";
@@ -116,8 +112,7 @@ std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Structu
 }
 
 bool RingAtomMatcher::is_purine(core::ResidueType type) {
-    return type == core::ResidueType::ADENINE || 
-           type == core::ResidueType::GUANINE ||
+    return type == core::ResidueType::ADENINE || type == core::ResidueType::GUANINE ||
            type == core::ResidueType::INOSINE;
 }
 

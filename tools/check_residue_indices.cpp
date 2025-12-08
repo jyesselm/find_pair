@@ -47,11 +47,10 @@ int main(int argc, char* argv[]) {
     for (const auto& [idx, residues] : residues_by_legacy_idx) {
         if (residues.size() > 1) {
             found_duplicates = true;
-            std::cout << "\n⚠️  Duplicate legacy_residue_idx " << idx << " found in "
-                      << residues.size() << " residues:\n";
+            std::cout << "\n⚠️  Duplicate legacy_residue_idx " << idx << " found in " << residues.size()
+                      << " residues:\n";
             for (auto* res : residues) {
-                std::cout << "  - " << res->name() << " Chain " << res->chain_id() << " Seq "
-                          << res->seq_num() << "\n";
+                std::cout << "  - " << res->name() << " Chain " << res->chain_id() << " Seq " << res->seq_num() << "\n";
             }
         }
     }
@@ -65,8 +64,7 @@ int main(int argc, char* argv[]) {
     auto it = residues_by_legacy_idx.find(target_idx);
     if (it != residues_by_legacy_idx.end()) {
         for (auto* res : it->second) {
-            std::cout << "  - " << res->name() << " Chain " << res->chain_id() << " Seq "
-                      << res->seq_num() << "\n";
+            std::cout << "  - " << res->name() << " Chain " << res->chain_id() << " Seq " << res->seq_num() << "\n";
         }
     } else {
         std::cout << "  Not found\n";

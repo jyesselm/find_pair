@@ -78,8 +78,7 @@ LegacyValidationResult load_legacy_validation(const std::string& json_file, int 
 }
 
 void print_comparison(const LegacyValidationResult& legacy, const ValidationResult& modern,
-                      const ReferenceFrame& frame1, const ReferenceFrame& frame2, int idx1,
-                      int idx2) {
+                      const ReferenceFrame& frame1, const ReferenceFrame& frame2, int idx1, int idx2) {
     std::cout << "\n============================================================\n";
     std::cout << "COMPARISON: Pair (" << idx1 << ", " << idx2 << ")\n";
     std::cout << "============================================================\n\n";
@@ -93,12 +92,11 @@ void print_comparison(const LegacyValidationResult& legacy, const ValidationResu
 
     std::cout << "\nDIRECTION VECTORS:\n";
     std::cout << std::fixed << std::setprecision(6);
-    std::cout << "  Legacy:  dir_x=" << legacy.dir_x << ", dir_y=" << legacy.dir_y
-              << ", dir_z=" << legacy.dir_z << "\n";
-    std::cout << "  Modern:  dir_x=" << modern.dir_x << ", dir_y=" << modern.dir_y
-              << ", dir_z=" << modern.dir_z << "\n";
-    std::cout << "  Diff:    dir_x=" << (modern.dir_x - legacy.dir_x)
-              << ", dir_y=" << (modern.dir_y - legacy.dir_y)
+    std::cout << "  Legacy:  dir_x=" << legacy.dir_x << ", dir_y=" << legacy.dir_y << ", dir_z=" << legacy.dir_z
+              << "\n";
+    std::cout << "  Modern:  dir_x=" << modern.dir_x << ", dir_y=" << modern.dir_y << ", dir_z=" << modern.dir_z
+              << "\n";
+    std::cout << "  Diff:    dir_x=" << (modern.dir_x - legacy.dir_x) << ", dir_y=" << (modern.dir_y - legacy.dir_y)
               << ", dir_z=" << (modern.dir_z - legacy.dir_z) << "\n";
 
     std::cout << "\nGEOMETRIC PARAMETERS:\n";
@@ -106,8 +104,7 @@ void print_comparison(const LegacyValidationResult& legacy, const ValidationResu
               << ", Diff=" << (modern.dorg - legacy.dorg) << "\n";
     std::cout << "  d_v:          Legacy=" << legacy.d_v << ", Modern=" << modern.d_v
               << ", Diff=" << (modern.d_v - legacy.d_v) << "\n";
-    std::cout << "  plane_angle:  Legacy=" << legacy.plane_angle
-              << ", Modern=" << modern.plane_angle
+    std::cout << "  plane_angle:  Legacy=" << legacy.plane_angle << ", Modern=" << modern.plane_angle
               << ", Diff=" << (modern.plane_angle - legacy.plane_angle) << "\n";
     std::cout << "  dNN:          Legacy=" << legacy.dNN << ", Modern=" << modern.dNN
               << ", Diff=" << (modern.dNN - legacy.dNN) << "\n";
@@ -121,21 +118,16 @@ void print_comparison(const LegacyValidationResult& legacy, const ValidationResu
               << ", Modern=" << (modern.plane_angle_check ? "PASS" : "FAIL") << "\n";
     std::cout << "  dNN_check:          Legacy=" << (legacy.dNN_check ? "PASS" : "FAIL")
               << ", Modern=" << (modern.dNN_check ? "PASS" : "FAIL") << "\n";
-    std::cout << "  overlap_check:      Legacy=N/A, Modern="
-              << (modern.overlap_check ? "PASS" : "FAIL") << "\n";
+    std::cout << "  overlap_check:      Legacy=N/A, Modern=" << (modern.overlap_check ? "PASS" : "FAIL") << "\n";
 
     std::cout << "\nHYDROGEN BONDS:\n";
-    std::cout << "  num_base_hb:  Legacy=" << legacy.num_base_hb
-              << ", Modern=" << modern.num_base_hb << "\n";
-    std::cout << "  num_o2_hb:     Legacy=" << legacy.num_o2_hb << ", Modern=" << modern.num_o2_hb
-              << "\n";
+    std::cout << "  num_base_hb:  Legacy=" << legacy.num_base_hb << ", Modern=" << modern.num_base_hb << "\n";
+    std::cout << "  num_o2_hb:     Legacy=" << legacy.num_o2_hb << ", Modern=" << modern.num_o2_hb << "\n";
 
     std::cout << "\nFINAL RESULT:\n";
-    std::cout << "  Legacy:  is_valid=" << (legacy.is_valid ? "YES" : "NO")
-              << ", quality=" << legacy.quality_score << ", bp_type_id=" << legacy.bp_type_id
-              << "\n";
-    std::cout << "  Modern:  is_valid=" << (modern.is_valid ? "YES" : "NO")
-              << ", quality=" << modern.quality_score
+    std::cout << "  Legacy:  is_valid=" << (legacy.is_valid ? "YES" : "NO") << ", quality=" << legacy.quality_score
+              << ", bp_type_id=" << legacy.bp_type_id << "\n";
+    std::cout << "  Modern:  is_valid=" << (modern.is_valid ? "YES" : "NO") << ", quality=" << modern.quality_score
               << ", bp_type=" << static_cast<int>(modern.bp_type) << "\n";
 
     if (legacy.is_valid != modern.is_valid) {
@@ -159,8 +151,7 @@ void print_comparison(const LegacyValidationResult& legacy, const ValidationResu
 
 int main(int argc, char* argv[]) {
     if (argc != 5) {
-        std::cerr << "Usage: " << argv[0]
-                  << " <pdb_file> <legacy_json> <residue1_idx> <residue2_idx>\n";
+        std::cerr << "Usage: " << argv[0] << " <pdb_file> <legacy_json> <residue1_idx> <residue2_idx>\n";
         std::cerr << "Example: " << argv[0]
                   << " data/pdb/6CAQ.pdb data/json_legacy/pair_validation/6CAQ.json 980 997\n";
         return 1;

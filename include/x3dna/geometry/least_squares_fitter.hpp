@@ -100,8 +100,8 @@ private:
     /**
      * @brief Compute covariance matrix between two point sets
      */
-    Matrix3D compute_covariance_matrix(const std::vector<Vector3D>& points1,
-                                       const std::vector<Vector3D>& points2, size_t n) {
+    Matrix3D compute_covariance_matrix(const std::vector<Vector3D>& points1, const std::vector<Vector3D>& points2,
+                                       size_t n) {
         // Compute centroids
         Vector3D centroid1 = compute_centroid(points1);
         Vector3D centroid2 = compute_centroid(points2);
@@ -300,8 +300,8 @@ private:
      * @brief Perform a single Jacobi rotation step
      * Reduces nesting by extracting complex rotation logic
      */
-    void perform_jacobi_rotation(Matrix4D& a, Matrix4D& v, std::array<double, 4>& d,
-                                 std::array<double, 4>& z, size_t ip, size_t iq, double g) {
+    void perform_jacobi_rotation(Matrix4D& a, Matrix4D& v, std::array<double, 4>& d, std::array<double, 4>& z,
+                                 size_t ip, size_t iq, double g) {
         double h = d[iq] - d[ip];
         double t = compute_rotation_angle(a, ip, iq, h, g);
 

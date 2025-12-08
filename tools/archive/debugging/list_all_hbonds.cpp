@@ -43,8 +43,7 @@ void print_hbond_details(const std::vector<HydrogenBondDetail>& hbonds, const st
         const auto& hb = hbonds[i];
         std::cout << "  " << std::setw(3) << (i + 1) << ". ";
         std::cout << std::setw(6) << hb.donor_atom << " -> " << std::setw(6) << hb.acceptor_atom;
-        std::cout << "  dist=" << std::fixed << std::setprecision(6) << std::setw(10)
-                  << hb.distance;
+        std::cout << "  dist=" << std::fixed << std::setprecision(6) << std::setw(10) << hb.distance;
         std::cout << "  type=" << hb.type;
         std::cout << "  good=" << (hb.is_good ? "YES" : "NO ");
         if (hb.hbond_idx > 0) {
@@ -93,8 +92,7 @@ std::vector<HydrogenBondDetail> extract_hbonds_from_json(const json& hbond_recor
             detail.hbond_idx = hb.value("hbond_idx", 0);
 
             // Good H-bond: type='-' AND distance in [2.5, 3.5]
-            detail.is_good =
-                (detail.type == '-' && detail.distance >= 2.5 && detail.distance <= 3.5);
+            detail.is_good = (detail.type == '-' && detail.distance >= 2.5 && detail.distance <= 3.5);
 
             hbonds.push_back(detail);
         }
@@ -105,8 +103,7 @@ std::vector<HydrogenBondDetail> extract_hbonds_from_json(const json& hbond_recor
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0]
-                  << " <pdb_id> <residue1_idx> <residue2_idx> [modern|legacy|both]\n";
+        std::cerr << "Usage: " << argv[0] << " <pdb_id> <residue1_idx> <residue2_idx> [modern|legacy|both]\n";
         std::cerr << "Example: " << argv[0] << " 3G8T 92 160\n";
         std::cerr << "Example: " << argv[0] << " 3G8T 92 160 modern\n";
         std::cerr << "Example: " << argv[0] << " 6CAQ 75 78 both\n";

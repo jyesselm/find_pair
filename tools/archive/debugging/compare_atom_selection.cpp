@@ -62,8 +62,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (!res1 || !res2) {
-        std::cerr << "Error: Could not find residues " << residue1_idx << " and " << residue2_idx
-                  << "\n";
+        std::cerr << "Error: Could not find residues " << residue1_idx << " and " << residue2_idx << "\n";
         return 1;
     }
 
@@ -71,10 +70,10 @@ int main(int argc, char* argv[]) {
     std::cout << "Atom Selection Comparison\n";
     std::cout << std::string(60, '=') << "\n";
     std::cout << "Pair: (" << residue1_idx << ", " << residue2_idx << ")\n";
-    std::cout << "Residue 1: " << res1->name() << " (chain " << res1->chain_id() << ", seq "
-              << res1->seq_num() << ")\n";
-    std::cout << "Residue 2: " << res2->name() << " (chain " << res2->chain_id() << ", seq "
-              << res2->seq_num() << ")\n";
+    std::cout << "Residue 1: " << res1->name() << " (chain " << res1->chain_id() << ", seq " << res1->seq_num()
+              << ")\n";
+    std::cout << "Residue 2: " << res2->name() << " (chain " << res2->chain_id() << ", seq " << res2->seq_num()
+              << ")\n";
 
     // Get modern atom lists
     std::vector<std::string> modern_atoms1;

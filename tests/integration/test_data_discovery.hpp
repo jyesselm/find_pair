@@ -37,9 +37,8 @@ public:
      * @param json_dir Directory containing JSON files
      * @return Vector of PDB/JSON pairs
      */
-    static std::vector<pdb_json_pair>
-    discover_pairs(const std::filesystem::path& pdb_dir = "data/pdb",
-                   const std::filesystem::path& json_dir = "data/json_legacy") {
+    static std::vector<pdb_json_pair> discover_pairs(const std::filesystem::path& pdb_dir = "data/pdb",
+                                                     const std::filesystem::path& json_dir = "data/json_legacy") {
         std::vector<pdb_json_pair> pairs;
 
         if (!std::filesystem::exists(pdb_dir) || !std::filesystem::exists(json_dir)) {
@@ -122,16 +121,14 @@ public:
      * @param test_sets_dir Directory containing test set JSON files
      * @return Vector of PDB/JSON pairs from the test set
      */
-    static std::vector<pdb_json_pair>
-    discover_pairs_from_test_set(int test_set_size,
-                                 const std::filesystem::path& pdb_dir = "data/pdb",
-                                 const std::filesystem::path& json_dir = "data/json_legacy",
-                                 const std::filesystem::path& test_sets_dir = "data/test_sets") {
+    static std::vector<pdb_json_pair> discover_pairs_from_test_set(
+        int test_set_size, const std::filesystem::path& pdb_dir = "data/pdb",
+        const std::filesystem::path& json_dir = "data/json_legacy",
+        const std::filesystem::path& test_sets_dir = "data/test_sets") {
         std::vector<pdb_json_pair> pairs;
 
         // Load test set
-        std::filesystem::path test_set_file =
-            test_sets_dir / ("test_set_" + std::to_string(test_set_size) + ".json");
+        std::filesystem::path test_set_file = test_sets_dir / ("test_set_" + std::to_string(test_set_size) + ".json");
         std::set<std::string> test_set_pdb_ids = load_test_set(test_set_file);
 
         if (test_set_pdb_ids.empty()) {

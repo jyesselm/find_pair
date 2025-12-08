@@ -23,8 +23,8 @@ int fix_residue_indices_from_json(core::Structure& structure, const std::string&
     for (auto& chain : structure.chains()) {
         for (auto& residue : chain.residues()) {
             if (!residue.atoms().empty()) {
-                ResidueKey key = std::make_tuple(residue.name(), residue.chain_id(),
-                                                 residue.seq_num(), residue.insertion());
+                ResidueKey key = std::make_tuple(residue.name(), residue.chain_id(), residue.seq_num(),
+                                                 residue.insertion());
                 residues_by_pdb_props[key] = &residue;
             }
         }
@@ -44,13 +44,12 @@ int fix_residue_indices_from_json(core::Structure& structure, const std::string&
         // Try to read as string and fix common issues
         json_file.clear();
         json_file.seekg(0);
-        std::string content((std::istreambuf_iterator<char>(json_file)),
-                            std::istreambuf_iterator<char>());
+        std::string content((std::istreambuf_iterator<char>(json_file)), std::istreambuf_iterator<char>());
 
         // Try to fix common issues: missing closing bracket
         // Remove trailing whitespace
-        while (!content.empty() && (content.back() == ' ' || content.back() == '\n' ||
-                                    content.back() == '\r' || content.back() == '\t')) {
+        while (!content.empty() &&
+               (content.back() == ' ' || content.back() == '\n' || content.back() == '\r' || content.back() == '\t')) {
             content.pop_back();
         }
 
@@ -58,8 +57,8 @@ int fix_residue_indices_from_json(core::Structure& structure, const std::string&
         while (!content.empty() && content.back() == ',') {
             content.pop_back();
             // Remove any whitespace after comma
-            while (!content.empty() && (content.back() == ' ' || content.back() == '\n' ||
-                                        content.back() == '\r' || content.back() == '\t')) {
+            while (!content.empty() && (content.back() == ' ' || content.back() == '\n' || content.back() == '\r' ||
+                                        content.back() == '\t')) {
                 content.pop_back();
             }
         }

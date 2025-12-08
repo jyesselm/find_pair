@@ -19,11 +19,11 @@ namespace algorithms {
  * @brief Result of RMSD check for nucleotide type detection
  */
 struct RmsdCheckResult {
-    std::optional<double> rmsd;                          // RMSD value if calculable
-    bool found_purine_atoms;                             // Whether any purine atoms (N7, C8, N9) were found
-    std::vector<std::string> matched_atom_names;         // Atom names that were matched in RMSD check
-    std::vector<geometry::Vector3D> matched_experimental_coords;  // Experimental coordinates from RMSD check
-    std::vector<geometry::Vector3D> matched_standard_coords;      // Standard coordinates from RMSD check
+    std::optional<double> rmsd;                                  // RMSD value if calculable
+    bool found_purine_atoms;                                     // Whether any purine atoms (N7, C8, N9) were found
+    std::vector<std::string> matched_atom_names;                 // Atom names that were matched in RMSD check
+    std::vector<geometry::Vector3D> matched_experimental_coords; // Experimental coordinates from RMSD check
+    std::vector<geometry::Vector3D> matched_standard_coords;     // Standard coordinates from RMSD check
 };
 
 /**
@@ -31,10 +31,10 @@ struct RmsdCheckResult {
  * @brief Result of residue type detection
  */
 struct TypeDetectionResult {
-    core::ResidueType detected_type;    // Detected residue type
-    bool used_fallback;                 // Whether fallback logic was used
-    std::optional<double> rmsd;         // RMSD value if calculated
-    std::string detection_method;       // "registry", "rmsd", "atom_analysis", "standard"
+    core::ResidueType detected_type; // Detected residue type
+    bool used_fallback;              // Whether fallback logic was used
+    std::optional<double> rmsd;      // RMSD value if calculated
+    std::string detection_method;    // "registry", "rmsd", "atom_analysis", "standard"
 };
 
 /**
@@ -84,4 +84,3 @@ private:
 
 } // namespace algorithms
 } // namespace x3dna
-

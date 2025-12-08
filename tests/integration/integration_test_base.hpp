@@ -82,8 +82,7 @@ protected:
      * @param type Record type to find
      * @return Vector of matching records
      */
-    std::vector<nlohmann::json> find_records_by_type(const nlohmann::json& json,
-                                                     const std::string& type) {
+    std::vector<nlohmann::json> find_records_by_type(const nlohmann::json& json, const std::string& type) {
         std::vector<nlohmann::json> results;
 
         if (!json.contains("calculations")) {

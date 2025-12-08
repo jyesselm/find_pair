@@ -109,8 +109,7 @@ private:
      * @brief Find best pairs using greedy mutual best match (legacy find_bestpair)
      * @param writer Optional JsonWriter to record validation results
      */
-    std::vector<core::BasePair> find_best_pairs(core::Structure& structure,
-                                                io::JsonWriter* writer = nullptr) const;
+    std::vector<core::BasePair> find_best_pairs(core::Structure& structure, io::JsonWriter* writer = nullptr) const;
 
     /**
      * @brief Find all valid pairs (exhaustive search)
@@ -131,8 +130,7 @@ private:
         const core::Structure& structure, const std::vector<bool>& matched_indices,
         const std::map<int, const core::Residue*>& residue_by_legacy_idx,
         const std::map<std::pair<int, int>, ValidationResult>& phase1_validation_results,
-        const std::map<std::pair<int, int>, int>&
-            phase1_bp_type_ids, // Store bp_type_id from Phase 1
+        const std::map<std::pair<int, int>, int>& phase1_bp_type_ids, // Store bp_type_id from Phase 1
         io::JsonWriter* writer = nullptr) const;
 
     /**
@@ -167,8 +165,8 @@ private:
      * Note: Full implementation requires bpstep_par (shear, stretch, opening) from Stage 6.
      * This is a simplified version that uses base pair type and direction vectors.
      */
-    int calculate_bp_type_id(const core::Residue* res1, const core::Residue* res2,
-                             const ValidationResult& result, double quality_score) const;
+    int calculate_bp_type_id(const core::Residue* res1, const core::Residue* res2, const ValidationResult& result,
+                             double quality_score) const;
 
     /**
      * @brief Get residue index in structure (0-based, counting all residues)

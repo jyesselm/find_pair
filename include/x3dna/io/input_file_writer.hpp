@@ -30,10 +30,8 @@ public:
      * @param duplex_number Duplex number (default: 2)
      * @param flags Flags value (default: 1 for explicit bp numbering)
      */
-    static void write(const std::filesystem::path& output_path,
-                      const std::filesystem::path& pdb_file,
-                      const std::vector<core::BasePair>& base_pairs, int duplex_number = 2,
-                      int flags = 1);
+    static void write(const std::filesystem::path& output_path, const std::filesystem::path& pdb_file,
+                      const std::vector<core::BasePair>& base_pairs, int duplex_number = 2, int flags = 1);
 
     /**
      * @brief Write .inp file with additional options
@@ -44,10 +42,9 @@ public:
      * @param duplex_number Duplex number
      * @param flags Flags value
      */
-    static void write(const std::filesystem::path& output_path,
-                      const std::filesystem::path& pdb_file, const std::string& output_file_name,
-                      const std::vector<core::BasePair>& base_pairs, int duplex_number = 2,
-                      int flags = 1);
+    static void write(const std::filesystem::path& output_path, const std::filesystem::path& pdb_file,
+                      const std::string& output_file_name, const std::vector<core::BasePair>& base_pairs,
+                      int duplex_number = 2, int flags = 1);
 
     /**
      * @brief Write ref_frames file (ref_frames_modern.dat format)
@@ -56,8 +53,7 @@ public:
      * @param structure Structure containing residue information
      */
     static void write_ref_frames(const std::filesystem::path& output_path,
-                                 const std::vector<core::BasePair>& base_pairs,
-                                 const core::Structure& structure);
+                                 const std::vector<core::BasePair>& base_pairs, const core::Structure& structure);
 
     /**
      * @brief Write ref_frames file with legacy pair ordering
@@ -68,8 +64,7 @@ public:
      *        If first_idx == max_idx, then legacy had larger-first ordering
      */
     static void write_ref_frames(const std::filesystem::path& output_path,
-                                 const std::vector<core::BasePair>& base_pairs,
-                                 const core::Structure& structure,
+                                 const std::vector<core::BasePair>& base_pairs, const core::Structure& structure,
                                  const std::map<std::pair<int, int>, int>& legacy_pair_ordering);
 
     /**
@@ -77,8 +72,7 @@ public:
      * @param inp_file Path to legacy .inp file
      * @return Map from (min_idx, max_idx) -> first residue index in legacy
      */
-    static std::map<std::pair<int, int>, int>
-    parse_legacy_inp_ordering(const std::filesystem::path& inp_file);
+    static std::map<std::pair<int, int>, int> parse_legacy_inp_ordering(const std::filesystem::path& inp_file);
 
 private:
     /**

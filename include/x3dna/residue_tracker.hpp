@@ -30,11 +30,9 @@ struct ResidueRecord {
     std::string insertion;
     std::string residue_name;
 
-    ResidueRecord(int read_idx, const std::string& chain, int seq, const std::string& ins,
-                  const std::string& name)
-        : read_index(read_idx), legacy_index(-1), modern_index(-1), filtered(false),
-          filter_reason(""), chain_id(chain), residue_seq(seq), insertion(ins), residue_name(name) {
-    }
+    ResidueRecord(int read_idx, const std::string& chain, int seq, const std::string& ins, const std::string& name)
+        : read_index(read_idx), legacy_index(-1), modern_index(-1), filtered(false), filter_reason(""), chain_id(chain),
+          residue_seq(seq), insertion(ins), residue_name(name) {}
 };
 
 /**

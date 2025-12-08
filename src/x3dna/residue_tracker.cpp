@@ -9,8 +9,8 @@ using json = nlohmann::json;
 
 namespace x3dna {
 
-void ResidueTracker::add_residue(const std::string& chain_id, int residue_seq,
-                                 const std::string& insertion, const std::string& residue_name) {
+void ResidueTracker::add_residue(const std::string& chain_id, int residue_seq, const std::string& insertion,
+                                 const std::string& residue_name) {
     int read_idx = static_cast<int>(residues_.size());
     residues_.emplace_back(read_idx, chain_id, residue_seq, insertion, residue_name);
 }
@@ -88,19 +88,17 @@ bool ResidueTracker::load_legacy_indices(const std::string& legacy_json_path) {
             residues_[read_idx].legacy_index = legacy_idx;
             loaded_count++;
         } else {
-            std::cerr << "Warning: Legacy residue " << chain << seq << ins
-                      << " not found in read residues" << std::endl;
+            std::cerr << "Warning: Legacy residue " << chain << seq << ins << " not found in read residues"
+                      << std::endl;
         }
     }
 
-    std::cout << "Loaded " << loaded_count << " legacy indices from " << legacy_json_path
-              << std::endl;
+    std::cout << "Loaded " << loaded_count << " legacy indices from " << legacy_json_path << std::endl;
 
     return loaded_count > 0;
 }
 
-int ResidueTracker::find_by_pdb_props(const std::string& chain, int seq,
-                                      const std::string& ins) const {
+int ResidueTracker::find_by_pdb_props(const std::string& chain, int seq, const std::string& ins) const {
     for (size_t i = 0; i < residues_.size(); ++i) {
         const auto& r = residues_[i];
         if (r.chain_id == chain && r.residue_seq == seq && r.insertion == ins) {
@@ -150,8 +148,7 @@ ResidueTracker::ValidationResult ResidueTracker::validate() const {
             if (r.modern_index < 0) {
                 result.success = false;
                 std::ostringstream oss;
-                oss << "Non-filtered residue " << r.chain_id << r.residue_seq << r.insertion
-                    << " has no modern index";
+                oss << "Non-filtered residue " << r.chain_id << r.residue_seq << r.insertion << " has no modern index";
                 result.errors.push_back(oss.str());
                 // Only report first 10 errors to avoid spam
                 if (result.errors.size() >= 10)
@@ -160,8 +157,7 @@ ResidueTracker::ValidationResult ResidueTracker::validate() const {
             if (r.legacy_index < 0) {
                 result.success = false;
                 std::ostringstream oss;
-                oss << "Non-filtered residue " << r.chain_id << r.residue_seq << r.insertion
-                    << " has no legacy index";
+                oss << "Non-filtered residue " << r.chain_id << r.residue_seq << r.insertion << " has no legacy index";
                 result.errors.push_back(oss.str());
                 // Only report first 10 errors to avoid spam
                 if (result.errors.size() >= 10)
@@ -175,8 +171,8 @@ ResidueTracker::ValidationResult ResidueTracker::validate() const {
         if (r.filtered && r.modern_index >= 0) {
             result.success = false;
             std::ostringstream oss;
-            oss << "Filtered residue " << r.chain_id << r.residue_seq << r.insertion
-                << " has modern index " << r.modern_index << " (reason: " << r.filter_reason << ")";
+            oss << "Filtered residue " << r.chain_id << r.residue_seq << r.insertion << " has modern index "
+                << r.modern_index << " (reason: " << r.filter_reason << ")";
             result.errors.push_back(oss.str());
             // Only report first 10 errors to avoid spam
             if (result.errors.size() >= 10)

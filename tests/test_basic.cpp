@@ -37,7 +37,6 @@ TEST(BasicTest, TestDataDiscovery) {
             std::cout << "  - " << pair.pdb_name << std::endl;
         }
     } else {
-        std::cout << "No PDB/JSON pairs found (this is OK if JSON files haven't been generated yet)"
-                  << std::endl;
+        std::cout << "No PDB/JSON pairs found (this is OK if JSON files haven't been generated yet)" << std::endl;
     }
 }

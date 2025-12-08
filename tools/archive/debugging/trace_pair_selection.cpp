@@ -17,8 +17,7 @@ using namespace x3dna::io;
 using namespace x3dna::algorithms;
 using namespace x3dna::geometry;
 
-void trace_residue_selection(int legacy_idx,
-                             const std::map<int, const Residue*>& residue_by_legacy_idx,
+void trace_residue_selection(int legacy_idx, const std::map<int, const Residue*>& residue_by_legacy_idx,
                              int max_legacy_idx) {
     std::cout << "\n============================================================\n";
     std::cout << "TRACING: Residue " << legacy_idx << " selection\n";
@@ -37,8 +36,8 @@ void trace_residue_selection(int legacy_idx,
     const Residue* res1 = it->second;
     BasePairValidator validator;
 
-    std::cout << "Residue " << legacy_idx << ": " << res1->name() << " Chain " << res1->chain_id()
-              << " Seq " << res1->seq_num() << "\n\n";
+    std::cout << "Residue " << legacy_idx << ": " << res1->name() << " Chain " << res1->chain_id() << " Seq "
+              << res1->seq_num() << "\n\n";
 
     std::cout << "Checking all potential partners:\n";
     std::cout << std::fixed << std::setprecision(6);

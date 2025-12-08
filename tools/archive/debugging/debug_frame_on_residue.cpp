@@ -81,8 +81,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    std::cout << "Built residue_by_legacy_idx mapping with " << residue_by_legacy_idx.size()
-              << " residues\n\n";
+    std::cout << "Built residue_by_legacy_idx mapping with " << residue_by_legacy_idx.size() << " residues\n\n";
 
     // Check frames on residues
     auto check_residue = [&](int legacy_idx) {
@@ -108,14 +107,14 @@ int main(int argc, char* argv[]) {
         auto origin = frame.origin();
 
         std::cout << "  ✅ Frame exists\n";
-        std::cout << "  Origin: (" << std::fixed << std::setprecision(6) << origin.x() << ", "
-                  << origin.y() << ", " << origin.z() << ")\n";
+        std::cout << "  Origin: (" << std::fixed << std::setprecision(6) << origin.x() << ", " << origin.y() << ", "
+                  << origin.z() << ")\n";
 
         // Also check atoms to verify this is the right residue
         if (!residue->atoms().empty()) {
             auto first_atom = residue->atoms()[0];
-            std::cout << "  First atom: " << first_atom.name()
-                      << " (legacy_idx=" << first_atom.legacy_residue_idx() << ")\n";
+            std::cout << "  First atom: " << first_atom.name() << " (legacy_idx=" << first_atom.legacy_residue_idx()
+                      << ")\n";
         }
         std::cout << "\n";
     };
@@ -143,15 +142,14 @@ int main(int argc, char* argv[]) {
                 double dorg = std::sqrt(dorg_vec.x() * dorg_vec.x() + dorg_vec.y() * dorg_vec.y() +
                                         dorg_vec.z() * dorg_vec.z());
 
-                std::cout << "Calculated dorg from residue frames: " << std::fixed
-                          << std::setprecision(6) << dorg << " Å\n";
+                std::cout << "Calculated dorg from residue frames: " << std::fixed << std::setprecision(6) << dorg
+                          << " Å\n";
                 std::cout << "Expected from frame_calc JSON: 4.874563 Å\n";
 
                 if (std::abs(dorg - 4.874563) < 0.01) {
                     std::cout << "✅ dorg matches!\n";
                 } else {
-                    std::cout << "❌ dorg DOES NOT MATCH! Difference: " << std::abs(dorg - 4.874563)
-                              << " Å\n";
+                    std::cout << "❌ dorg DOES NOT MATCH! Difference: " << std::abs(dorg - 4.874563) << " Å\n";
                     std::cout << "   This suggests frames on residue objects are WRONG!\n";
                 }
             }

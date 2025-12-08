@@ -21,8 +21,7 @@ using namespace x3dna::io;
 using namespace x3dna::algorithms;
 using namespace x3dna::geometry;
 
-void test_bpstep_par_with_frames(const ReferenceFrame& frame1, const ReferenceFrame& frame2,
-                                 const std::string& label) {
+void test_bpstep_par_with_frames(const ReferenceFrame& frame1, const ReferenceFrame& frame2, const std::string& label) {
     std::cout << "\n" << std::string(60, '=') << "\n";
     std::cout << "Testing: " << label << "\n";
     std::cout << std::string(60, '=') << "\n";

@@ -137,12 +137,11 @@ TEST_F(ChainTest, ToJsonLegacy) {
 }
 
 TEST_F(ChainTest, FromJsonLegacy) {
-    nlohmann::json j = {
-        {"chain_id", "B"},
-        {"num_residues", 2},
-        {"residues",
-         {{{"residue_name", "  C"}, {"residue_seq", 1}, {"chain_id", "B"}, {"atoms", {}}},
-          {{"residue_name", "  G"}, {"residue_seq", 2}, {"chain_id", "B"}, {"atoms", {}}}}}};
+    nlohmann::json j = {{"chain_id", "B"},
+                        {"num_residues", 2},
+                        {"residues",
+                         {{{"residue_name", "  C"}, {"residue_seq", 1}, {"chain_id", "B"}, {"atoms", {}}},
+                          {{"residue_name", "  G"}, {"residue_seq", 2}, {"chain_id", "B"}, {"atoms", {}}}}}};
 
     Chain chain = Chain::from_json_legacy(j);
 
@@ -169,9 +168,8 @@ TEST_F(ChainTest, ToJsonModern) {
 }
 
 TEST_F(ChainTest, FromJsonModern) {
-    nlohmann::json j = {
-        {"chain_id", "C"},
-        {"residues", {{{"name", "  A"}, {"seq_num", 1}, {"chain_id", "C"}, {"atoms", {}}}}}};
+    nlohmann::json j = {{"chain_id", "C"},
+                        {"residues", {{{"name", "  A"}, {"seq_num", 1}, {"chain_id", "C"}, {"atoms", {}}}}}};
 
     Chain chain = Chain::from_json(j);
 

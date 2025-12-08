@@ -104,8 +104,7 @@ public:
     /**
      * @brief Constructor with default parameters
      */
-    explicit BasePairValidator(
-        const ValidationParameters& params = ValidationParameters::defaults())
+    explicit BasePairValidator(const ValidationParameters& params = ValidationParameters::defaults())
         : params_(params) {}
 
     /**
@@ -138,8 +137,7 @@ public:
      * @param zave Average z-axis
      * @return Overlap area in Angstrom²
      */
-    double calculate_overlap_area(const core::Residue& res1, const core::Residue& res2,
-                                  const geometry::Vector3D& oave,
+    double calculate_overlap_area(const core::Residue& res1, const core::Residue& res2, const geometry::Vector3D& oave,
                                   const geometry::Vector3D& zave) const;
 
     /**
@@ -151,8 +149,7 @@ public:
      * @param atom2 Second atom name
      * @return '-' if valid standard H-bond, '*' otherwise
      */
-    static char donor_acceptor(char base1, char base2, const std::string& atom1,
-                               const std::string& atom2);
+    static char donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2);
 
 private:
     ValidationParameters params_;
@@ -177,9 +174,8 @@ private:
     /**
      * @brief Calculate direction vectors (dir_x, dir_y, dir_z)
      */
-    static void calculate_direction_vectors(const core::ReferenceFrame& frame1,
-                                            const core::ReferenceFrame& frame2, double& dir_x,
-                                            double& dir_y, double& dir_z);
+    static void calculate_direction_vectors(const core::ReferenceFrame& frame1, const core::ReferenceFrame& frame2,
+                                            double& dir_x, double& dir_y, double& dir_z);
 
     /**
      * @brief Calculate average z-axis and origin
@@ -190,8 +186,7 @@ private:
     /**
      * @brief Calculate angle between two z-axes (0-90 degrees)
      */
-    static double z1_z2_angle_in_0_to_90(const geometry::Vector3D& z1,
-                                         const geometry::Vector3D& z2);
+    static double z1_z2_angle_in_0_to_90(const geometry::Vector3D& z1, const geometry::Vector3D& z2);
 
     /**
      * @brief Check if value is in range
@@ -209,14 +204,13 @@ private:
      * @brief Find hydrogen bonds between two residues (with validation)
      * Used for adjust_pairQuality - matches hb_numlist behavior
      */
-    std::vector<core::hydrogen_bond> find_hydrogen_bonds(const core::Residue& res1,
-                                                         const core::Residue& res2) const;
+    std::vector<core::hydrogen_bond> find_hydrogen_bonds(const core::Residue& res1, const core::Residue& res2) const;
 
     /**
      * @brief Count hydrogen bonds simply (before validation) - matches legacy check_pair behavior
      */
-    void count_hydrogen_bonds_simple(const core::Residue& res1, const core::Residue& res2,
-                                     int& num_base_hb, int& num_o2_hb) const;
+    void count_hydrogen_bonds_simple(const core::Residue& res1, const core::Residue& res2, int& num_base_hb,
+                                     int& num_o2_hb) const;
 
     /**
      * @brief Check if atom is a base atom (matches legacy is_baseatom)

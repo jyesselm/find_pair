@@ -170,8 +170,7 @@ TEST_F(ReferenceFrameTest, ToJsonLegacy) {
 }
 
 TEST_F(ReferenceFrameTest, FromJsonLegacy) {
-    nlohmann::json j = {{"orien", {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}},
-                        {"org", {10.0, 20.0, 30.0}}};
+    nlohmann::json j = {{"orien", {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}}, {"org", {10.0, 20.0, 30.0}}};
 
     ReferenceFrame frame = ReferenceFrame::from_json_legacy(j);
 

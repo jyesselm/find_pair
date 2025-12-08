@@ -46,8 +46,7 @@ struct Helix {
     /**
      * @brief Constructor with indices
      */
-    Helix(size_t start, size_t end, bool circular = false)
-        : start_index(start), end_index(end), is_circular(circular) {
+    Helix(size_t start, size_t end, bool circular = false) : start_index(start), end_index(end), is_circular(circular) {
         for (size_t i = start; i <= end; ++i) {
             base_pair_indices.push_back(i);
         }
@@ -144,8 +143,7 @@ private:
      * @param pair_index Index of pair to analyze
      * @return Vector of neighbor indices (within helix_break distance)
      */
-    std::vector<size_t> find_neighbors(const std::vector<core::BasePair>& pairs,
-                                       size_t pair_index) const;
+    std::vector<size_t> find_neighbors(const std::vector<core::BasePair>& pairs, size_t pair_index) const;
 
     double helix_break_distance_; // Distance threshold for helix breaks (Angstroms)
 };

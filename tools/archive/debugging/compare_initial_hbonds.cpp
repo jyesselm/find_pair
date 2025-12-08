@@ -49,15 +49,15 @@ struct InitialHBond {
     }
 };
 
-std::vector<InitialHBond> get_modern_initial_hbonds(const Residue& res1, const Residue& res2,
-                                                    double hb_lower, double hb_dist1) {
+std::vector<InitialHBond> get_modern_initial_hbonds(const Residue& res1, const Residue& res2, double hb_lower,
+                                                    double hb_dist1) {
     std::vector<InitialHBond> hbonds;
 
     // Get H-bonds at the SAME step as legacy records
     // Legacy records ALL H-bonds AFTER validation (with types assigned)
     // So we should compare modern's after_validation (not initial_hbonds)
-    DetailedHBondResult detailed =
-        HydrogenBondFinder::find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1, 4.5);
+    DetailedHBondResult detailed = HydrogenBondFinder::find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1,
+                                                                                    4.5);
 
     // Extract after_validation H-bonds (matches what legacy records to JSON)
     // Legacy records ALL num_hbonds H-bonds after hb_atompair and validate_hbonds
@@ -108,9 +108,8 @@ std::vector<InitialHBond> extract_legacy_initial_hbonds(const json& legacy_recor
     return hbonds;
 }
 
-void print_comparison(const std::vector<InitialHBond>& modern_hbonds,
-                      const std::vector<InitialHBond>& legacy_hbonds, int residue1_idx,
-                      int residue2_idx) {
+void print_comparison(const std::vector<InitialHBond>& modern_hbonds, const std::vector<InitialHBond>& legacy_hbonds,
+                      int residue1_idx, int residue2_idx) {
     std::cout << "\n========================================\n";
     std::cout << "H-bond Detection Comparison (After Validation)\n";
     std::cout << "========================================\n";
@@ -120,8 +119,7 @@ void print_comparison(const std::vector<InitialHBond>& modern_hbonds,
 
     std::cout << "Modern H-bonds (after_validation): " << modern_hbonds.size() << "\n";
     std::cout << "Legacy H-bonds (from JSON): " << legacy_hbonds.size() << "\n";
-    std::cout << "Difference: "
-              << (static_cast<int>(modern_hbonds.size()) - static_cast<int>(legacy_hbonds.size()))
+    std::cout << "Difference: " << (static_cast<int>(modern_hbonds.size()) - static_cast<int>(legacy_hbonds.size()))
               << "\n\n";
 
     // Create sets for comparison
@@ -152,8 +150,8 @@ void print_comparison(const std::vector<InitialHBond>& modern_hbonds,
     if (!missing.empty()) {
         std::cout << "Missing in modern (found in legacy but not modern):\n";
         for (const auto& hb : missing) {
-            std::cout << "  - " << hb.atom1_name << " -> " << hb.atom2_name
-                      << " (dist=" << std::fixed << std::setprecision(3) << hb.distance << ")\n";
+            std::cout << "  - " << hb.atom1_name << " -> " << hb.atom2_name << " (dist=" << std::fixed
+                      << std::setprecision(3) << hb.distance << ")\n";
         }
         std::cout << "\n";
     }
@@ -161,8 +159,8 @@ void print_comparison(const std::vector<InitialHBond>& modern_hbonds,
     if (!extra.empty()) {
         std::cout << "Extra in modern (found in modern but not legacy):\n";
         for (const auto& hb : extra) {
-            std::cout << "  + " << hb.atom1_name << " -> " << hb.atom2_name
-                      << " (dist=" << std::fixed << std::setprecision(3) << hb.distance << ")\n";
+            std::cout << "  + " << hb.atom1_name << " -> " << hb.atom2_name << " (dist=" << std::fixed
+                      << std::setprecision(3) << hb.distance << ")\n";
         }
         std::cout << "\n";
     }
@@ -171,8 +169,7 @@ void print_comparison(const std::vector<InitialHBond>& modern_hbonds,
         std::cout << "✓ H-bond detection matches perfectly!\n";
     } else {
         std::cout << "⚠️  H-bond detection differs\n";
-        std::cout
-            << "\nNote: This compares H-bonds AFTER validation (what legacy records to JSON).\n";
+        std::cout << "\nNote: This compares H-bonds AFTER validation (what legacy records to JSON).\n";
         std::cout << "If there are differences, check:\n";
         std::cout << "  1. Atom selection (seidx range vs all atoms)\n";
         std::cout << "  2. Distance calculations\n";
@@ -182,11 +179,9 @@ void print_comparison(const std::vector<InitialHBond>& modern_hbonds,
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0]
-                  << " <pdb_file> <residue1_idx> <residue2_idx> [legacy_hbond_json]\n";
+        std::cerr << "Usage: " << argv[0] << " <pdb_file> <residue1_idx> <residue2_idx> [legacy_hbond_json]\n";
         std::cerr << "Example: " << argv[0] << " data/pdb/3G8T.pdb 946 947\n";
-        std::cerr << "Example: " << argv[0]
-                  << " data/pdb/3G8T.pdb 946 947 data/json_legacy/3G8T.json\n";
+        std::cerr << "Example: " << argv[0] << " data/pdb/3G8T.pdb 946 947 data/json_legacy/3G8T.json\n";
         return 1;
     }
 
@@ -212,8 +207,7 @@ int main(int argc, char* argv[]) {
     Residue* res2 = const_cast<Residue*>(res2_const);
 
     if (!res1 || !res2) {
-        std::cerr << "Error: Could not find residues " << residue1_idx << " and/or " << residue2_idx
-                  << "\n";
+        std::cerr << "Error: Could not find residues " << residue1_idx << " and/or " << residue2_idx << "\n";
         return 1;
     }
 
@@ -229,8 +223,7 @@ int main(int argc, char* argv[]) {
 
     // Get modern initial H-bonds
     ValidationParameters params = ValidationParameters::defaults();
-    std::vector<InitialHBond> modern_hbonds =
-        get_modern_initial_hbonds(*res1, *res2, params.hb_lower, params.hb_dist1);
+    std::vector<InitialHBond> modern_hbonds = get_modern_initial_hbonds(*res1, *res2, params.hb_lower, params.hb_dist1);
 
     // Get legacy initial H-bonds if JSON provided
     std::vector<InitialHBond> legacy_hbonds;
@@ -239,8 +232,7 @@ int main(int argc, char* argv[]) {
         if (std::filesystem::exists(legacy_json)) {
             // Legacy JSON has multiple JSON objects - read entire file and search for pair
             std::ifstream f(legacy_json);
-            std::string content((std::istreambuf_iterator<char>(f)),
-                                std::istreambuf_iterator<char>());
+            std::string content((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
             // Search for the specific pair using string search
             // Legacy JSON format: "base_i": 946 (with space after colon)

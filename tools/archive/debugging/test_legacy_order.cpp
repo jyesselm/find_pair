@@ -43,8 +43,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Residue at legacy index " << target_idx << ":\n";
         const Residue* res = structure.get_residue_by_legacy_idx(target_idx);
         if (res) {
-            std::cout << "  " << res->name() << " (chain " << res->chain_id() << ", seq "
-                      << res->seq_num() << ")\n";
+            std::cout << "  " << res->name() << " (chain " << res->chain_id() << ", seq " << res->seq_num() << ")\n";
         } else {
             std::cout << "  Not found!\n";
         }
@@ -55,9 +54,8 @@ int main(int argc, char* argv[]) {
     std::cout << "First 10 residues in legacy order:\n";
     for (size_t i = 0; i < std::min<size_t>(10, residues.size()); i++) {
         const Residue* res = residues[i];
-        std::cout << "  " << std::setw(4) << (i + 1) << ". " << std::setw(3) << res->name()
-                  << " (chain " << res->chain_id() << ", seq " << std::setw(4) << res->seq_num()
-                  << ")\n";
+        std::cout << "  " << std::setw(4) << (i + 1) << ". " << std::setw(3) << res->name() << " (chain "
+                  << res->chain_id() << ", seq " << std::setw(4) << res->seq_num() << ")\n";
     }
 
     if (target_idx > 0 && target_idx <= static_cast<int>(residues.size())) {
@@ -67,9 +65,8 @@ int main(int argc, char* argv[]) {
         for (int i = start; i <= end; i++) {
             const Residue* res = residues[i - 1];
             const char* marker = (i == target_idx) ? " <--" : "";
-            std::cout << "  " << std::setw(4) << i << ". " << std::setw(3) << res->name()
-                      << " (chain " << res->chain_id() << ", seq " << std::setw(4) << res->seq_num()
-                      << ")" << marker << "\n";
+            std::cout << "  " << std::setw(4) << i << ". " << std::setw(3) << res->name() << " (chain "
+                      << res->chain_id() << ", seq " << std::setw(4) << res->seq_num() << ")" << marker << "\n";
         }
     }
 

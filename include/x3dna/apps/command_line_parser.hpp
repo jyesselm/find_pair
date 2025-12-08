@@ -36,8 +36,8 @@ struct FindPairOptions {
      * @brief Check if any option is set
      */
     bool has_options() const {
-        return single_strand || find_all_pairs || divide_helices || curves || curves_plus ||
-               hetatm || detailed || waters || hjb || !map_file.empty() || legacy_mode;
+        return single_strand || find_all_pairs || divide_helices || curves || curves_plus || hetatm || detailed ||
+               waters || hjb || !map_file.empty() || legacy_mode;
     }
 };
 

@@ -72,8 +72,8 @@ struct BasePairStepParameters {
      * @brief Equality comparison
      */
     bool operator==(const BasePairStepParameters& other) const {
-        return shift == other.shift && slide == other.slide && rise == other.rise &&
-               tilt == other.tilt && roll == other.roll && twist == other.twist;
+        return shift == other.shift && slide == other.slide && rise == other.rise && tilt == other.tilt &&
+               roll == other.roll && twist == other.twist;
     }
 
     /**
@@ -82,8 +82,7 @@ struct BasePairStepParameters {
      * @param tolerance Tolerance for comparison (default: 1e-6)
      */
     bool approximately_equal(const BasePairStepParameters& other, double tolerance = 1e-6) const {
-        return std::abs(shift - other.shift) < tolerance &&
-               std::abs(slide - other.slide) < tolerance &&
+        return std::abs(shift - other.shift) < tolerance && std::abs(slide - other.slide) < tolerance &&
                std::abs(rise - other.rise) < tolerance && std::abs(tilt - other.tilt) < tolerance &&
                std::abs(roll - other.roll) < tolerance && std::abs(twist - other.twist) < tolerance;
     }
@@ -235,9 +234,8 @@ struct HelicalParameters {
      * @brief Equality comparison
      */
     bool operator==(const HelicalParameters& other) const {
-        return x_displacement == other.x_displacement && y_displacement == other.y_displacement &&
-               rise == other.rise && inclination == other.inclination && tip == other.tip &&
-               twist == other.twist;
+        return x_displacement == other.x_displacement && y_displacement == other.y_displacement && rise == other.rise &&
+               inclination == other.inclination && tip == other.tip && twist == other.twist;
     }
 
     /**
@@ -247,10 +245,9 @@ struct HelicalParameters {
      */
     bool approximately_equal(const HelicalParameters& other, double tolerance = 1e-6) const {
         return std::abs(x_displacement - other.x_displacement) < tolerance &&
-               std::abs(y_displacement - other.y_displacement) < tolerance &&
-               std::abs(rise - other.rise) < tolerance &&
-               std::abs(inclination - other.inclination) < tolerance &&
-               std::abs(tip - other.tip) < tolerance && std::abs(twist - other.twist) < tolerance;
+               std::abs(y_displacement - other.y_displacement) < tolerance && std::abs(rise - other.rise) < tolerance &&
+               std::abs(inclination - other.inclination) < tolerance && std::abs(tip - other.tip) < tolerance &&
+               std::abs(twist - other.twist) < tolerance;
     }
 
     /**

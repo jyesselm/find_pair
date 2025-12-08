@@ -59,8 +59,7 @@ struct HBondInfo {
     }
 };
 
-void print_stage_comparison(const std::string& stage_name,
-                            const std::vector<HBondInfo>& modern_hbonds,
+void print_stage_comparison(const std::string& stage_name, const std::vector<HBondInfo>& modern_hbonds,
                             const std::vector<HBondInfo>& legacy_hbonds) {
     std::cout << "\n" << std::string(60, '=') << "\n";
     std::cout << stage_name << "\n";
@@ -69,34 +68,30 @@ void print_stage_comparison(const std::string& stage_name,
     std::cout << "\nModern: " << modern_hbonds.size() << " H-bonds\n";
     for (size_t i = 0; i < modern_hbonds.size(); i++) {
         const auto& hb = modern_hbonds[i];
-        std::cout << "  " << (i + 1) << ". " << std::setw(6) << hb.donor_atom << " -> "
-                  << std::setw(6) << hb.acceptor_atom << ", dist=" << std::fixed
-                  << std::setprecision(3) << hb.distance;
+        std::cout << "  " << (i + 1) << ". " << std::setw(6) << hb.donor_atom << " -> " << std::setw(6)
+                  << hb.acceptor_atom << ", dist=" << std::fixed << std::setprecision(3) << hb.distance;
         if (hb.type != ' ') {
             std::cout << ", type=" << hb.type;
         }
         if (hb.linkage_type != 0) {
             std::cout << ", lkg=" << hb.linkage_type;
         }
-        std::cout << " [repr: donor='" << hb.donor_atom << "' acceptor='" << hb.acceptor_atom
-                  << "']";
+        std::cout << " [repr: donor='" << hb.donor_atom << "' acceptor='" << hb.acceptor_atom << "']";
         std::cout << "\n";
     }
 
     std::cout << "\nLegacy: " << legacy_hbonds.size() << " H-bonds\n";
     for (size_t i = 0; i < legacy_hbonds.size(); i++) {
         const auto& hb = legacy_hbonds[i];
-        std::cout << "  " << (i + 1) << ". " << std::setw(6) << hb.donor_atom << " -> "
-                  << std::setw(6) << hb.acceptor_atom << ", dist=" << std::fixed
-                  << std::setprecision(3) << hb.distance;
+        std::cout << "  " << (i + 1) << ". " << std::setw(6) << hb.donor_atom << " -> " << std::setw(6)
+                  << hb.acceptor_atom << ", dist=" << std::fixed << std::setprecision(3) << hb.distance;
         if (hb.type != ' ') {
             std::cout << ", type=" << hb.type;
         }
         if (hb.linkage_type != 0) {
             std::cout << ", lkg=" << hb.linkage_type;
         }
-        std::cout << " [repr: donor='" << hb.donor_atom << "' acceptor='" << hb.acceptor_atom
-                  << "']";
+        std::cout << " [repr: donor='" << hb.donor_atom << "' acceptor='" << hb.acceptor_atom << "']";
         std::cout << "\n";
     }
 
@@ -116,18 +111,15 @@ void print_stage_comparison(const std::string& stage_name,
         }
     }
 
-    std::cout << "\nMatches: " << matches << " / "
-              << std::max(modern_hbonds.size(), legacy_hbonds.size()) << "\n";
+    std::cout << "\nMatches: " << matches << " / " << std::max(modern_hbonds.size(), legacy_hbonds.size()) << "\n";
 
-    if (static_cast<size_t>(matches) < modern_hbonds.size() ||
-        static_cast<size_t>(matches) < legacy_hbonds.size()) {
+    if (static_cast<size_t>(matches) < modern_hbonds.size() || static_cast<size_t>(matches) < legacy_hbonds.size()) {
         std::cout << "\nMissing in modern:\n";
         for (size_t i = 0; i < legacy_hbonds.size(); i++) {
             if (!legacy_matched[i]) {
                 const auto& hb = legacy_hbonds[i];
-                std::cout << "  - " << hb.donor_atom << " -> " << hb.acceptor_atom
-                          << " (dist=" << std::fixed << std::setprecision(3) << hb.distance
-                          << ")\n";
+                std::cout << "  - " << hb.donor_atom << " -> " << hb.acceptor_atom << " (dist=" << std::fixed
+                          << std::setprecision(3) << hb.distance << ")\n";
             }
         }
 
@@ -135,16 +127,14 @@ void print_stage_comparison(const std::string& stage_name,
         for (size_t i = 0; i < modern_hbonds.size(); i++) {
             if (!modern_matched[i]) {
                 const auto& hb = modern_hbonds[i];
-                std::cout << "  + " << hb.donor_atom << " -> " << hb.acceptor_atom
-                          << " (dist=" << std::fixed << std::setprecision(3) << hb.distance
-                          << ")\n";
+                std::cout << "  + " << hb.donor_atom << " -> " << hb.acceptor_atom << " (dist=" << std::fixed
+                          << std::setprecision(3) << hb.distance << ")\n";
             }
         }
     }
 }
 
-std::vector<HBondInfo>
-extract_modern_initial(const x3dna::algorithms::DetailedHBondResult& result) {
+std::vector<HBondInfo> extract_modern_initial(const x3dna::algorithms::DetailedHBondResult& result) {
     std::vector<HBondInfo> hbonds;
     for (const auto& hb : result.initial_hbonds) {
         HBondInfo info;
@@ -158,8 +148,7 @@ extract_modern_initial(const x3dna::algorithms::DetailedHBondResult& result) {
     return hbonds;
 }
 
-std::vector<HBondInfo>
-extract_modern_after_conflict(const x3dna::algorithms::DetailedHBondResult& result) {
+std::vector<HBondInfo> extract_modern_after_conflict(const x3dna::algorithms::DetailedHBondResult& result) {
     std::vector<HBondInfo> hbonds;
     for (const auto& hb : result.after_conflict_resolution) {
         HBondInfo info;
@@ -173,8 +162,7 @@ extract_modern_after_conflict(const x3dna::algorithms::DetailedHBondResult& resu
     return hbonds;
 }
 
-std::vector<HBondInfo>
-extract_modern_after_validation(const x3dna::algorithms::DetailedHBondResult& result) {
+std::vector<HBondInfo> extract_modern_after_validation(const x3dna::algorithms::DetailedHBondResult& result) {
     std::vector<HBondInfo> hbonds;
     for (const auto& hb : result.after_validation) {
         HBondInfo info;
@@ -257,8 +245,7 @@ json find_legacy_pair(const std::string& content, int residue1_idx, int residue2
                     std::string obj_str = content.substr(obj_start, obj_end - obj_start);
                     try {
                         json obj = json::parse(obj_str);
-                        if (obj.value("base_i", -1) == residue1_idx &&
-                            obj.value("base_j", -1) == residue2_idx) {
+                        if (obj.value("base_i", -1) == residue1_idx && obj.value("base_j", -1) == residue2_idx) {
                             return obj;
                         }
                     } catch (const json::parse_error&) {
@@ -319,8 +306,7 @@ json find_legacy_pair(const std::string& content, int residue1_idx, int residue2
                     std::string obj_str = content.substr(obj_start, obj_end - obj_start);
                     try {
                         json obj = json::parse(obj_str);
-                        if (obj.value("base_i", -1) == residue2_idx &&
-                            obj.value("base_j", -1) == residue1_idx) {
+                        if (obj.value("base_i", -1) == residue2_idx && obj.value("base_j", -1) == residue1_idx) {
                             return obj;
                         }
                     } catch (const json::parse_error&) {
@@ -336,8 +322,7 @@ json find_legacy_pair(const std::string& content, int residue1_idx, int residue2
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0]
-                  << " <pdb_file> <residue1_idx> <residue2_idx> [legacy_json]\n";
+        std::cerr << "Usage: " << argv[0] << " <pdb_file> <residue1_idx> <residue2_idx> [legacy_json]\n";
         return 1;
     }
 
@@ -357,8 +342,7 @@ int main(int argc, char* argv[]) {
     const Residue* res2 = structure.get_residue_by_legacy_idx(residue2_idx);
 
     if (!res1 || !res2) {
-        std::cerr << "Error: Could not find residues " << residue1_idx << " and " << residue2_idx
-                  << "\n";
+        std::cerr << "Error: Could not find residues " << residue1_idx << " and " << residue2_idx << "\n";
         return 1;
     }
 
@@ -366,10 +350,10 @@ int main(int argc, char* argv[]) {
     std::cout << "Comprehensive H-bond Comparison\n";
     std::cout << std::string(60, '=') << "\n";
     std::cout << "Pair: (" << residue1_idx << ", " << residue2_idx << ")\n";
-    std::cout << "Residue 1: " << res1->name() << " (chain " << res1->chain_id() << ", seq "
-              << res1->seq_num() << ")\n";
-    std::cout << "Residue 2: " << res2->name() << " (chain " << res2->chain_id() << ", seq "
-              << res2->seq_num() << ")\n";
+    std::cout << "Residue 1: " << res1->name() << " (chain " << res1->chain_id() << ", seq " << res1->seq_num()
+              << ")\n";
+    std::cout << "Residue 2: " << res2->name() << " (chain " << res2->chain_id() << ", seq " << res2->seq_num()
+              << ")\n";
 
     // Calculate frames
     BaseFrameCalculator calculator;
@@ -378,9 +362,8 @@ int main(int argc, char* argv[]) {
 
     // Get modern H-bonds at all stages
     ValidationParameters params = ValidationParameters::defaults();
-    auto detailed = HydrogenBondFinder::find_hydrogen_bonds_detailed(
-        *res1, *res2, params.hb_lower, params.hb_dist1,
-        params.hb_dist1); // hb_dist2 = hb_dist1 for now
+    auto detailed = HydrogenBondFinder::find_hydrogen_bonds_detailed(*res1, *res2, params.hb_lower, params.hb_dist1,
+                                                                     params.hb_dist1); // hb_dist2 = hb_dist1 for now
 
     // Extract at each stage
     auto modern_initial = extract_modern_initial(detailed);
@@ -393,8 +376,7 @@ int main(int argc, char* argv[]) {
         std::filesystem::path legacy_json = argv[4];
         if (std::filesystem::exists(legacy_json)) {
             std::ifstream f(legacy_json);
-            std::string content((std::istreambuf_iterator<char>(f)),
-                                std::istreambuf_iterator<char>());
+            std::string content((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
             json legacy_obj = find_legacy_pair(content, residue1_idx, residue2_idx);
             if (!legacy_obj.empty()) {
@@ -404,14 +386,13 @@ int main(int argc, char* argv[]) {
     }
 
     // Print comparisons
-    print_stage_comparison("Stage 1: Initial Detection (before conflict resolution)",
-                           modern_initial, {}); // Legacy initial not available from JSON
+    print_stage_comparison("Stage 1: Initial Detection (before conflict resolution)", modern_initial,
+                           {}); // Legacy initial not available from JSON
 
     print_stage_comparison("Stage 2: After Conflict Resolution", modern_after_conflict,
                            {}); // Legacy after conflict not available from JSON
 
-    print_stage_comparison("Stage 3: After Validation (final)", modern_after_validation,
-                           legacy_after_validation);
+    print_stage_comparison("Stage 3: After Validation (final)", modern_after_validation, legacy_after_validation);
 
     std::cout << "\n" << std::string(60, '=') << "\n";
     std::cout << "Note: Legacy initial and after-conflict stages not available from JSON.\n";

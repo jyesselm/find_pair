@@ -32,20 +32,18 @@ void print_validation_result(const ValidationResult& result, const ValidationPar
     std::cout << "  overlap_area: " << result.overlap_area << "\n";
 
     std::cout << "\nValidation Checks:\n";
-    std::cout << "  distance_check (dorg): " << (result.distance_check ? "PASS" : "FAIL") << " ["
-              << params.min_dorg << " <= " << result.dorg << " <= " << params.max_dorg << "]\n";
+    std::cout << "  distance_check (dorg): " << (result.distance_check ? "PASS" : "FAIL") << " [" << params.min_dorg
+              << " <= " << result.dorg << " <= " << params.max_dorg << "]\n";
     std::cout << "  d_v_check: " << (result.d_v_check ? "PASS" : "FAIL") << " [" << params.min_dv
               << " <= " << result.d_v << " <= " << params.max_dv << "]\n";
     std::cout << "  plane_angle_check: " << (result.plane_angle_check ? "PASS" : "FAIL") << " ["
-              << params.min_plane_angle << " <= " << result.plane_angle
-              << " <= " << params.max_plane_angle << "]\n";
+              << params.min_plane_angle << " <= " << result.plane_angle << " <= " << params.max_plane_angle << "]\n";
     std::cout << "  dNN_check: " << (result.dNN_check ? "PASS" : "FAIL") << " [" << params.min_dNN
               << " <= " << result.dNN << " <= " << params.max_dNN << "]\n";
-    std::cout << "  overlap_check: " << (result.overlap_check ? "PASS" : "FAIL")
-              << " [overlap_area < " << params.overlap_threshold << "]\n";
-    std::cout << "  hbond_check: " << (result.hbond_check ? "PASS" : "FAIL")
-              << " [num_base_hb=" << result.num_base_hb << ", min_base_hb=" << params.min_base_hb
-              << "]\n";
+    std::cout << "  overlap_check: " << (result.overlap_check ? "PASS" : "FAIL") << " [overlap_area < "
+              << params.overlap_threshold << "]\n";
+    std::cout << "  hbond_check: " << (result.hbond_check ? "PASS" : "FAIL") << " [num_base_hb=" << result.num_base_hb
+              << ", min_base_hb=" << params.min_base_hb << "]\n";
 
     std::cout << "\nDirection Vectors:\n";
     std::cout << "  dir_x: " << result.dir_x << "\n";
@@ -60,10 +58,8 @@ void print_validation_result(const ValidationResult& result, const ValidationPar
     std::cout << "\nQuality Score:\n";
     std::cout << "  base_score: " << result.quality_score << "\n";
     std::cout << "  formula: dorg + 2.0 * d_v + plane_angle / 20.0\n";
-    std::cout << "  = " << result.dorg << " + 2.0 * " << result.d_v << " + " << result.plane_angle
-              << " / 20.0\n";
-    std::cout << "  = " << result.dorg << " + " << (2.0 * result.d_v) << " + "
-              << (result.plane_angle / 20.0) << "\n";
+    std::cout << "  = " << result.dorg << " + 2.0 * " << result.d_v << " + " << result.plane_angle << " / 20.0\n";
+    std::cout << "  = " << result.dorg << " + " << (2.0 * result.d_v) << " + " << (result.plane_angle / 20.0) << "\n";
     std::cout << "  = " << result.quality_score << "\n";
 }
 
@@ -78,8 +74,7 @@ int main(int argc, char* argv[]) {
     int idx1 = std::stoi(argv[2]);
     int idx2 = std::stoi(argv[3]);
 
-    std::cout << "Analyzing validation for pair (" << idx1 << ", " << idx2 << ") in " << pdb_file
-              << "\n";
+    std::cout << "Analyzing validation for pair (" << idx1 << ", " << idx2 << ") in " << pdb_file << "\n";
     std::cout << "=" << std::string(70, '=') << "\n";
 
     // Parse PDB
@@ -112,10 +107,10 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "Found residues:\n";
-    std::cout << "  Residue " << idx1 << ": " << mutable_res1->name() << " (chain "
-              << mutable_res1->chain_id() << ")\n";
-    std::cout << "  Residue " << idx2 << ": " << mutable_res2->name() << " (chain "
-              << mutable_res2->chain_id() << ")\n";
+    std::cout << "  Residue " << idx1 << ": " << mutable_res1->name() << " (chain " << mutable_res1->chain_id()
+              << ")\n";
+    std::cout << "  Residue " << idx2 << ": " << mutable_res2->name() << " (chain " << mutable_res2->chain_id()
+              << ")\n";
 
     // Calculate frames
     BaseFrameCalculator frame_calc("data/templates");
@@ -142,8 +137,7 @@ int main(int argc, char* argv[]) {
     // Determine why legacy might reject
     std::cout << "\n=== Analysis: Why Legacy Might Reject ===\n";
 
-    bool passes_cdns =
-        result.distance_check && result.d_v_check && result.plane_angle_check && result.dNN_check;
+    bool passes_cdns = result.distance_check && result.d_v_check && result.plane_angle_check && result.dNN_check;
 
     if (!passes_cdns) {
         std::cout << "❌ Fails cdns (distance/angle checks)\n";

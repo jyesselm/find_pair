@@ -131,8 +131,7 @@ public:
     static bool detect_rna(const core::Structure& structure);
 
 private:
-    mutable StandardBaseTemplates
-        templates_; // Mutable for caching (doesn't affect logical constness)
+    mutable StandardBaseTemplates templates_; // Mutable for caching (doesn't affect logical constness)
     bool is_rna_ = false;
     bool legacy_mode_ = false; // If true, exclude C4 atom to match legacy behavior
 

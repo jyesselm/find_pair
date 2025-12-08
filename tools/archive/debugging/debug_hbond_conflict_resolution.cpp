@@ -220,8 +220,7 @@ std::vector<Phase2Debug> trace_phase2(const std::vector<HydrogenBondResult>& hbo
 }
 
 std::vector<Phase3Debug> trace_phase3(std::vector<HydrogenBondResult>& hbonds,
-                                      const std::vector<std::vector<int>>& idx2, double hb_lower,
-                                      double hb_dist2) {
+                                      const std::vector<std::vector<int>>& idx2, double hb_lower, double hb_dist2) {
     std::vector<Phase3Debug> phase3_trace;
     const size_t num_hbonds = hbonds.size();
 
@@ -237,9 +236,8 @@ std::vector<Phase3Debug> trace_phase3(std::vector<HydrogenBondResult>& hbonds,
         hbonds[k].linkage_type = linkage_sum;
         debug.linkage_type = linkage_sum;
 
-        debug.should_mark_conflict =
-            (linkage_sum != 18 && hbonds[k].distance > 0.0 && hbonds[k].distance >= hb_lower &&
-             hbonds[k].distance <= hb_dist2);
+        debug.should_mark_conflict = (linkage_sum != 18 && hbonds[k].distance > 0.0 && hbonds[k].distance >= hb_lower &&
+                                      hbonds[k].distance <= hb_dist2);
 
         if (debug.should_mark_conflict) {
             hbonds[k].distance = -hbonds[k].distance;
@@ -261,12 +259,10 @@ void print_phase1_trace(const std::vector<Phase1Debug>& trace) {
 
     for (const auto& debug : trace) {
         std::cout << "\nIteration " << debug.num_iter << ":\n";
-        std::cout << "  H-bond: " << debug.donor << " -> " << debug.acceptor
-                  << " (dist=" << std::fixed << std::setprecision(6) << debug.distance << ")\n";
-        std::cout << "  Shortest for donor: idx=" << debug.ddidx1 << " dist=" << debug.dtmp1
-                  << "\n";
-        std::cout << "  Shortest for acceptor: idx=" << debug.ddidx2 << " dist=" << debug.dtmp2
-                  << "\n";
+        std::cout << "  H-bond: " << debug.donor << " -> " << debug.acceptor << " (dist=" << std::fixed
+                  << std::setprecision(6) << debug.distance << ")\n";
+        std::cout << "  Shortest for donor: idx=" << debug.ddidx1 << " dist=" << debug.dtmp1 << "\n";
+        std::cout << "  Shortest for acceptor: idx=" << debug.ddidx2 << " dist=" << debug.dtmp2 << "\n";
         std::cout << "  Conflict detected: " << (debug.is_conflict ? "YES" : "NO") << "\n";
         if (debug.is_conflict) {
             std::cout << "    -> Marking H-bond " << debug.ddidx1 << " as conflict\n";
@@ -280,8 +276,7 @@ void print_phase2_trace(const std::vector<Phase2Debug>& trace) {
     std::cout << "========================================\n";
 
     for (const auto& debug : trace) {
-        std::cout << "\nH-bond " << debug.k << ": " << debug.donor << " -> " << debug.acceptor
-                  << "\n";
+        std::cout << "\nH-bond " << debug.k << ": " << debug.donor << " -> " << debug.acceptor << "\n";
         std::cout << "  Distance: " << std::fixed << std::setprecision(6) << debug.distance
                   << (debug.is_conflict_before ? " (CONFLICT)" : " (positive)") << "\n";
         std::cout << "  idx2[0] = " << debug.idx2_0 << ", idx2[1] = " << debug.idx2_1 << "\n";
@@ -300,14 +295,11 @@ void print_phase3_trace(const std::vector<Phase3Debug>& trace) {
     std::cout << "========================================\n";
 
     for (const auto& debug : trace) {
-        std::cout << "\nH-bond " << debug.k << ": " << debug.donor << " -> " << debug.acceptor
-                  << "\n";
-        std::cout << "  Distance before: " << std::fixed << std::setprecision(6)
-                  << debug.distance_before
+        std::cout << "\nH-bond " << debug.k << ": " << debug.donor << " -> " << debug.acceptor << "\n";
+        std::cout << "  Distance before: " << std::fixed << std::setprecision(6) << debug.distance_before
                   << (debug.is_conflict_before ? " (CONFLICT)" : " (positive)") << "\n";
         std::cout << "  Linkage type: " << debug.linkage_type << "\n";
-        std::cout << "  Should mark conflict: " << (debug.should_mark_conflict ? "YES" : "NO")
-                  << "\n";
+        std::cout << "  Should mark conflict: " << (debug.should_mark_conflict ? "YES" : "NO") << "\n";
         std::cout << "  Distance after: " << debug.distance_after
                   << (debug.is_conflict_after ? " (CONFLICT)" : " (positive)") << "\n";
     }
@@ -371,10 +363,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::cout << "\nResidue " << residue_i << ": " << res1->name() << " (chain " << res1->chain_id()
-              << ")\n";
-    std::cout << "Residue " << residue_j << ": " << res2->name() << " (chain " << res2->chain_id()
-              << ")\n";
+    std::cout << "\nResidue " << residue_i << ": " << res1->name() << " (chain " << res1->chain_id() << ")\n";
+    std::cout << "Residue " << residue_j << ": " << res2->name() << " (chain " << res2->chain_id() << ")\n";
 
     // Get base types (use one_letter_code)
     char base1 = res1->one_letter_code();
@@ -414,16 +404,16 @@ int main(int argc, char* argv[]) {
     double hb_dist1 = params.hb_dist1;
     double hb_dist2 = 4.5;
 
-    DetailedHBondResult detailed = HydrogenBondFinder::find_hydrogen_bonds_detailed(
-        *res1, *res2, hb_lower, hb_dist1, hb_dist2);
+    DetailedHBondResult detailed = HydrogenBondFinder::find_hydrogen_bonds_detailed(*res1, *res2, hb_lower, hb_dist1,
+                                                                                    hb_dist2);
 
     std::cout << "\n========================================\n";
     std::cout << "INITIAL H-BONDS (before conflict resolution)\n";
     std::cout << "========================================\n";
     for (size_t i = 0; i < detailed.initial_hbonds.size(); ++i) {
         const auto& hb = detailed.initial_hbonds[i];
-        std::cout << "  " << (i + 1) << ". " << hb.donor_atom << " -> " << hb.acceptor_atom
-                  << " dist=" << std::fixed << std::setprecision(6) << hb.distance << "\n";
+        std::cout << "  " << (i + 1) << ". " << hb.donor_atom << " -> " << hb.acceptor_atom << " dist=" << std::fixed
+                  << std::setprecision(6) << hb.distance << "\n";
     }
 
     // Now manually trace through conflict resolution
@@ -448,9 +438,8 @@ int main(int argc, char* argv[]) {
     std::cout << "========================================\n";
     for (size_t i = 0; i < hbonds.size(); ++i) {
         const auto& hb = hbonds[i];
-        std::cout << "  " << (i + 1) << ". " << hb.donor_atom << " -> " << hb.acceptor_atom
-                  << " dist=" << std::fixed << std::setprecision(6) << hb.distance
-                  << (hb.distance < 0.0 ? " (CONFLICT)" : " (positive)")
+        std::cout << "  " << (i + 1) << ". " << hb.donor_atom << " -> " << hb.acceptor_atom << " dist=" << std::fixed
+                  << std::setprecision(6) << hb.distance << (hb.distance < 0.0 ? " (CONFLICT)" : " (positive)")
                   << " linkage=" << hb.linkage_type << "\n";
     }
 

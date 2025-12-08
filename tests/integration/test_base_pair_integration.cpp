@@ -161,8 +161,7 @@ TEST_F(BasePairIntegrationTest, JsonOutputFormat) {
     calculator.calculate_all_frames(structure);
 
     // Create temporary JSON file
-    std::filesystem::path temp_json =
-        std::filesystem::temp_directory_path() / "test_base_pairs.json";
+    std::filesystem::path temp_json = std::filesystem::temp_directory_path() / "test_base_pairs.json";
 
     // Find pairs and record to JSON
     JsonWriter writer(pdb_file);
@@ -237,15 +236,13 @@ TEST_F(BasePairIntegrationTest, JsonOutputFormat) {
 
         std::string filename = entry.path().filename().string();
         // Check if filename starts with base_name (split files have format: base_name_type.json)
-        if (filename.find(base_name) == 0 && filename.size() >= 5 &&
-            filename.substr(filename.size() - 5) == ".json") {
+        if (filename.find(base_name) == 0 && filename.size() >= 5 && filename.substr(filename.size() - 5) == ".json") {
             std::ifstream file(entry.path());
             if (file.is_open()) {
                 try {
                     nlohmann::json split_j;
                     file >> split_j;
-                    if (split_j.contains("calculation_records") &&
-                        split_j["calculation_records"].is_array()) {
+                    if (split_j.contains("calculation_records") && split_j["calculation_records"].is_array()) {
                         for (const auto& record : split_j["calculation_records"]) {
                             if (record.contains("type")) {
                                 std::string type = record["type"];

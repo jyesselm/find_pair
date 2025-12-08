@@ -112,25 +112,21 @@ protected:
 
                         // Calculate frame directly (don't check has_reference_frame)
                         // Use calculate_frame_const to avoid modifying residue during iteration
-                        FrameCalculationResult frame_result =
-                            calculator.calculate_frame_const(residue);
+                        FrameCalculationResult frame_result = calculator.calculate_frame_const(residue);
 
                         if (frame_result.is_valid) {
                             // Record base_frame_calc
                             nlohmann::json base_frame_record;
                             base_frame_record["type"] = "base_frame_calc";
                             base_frame_record["residue_idx"] = residue_idx;
-                            base_frame_record["base_type"] =
-                                std::string(1, residue.one_letter_code());
+                            base_frame_record["base_type"] = std::string(1, residue.one_letter_code());
                             base_frame_record["residue_name"] = residue.name();
                             base_frame_record["chain_id"] = std::string(1, residue.chain_id());
                             base_frame_record["residue_seq"] = residue.seq_num();
                             if (residue.insertion() != ' ') {
-                                base_frame_record["insertion"] =
-                                    std::string(1, residue.insertion());
+                                base_frame_record["insertion"] = std::string(1, residue.insertion());
                             }
-                            base_frame_record["standard_template"] =
-                                frame_result.template_file.string();
+                            base_frame_record["standard_template"] = frame_result.template_file.string();
                             base_frame_record["rms_fit"] = frame_result.rms_fit;
                             base_frame_record["num_matched_atoms"] = frame_result.num_matched;
                             base_frame_record["matched_atoms"] = frame_result.matched_atoms;
@@ -144,8 +140,7 @@ protected:
                             ls_fitting_record["chain_id"] = std::string(1, residue.chain_id());
                             ls_fitting_record["residue_seq"] = residue.seq_num();
                             if (residue.insertion() != ' ') {
-                                ls_fitting_record["insertion"] =
-                                    std::string(1, residue.insertion());
+                                ls_fitting_record["insertion"] = std::string(1, residue.insertion());
                             }
                             ls_fitting_record["num_points"] = frame_result.num_matched;
                             ls_fitting_record["rms_fit"] = frame_result.rms_fit;
@@ -162,9 +157,9 @@ protected:
                             ls_fitting_record["rotation_matrix"] = rot_array;
 
                             // Translation
-                            ls_fitting_record["translation"] = nlohmann::json::array(
-                                {frame_result.translation.x(), frame_result.translation.y(),
-                                 frame_result.translation.z()});
+                            ls_fitting_record["translation"] = nlohmann::json::array({frame_result.translation.x(),
+                                                                                      frame_result.translation.y(),
+                                                                                      frame_result.translation.z()});
                             output_json["calculations"].push_back(ls_fitting_record);
                         }
                     }
@@ -201,16 +196,15 @@ TEST_F(JsonGenerationFilteredTest, GenerateProblematicPdbs) {
         }
     }
 
-    std::cout << "Processing " << filtered_pairs.size() << " problematic PDBs out of "
-              << all_pairs.size() << " total" << std::endl;
+    std::cout << "Processing " << filtered_pairs.size() << " problematic PDBs out of " << all_pairs.size() << " total"
+              << std::endl;
 
     size_t success_count = 0;
     size_t failure_count = 0;
 
     // Process in parallel
     std::vector<std::thread> threads;
-    size_t num_threads =
-        std::min(filtered_pairs.size(), static_cast<size_t>(std::thread::hardware_concurrency()));
+    size_t num_threads = std::min(filtered_pairs.size(), static_cast<size_t>(std::thread::hardware_concurrency()));
 
     std::mutex mtx;
     std::atomic<size_t> processed{0};
@@ -226,8 +220,7 @@ TEST_F(JsonGenerationFilteredTest, GenerateProblematicPdbs) {
                 size_t current = ++processed;
                 if (current % 10 == 0) {
                     std::lock_guard<std::mutex> lock(mtx);
-                    std::cout << "Progress: " << current << "/" << filtered_pairs.size()
-                              << std::endl;
+                    std::cout << "Progress: " << current << "/" << filtered_pairs.size() << std::endl;
                 }
             } catch (const std::exception& e) {
                 fail++;

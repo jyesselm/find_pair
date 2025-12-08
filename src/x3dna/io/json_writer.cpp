@@ -83,8 +83,7 @@ void JsonWriter::add_calculation_record(const nlohmann::json& record) {
     }
 }
 
-void JsonWriter::write_split_files(const std::filesystem::path& output_dir,
-                                   bool pretty_print) const {
+void JsonWriter::write_split_files(const std::filesystem::path& output_dir, bool pretty_print) const {
     if (split_records_.empty()) {
         return;
     }
@@ -262,11 +261,9 @@ void JsonWriter::record_residue_indices(const core::Structure& structure) {
 }
 
 void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
-                                        const std::filesystem::path& standard_template,
-                                        double rms_fit,
-                                        const std::vector<std::string>& matched_atoms,
-                                        const std::string& residue_name, char chain_id,
-                                        int residue_seq, char insertion) {
+                                        const std::filesystem::path& standard_template, double rms_fit,
+                                        const std::vector<std::string>& matched_atoms, const std::string& residue_name,
+                                        char chain_id, int residue_seq, char insertion) {
     nlohmann::json record;
     record["type"] = "base_frame_calc";
     record["residue_idx"] = residue_idx;
@@ -301,10 +298,8 @@ void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
 }
 
 void JsonWriter::record_ls_fitting(size_t residue_idx, size_t num_points, double rms_fit,
-                                   const geometry::Matrix3D& rotation_matrix,
-                                   const geometry::Vector3D& translation,
-                                   const std::string& residue_name, char chain_id, int residue_seq,
-                                   char insertion) {
+                                   const geometry::Matrix3D& rotation_matrix, const geometry::Vector3D& translation,
+                                   const std::string& residue_name, char chain_id, int residue_seq, char insertion) {
     nlohmann::json record;
     record["type"] = "ls_fitting";
     record["residue_idx"] = residue_idx;
@@ -337,19 +332,16 @@ void JsonWriter::record_ls_fitting(size_t residue_idx, size_t num_points, double
     record["rotation_matrix"] = rot_array;
 
     // Translation as 3-element array
-    record["translation"] =
-        nlohmann::json::array({format_double(translation.x()), format_double(translation.y()),
-                               format_double(translation.z())});
+    record["translation"] = nlohmann::json::array(
+        {format_double(translation.x()), format_double(translation.y()), format_double(translation.z())});
 
     add_calculation_record(record);
 }
 
-void JsonWriter::record_frame_calc(size_t residue_idx, char base_type,
-                                   const std::filesystem::path& template_file, double rms_fit,
-                                   const std::vector<geometry::Vector3D>& matched_std_xyz,
+void JsonWriter::record_frame_calc(size_t residue_idx, char base_type, const std::filesystem::path& template_file,
+                                   double rms_fit, const std::vector<geometry::Vector3D>& matched_std_xyz,
                                    const std::vector<geometry::Vector3D>& matched_exp_xyz,
-                                   const std::string& residue_name, char chain_id, int residue_seq,
-                                   char insertion) {
+                                   const std::string& residue_name, char chain_id, int residue_seq, char insertion) {
     if (matched_std_xyz.size() != matched_exp_xyz.size()) {
         throw std::invalid_argument("Matched coordinate arrays must have same size");
     }
@@ -406,8 +398,8 @@ void JsonWriter::record_base_pair(const core::BasePair& pair) {
     size_t base_j = pair.residue_idx2() + 1; // Convert to 1-based
 
     // Normalize pair key to avoid duplicates (always use (min, max) order)
-    std::pair<size_t, size_t> pair_key =
-        (base_i < base_j) ? std::make_pair(base_i, base_j) : std::make_pair(base_j, base_i);
+    std::pair<size_t, size_t> pair_key = (base_i < base_j) ? std::make_pair(base_i, base_j)
+                                                           : std::make_pair(base_j, base_i);
 
     // Check if this pair has already been recorded
     if (recorded_base_pairs_.find(pair_key) != recorded_base_pairs_.end()) {
@@ -443,8 +435,7 @@ void JsonWriter::record_base_pair(const core::BasePair& pair) {
     add_calculation_record(record);
 }
 
-void JsonWriter::record_bpstep_params(size_t bp_idx1, size_t bp_idx2,
-                                      const core::BasePairStepParameters& params) {
+void JsonWriter::record_bpstep_params(size_t bp_idx1, size_t bp_idx2, const core::BasePairStepParameters& params) {
     nlohmann::json record;
     record["type"] = "bpstep_params";
     record["bp_idx1"] = bp_idx1;
@@ -466,8 +457,7 @@ void JsonWriter::record_bpstep_params(size_t bp_idx1, size_t bp_idx2,
     add_calculation_record(record);
 }
 
-void JsonWriter::record_helical_params(size_t bp_idx1, size_t bp_idx2,
-                                       const core::HelicalParameters& params) {
+void JsonWriter::record_helical_params(size_t bp_idx1, size_t bp_idx2, const core::HelicalParameters& params) {
     nlohmann::json record;
     record["type"] = "helical_params";
     record["bp_idx1"] = bp_idx1;
@@ -514,11 +504,9 @@ void JsonWriter::record_all_ref_frames(const core::Structure& structure) {
     add_calculation_record(record);
 }
 
-void JsonWriter::record_removed_atom(const std::string& pdb_line, const std::string& reason,
-                                     int atom_serial, const std::string& atom_name,
-                                     const std::string& residue_name, char chain_id,
-                                     int residue_seq, const geometry::Vector3D* xyz,
-                                     int model_num) {
+void JsonWriter::record_removed_atom(const std::string& pdb_line, const std::string& reason, int atom_serial,
+                                     const std::string& atom_name, const std::string& residue_name, char chain_id,
+                                     int residue_seq, const geometry::Vector3D* xyz, int model_num) {
     nlohmann::json record;
     record["type"] = "removed_atom";
 
@@ -560,16 +548,15 @@ void JsonWriter::record_removed_atoms_summary(size_t num_removed) {
     add_calculation_record(record);
 }
 
-void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_valid, int bp_type_id,
-                                        double dir_x, double dir_y, double dir_z,
-                                        const std::array<double, 5>& rtn_val,
+void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_valid, int bp_type_id, double dir_x,
+                                        double dir_y, double dir_z, const std::array<double, 5>& rtn_val,
                                         const algorithms::ValidationParameters& params) {
     // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
     // Legacy pair_validation records use 1-based indices (e.g., base_i=1 to 20 for 20 residues)
     nlohmann::json record;
     record["type"] = "pair_validation";
-    record["base_i"] = static_cast<long>(base_i + 1); // Convert to 1-based for legacy
-    record["base_j"] = static_cast<long>(base_j + 1); // Convert to 1-based for legacy
+    record["base_i"] = static_cast<long>(base_i + 1);         // Convert to 1-based for legacy
+    record["base_j"] = static_cast<long>(base_j + 1);         // Convert to 1-based for legacy
     record["is_valid"] = static_cast<long>(is_valid ? 1 : 0); // Legacy uses long
     record["bp_type_id"] = static_cast<long>(bp_type_id);
 
@@ -592,11 +579,10 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
 
     // Validation checks (nested object, matches legacy format)
     nlohmann::json validation_checks;
-    validation_checks["distance_check"] =
-        (rtn_val[0] >= params.min_dorg && rtn_val[0] <= params.max_dorg);
+    validation_checks["distance_check"] = (rtn_val[0] >= params.min_dorg && rtn_val[0] <= params.max_dorg);
     validation_checks["d_v_check"] = (rtn_val[1] >= params.min_dv && rtn_val[1] <= params.max_dv);
-    validation_checks["plane_angle_check"] =
-        (rtn_val[2] >= params.min_plane_angle && rtn_val[2] <= params.max_plane_angle);
+    validation_checks["plane_angle_check"] = (rtn_val[2] >= params.min_plane_angle &&
+                                              rtn_val[2] <= params.max_plane_angle);
     validation_checks["dNN_check"] = (rtn_val[3] >= params.min_dNN && rtn_val[3] <= params.max_dNN);
     record["validation_checks"] = validation_checks;
 
@@ -615,8 +601,8 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
     add_calculation_record(record);
 }
 
-void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dorg, double dNN,
-                                        double plane_angle, double d_v, double overlap_area) {
+void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dorg, double dNN, double plane_angle,
+                                        double d_v, double overlap_area) {
     // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
     // Also, legacy outputs BOTH (i,j) and (j,i) - so we need to output both pairs
 
@@ -652,8 +638,7 @@ void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dor
     add_calculation_record(record_reversed);
 }
 
-void JsonWriter::record_hbond_list(size_t base_i, size_t base_j,
-                                   const std::vector<core::hydrogen_bond>& hbonds) {
+void JsonWriter::record_hbond_list(size_t base_i, size_t base_j, const std::vector<core::hydrogen_bond>& hbonds) {
     // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
     nlohmann::json record;
     record["type"] = "hbond_list";
@@ -677,8 +662,7 @@ void JsonWriter::record_hbond_list(size_t base_i, size_t base_j,
         if (hbond.hbond_idx.has_value()) {
             hbond_json["hbond_idx"] = static_cast<long>(hbond.hbond_idx.value());
         } else {
-            hbond_json["hbond_idx"] =
-                static_cast<long>(i + 1); // 1-based per-pair indexing (matches legacy)
+            hbond_json["hbond_idx"] = static_cast<long>(i + 1); // 1-based per-pair indexing (matches legacy)
         }
         hbonds_array.push_back(hbond_json);
     }
@@ -714,8 +698,7 @@ nlohmann::json JsonWriter::format_double(double value) {
     return nlohmann::json(std::round(value * 1000000.0) / 1000000.0);
 }
 
-void JsonWriter::record_find_bestpair_selection(
-    const std::vector<std::pair<size_t, size_t>>& selected_pairs) {
+void JsonWriter::record_find_bestpair_selection(const std::vector<std::pair<size_t, size_t>>& selected_pairs) {
     nlohmann::json record;
     record["type"] = "find_bestpair_selection";
     record["num_bp"] = selected_pairs.size();
@@ -729,9 +712,9 @@ void JsonWriter::record_find_bestpair_selection(
     add_calculation_record(record);
 }
 
-void JsonWriter::record_best_partner_candidates(
-    int res_i, const std::vector<std::tuple<int, bool, double, int>>& candidates, int best_j,
-    double best_score) {
+void JsonWriter::record_best_partner_candidates(int res_i,
+                                                const std::vector<std::tuple<int, bool, double, int>>& candidates,
+                                                int best_j, double best_score) {
     // Only store candidates with actual scores (not default 1e18)
     // This reduces file size dramatically (from ~74GB to ~1GB total)
     constexpr double MAX_VALID_SCORE = 1e17;
@@ -769,8 +752,8 @@ void JsonWriter::record_best_partner_candidates(
     add_calculation_record(record);
 }
 
-void JsonWriter::record_mutual_best_decision(int res_i, int res_j, int best_j_for_i,
-                                             int best_i_for_j, bool is_mutual, bool was_selected) {
+void JsonWriter::record_mutual_best_decision(int res_i, int res_j, int best_j_for_i, int best_i_for_j, bool is_mutual,
+                                             bool was_selected) {
     nlohmann::json record;
     record["type"] = "mutual_best_decision";
     record["res1"] = res_i;

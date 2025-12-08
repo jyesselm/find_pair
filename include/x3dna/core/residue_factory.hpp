@@ -35,8 +35,8 @@ public:
      * @param atoms Vector of atoms in this residue
      * @return Residue with all properties initialized
      */
-    static Residue create(const std::string& name, int sequence_number, char chain_id,
-                          char insertion_code, const std::vector<Atom>& atoms);
+    static Residue create(const std::string& name, int sequence_number, char chain_id, char insertion_code,
+                          const std::vector<Atom>& atoms);
 
 private:
     /**

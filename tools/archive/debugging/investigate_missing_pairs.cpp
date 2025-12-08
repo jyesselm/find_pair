@@ -47,8 +47,8 @@ void check_residue(const x3dna::core::Residue& residue, int legacy_idx, const st
     if (residue.reference_frame().has_value()) {
         std::cout << "    Frame: AVAILABLE\n";
         auto frame = residue.reference_frame().value();
-        std::cout << "      Origin: (" << frame.origin().x() << ", " << frame.origin().y() << ", "
-                  << frame.origin().z() << ")\n";
+        std::cout << "      Origin: (" << frame.origin().x() << ", " << frame.origin().y() << ", " << frame.origin().z()
+                  << ")\n";
     } else {
         std::cout << "    Frame: MISSING\n";
     }
@@ -56,8 +56,7 @@ void check_residue(const x3dna::core::Residue& residue, int legacy_idx, const st
 
 int main(int argc, char* argv[]) {
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0]
-                  << " <pdb_file> <legacy_idx1> <legacy_idx2> [legacy_json_file]\n";
+        std::cerr << "Usage: " << argv[0] << " <pdb_file> <legacy_idx1> <legacy_idx2> [legacy_json_file]\n";
         std::cerr << "Example: " << argv[0] << " data/pdb/6CAQ.pdb 495 498\n";
         std::cerr << "         " << argv[0]
                   << " data/pdb/6CAQ.pdb 495 498 data/json_legacy/base_frame_calc/6CAQ.json\n";
@@ -69,8 +68,7 @@ int main(int argc, char* argv[]) {
     int legacy_idx2 = std::stoi(argv[3]);
     std::string legacy_json_file = (argc > 4) ? argv[4] : "";
 
-    std::cout << "Investigating pair (" << legacy_idx1 << ", " << legacy_idx2 << ") in " << pdb_file
-              << "\n";
+    std::cout << "Investigating pair (" << legacy_idx1 << ", " << legacy_idx2 << ") in " << pdb_file << "\n";
     std::cout << "=" << 60 << "\n\n";
 
     // Parse PDB
@@ -148,8 +146,7 @@ int main(int argc, char* argv[]) {
         std::cout << "❌ Residue 2 has NO frame - pair will be skipped\n";
     }
 
-    if (res1_is_nuc && res2_is_nuc && res1->reference_frame().has_value() &&
-        res2->reference_frame().has_value()) {
+    if (res1_is_nuc && res2_is_nuc && res1->reference_frame().has_value() && res2->reference_frame().has_value()) {
         std::cout << "✅ Both residues are nucleotides with frames - attempting validation\n\n";
 
         // Try validation
@@ -172,8 +169,7 @@ int main(int argc, char* argv[]) {
             std::cout << "  This explains why it's not in validation records\n";
         } else {
             std::cout << "\n  ✅ Pair PASSED validation\n";
-            std::cout
-                << "  ⚠️  But it's missing from validation records - check Phase 1 iteration\n";
+            std::cout << "  ⚠️  But it's missing from validation records - check Phase 1 iteration\n";
         }
     } else {
         std::cout << "\n❌ Pair cannot be validated due to missing requirements\n";

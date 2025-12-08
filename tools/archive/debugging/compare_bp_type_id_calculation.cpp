@@ -19,8 +19,7 @@ using namespace x3dna::io;
 using namespace x3dna::algorithms;
 using namespace x3dna::geometry;
 
-void analyze_bp_type_id(int idx1, int idx2, const Residue* res1, const Residue* res2,
-                        const ValidationResult& result) {
+void analyze_bp_type_id(int idx1, int idx2, const Residue* res1, const Residue* res2, const ValidationResult& result) {
     std::cout << "\n============================================================\n";
     std::cout << "bp_type_id ANALYSIS: Pair (" << idx1 << ", " << idx2 << ")\n";
     std::cout << "============================================================\n\n";
@@ -34,8 +33,7 @@ void analyze_bp_type_id(int idx1, int idx2, const Residue* res1, const Residue* 
 
     // Check direction vector condition
     bool dir_condition = (result.dir_x > 0.0 && result.dir_y < 0.0 && result.dir_z < 0.0);
-    std::cout << "  Condition (dir_x>0 && dir_y<0 && dir_z<0): "
-              << (dir_condition ? "PASS" : "FAIL") << "\n";
+    std::cout << "  Condition (dir_x>0 && dir_y<0 && dir_z<0): " << (dir_condition ? "PASS" : "FAIL") << "\n";
 
     if (!dir_condition) {
         std::cout << "\nbp_type_id = -1 (direction vector condition not met)\n";
@@ -77,10 +75,10 @@ void analyze_bp_type_id(int idx1, int idx2, const Residue* res1, const Residue* 
     std::cout << "\nTHRESHOLD CHECKS:\n";
     bool stretch_ok = (std::abs(stretch) <= 2.0);
     bool opening_ok = (std::abs(opening) <= 60.0);
-    std::cout << "  fabs(stretch) <= 2.0: " << (stretch_ok ? "PASS" : "FAIL")
-              << " (value: " << std::abs(stretch) << ")\n";
-    std::cout << "  fabs(opening) <= 60.0: " << (opening_ok ? "PASS" : "FAIL")
-              << " (value: " << std::abs(opening) << ")\n";
+    std::cout << "  fabs(stretch) <= 2.0: " << (stretch_ok ? "PASS" : "FAIL") << " (value: " << std::abs(stretch)
+              << ")\n";
+    std::cout << "  fabs(opening) <= 60.0: " << (opening_ok ? "PASS" : "FAIL") << " (value: " << std::abs(opening)
+              << ")\n";
 
     if (!stretch_ok || !opening_ok) {
         std::cout << "\nbp_type_id = -1 (stretch or opening threshold exceeded)\n";
@@ -95,8 +93,7 @@ void analyze_bp_type_id(int idx1, int idx2, const Residue* res1, const Residue* 
     std::cout << "\nBASE PAIR TYPE:\n";
     std::cout << "  bp_type: " << bp_type << "\n";
 
-    static const std::vector<std::string> WC_LIST = {"XX", "AT", "AU", "TA", "UA",
-                                                     "GC", "IC", "CG", "CI"};
+    static const std::vector<std::string> WC_LIST = {"XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"};
     bool in_wc_list = false;
     for (const auto& wc : WC_LIST) {
         if (bp_type == wc) {
@@ -109,14 +106,14 @@ void analyze_bp_type_id(int idx1, int idx2, const Residue* res1, const Residue* 
     // Check wobble
     bool is_wobble = (std::abs(shear) >= 1.8 && std::abs(shear) <= 2.8);
     std::cout << "\nWOBBLE CHECK:\n";
-    std::cout << "  fabs(shear) in [1.8, 2.8]: " << (is_wobble ? "YES" : "NO")
-              << " (value: " << std::abs(shear) << ")\n";
+    std::cout << "  fabs(shear) in [1.8, 2.8]: " << (is_wobble ? "YES" : "NO") << " (value: " << std::abs(shear)
+              << ")\n";
 
     // Check Watson-Crick
     bool is_wc = (std::abs(shear) <= 1.8 && in_wc_list);
     std::cout << "\nWATSON-CRICK CHECK:\n";
-    std::cout << "  fabs(shear) <= 1.8: " << (std::abs(shear) <= 1.8 ? "YES" : "NO")
-              << " (value: " << std::abs(shear) << ")\n";
+    std::cout << "  fabs(shear) <= 1.8: " << (std::abs(shear) <= 1.8 ? "YES" : "NO") << " (value: " << std::abs(shear)
+              << ")\n";
     std::cout << "  In WC_LIST: " << (in_wc_list ? "YES" : "NO") << "\n";
     std::cout << "  Both conditions met: " << (is_wc ? "YES" : "NO") << "\n";
 

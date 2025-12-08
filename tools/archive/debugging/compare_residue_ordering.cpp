@@ -27,13 +27,12 @@ struct ResidueInfo {
     std::string insertion_code;
 
     bool operator==(const ResidueInfo& other) const {
-        return residue_name == other.residue_name && chain_id == other.chain_id &&
-               residue_seq == other.residue_seq && insertion_code == other.insertion_code;
+        return residue_name == other.residue_name && chain_id == other.chain_id && residue_seq == other.residue_seq &&
+               insertion_code == other.insertion_code;
     }
 
     std::string key() const {
-        return residue_name + "|" + chain_id + "|" + std::to_string(residue_seq) + "|" +
-               insertion_code;
+        return residue_name + "|" + chain_id + "|" + std::to_string(residue_seq) + "|" + insertion_code;
     }
 };
 
@@ -140,10 +139,10 @@ int main(int argc, char* argv[]) {
                 const auto& modern = modern_residues[idx];
                 const auto& legacy = legacy_residues[idx];
                 std::cout << "  Index " << (idx + 1) << ":\n";
-                std::cout << "    Modern: " << modern.residue_name << " (chain " << modern.chain_id
-                          << ", seq " << modern.residue_seq << ")\n";
-                std::cout << "    Legacy: " << legacy.residue_name << " (chain " << legacy.chain_id
-                          << ", seq " << legacy.residue_seq << ")\n";
+                std::cout << "    Modern: " << modern.residue_name << " (chain " << modern.chain_id << ", seq "
+                          << modern.residue_seq << ")\n";
+                std::cout << "    Legacy: " << legacy.residue_name << " (chain " << legacy.chain_id << ", seq "
+                          << legacy.residue_seq << ")\n";
             }
         }
 

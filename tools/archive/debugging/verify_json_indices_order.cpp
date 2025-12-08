@@ -66,17 +66,15 @@ bool verify_frame_records(const json& records, const std::string& source) {
     int prev_idx = 0;
     for (const auto& info : indices) {
         if (info.legacy_idx <= prev_idx) {
-            std::cerr << "ERROR: Out of order at position " << info.position
-                      << ": legacy_idx=" << info.legacy_idx << " (previous was " << prev_idx
-                      << ")\n";
+            std::cerr << "ERROR: Out of order at position " << info.position << ": legacy_idx=" << info.legacy_idx
+                      << " (previous was " << prev_idx << ")\n";
             has_errors = true;
         }
         prev_idx = info.legacy_idx;
     }
 
     if (!has_errors) {
-        std::cout << "✓ All " << indices.size()
-                  << " records have legacy_residue_idx and are in order\n";
+        std::cout << "✓ All " << indices.size() << " records have legacy_residue_idx and are in order\n";
         std::cout << "  Range: " << (indices.empty() ? 0 : indices[0].legacy_idx) << " to "
                   << (indices.empty() ? 0 : indices.back().legacy_idx) << "\n";
     }
@@ -103,15 +101,14 @@ bool verify_pair_records(const json& records, const std::string& source) {
             idx1 = record["residue1_idx"];
             idx2 = record["residue2_idx"];
         } else {
-            std::cerr << "ERROR: Record at position " << i
-                      << " missing base_i/base_j or residue1_idx/residue2_idx\n";
+            std::cerr << "ERROR: Record at position " << i << " missing base_i/base_j or residue1_idx/residue2_idx\n";
             has_errors = true;
             continue;
         }
 
         if (idx1 <= 0 || idx2 <= 0) {
-            std::cerr << "ERROR: Record at position " << i << " has invalid indices: (" << idx1
-                      << ", " << idx2 << ")\n";
+            std::cerr << "ERROR: Record at position " << i << " has invalid indices: (" << idx1 << ", " << idx2
+                      << ")\n";
             has_errors = true;
             continue;
         }
@@ -126,8 +123,7 @@ bool verify_pair_records(const json& records, const std::string& source) {
     return !has_errors;
 }
 
-bool compare_indices(const json& legacy_records, const json& modern_records,
-                     const std::string& record_type) {
+bool compare_indices(const json& legacy_records, const json& modern_records, const std::string& record_type) {
     std::cout << "\n=== Comparing " << record_type << " indices ===\n";
 
     if (record_type == "frame_calc" || record_type == "base_frame_calc") {

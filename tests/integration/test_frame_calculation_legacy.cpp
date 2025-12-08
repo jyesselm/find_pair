@@ -52,8 +52,8 @@ protected:
     /**
      * @brief Compare rotation matrices within tolerance
      */
-    static bool compare_matrices(const Matrix3D& m1, const nlohmann::json& json_m2,
-                                 double tolerance, std::string& error_msg) {
+    static bool compare_matrices(const Matrix3D& m1, const nlohmann::json& json_m2, double tolerance,
+                                 std::string& error_msg) {
         if (!json_m2.is_array() || json_m2.size() != 3) {
             error_msg = "Legacy rotation matrix is not a 3x3 array";
             return false;
@@ -82,8 +82,8 @@ protected:
         }
 
         if (!match) {
-            oss << "Rotation matrix mismatch: max difference = " << std::fixed
-                << std::setprecision(6) << max_diff << " (tolerance = " << tolerance << ")";
+            oss << "Rotation matrix mismatch: max difference = " << std::fixed << std::setprecision(6) << max_diff
+                << " (tolerance = " << tolerance << ")";
             error_msg = oss.str();
         }
 
@@ -111,8 +111,8 @@ protected:
 
         if (max_diff > tolerance) {
             std::ostringstream oss;
-            oss << "Translation mismatch: max difference = " << std::fixed << std::setprecision(6)
-                << max_diff << " (tolerance = " << tolerance << ")"
+            oss << "Translation mismatch: max difference = " << std::fixed << std::setprecision(6) << max_diff
+                << " (tolerance = " << tolerance << ")"
                 << " [calculated: (" << v1.x() << ", " << v1.y() << ", " << v1.z() << ")"
                 << " vs legacy: (" << v2_x << ", " << v2_y << ", " << v2_z << ")]";
             error_msg = oss.str();
@@ -143,13 +143,13 @@ protected:
      * Includes insertion code to match legacy residue identification (ResName + ChainID + ResSeq +
      * iCode)
      */
-    static std::vector<std::tuple<char, int, char, std::string>>
-    build_ordered_residue_list(const nlohmann::json& legacy_json) {
+    static std::vector<std::tuple<char, int, char, std::string>> build_ordered_residue_list(
+        const nlohmann::json& legacy_json) {
         std::vector<std::tuple<char, int, char, std::string>> ordered_residues;
         if (legacy_json.contains("calculations")) {
             for (const auto& calc : legacy_json["calculations"]) {
-                if (calc.contains("type") && calc["type"] == "pdb_atoms" &&
-                    calc.contains("atoms") && calc["atoms"].is_array()) {
+                if (calc.contains("type") && calc["type"] == "pdb_atoms" && calc.contains("atoms") &&
+                    calc["atoms"].is_array()) {
                     std::set<std::tuple<char, int, char, std::string>> seen;
                     for (const auto& atom : calc["atoms"]) {
                         std::string chain_str = atom.value("chain_id", "");
@@ -184,8 +184,7 @@ protected:
 
         // Convert 1-based to 0-based index
         // Match legacy residue identification: ResName + ChainID + ResSeq + iCode
-        auto [legacy_chain, legacy_seq, legacy_insertion, legacy_name] =
-            ordered_residues[legacy_residue_idx - 1];
+        auto [legacy_chain, legacy_seq, legacy_insertion, legacy_name] = ordered_residues[legacy_residue_idx - 1];
 
         // Find matching residue in structure
         for (const auto& chain : structure.chains()) {
@@ -243,8 +242,7 @@ TEST_F(FrameCalculationLegacyTest, CompareSinglePDB) {
         size_t legacy_residue_idx = ls_record["residue_idx"].get<size_t>();
 
         // Find corresponding residue using legacy residue_idx (counts all residues)
-        auto residue_opt =
-            find_residue_by_legacy_idx(structure, legacy_residue_idx, ordered_residues);
+        auto residue_opt = find_residue_by_legacy_idx(structure, legacy_residue_idx, ordered_residues);
         if (!residue_opt.has_value()) {
             continue;
         }
@@ -266,13 +264,12 @@ TEST_F(FrameCalculationLegacyTest, CompareSinglePDB) {
         // Compare rotation matrix (within 0.05 tolerance - relaxed)
         if (ls_record.contains("rotation_matrix")) {
             std::string error_msg;
-            bool matrices_match =
-                compare_matrices(result.rotation_matrix, ls_record["rotation_matrix"],
-                                 0.05, // Tolerance: 0.05 (relaxed from 0.01)
-                                 error_msg);
+            bool matrices_match = compare_matrices(result.rotation_matrix, ls_record["rotation_matrix"],
+                                                   0.05, // Tolerance: 0.05 (relaxed from 0.01)
+                                                   error_msg);
 
-            EXPECT_TRUE(matrices_match) << "For " << pair.pdb_name << " legacy residue_idx "
-                                        << legacy_residue_idx << ": " << error_msg;
+            EXPECT_TRUE(matrices_match) << "For " << pair.pdb_name << " legacy residue_idx " << legacy_residue_idx
+                                        << ": " << error_msg;
         }
 
         // Compare translation (within 0.05 tolerance - relaxed)
@@ -282,8 +279,8 @@ TEST_F(FrameCalculationLegacyTest, CompareSinglePDB) {
                                                       0.05, // Tolerance: 0.05 (relaxed from 0.01)
                                                       error_msg);
 
-            EXPECT_TRUE(translations_match) << "For " << pair.pdb_name << " legacy residue_idx "
-                                            << legacy_residue_idx << ": " << error_msg;
+            EXPECT_TRUE(translations_match)
+                << "For " << pair.pdb_name << " legacy residue_idx " << legacy_residue_idx << ": " << error_msg;
         }
 
         // Compare RMS fit (within 0.005 tolerance - relaxed)
@@ -293,8 +290,8 @@ TEST_F(FrameCalculationLegacyTest, CompareSinglePDB) {
             bool rms_match = compare_doubles(result.rms_fit, legacy_rms, 0.005,
                                              error_msg); // Tolerance: 0.005 (relaxed from 0.001)
 
-            EXPECT_TRUE(rms_match) << "For " << pair.pdb_name << " legacy residue_idx "
-                                   << legacy_residue_idx << ": " << error_msg;
+            EXPECT_TRUE(rms_match) << "For " << pair.pdb_name << " legacy residue_idx " << legacy_residue_idx << ": "
+                                   << error_msg;
         }
 
         // Compare number of matched atoms (should match exactly)
@@ -354,8 +351,7 @@ TEST_F(FrameCalculationLegacyTest, CompareMultiplePDBs) {
             total_residues++;
 
             // Find corresponding residue using legacy residue_idx
-            auto residue_opt =
-                find_residue_by_legacy_idx(structure, legacy_residue_idx, ordered_residues);
+            auto residue_opt = find_residue_by_legacy_idx(structure, legacy_residue_idx, ordered_residues);
             if (!residue_opt.has_value()) {
                 failed_residues++;
                 continue;
@@ -423,8 +419,7 @@ TEST_F(FrameCalculationLegacyTest, CompareMultiplePDBs) {
 
     if (total_residues > 0) {
         double match_rate = (100.0 * matched_residues) / total_residues;
-        std::cout << "Match rate: " << std::fixed << std::setprecision(2) << match_rate << "%"
-                  << std::endl;
+        std::cout << "Match rate: " << std::fixed << std::setprecision(2) << match_rate << "%" << std::endl;
     }
 }
 
@@ -470,8 +465,7 @@ TEST_F(FrameCalculationLegacyTest, CompareBaseFrameCalcRecords) {
         auto ordered_residues = build_ordered_residue_list(legacy_json);
 
         // Find corresponding residue using legacy residue_idx
-        auto residue_opt =
-            find_residue_by_legacy_idx(structure, legacy_residue_idx, ordered_residues);
+        auto residue_opt = find_residue_by_legacy_idx(structure, legacy_residue_idx, ordered_residues);
         if (!residue_opt.has_value()) {
             continue;
         }
@@ -501,11 +495,10 @@ TEST_F(FrameCalculationLegacyTest, CompareBaseFrameCalcRecords) {
         if (legacy_record.contains("rms_fit") && !legacy_record["rms_fit"].is_null()) {
             double legacy_rms = legacy_record["rms_fit"].get<double>();
             std::string error_msg;
-            bool rms_match =
-                compare_doubles(result.rms_fit, legacy_rms, 0.005, error_msg); // Relaxed from 0.001
+            bool rms_match = compare_doubles(result.rms_fit, legacy_rms, 0.005, error_msg); // Relaxed from 0.001
 
-            EXPECT_TRUE(rms_match) << "For " << pair.pdb_name << " legacy residue_idx "
-                                   << legacy_residue_idx << ": " << error_msg;
+            EXPECT_TRUE(rms_match) << "For " << pair.pdb_name << " legacy residue_idx " << legacy_residue_idx << ": "
+                                   << error_msg;
         }
 
         // Compare matched atoms list (if available)
@@ -516,8 +509,7 @@ TEST_F(FrameCalculationLegacyTest, CompareBaseFrameCalcRecords) {
                 << ": Matched atoms list size differs";
 
             // Compare atom names (order may differ)
-            std::set<std::string> calculated_atoms(result.matched_atoms.begin(),
-                                                   result.matched_atoms.end());
+            std::set<std::string> calculated_atoms(result.matched_atoms.begin(), result.matched_atoms.end());
             std::set<std::string> legacy_atoms_set(legacy_atoms.begin(), legacy_atoms.end());
 
             if (calculated_atoms != legacy_atoms_set) {

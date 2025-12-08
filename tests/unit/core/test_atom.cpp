@@ -176,9 +176,8 @@ TEST_F(AtomTest, ToJsonModern) {
 }
 
 TEST_F(AtomTest, FromJsonModern) {
-    nlohmann::json j = {{"name", " N3 "},        {"position", {4.0, 5.0, 6.0}},
-                        {"residue_name", "  G"}, {"chain_id", "B"},
-                        {"residue_seq", 2},      {"record_type", "A"}};
+    nlohmann::json j = {{"name", " N3 "},   {"position", {4.0, 5.0, 6.0}}, {"residue_name", "  G"}, {"chain_id", "B"},
+                        {"residue_seq", 2}, {"record_type", "A"}};
 
     Atom atom = Atom::from_json(j);
 
