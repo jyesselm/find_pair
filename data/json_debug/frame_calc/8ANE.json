@@ -1,0 +1,7205 @@
+[
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2213,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          223.149,
+          148.627,
+          228.961
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          223.326,
+          147.613,
+          229.825
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          224.544,
+          147.654,
+          230.357
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          225.533,
+          148.528,
+          230.138
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          225.325,
+          149.536,
+          229.262
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          224.069,
+          149.604,
+          228.629
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          223.529,
+          150.483,
+          227.699
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          222.316,
+          150.023,
+          227.494
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          222.015,
+          148.907,
+          228.236
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2213,
+    "residue_name": "  A",
+    "residue_seq": 1,
+    "rms_fit": 0.005347,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2214,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          222.641,
+          149.488,
+          232.909
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          222.584,
+          148.418,
+          233.776
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          221.487,
+          147.645,
+          234.064
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          220.329,
+          147.998,
+          233.396
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          220.32,
+          149.056,
+          232.516
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          221.405,
+          149.796,
+          232.254
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2214,
+    "residue_name": "  U",
+    "residue_seq": 2,
+    "rms_fit": 0.002329,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2215,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          220.454,
+          149.197,
+          237.253
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          220.548,
+          147.832,
+          237.416
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          219.748,
+          147.039,
+          238.197
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          218.749,
+          147.7,
+          238.887
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          218.592,
+          149.061,
+          238.751
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          219.391,
+          149.815,
+          237.986
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2215,
+    "residue_name": "  U",
+    "residue_seq": 3,
+    "rms_fit": 0.005493,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2216,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          219.56,
+          149.522,
+          242.668
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          218.947,
+          148.731,
+          243.575
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          219.383,
+          147.483,
+          243.519
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          220.342,
+          147.045,
+          242.64
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          220.984,
+          147.84,
+          241.696
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          220.527,
+          149.183,
+          241.746
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          220.896,
+          150.288,
+          240.992
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          220.159,
+          151.258,
+          241.459
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          219.329,
+          150.866,
+          242.483
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2216,
+    "residue_name": "  G",
+    "residue_seq": 4,
+    "rms_fit": 0.002516,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2217,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          214.897,
+          161.099,
+          240.226
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          214.505,
+          162.083,
+          239.399
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          214.973,
+          163.259,
+          239.813
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          215.736,
+          163.542,
+          240.876
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          216.115,
+          162.53,
+          241.687
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          215.681,
+          161.233,
+          241.359
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          215.885,
+          160.002,
+          241.964
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          215.232,
+          159.164,
+          241.197
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          214.615,
+          159.758,
+          240.124
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2217,
+    "residue_name": "  A",
+    "residue_seq": 5,
+    "rms_fit": 0.002112,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2218,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          220.279,
+          159.356,
+          230.369
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          220.323,
+          159.988,
+          229.183
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          221.361,
+          159.569,
+          228.464
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          222.29,
+          158.657,
+          228.774
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          222.218,
+          158.039,
+          229.974
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          221.16,
+          158.396,
+          230.831
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          220.794,
+          157.971,
+          232.102
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          219.719,
+          158.672,
+          232.374
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          219.35,
+          159.529,
+          231.366
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2218,
+    "residue_name": "  A",
+    "residue_seq": 6,
+    "rms_fit": 0.003372,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2219,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          209.743,
+          158.88,
+          233.258
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          208.633,
+          158.674,
+          232.517
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          207.883,
+          157.704,
+          233.011
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          208.199,
+          156.991,
+          234.141
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          209.339,
+          157.185,
+          234.916
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          210.154,
+          158.224,
+          234.397
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          211.361,
+          158.736,
+          234.853
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          211.657,
+          159.674,
+          233.996
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          210.715,
+          159.818,
+          233.006
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2219,
+    "residue_name": "  G",
+    "residue_seq": 7,
+    "rms_fit": 0.002815,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2220,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          216.95,
+          163.615,
+          236.373
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          217.671,
+          164.676,
+          236.02
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          217.602,
+          165.148,
+          234.758
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          216.768,
+          164.517,
+          233.828
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          216.034,
+          163.422,
+          234.197
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          216.093,
+          162.945,
+          235.45
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2220,
+    "residue_name": "  C",
+    "residue_seq": 8,
+    "rms_fit": 0.003865,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2221,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          221.843,
+          171.859,
+          230.813
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          221.069,
+          171.794,
+          231.91
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          221.813,
+          171.842,
+          233.012
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          223.143,
+          171.938,
+          233.129
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          223.891,
+          171.997,
+          232.005
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          223.221,
+          171.955,
+          230.77
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          223.668,
+          171.993,
+          229.456
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          222.568,
+          171.918,
+          228.745
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          221.429,
+          171.834,
+          229.505
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2221,
+    "residue_name": "  A",
+    "residue_seq": 9,
+    "rms_fit": 0.00347,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2222,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          216.52,
+          173.078,
+          234.812
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          215.673,
+          173.164,
+          235.846
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          216.189,
+          173.896,
+          236.816
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          217.372,
+          174.515,
+          236.876
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          218.215,
+          174.412,
+          235.817
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          217.774,
+          173.652,
+          234.715
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          218.357,
+          173.351,
+          233.493
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          217.458,
+          172.612,
+          232.898
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          216.321,
+          172.404,
+          233.636
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2222,
+    "residue_name": "  A",
+    "residue_seq": 10,
+    "rms_fit": 0.006979,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2223,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          216.22,
+          178.311,
+          234.488
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          216.572,
+          179.609,
+          234.518
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          217.843,
+          179.789,
+          234.168
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          218.678,
+          178.761,
+          233.803
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          218.339,
+          177.415,
+          233.763
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          216.987,
+          177.219,
+          234.14
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          216.243,
+          176.05,
+          234.237
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          215.076,
+          176.45,
+          234.635
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          214.979,
+          177.812,
+          234.784
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2223,
+    "residue_name": "  G",
+    "residue_seq": 11,
+    "rms_fit": 0.008693,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2224,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          219.286,
+          179.159,
+          230.376
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          219.496,
+          180.405,
+          229.949
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          218.564,
+          181.362,
+          230.166
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          217.387,
+          181.03,
+          230.835
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          217.179,
+          179.749,
+          231.26
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          218.091,
+          178.797,
+          231.052
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2224,
+    "residue_name": "  C",
+    "residue_seq": 12,
+    "rms_fit": 0.004261,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2225,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          217.012,
+          188.623,
+          227.858
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          216.213,
+          189.009,
+          226.803
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          214.854,
+          189.201,
+          226.816
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          214.242,
+          188.957,
+          228.035
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          214.986,
+          188.577,
+          229.127
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          216.31,
+          188.403,
+          229.084
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2225,
+    "residue_name": "  U",
+    "residue_seq": 13,
+    "rms_fit": 0.004674,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2226,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          212.61,
+          193.427,
+          222.768
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          212.041,
+          194.034,
+          221.707
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          212.873,
+          194.876,
+          221.117
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          214.163,
+          195.098,
+          221.533
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          214.77,
+          194.478,
+          222.621
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          213.887,
+          193.576,
+          223.266
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          214.086,
+          192.757,
+          224.37
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          212.947,
+          192.139,
+          224.521
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          212.013,
+          192.494,
+          223.578
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2226,
+    "residue_name": "  G",
+    "residue_seq": 14,
+    "rms_fit": 0.003637,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2227,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          209.451,
+          196.849,
+          221.781
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          208.272,
+          196.526,
+          221.142
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          207.132,
+          196.002,
+          221.705
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          207.211,
+          195.768,
+          223.069
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          208.363,
+          196.078,
+          223.758
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          209.456,
+          196.592,
+          223.186
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2227,
+    "residue_name": "  U",
+    "residue_seq": 15,
+    "rms_fit": 0.007491,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2228,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          205.728,
+          199.743,
+          221.36
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          205.045,
+          200.599,
+          222.119
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          203.696,
+          200.523,
+          222.179
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          203.022,
+          199.539,
+          221.451
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          203.737,
+          198.665,
+          220.675
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          205.074,
+          198.731,
+          220.601
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2228,
+    "residue_name": "  C",
+    "residue_seq": 16,
+    "rms_fit": 0.005047,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2229,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          204.412,
+          202.186,
+          218.284
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          204.355,
+          203.46,
+          217.897
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          203.188,
+          204.142,
+          217.977
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          202.042,
+          203.499,
+          218.458
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          202.116,
+          202.198,
+          218.864
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          203.265,
+          201.509,
+          218.79
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2229,
+    "residue_name": "  C",
+    "residue_seq": 17,
+    "rms_fit": 0.006047,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2230,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          203.665,
+          202.727,
+          214.112
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          204.126,
+          203.767,
+          213.412
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          203.298,
+          204.78,
+          213.074
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          201.955,
+          204.731,
+          213.466
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          201.494,
+          203.66,
+          214.176
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          202.302,
+          202.651,
+          214.522
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2230,
+    "residue_name": "  C",
+    "residue_seq": 18,
+    "rms_fit": 0.003936,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2231,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          193.236,
+          211.247,
+          207.594
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          192.953,
+          210.282,
+          206.651
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          193.69,
+          209.161,
+          206.359
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          194.844,
+          209.009,
+          207.112
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          195.177,
+          209.938,
+          208.072
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          194.441,
+          211.021,
+          208.333
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2231,
+    "residue_name": "  U",
+    "residue_seq": 19,
+    "rms_fit": 0.00438,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2232,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          202.559,
+          207.293,
+          200.35
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          203.165,
+          208.034,
+          201.3
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          204.472,
+          208.105,
+          201.116
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          205.132,
+          207.493,
+          200.079
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          204.527,
+          206.723,
+          199.089
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          203.122,
+          206.64,
+          199.276
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          202.145,
+          205.986,
+          198.536
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          201.03,
+          206.249,
+          199.165
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          201.21,
+          207.04,
+          200.276
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2232,
+    "residue_name": "  G",
+    "residue_seq": 20,
+    "rms_fit": 0.003976,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2233,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          198.64,
+          210.719,
+          198.278
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          198.665,
+          211.914,
+          198.896
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          199.908,
+          212.237,
+          199.251
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          201.045,
+          211.553,
+          199.073
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          200.988,
+          210.358,
+          198.448
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          199.728,
+          209.902,
+          198.024
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          199.33,
+          208.746,
+          197.369
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          198.034,
+          208.887,
+          197.245
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          197.546,
+          210.067,
+          197.752
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2233,
+    "residue_name": "  A",
+    "residue_seq": 21,
+    "rms_fit": 0.006977,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2234,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          198.018,
+          212.418,
+          194.037
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          198.07,
+          213.633,
+          194.669
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          197.111,
+          214.602,
+          194.701
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          195.944,
+          214.293,
+          194.011
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          195.834,
+          213.093,
+          193.36
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          196.795,
+          212.178,
+          193.349
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2234,
+    "residue_name": "  U",
+    "residue_seq": 22,
+    "rms_fit": 0.00999,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2235,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          196.754,
+          213.789,
+          189.531
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          197.799,
+          214.574,
+          189.2
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          198.969,
+          214.014,
+          189.509
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          199.076,
+          212.78,
+          190.098
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          198.015,
+          211.956,
+          190.446
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          196.766,
+          212.547,
+          190.121
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          195.468,
+          212.071,
+          190.299
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          194.72,
+          213.019,
+          189.821
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          195.427,
+          214.087,
+          189.344
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2235,
+    "residue_name": "  G",
+    "residue_seq": 23,
+    "rms_fit": 0.005409,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2236,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          197.973,
+          211.78,
+          185.175
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          199.169,
+          211.977,
+          184.584
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          200.144,
+          211.352,
+          185.223
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          199.958,
+          210.593,
+          186.352
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          198.734,
+          210.374,
+          186.976
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          197.679,
+          211.039,
+          186.3
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          196.32,
+          211.086,
+          186.58
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          195.823,
+          211.838,
+          185.636
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          196.77,
+          212.288,
+          184.748
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2236,
+    "residue_name": "  G",
+    "residue_seq": 24,
+    "rms_fit": 0.002131,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2237,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          190.782,
+          215.345,
+          173.813
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          192.063,
+          215.195,
+          174.301
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          192.513,
+          214.227,
+          175.164
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          191.553,
+          213.316,
+          175.567
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          190.257,
+          213.415,
+          175.117
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          189.845,
+          214.368,
+          174.276
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2237,
+    "residue_name": "  U",
+    "residue_seq": 25,
+    "rms_fit": 0.003094,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2238,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          200.339,
+          206.214,
+          173.531
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          199.598,
+          205.134,
+          173.775
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          198.252,
+          205.174,
+          173.631
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          197.643,
+          206.38,
+          173.245
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          198.423,
+          207.475,
+          172.988
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          199.754,
+          207.443,
+          173.121
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2238,
+    "residue_name": "  C",
+    "residue_seq": 26,
+    "rms_fit": 0.008164,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2239,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          196.506,
+          207.641,
+          168.905
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          197.254,
+          208.685,
+          168.489
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          198.545,
+          208.483,
+          168.688
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          199.063,
+          207.342,
+          169.251
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          198.312,
+          206.254,
+          169.685
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          196.922,
+          206.458,
+          169.476
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          195.834,
+          205.642,
+          169.756
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          194.797,
+          206.331,
+          169.358
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          195.138,
+          207.545,
+          168.811
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2239,
+    "residue_name": "  G",
+    "residue_seq": 27,
+    "rms_fit": 0.006193,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2240,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          196.511,
+          206.371,
+          164.772
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          196.927,
+          207.511,
+          164.119
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          196.141,
+          208.411,
+          163.446
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          194.789,
+          208.12,
+          163.442
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          194.309,
+          206.999,
+          164.078
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          195.1,
+          206.134,
+          164.726
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2240,
+    "residue_name": "  U",
+    "residue_seq": 28,
+    "rms_fit": 0.002191,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2241,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          196.582,
+          204.748,
+          160.403
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          197.141,
+          204.689,
+          159.194
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          196.458,
+          205.117,
+          158.108
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          195.155,
+          205.599,
+          158.262
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          194.599,
+          205.679,
+          159.51
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          195.264,
+          205.257,
+          160.595
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2241,
+    "residue_name": "  C",
+    "residue_seq": 29,
+    "rms_fit": 0.007559,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2242,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          195.955,
+          200.572,
+          157.346
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          197.15,
+          200.209,
+          156.848
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          198.039,
+          200.048,
+          157.824
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          197.88,
+          200.196,
+          159.145
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          196.667,
+          200.561,
+          159.615
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          195.637,
+          200.764,
+          158.678
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          194.305,
+          201.134,
+          158.812
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          193.858,
+          201.157,
+          157.579
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          194.808,
+          200.838,
+          156.639
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2242,
+    "residue_name": "  A",
+    "residue_seq": 30,
+    "rms_fit": 0.004287,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2243,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          190.871,
+          197.373,
+          145.145
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          189.743,
+          196.73,
+          145.609
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          189.482,
+          196.341,
+          146.899
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          190.475,
+          196.643,
+          147.814
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          191.625,
+          197.284,
+          147.41
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          191.856,
+          197.65,
+          146.145
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2243,
+    "residue_name": "  U",
+    "residue_seq": 31,
+    "rms_fit": 0.003767,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2244,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          196.112,
+          188.228,
+          152.799
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          194.857,
+          188.091,
+          153.232
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          193.836,
+          188.742,
+          152.62
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          194.118,
+          189.561,
+          151.521
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          195.413,
+          189.701,
+          151.097
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          196.426,
+          189.06,
+          151.689
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2244,
+    "residue_name": "  C",
+    "residue_seq": 32,
+    "rms_fit": 0.008134,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2245,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          194.823,
+          186.895,
+          148.506
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          193.464,
+          186.81,
+          148.727
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          192.458,
+          187.293,
+          147.924
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          192.889,
+          187.929,
+          146.774
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          194.233,
+          188.055,
+          146.507
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          195.192,
+          187.572,
+          147.302
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2245,
+    "residue_name": "  U",
+    "residue_seq": 33,
+    "rms_fit": 0.005654,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2246,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          193.209,
+          184.193,
+          143.492
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          194.333,
+          184.511,
+          142.83
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          195.404,
+          184.266,
+          143.581
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          195.475,
+          183.778,
+          144.824
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          194.326,
+          183.466,
+          145.462
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          193.118,
+          183.678,
+          144.773
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          191.791,
+          183.472,
+          145.123
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          191.122,
+          183.858,
+          144.064
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          191.918,
+          184.297,
+          143.036
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2246,
+    "residue_name": "  A",
+    "residue_seq": 34,
+    "rms_fit": 0.00308,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2247,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          193.335,
+          179.341,
+          142.561
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          193.853,
+          178.517,
+          141.651
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          193.259,
+          178.381,
+          140.444
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          192.095,
+          179.103,
+          140.162
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          191.577,
+          179.957,
+          141.1
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          192.156,
+          180.099,
+          142.302
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2247,
+    "residue_name": "  C",
+    "residue_seq": 35,
+    "rms_fit": 0.004548,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2248,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          190.564,
+          175.776,
+          143.827
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          191.497,
+          174.894,
+          143.471
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          191.359,
+          174.183,
+          142.329
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          190.231,
+          174.385,
+          141.526
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          189.278,
+          175.292,
+          141.903
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          189.402,
+          176.001,
+          143.033
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2248,
+    "residue_name": "  C",
+    "residue_seq": 36,
+    "rms_fit": 0.002647,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2249,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          186.06,
+          165.679,
+          134.85
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          184.728,
+          165.759,
+          135.205
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          184.207,
+          166.305,
+          136.352
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          185.146,
+          166.82,
+          137.226
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          186.488,
+          166.772,
+          136.928
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          186.97,
+          166.235,
+          135.804
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2249,
+    "residue_name": "  U",
+    "residue_seq": 37,
+    "rms_fit": 0.003486,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2250,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          187.152,
+          162.921,
+          145.894
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          188.242,
+          163.091,
+          145.113
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          189.376,
+          163.079,
+          145.814
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          189.409,
+          162.912,
+          147.174
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          188.303,
+          162.734,
+          147.995
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          187.092,
+          162.747,
+          147.257
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          185.769,
+          162.608,
+          147.677
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          185.079,
+          162.699,
+          146.579
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          185.848,
+          162.873,
+          145.462
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2250,
+    "residue_name": "  G",
+    "residue_seq": 38,
+    "rms_fit": 0.007681,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2251,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          186.757,
+          159.323,
+          144.574
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          185.549,
+          159.08,
+          145.104
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          184.49,
+          158.782,
+          144.315
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          184.655,
+          158.748,
+          142.928
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          185.897,
+          158.987,
+          142.402
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          186.951,
+          159.278,
+          143.167
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2251,
+    "residue_name": "  C",
+    "residue_seq": 39,
+    "rms_fit": 0.012045,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2252,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          186.454,
+          155.102,
+          143.034
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          185.38,
+          154.93,
+          143.803
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          184.224,
+          154.472,
+          143.269
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          184.162,
+          154.204,
+          141.894
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          185.279,
+          154.373,
+          141.12
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          186.429,
+          154.821,
+          141.639
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2252,
+    "residue_name": "  C",
+    "residue_seq": 40,
+    "rms_fit": 0.006584,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2253,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          183.129,
+          150.528,
+          143.591
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          183.715,
+          149.371,
+          143.125
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          183.136,
+          148.412,
+          142.335
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          181.823,
+          148.653,
+          141.988
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          181.186,
+          149.801,
+          142.397
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          181.772,
+          150.719,
+          143.176
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2253,
+    "residue_name": "  U",
+    "residue_seq": 41,
+    "rms_fit": 0.006397,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2254,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          180.309,
+          146.528,
+          145.894
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          179.398,
+          147.507,
+          146.1
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          179.94,
+          148.661,
+          146.453
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          181.288,
+          148.855,
+          146.602
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          182.254,
+          147.876,
+          146.404
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          181.681,
+          146.632,
+          146.024
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          182.296,
+          145.424,
+          145.739
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          181.311,
+          144.621,
+          145.449
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          180.071,
+          145.212,
+          145.514
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2254,
+    "residue_name": "  G",
+    "residue_seq": 42,
+    "rms_fit": 0.014609,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2255,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          171.31,
+          138.414,
+          146.223
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          172.386,
+          138.102,
+          146.977
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          172.689,
+          136.815,
+          146.899
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          171.996,
+          135.904,
+          146.142
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          170.887,
+          136.199,
+          145.359
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          170.549,
+          137.574,
+          145.432
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          169.524,
+          138.268,
+          144.81
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          169.673,
+          139.494,
+          145.222
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          170.735,
+          139.659,
+          146.078
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2255,
+    "residue_name": "  G",
+    "residue_seq": 43,
+    "rms_fit": 0.006972,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2256,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          172.484,
+          141.601,
+          155.888
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          173.649,
+          141.144,
+          155.403
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          174.655,
+          141.485,
+          156.201
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          174.636,
+          142.182,
+          157.343
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          173.448,
+          142.625,
+          157.807
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          172.302,
+          142.331,
+          157.048
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          170.961,
+          142.634,
+          157.235
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          170.376,
+          142.089,
+          156.199
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          171.234,
+          141.446,
+          155.341
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2256,
+    "residue_name": "  A",
+    "residue_seq": 44,
+    "rms_fit": 0.003324,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2257,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          170.091,
+          137.151,
+          155.583
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          171.169,
+          136.584,
+          155.001
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          172.304,
+          136.998,
+          155.547
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          172.367,
+          137.896,
+          156.585
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          171.27,
+          138.492,
+          157.197
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          170.049,
+          138.058,
+          156.618
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          168.738,
+          138.399,
+          156.924
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          168.022,
+          137.707,
+          156.082
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          168.776,
+          136.927,
+          155.24
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2257,
+    "residue_name": "  G",
+    "residue_seq": 45,
+    "rms_fit": 0.002187,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2258,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          169.084,
+          133.53,
+          157.709
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          167.906,
+          133.792,
+          158.375
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          166.647,
+          133.349,
+          158.051
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          166.58,
+          132.569,
+          156.909
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          167.726,
+          132.259,
+          156.209
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          168.94,
+          132.702,
+          156.551
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2258,
+    "residue_name": "  U",
+    "residue_seq": 46,
+    "rms_fit": 0.00717,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2259,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          165.273,
+          131.271,
+          160.603
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          165.299,
+          129.963,
+          160.355
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          164.148,
+          129.281,
+          160.164
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          162.933,
+          129.968,
+          160.208
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          162.916,
+          131.311,
+          160.478
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          164.05,
+          131.995,
+          160.673
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2259,
+    "residue_name": "  C",
+    "residue_seq": 47,
+    "rms_fit": 0.005902,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2260,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          161.499,
+          132.004,
+          164.153
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          162.744,
+          131.551,
+          164.374
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          163.609,
+          132.562,
+          164.43
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          163.387,
+          133.876,
+          164.301
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          162.123,
+          134.3,
+          164.082
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          161.115,
+          133.325,
+          164.002
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          159.748,
+          133.42,
+          163.789
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          159.341,
+          132.176,
+          163.819
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          160.344,
+          131.267,
+          164.05
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2260,
+    "residue_name": "  A",
+    "residue_seq": 48,
+    "rms_fit": 0.004786,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2261,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          148.932,
+          125.467,
+          168.756
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          148.142,
+          126.328,
+          168.023
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          148.569,
+          127.31,
+          167.166
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          149.94,
+          127.437,
+          167.062
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          150.783,
+          126.598,
+          167.752
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          150.342,
+          125.647,
+          168.581
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2261,
+    "residue_name": "  U",
+    "residue_seq": 49,
+    "rms_fit": 0.005683,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2262,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          150.938,
+          137.399,
+          174.205
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          149.628,
+          137.517,
+          173.973
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          148.986,
+          136.598,
+          173.214
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          149.717,
+          135.542,
+          172.668
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          151.057,
+          135.427,
+          172.92
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          151.703,
+          136.325,
+          173.67
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2262,
+    "residue_name": "  C",
+    "residue_seq": 50,
+    "rms_fit": 0.004453,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2263,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          150.468,
+          132.991,
+          175.785
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          149.219,
+          133.46,
+          175.73
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          148.298,
+          132.862,
+          174.935
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          148.676,
+          131.76,
+          174.161
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          149.958,
+          131.286,
+          174.236
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          150.877,
+          131.864,
+          175.019
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2263,
+    "residue_name": "  C",
+    "residue_seq": 51,
+    "rms_fit": 0.005887,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2264,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          145.255,
+          135.189,
+          177.877
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          146.319,
+          135.893,
+          177.434
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          146.061,
+          137.188,
+          177.356
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          144.852,
+          137.75,
+          177.683
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          143.741,
+          137.047,
+          178.138
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          144.004,
+          135.655,
+          178.227
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          143.186,
+          134.608,
+          178.629
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          143.937,
+          133.547,
+          178.516
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          145.203,
+          133.826,
+          178.058
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2264,
+    "residue_name": "  G",
+    "residue_seq": 52,
+    "rms_fit": 0.002244,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2265,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          143.623,
+          127.907,
+          180.65
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          143.447,
+          129.161,
+          181.067
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          144.348,
+          129.725,
+          181.903
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          145.458,
+          128.981,
+          182.314
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          145.626,
+          127.697,
+          181.875
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          144.742,
+          127.127,
+          181.053
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2265,
+    "residue_name": "  C",
+    "residue_seq": 53,
+    "rms_fit": 0.002065,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2266,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          142.33,
+          132.595,
+          186.117
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          141.51,
+          133.629,
+          186.39
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          140.263,
+          133.229,
+          186.58
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          139.864,
+          131.917,
+          186.508
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          140.696,
+          130.838,
+          186.231
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          142.035,
+          131.253,
+          186.027
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          143.171,
+          130.51,
+          185.732
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          144.119,
+          131.401,
+          185.653
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          143.676,
+          132.68,
+          185.875
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2266,
+    "residue_name": "  G",
+    "residue_seq": 54,
+    "rms_fit": 0.005067,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2267,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          140.539,
+          131.443,
+          189.698
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          139.229,
+          131.342,
+          190.02
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          138.818,
+          130.079,
+          189.997
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          139.64,
+          129.019,
+          189.691
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          140.986,
+          129.098,
+          189.363
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          141.432,
+          130.441,
+          189.38
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          142.693,
+          130.954,
+          189.12
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          142.551,
+          132.237,
+          189.284
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          141.275,
+          132.603,
+          189.636
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2267,
+    "residue_name": "  G",
+    "residue_seq": 55,
+    "rms_fit": 0.009404,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2268,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          141.706,
+          128.643,
+          192.467
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          140.558,
+          128.037,
+          192.762
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          139.465,
+          128.78,
+          193.041
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          139.53,
+          130.17,
+          193.016
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          140.714,
+          130.785,
+          192.717
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          141.814,
+          130.067,
+          192.436
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2268,
+    "residue_name": "  C",
+    "residue_seq": 56,
+    "rms_fit": 0.007785,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2269,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          144.46,
+          126.857,
+          194.382
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          144.243,
+          125.532,
+          194.327
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          145.213,
+          124.924,
+          193.651
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          146.295,
+          125.453,
+          193.067
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          146.481,
+          126.79,
+          193.138
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          145.518,
+          127.552,
+          193.829
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          145.395,
+          128.911,
+          194.091
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          144.281,
+          129.006,
+          194.78
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          143.662,
+          127.798,
+          194.987
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2269,
+    "residue_name": "  A",
+    "residue_seq": 57,
+    "rms_fit": 0.006205,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2270,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          143.776,
+          126.125,
+          203.296
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          144.778,
+          125.547,
+          202.549
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          145.903,
+          126.155,
+          202.053
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          146.011,
+          127.507,
+          202.347
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          145.048,
+          128.142,
+          203.098
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          143.965,
+          127.515,
+          203.569
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2270,
+    "residue_name": "  U",
+    "residue_seq": 58,
+    "rms_fit": 0.004253,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2271,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          141.439,
+          124.302,
+          201.234
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          141.686,
+          122.984,
+          200.919
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          142.668,
+          122.498,
+          200.093
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          143.486,
+          123.461,
+          199.534
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          143.295,
+          124.796,
+          199.807
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          142.324,
+          125.237,
+          200.613
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2271,
+    "residue_name": "  U",
+    "residue_seq": 59,
+    "rms_fit": 0.002088,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "U",
+    "chain_id": "R",
+    "legacy_residue_idx": 2272,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          148.347,
+          118.089,
+          190.262
+        ],
+        "std_xyz": [
+          0.989,
+          2.884,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          146.995,
+          118.071,
+          189.984
+        ],
+        "std_xyz": [
+          -0.302,
+          2.397,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          145.962,
+          118.194,
+          190.881
+        ],
+        "std_xyz": [
+          -1.462,
+          3.131,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          146.356,
+          118.348,
+          192.196
+        ],
+        "std_xyz": [
+          -1.284,
+          4.5,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          147.688,
+          118.379,
+          192.537
+        ],
+        "std_xyz": [
+          -0.024,
+          5.053,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          148.675,
+          118.256,
+          191.645
+        ],
+        "std_xyz": [
+          1.089,
+          4.311,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2272,
+    "residue_name": "  U",
+    "residue_seq": 60,
+    "rms_fit": 0.003893,
+    "template_file": "data/templates/Atomic_U.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "A",
+    "chain_id": "R",
+    "legacy_residue_idx": 2273,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          139.648,
+          121.41,
+          198.273
+        ],
+        "std_xyz": [
+          -1.267,
+          3.124,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          138.457,
+          121.889,
+          198.673
+        ],
+        "std_xyz": [
+          -2.32,
+          2.29,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          138.226,
+          123.085,
+          198.137
+        ],
+        "std_xyz": [
+          -1.912,
+          1.023,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          138.993,
+          123.801,
+          197.309
+        ],
+        "std_xyz": [
+          -0.668,
+          0.532,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          140.182,
+          123.29,
+          196.925
+        ],
+        "std_xyz": [
+          0.369,
+          1.398,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          140.546,
+          122.026,
+          197.422
+        ],
+        "std_xyz": [
+          0.071,
+          2.771,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          141.669,
+          121.234,
+          197.232
+        ],
+        "std_xyz": [
+          0.877,
+          3.902,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          141.425,
+          120.168,
+          197.955
+        ],
+        "std_xyz": [
+          0.024,
+          4.897,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          140.226,
+          120.213,
+          198.621
+        ],
+        "std_xyz": [
+          -1.291,
+          4.498,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2273,
+    "residue_name": "  A",
+    "residue_seq": 61,
+    "rms_fit": 0.003813,
+    "template_file": "data/templates/Atomic_A.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2274,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          139.328,
+          122.827,
+          192.703
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          138.299,
+          123.69,
+          192.709
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          138.692,
+          124.913,
+          192.438
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          139.994,
+          125.269,
+          192.191
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          141.075,
+          124.39,
+          192.177
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          140.665,
+          123.053,
+          192.467
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          141.364,
+          121.853,
+          192.568
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          140.451,
+          120.953,
+          192.855
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          139.19,
+          121.492,
+          192.955
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2274,
+    "residue_name": "  G",
+    "residue_seq": 62,
+    "rms_fit": 0.021312,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2275,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          139.326,
+          125.554,
+          187.92
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          138.616,
+          126.493,
+          188.573
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          137.46,
+          126.134,
+          189.169
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          137.044,
+          124.805,
+          189.107
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          137.782,
+          123.854,
+          188.457
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          138.929,
+          124.183,
+          187.852
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2275,
+    "residue_name": "  C",
+    "residue_seq": 63,
+    "rms_fit": 0.012155,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2276,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          137.886,
+          127.206,
+          184.695
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          137.942,
+          128.515,
+          184.94
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          136.957,
+          129.112,
+          185.649
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          135.888,
+          128.346,
+          186.12
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          135.839,
+          127.003,
+          185.865
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          136.808,
+          126.399,
+          185.163
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2276,
+    "residue_name": "  C",
+    "residue_seq": 64,
+    "rms_fit": 0.001942,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "G",
+    "chain_id": "R",
+    "legacy_residue_idx": 2277,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          137.204,
+          134.404,
+          183.929
+        ],
+        "std_xyz": [
+          -1.265,
+          3.177,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          137.58,
+          135.604,
+          184.423
+        ],
+        "std_xyz": [
+          -2.342,
+          2.364,
+          0.001
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          138.892,
+          135.777,
+          184.36
+        ],
+        "std_xyz": [
+          -1.999,
+          1.087,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          139.767,
+          134.847,
+          183.857
+        ],
+        "std_xyz": [
+          -0.7,
+          0.641,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          139.406,
+          133.606,
+          183.344
+        ],
+        "std_xyz": [
+          0.424,
+          1.46,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          138.002,
+          133.408,
+          183.403
+        ],
+        "std_xyz": [
+          0.071,
+          2.833,
+          null
+        ]
+      },
+      {
+        "atom_idx": 7,
+        "exp_xyz": [
+          137.241,
+          132.321,
+          183.001
+        ],
+        "std_xyz": [
+          0.87,
+          3.969,
+          null
+        ]
+      },
+      {
+        "atom_idx": 8,
+        "exp_xyz": [
+          136.017,
+          132.666,
+          183.283
+        ],
+        "std_xyz": [
+          0.023,
+          4.962,
+          null
+        ]
+      },
+      {
+        "atom_idx": 9,
+        "exp_xyz": [
+          135.916,
+          133.92,
+          183.835
+        ],
+        "std_xyz": [
+          -1.289,
+          4.551,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 9,
+    "residue_idx": 2277,
+    "residue_name": "  G",
+    "residue_seq": 65,
+    "rms_fit": 0.006633,
+    "template_file": "data/templates/Atomic_G.pdb",
+    "type": "frame_calc"
+  },
+  {
+    "base_type": "C",
+    "chain_id": "R",
+    "legacy_residue_idx": 2278,
+    "matched_coordinates": [
+      {
+        "atom_idx": 1,
+        "exp_xyz": [
+          137.963,
+          134.629,
+          179.501
+        ],
+        "std_xyz": [
+          0.837,
+          2.868,
+          null
+        ]
+      },
+      {
+        "atom_idx": 2,
+        "exp_xyz": [
+          138.707,
+          135.679,
+          179.846
+        ],
+        "std_xyz": [
+          -0.391,
+          2.344,
+          null
+        ]
+      },
+      {
+        "atom_idx": 3,
+        "exp_xyz": [
+          138.113,
+          136.841,
+          180.203
+        ],
+        "std_xyz": [
+          -1.472,
+          3.158,
+          null
+        ]
+      },
+      {
+        "atom_idx": 4,
+        "exp_xyz": [
+          136.717,
+          136.924,
+          180.211
+        ],
+        "std_xyz": [
+          -1.285,
+          4.542,
+          null
+        ]
+      },
+      {
+        "atom_idx": 5,
+        "exp_xyz": [
+          135.962,
+          135.841,
+          179.852
+        ],
+        "std_xyz": [
+          -0.023,
+          5.068,
+          null
+        ]
+      },
+      {
+        "atom_idx": 6,
+        "exp_xyz": [
+          136.539,
+          134.685,
+          179.494
+        ],
+        "std_xyz": [
+          1.056,
+          4.275,
+          null
+        ]
+      }
+    ],
+    "num_matched_atoms": 6,
+    "residue_idx": 2278,
+    "residue_name": "  C",
+    "residue_seq": 66,
+    "rms_fit": 0.002215,
+    "template_file": "data/templates/Atomic_C.pdb",
+    "type": "frame_calc"
+  }
+]

@@ -1,0 +1,61 @@
+[
+  {
+    "iteration_num": 1,
+    "matched_residues": [
+      2263,
+      2264,
+      2266,
+      2267,
+      2268,
+      2270,
+      2271,
+      2274,
+      2275,
+      2276
+    ],
+    "num_matched": 10,
+    "num_total": 2278,
+    "pairs_found_in_iteration": [
+      [
+        2263,
+        2264
+      ],
+      [
+        2266,
+        2276
+      ],
+      [
+        2267,
+        2275
+      ],
+      [
+        2268,
+        2274
+      ],
+      [
+        2270,
+        2271
+      ]
+    ],
+    "type": "iteration_states"
+  },
+  {
+    "iteration_num": 2,
+    "matched_residues": [
+      2263,
+      2264,
+      2266,
+      2267,
+      2268,
+      2270,
+      2271,
+      2274,
+      2275,
+      2276
+    ],
+    "num_matched": 10,
+    "num_total": 2278,
+    "pairs_found_in_iteration": [],
+    "type": "iteration_states"
+  }
+]

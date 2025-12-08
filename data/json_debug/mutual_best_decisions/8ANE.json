@@ -1,0 +1,47 @@
+[
+  {
+    "best_partner_for_res1": 2264,
+    "best_partner_for_res2": 2263,
+    "is_mutual": 1,
+    "res1": 2263,
+    "res2": 2264,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 2276,
+    "best_partner_for_res2": 2266,
+    "is_mutual": 1,
+    "res1": 2266,
+    "res2": 2276,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 2275,
+    "best_partner_for_res2": 2267,
+    "is_mutual": 1,
+    "res1": 2267,
+    "res2": 2275,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 2274,
+    "best_partner_for_res2": 2268,
+    "is_mutual": 1,
+    "res1": 2268,
+    "res2": 2274,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 2271,
+    "best_partner_for_res2": 2270,
+    "is_mutual": 1,
+    "res1": 2270,
+    "res2": 2271,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  }
+]
