@@ -9,8 +9,6 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
-#include <iostream>
-#include <iomanip>
 
 namespace x3dna {
 namespace algorithms {
@@ -19,18 +17,6 @@ namespace hydrogen_bond {
 // Static members
 std::map<std::string, std::string> AtomListUtils::atom_list_;
 bool AtomListUtils::atom_list_loaded_ = false;
-
-// Debug flag - set via environment variable DEBUG_GOOD_HB_ATOMS=1
-static bool should_debug_good_hb_atoms() {
-    static bool checked = false;
-    static bool enabled = false;
-    if (!checked) {
-        const char* env = std::getenv("DEBUG_GOOD_HB_ATOMS");
-        enabled = (env && std::string(env) == "1");
-        checked = true;
-    }
-    return enabled;
-}
 
 void AtomListUtils::load_atom_list(const std::string& x3dna_home) {
     if (atom_list_loaded_) {
@@ -107,8 +93,6 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
         load_atom_list();
     }
 
-    bool debug_enabled = should_debug_good_hb_atoms();
-
     if (atom_name.length() < 4) {
         return 0; // UNK - need at least 4 chars for PDB format
     }
@@ -122,10 +106,6 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
         }
     }
 
-    if (debug_enabled) {
-        std::cerr << "    Pattern for '" << atom_name << "': '" << aname_pattern << "'" << std::endl;
-    }
-
     // Step 2: Try to match against atomlist (matches legacy lines 4168-4170)
     std::string my_asym;
     bool found_match = false;
@@ -134,9 +114,6 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
         if (pattern.length() >= aname_pattern.length() && pattern.substr(0, aname_pattern.length()) == aname_pattern) {
             my_asym = sym;
             found_match = true;
-            if (debug_enabled) {
-                std::cerr << "    Atomlist match: pattern='" << pattern << "' -> sym='" << sym << "'" << std::endl;
-            }
             break;
         }
     }
@@ -144,10 +121,6 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
     // Step 3: If no match, use fallback logic (matches legacy lines 4171-4184)
     if (!found_match) {
         bool unknown = (aname_pattern == ".UNK");
-
-        if (debug_enabled) {
-            std::cerr << "    No atomlist match, using fallback (unknown=" << unknown << ")" << std::endl;
-        }
 
         // Fallback case 1: aname[0]!='.' && aname[1]!='.' && aname[2]=='.' && aname[3]=='.'
         if (aname_pattern.length() >= 4 && aname_pattern[0] != '.' && aname_pattern[1] != '.' &&
@@ -172,16 +145,10 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
     static const std::map<std::string, int> atoms_list_idx = {{" C", 1}, {" O", 2}, {" H", 3},
                                                               {" N", 4}, {" S", 5}, {" P", 6}};
     auto it = atoms_list_idx.find(my_asym);
-    int idx = 0;
     if (it != atoms_list_idx.end()) {
-        idx = it->second;
+        return it->second;
     }
-
-    if (debug_enabled) {
-        std::cerr << "    Final: sym='" << my_asym << "' -> idx=" << idx << std::endl;
-    }
-
-    return idx;
+    return 0;
 }
 
 bool is_base_atom(const std::string& atom_name) {
@@ -202,23 +169,12 @@ bool is_base_atom(const std::string& atom_name) {
 
 bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std::string& hb_atoms) {
     // Match legacy good_hbatoms() logic EXACTLY (lines 3864-3877 in cmn_fncs.c)
-    bool debug_enabled = should_debug_good_hb_atoms();
-
-    if (debug_enabled) {
-        std::cerr << "\n[DEBUG good_hb_atoms] Checking: " << atom1 << " - " << atom2 << std::endl;
-    }
 
     // Step 1: PO list check (matches legacy lines 3866-3870)
     static const std::vector<std::string> PO = {" O1P", " O2P", " O3'", " O4'", " O5'", " N7 "};
     bool atom1_in_po = std::find(PO.begin(), PO.end(), atom1) != PO.end();
     bool atom2_in_po = std::find(PO.begin(), PO.end(), atom2) != PO.end();
-    if (debug_enabled) {
-        std::cerr << "  PO check: atom1_in_po=" << atom1_in_po << ", atom2_in_po=" << atom2_in_po << std::endl;
-    }
     if (atom1_in_po && atom2_in_po) {
-        if (debug_enabled) {
-            std::cerr << "  -> REJECTED (both in PO list)" << std::endl;
-        }
         return false;
     }
 
@@ -240,49 +196,17 @@ bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std
         }
     }
 
-    if (debug_enabled) {
-        std::cerr << "  hb_atoms string: '" << hb_atoms << "'" << std::endl;
-        std::cerr << "  hb_idx array: [";
-        for (size_t i = 0; i < hb_idx.size(); i++) {
-            if (i > 0)
-                std::cerr << ", ";
-            std::cerr << hb_idx[i];
-        }
-        std::cerr << "]" << std::endl;
-    }
-
     int idx1 = AtomListUtils::get_atom_idx(atom1);
     int idx2 = AtomListUtils::get_atom_idx(atom2);
 
-    if (debug_enabled) {
-        std::cerr << "  idx1=" << idx1 << ", idx2=" << idx2 << std::endl;
-    }
-
     // Legacy check: (idx1 == 2 || idx1 == 4 || idx2 == 2 || idx2 == 4) AND both in hb_idx
     bool at_least_one_on = (idx1 == 2 || idx1 == 4 || idx2 == 2 || idx2 == 4);
-    if (debug_enabled) {
-        std::cerr << "  at_least_one_on (idx==2||idx==4): " << at_least_one_on << std::endl;
-    }
 
     if (at_least_one_on) {
         bool idx1_in_hb = std::find(hb_idx.begin(), hb_idx.end(), idx1) != hb_idx.end();
         bool idx2_in_hb = std::find(hb_idx.begin(), hb_idx.end(), idx2) != hb_idx.end();
-        if (debug_enabled) {
-            std::cerr << "  idx1_in_hb: " << idx1_in_hb << ", idx2_in_hb: " << idx2_in_hb << std::endl;
-        }
         if (idx1_in_hb && idx2_in_hb) {
-            if (debug_enabled) {
-                std::cerr << "  -> ACCEPTED (both idx in hb_idx)" << std::endl;
-            }
             return true;
-        } else {
-            if (debug_enabled) {
-                std::cerr << "  -> REJECTED (not both idx in hb_idx)" << std::endl;
-            }
-        }
-    } else {
-        if (debug_enabled) {
-            std::cerr << "  -> REJECTED (no idx==2||idx==4)" << std::endl;
         }
     }
 

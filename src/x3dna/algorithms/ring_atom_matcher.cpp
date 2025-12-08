@@ -5,7 +5,6 @@
 
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
 #include <algorithm>
-#include <iostream>
 
 namespace x3dna {
 namespace algorithms {
@@ -28,34 +27,10 @@ MatchedAtoms RingAtomMatcher::match(const core::Residue& residue, const core::St
     core::ResidueType residue_type = detected_type.has_value() ? detected_type.value() : residue.residue_type();
     std::vector<std::string> ring_atom_names = get_ring_atom_names(residue_type);
 
-#ifdef DEBUG_FRAME_CALC
-    std::cerr << "DEBUG: RingAtomMatcher - residue: " << residue.name() << " type: " << static_cast<int>(residue_type)
-              << "\n";
-    std::cerr << "DEBUG: Looking for " << ring_atom_names.size() << " ring atoms\n";
-    std::cerr << "DEBUG: Residue has " << residue.num_atoms() << " atoms\n";
-#endif
-
     // Match atoms by name
     for (const auto& atom_name : ring_atom_names) {
         auto exp_atom = find_atom_by_name(residue, atom_name);
         auto std_atom = find_atom_by_name(standard_template, atom_name);
-
-#ifdef DEBUG_FRAME_CALC
-        std::cerr << "DEBUG: Atom " << atom_name << " (repr: " << std::hex << std::showbase;
-        for (char c : atom_name) {
-            std::cerr << static_cast<int>(c) << " ";
-        }
-        std::cerr << std::dec << "): " << (exp_atom.has_value() ? "FOUND" : "NOT FOUND") << " in residue, "
-                  << (std_atom.has_value() ? "FOUND" : "NOT FOUND") << " in template\n";
-        if (!exp_atom.has_value()) {
-            // Show available atoms
-            std::cerr << "DEBUG: Available atoms in residue: ";
-            for (const auto& atom : residue.atoms()) {
-                std::cerr << atom.name() << " ";
-            }
-            std::cerr << "\n";
-        }
-#endif
 
         // Only include matched atoms (both experimental and standard must be found)
         bool is_matched = exp_atom.has_value() && std_atom.has_value();
@@ -66,10 +41,6 @@ MatchedAtoms RingAtomMatcher::match(const core::Residue& residue, const core::St
             result.num_matched++;
         }
     }
-
-#ifdef DEBUG_FRAME_CALC
-    std::cerr << "DEBUG: Total matched: " << result.num_matched << "\n";
-#endif
 
     return result;
 }

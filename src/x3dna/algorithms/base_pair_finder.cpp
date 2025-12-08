@@ -114,15 +114,6 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::
                                                       : std::make_pair(legacy_idx2, legacy_idx1);
             phase1_validation_results[normalized_pair] = result;
 
-// DEBUG: Log validation for specific pair to trace bug
-#ifdef DEBUG_PAIR_SELECTION
-            if ((legacy_idx1 == 3844 && legacy_idx2 == 3865) || (legacy_idx1 == 3865 && legacy_idx2 == 3844)) {
-                std::cerr << "[DEBUG] Phase 1 validation for (" << legacy_idx1 << ", " << legacy_idx2
-                          << "): is_valid=" << result.is_valid << ", d_v_check=" << result.d_v_check
-                          << ", d_v=" << result.d_v << ", overlap_check=" << result.overlap_check << "\n";
-            }
-#endif
-
             // Calculate and store bp_type_id for consistency during selection
             // CRITICAL: Calculate bp_type_id once in Phase 1 and reuse during selection
             // This matches legacy behavior where bp_type_id is calculated in check_pair
@@ -488,14 +479,6 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
                     candidates.push_back(
                         std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
                 }
-// DEBUG: Log when invalid pair is being skipped (can help identify bugs)
-#ifdef DEBUG_PAIR_SELECTION
-                if ((legacy_idx1 == 3844 && legacy_idx2 == 3865) || (legacy_idx1 == 3865 && legacy_idx2 == 3844)) {
-                    std::cerr << "[DEBUG] Skipping invalid pair (" << legacy_idx1 << ", " << legacy_idx2
-                              << "): is_valid=" << result.is_valid << ", d_v_check=" << result.d_v_check
-                              << ", d_v=" << result.d_v << "\n";
-                }
-#endif
                 continue; // Pair was invalid in Phase 1, skip it
             }
         } else {
@@ -696,15 +679,6 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
     if (result.dir_x > 0.0 && result.dir_y < 0.0 && result.dir_z < 0.0) {
         // Get reference frames from residues
         if (!res1->reference_frame().has_value() || !res2->reference_frame().has_value()) {
-// Frames should be available since validation passed
-// This might indicate frames aren't set on residue objects
-// DEBUG: Log when frames are missing (can be removed after debugging)
-#ifdef DEBUG_BP_TYPE_ID
-            std::cerr << "[DEBUG] calculate_bp_type_id: Frames missing for pair (" << res1->name() << " "
-                      << res1->seq_num() << ", " << res2->name() << " " << res2->seq_num() << ")\n";
-            std::cerr << "  res1->reference_frame().has_value(): " << res1->reference_frame().has_value() << "\n";
-            std::cerr << "  res2->reference_frame().has_value(): " << res2->reference_frame().has_value() << "\n";
-#endif
             return bp_type_id; // Keep -1 if frames not available
         }
 
@@ -729,14 +703,6 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
 
         // Use frame2 first, frame1 second (matches legacy order)
         core::BasePairStepParameters params = param_calculator_.calculate_step_parameters(frame2, frame1);
-
-// DEBUG: Log step parameters for debugging (can be removed after debugging)
-#ifdef DEBUG_BP_TYPE_ID
-        std::cerr << "[DEBUG] calculate_bp_type_id: Step parameters for pair (" << res1->name() << " "
-                  << res1->seq_num() << ", " << res2->name() << " " << res2->seq_num() << "):\n";
-        std::cerr << "  shift=" << params.shift << ", slide=" << params.slide << ", rise=" << params.rise << "\n";
-        std::cerr << "  tilt=" << params.tilt << ", roll=" << params.roll << ", twist=" << params.twist << "\n";
-#endif
 
         // CRITICAL: Legacy has a bug - it passes wrong parameters to check_wc_wobble_pair!
         // Legacy calls: check_wc_wobble_pair(bpid, bpi, pars[1], pars[2], pars[6])
@@ -781,30 +747,11 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
             for (const auto& wc : WC_LIST) {
                 if (bp_type == wc) {
                     bp_type_id = 2; // Watson-Crick
-#ifdef DEBUG_BP_TYPE_ID
-                    std::cerr << "[DEBUG] calculate_bp_type_id: Assigned bp_type_id=2 "
-                                 "(Watson-Crick) for pair ("
-                              << res1->name() << " " << res1->seq_num() << ", " << res2->name() << " "
-                              << res2->seq_num() << ")\n";
-                    std::cerr << "  bp_type=" << bp_type << ", shear=" << shear << ", stretch=" << stretch
-                              << ", opening=" << opening << "\n";
-#endif
                     break;
                 }
             }
             // If not in WC_LIST, keep previous assignment (wobble if set, otherwise -1)
         }
-
-#ifdef DEBUG_BP_TYPE_ID
-        if (bp_type_id == -1) {
-            std::cerr << "[DEBUG] calculate_bp_type_id: Kept bp_type_id=-1 for pair (" << res1->name() << " "
-                      << res1->seq_num() << ", " << res2->name() << " " << res2->seq_num() << ")\n";
-            std::cerr << "  bp_type=" << bp_type << ", shear=" << shear << ", stretch=" << stretch
-                      << ", opening=" << opening << "\n";
-            std::cerr << "  stretch check: " << (std::abs(stretch) > 2.0)
-                      << ", opening check: " << (std::abs(opening) > 60.0) << "\n";
-        }
-#endif
     }
 
     return bp_type_id;

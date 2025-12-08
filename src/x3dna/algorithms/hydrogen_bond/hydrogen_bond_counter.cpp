@@ -5,25 +5,10 @@
 
 #include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.hpp>
 #include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.hpp>
-#include <iostream>
-#include <iomanip>
-#include <cstdlib>
 
 namespace x3dna {
 namespace algorithms {
 namespace hydrogen_bond {
-
-// Debug flag - set via environment variable DEBUG_GOOD_HB_ATOMS=1
-static bool should_debug_good_hb_atoms() {
-    static bool checked = false;
-    static bool enabled = false;
-    if (!checked) {
-        const char* env = std::getenv("DEBUG_GOOD_HB_ATOMS");
-        enabled = (env && std::string(env) == "1");
-        checked = true;
-    }
-    return enabled;
-}
 
 bool HydrogenBondCounter::within_limits(const geometry::Vector3D& pos1, const geometry::Vector3D& pos2, double lower,
                                         double upper) {
@@ -48,7 +33,6 @@ void HydrogenBondCounter::count_simple(const core::Residue& res1, const core::Re
 
     num_base_hb = 0;
     num_o2_hb = 0;
-    bool debug_enabled = should_debug_good_hb_atoms();
 
     // Loop through all atom pairs (matches legacy nested loops)
     for (const auto& atom1 : res1.atoms()) {
@@ -69,22 +53,11 @@ void HydrogenBondCounter::count_simple(const core::Residue& res1, const core::Re
             bool atom2_is_base = is_base_atom(atom2.name());
             bool both_base = atom1_is_base && atom2_is_base;
             bool not_o2prime = (atom1.name() != " O2'" && atom2.name() != " O2'");
-            bool good_hb = false;
 
             if (both_base && not_o2prime) {
-                good_hb = good_hb_atoms(atom1.name(), atom2.name(), hb_atoms);
-                if (good_hb) {
+                if (good_hb_atoms(atom1.name(), atom2.name(), hb_atoms)) {
                     num_base_hb++;
                 }
-            }
-
-            // Debug output for H-bond counting
-            if (debug_enabled && both_base && dist <= hb_dist1 && dist >= hb_lower) {
-                std::cerr << "[DEBUG count_hb] " << atom1.name() << " - " << atom2.name() << " (dist=" << std::fixed
-                          << std::setprecision(3) << dist << "): "
-                          << "atom1_is_base=" << atom1_is_base << ", atom2_is_base=" << atom2_is_base
-                          << ", not_o2prime=" << not_o2prime << ", good_hb_atoms=" << good_hb
-                          << ", num_base_hb=" << num_base_hb << std::endl;
             }
 
             // Check if either atom is O2'
@@ -92,11 +65,6 @@ void HydrogenBondCounter::count_simple(const core::Residue& res1, const core::Re
                 num_o2_hb++;
             }
         }
-    }
-
-    if (debug_enabled) {
-        std::cerr << "[DEBUG count_hb] Final counts: num_base_hb=" << num_base_hb << ", num_o2_hb=" << num_o2_hb
-                  << std::endl;
     }
 }
 
