@@ -91,3 +91,20 @@ target_link_libraries(test_residue_index_map
 )
 
 gtest_discover_tests(test_residue_index_map)
+
+# Pair candidate cache tests
+add_executable(test_pair_candidate_cache
+    test_pair_candidate_cache.cpp
+)
+
+target_compile_definitions(test_pair_candidate_cache PRIVATE
+    X3DNA_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
+target_link_libraries(test_pair_candidate_cache
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_pair_candidate_cache)

@@ -40,11 +40,8 @@ public:
      * @param res2 Second residue (for bp_type calculation)
      * @return Adjusted score (lower is better)
      */
-    double calculate_selection_score(
-        const ValidationResult& result,
-        const core::Residue& res1,
-        const core::Residue& res2
-    ) const;
+    double calculate_selection_score(const ValidationResult& result, const core::Residue& res1,
+                                     const core::Residue& res2) const;
 
     /**
      * @brief Calculate H-bond quality adjustment (matches legacy adjust_pairQuality)
@@ -74,11 +71,8 @@ public:
      * @param result Validation result (for direction vectors and validity)
      * @return bp_type_id (-1, 0, 1, or 2)
      */
-    int calculate_bp_type_id(
-        const core::Residue& res1,
-        const core::Residue& res2,
-        const ValidationResult& result
-    ) const;
+    int calculate_bp_type_id(const core::Residue& res1, const core::Residue& res2,
+                             const ValidationResult& result) const;
 
     /**
      * @brief Get base letter from ResidueType
@@ -97,6 +91,5 @@ private:
     static const std::vector<std::string> WC_LIST;
 };
 
-}  // namespace algorithms
-}  // namespace x3dna
-
+} // namespace algorithms
+} // namespace x3dna
