@@ -57,6 +57,7 @@ add_library(x3dna
     src/x3dna/algorithms/quality_score_calculator.cpp
     src/x3dna/algorithms/pair_candidate_cache.cpp
     src/x3dna/algorithms/json_writer_observer.cpp
+    src/x3dna/algorithms/pair_selection_strategy.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.cpp
     src/x3dna/config/config_manager.cpp
