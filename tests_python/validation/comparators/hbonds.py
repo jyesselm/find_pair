@@ -15,8 +15,9 @@ PairKey = Tuple[int, int]
 
 
 def _make_pair_key(rec: Dict[str, Any]) -> PairKey:
-    """Create a pair key from base_i/base_j."""
-    return (rec.get("base_i", 0), rec.get("base_j", 0))
+    """Create a normalized pair key from base_i/base_j (smaller index first)."""
+    i, j = rec.get("base_i", 0), rec.get("base_j", 0)
+    return (min(i, j), max(i, j))
 
 
 def compare_hbonds(
