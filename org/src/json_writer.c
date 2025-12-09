@@ -111,17 +111,17 @@ long json_writer_init(const char *pdbfile) {
     if (stat("../data", &st) == 0) {
         sprintf(dir_path, "../data");
         sprintf(json_filename, "../data/json_legacy/%s.json", pdb_name);
-        sprintf(globals_filename, "../data/json_legacy/%s_globals.json", pdb_name);
+        sprintf(globals_filename, "../data/json_legacy/globals/%s_globals.json", pdb_name);
     } else if (stat("data", &st) == 0) {
         /* We're already at project root */
         sprintf(dir_path, "data");
         sprintf(json_filename, "data/json_legacy/%s.json", pdb_name);
-        sprintf(globals_filename, "data/json_legacy/%s_globals.json", pdb_name);
+        sprintf(globals_filename, "data/json_legacy/globals/%s_globals.json", pdb_name);
     } else {
         /* Create data directory at current location */
         sprintf(dir_path, "data");
         sprintf(json_filename, "data/json_legacy/%s.json", pdb_name);
-        sprintf(globals_filename, "data/json_legacy/%s_globals.json", pdb_name);
+        sprintf(globals_filename, "data/json_legacy/globals/%s_globals.json", pdb_name);
     }
     
     /* Create parent directory 'data' if it doesn't exist */
@@ -146,13 +146,22 @@ long json_writer_init(const char *pdbfile) {
     strncpy(json_dir_path, dir_path, sizeof(json_dir_path) - 1);
     json_dir_path[sizeof(json_dir_path) - 1] = '\0';
     
+    /* Create globals directory */
+    char globals_dir[BUF1K];
+    sprintf(globals_dir, "%s/globals", dir_path);
+    if (stat(globals_dir, &st) == -1) {
+        if (mkdir(globals_dir, 0755) != 0) {
+            fprintf(stderr, "[JSON_WRITER] Warning: Could not create directory %s\n", globals_dir);
+        }
+    }
+    
     /* Create JSON filename with corrected path (for metadata file) */
     if (stat("../data", &st) == 0) {
         sprintf(json_filename, "../data/json_legacy/%s.json", pdb_name);
-        sprintf(globals_filename, "../data/json_legacy/%s_globals.json", pdb_name);
+        sprintf(globals_filename, "../data/json_legacy/globals/%s_globals.json", pdb_name);
     } else {
         sprintf(json_filename, "data/json_legacy/%s.json", pdb_name);
-        sprintf(globals_filename, "data/json_legacy/%s_globals.json", pdb_name);
+        sprintf(globals_filename, "data/json_legacy/globals/%s_globals.json", pdb_name);
     }
     
     /* Store PDB file path for later use */
