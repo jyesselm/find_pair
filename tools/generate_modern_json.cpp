@@ -214,9 +214,15 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
             }
             
             // Stages 11-12: Step and helical parameters
+            // Note: Step parameters are only meaningful for consecutive pairs within the same helix.
+            // For complex structures like tRNA, the selection order may not match helical order.
+            // We detect helix breaks by checking spatial distance between consecutive pairs.
             if (stage == "all" || stage == "steps" || stage == "helical") {
                 if (base_pairs.size() >= 2) {
                     ParameterCalculator param_calc;
+                    constexpr double MAX_STEP_DISTANCE = 10.0; // Angstroms - typical step is ~3-5A
+                    size_t skipped_steps = 0;
+                    
                     for (size_t i = 0; i + 1 < base_pairs.size(); ++i) {
                         const auto& pair1 = base_pairs[i];
                         const auto& pair2 = base_pairs[i + 1];
@@ -227,13 +233,24 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                             continue;
                         }
                         
+                        // Check for helix break - if origin distance is too large, skip this step
+                        Vector3D org1 = pair1.frame1().value().origin();
+                        Vector3D org2 = pair2.frame1().value().origin();
+                        double step_distance = (org2 - org1).length();
+                        
+                        if (step_distance > MAX_STEP_DISTANCE) {
+                            // Helix break detected - skip this step
+                            skipped_steps++;
+                            continue;
+                        }
+                        
                         // Use frame1() from each pair (matching legacy strand 1 frames)
                         ReferenceFrame frame1 = pair1.frame1().value();
                         ReferenceFrame frame2 = pair2.frame1().value();
                         
                         // Calculate step parameters
                         auto step_params = param_calc.calculate_step_parameters(frame1, frame2);
-                        // Use 1-based base pair indices (matching legacy)
+                        // Use 1-based base pair indices (selection order)
                         size_t bp_idx1 = i + 1;
                         size_t bp_idx2 = i + 2;
                         writer.record_bpstep_params(bp_idx1, bp_idx2, step_params);
@@ -244,7 +261,13 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                     }
                     
                     if (verbose) {
-                        std::cout << "  ✅ Generated step/helical params (" << (base_pairs.size() - 1) << " steps)\n";
+                        size_t total_steps = base_pairs.size() - 1;
+                        size_t valid_steps = total_steps - skipped_steps;
+                        std::cout << "  ✅ Generated step/helical params (" << valid_steps << "/" << total_steps << " steps";
+                        if (skipped_steps > 0) {
+                            std::cout << ", " << skipped_steps << " helix breaks skipped";
+                        }
+                        std::cout << ")\n";
                     }
                 }
             }
