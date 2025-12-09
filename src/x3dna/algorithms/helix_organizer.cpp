@@ -29,6 +29,37 @@ geometry::Vector3D HelixOrganizer::get_pair_z_axis(const core::BasePair& pair) c
     return pair.frame1().value().z_axis();
 }
 
+int HelixOrganizer::is_linked(size_t i, size_t j, const BackboneData& backbone) const {
+    // Check if O3' of residue i is linked to P of residue j
+    auto it_i = backbone.find(i);
+    auto it_j = backbone.find(j);
+    
+    if (it_i == backbone.end() || it_j == backbone.end()) {
+        return 0;
+    }
+    
+    const auto& atoms_i = it_i->second;
+    const auto& atoms_j = it_j->second;
+    
+    // Check O3'[i] → P[j] direction
+    if (atoms_i.O3_prime.has_value() && atoms_j.P.has_value()) {
+        double dist = (atoms_i.O3_prime.value() - atoms_j.P.value()).length();
+        if (dist <= config_.o3p_upper) {
+            return 1;  // i → j linkage (5'→3')
+        }
+    }
+    
+    // Check O3'[j] → P[i] direction (reverse)
+    if (atoms_j.O3_prime.has_value() && atoms_i.P.has_value()) {
+        double dist = (atoms_j.O3_prime.value() - atoms_i.P.value()).length();
+        if (dist <= config_.o3p_upper) {
+            return -1;  // j → i linkage (reverse)
+        }
+    }
+    
+    return 0;  // No linkage
+}
+
 std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
     const std::vector<core::BasePair>& pairs) const {
     
@@ -192,20 +223,105 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
 
 void HelixOrganizer::ensure_five_to_three(
     const std::vector<core::BasePair>& pairs,
-    std::vector<size_t>& /*pair_order*/,
-    std::vector<HelixSegment>& /*helices*/,
+    const BackboneData& backbone,
+    std::vector<size_t>& pair_order,
+    std::vector<HelixSegment>& helices,
     std::vector<bool>& strand_swapped) const {
     
     strand_swapped.resize(pairs.size(), false);
     
-    // For now, don't swap strands - this requires more sophisticated analysis
-    // The selection order already has a consistent strand assignment within each helix
-    // The issue is matching the legacy's strand assignment which depends on backbone connectivity
+    // If no backbone data provided, skip 5'→3' checking
+    if (backbone.empty()) {
+        return;
+    }
     
-    // TODO: Implement proper strand swapping based on backbone O3'-P connectivity
+    // For each helix, check backbone connectivity and determine:
+    // 1. Whether the helix segment needs to be reversed (going wrong direction)
+    // 2. Which pairs need strand swapping
+    for (auto& helix : helices) {
+        if (helix.start_idx >= helix.end_idx) continue;
+        
+        // Count forward and reverse backbone linkages to determine direction
+        int forward_links = 0;   // i1 → i2 or j1 → j2 (continuing same strands)
+        int cross_links = 0;     // i1 → j2 or j1 → i2 (cross-strand, needs swap)
+        
+        for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
+            size_t idx_m = pair_order[pos];
+            size_t idx_n = pair_order[pos + 1];
+            
+            const auto& pair_m = pairs[idx_m];
+            const auto& pair_n = pairs[idx_n];
+            
+            size_t i1 = pair_m.residue_idx1();
+            size_t j1_m = pair_m.residue_idx2();
+            size_t i2 = pair_n.residue_idx1();
+            size_t j2 = pair_n.residue_idx2();
+            
+            // Check all linkage patterns
+            if (is_linked(i1, i2, backbone) == 1 || is_linked(j1_m, j2, backbone) == 1) {
+                forward_links++;
+            }
+            if (is_linked(i1, j2, backbone) == 1 || is_linked(j1_m, i2, backbone) == 1) {
+                cross_links++;
+            }
+        }
+        
+        // If most links are cross-strand, all pairs in this helix need swapping
+        bool swap_all = (cross_links > forward_links);
+        
+        // Apply strand swapping
+        for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
+            size_t idx = pair_order[pos];
+            strand_swapped[idx] = swap_all;
+        }
+        
+        // After swapping, do fine-grained check for remaining issues
+        for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
+            size_t idx_m = pair_order[pos];
+            size_t idx_n = pair_order[pos + 1];
+            
+            const auto& pair_m = pairs[idx_m];
+            const auto& pair_n = pairs[idx_n];
+            
+            // Get residue indices based on current swap status
+            size_t i1 = strand_swapped[idx_m] ? pair_m.residue_idx2() : pair_m.residue_idx1();
+            size_t j1_m = strand_swapped[idx_m] ? pair_m.residue_idx1() : pair_m.residue_idx2();
+            size_t i2_default = pair_n.residue_idx1();
+            size_t j2_default = pair_n.residue_idx2();
+            
+            // If current swap status doesn't give proper linkage, toggle it
+            int link_i1_i2 = is_linked(i1, i2_default, backbone);
+            int link_j1_j2 = is_linked(j1_m, j2_default, backbone);
+            int link_i1_j2 = is_linked(i1, j2_default, backbone);
+            int link_j1_i2 = is_linked(j1_m, i2_default, backbone);
+            
+            // Check if swap is needed for pair n relative to current assignment
+            bool needs_swap_toggle = false;
+            
+            if (!strand_swapped[idx_n]) {
+                // Currently not swapped - check if we should swap
+                if ((link_i1_j2 == 1 || link_j1_i2 == 1) && 
+                    !(link_i1_i2 == 1 || link_j1_j2 == 1)) {
+                    needs_swap_toggle = true;
+                }
+            } else {
+                // Currently swapped - check if we should un-swap
+                // When swapped, i2 becomes j2 and vice versa
+                if ((link_i1_i2 == 1 || link_j1_j2 == 1) && 
+                    !(link_i1_j2 == 1 || link_j1_i2 == 1)) {
+                    needs_swap_toggle = true;
+                }
+            }
+            
+            if (needs_swap_toggle) {
+                strand_swapped[idx_n] = !strand_swapped[idx_n];
+            }
+        }
+    }
 }
 
-HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs) const {
+HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs,
+                                        const BackboneData& backbone) const {
     HelixOrdering result;
     
     if (pairs.empty()) {
@@ -228,9 +344,9 @@ HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs)
     // Step 3: Chain pairs into helices
     auto [pair_order, helices] = locate_helices(context, endpoints, pairs.size());
     
-    // Step 4: Ensure 5'→3' direction
+    // Step 4: Ensure 5'→3' direction using backbone connectivity
     std::vector<bool> strand_swapped;
-    ensure_five_to_three(pairs, pair_order, helices, strand_swapped);
+    ensure_five_to_three(pairs, backbone, pair_order, helices, strand_swapped);
     
     result.pair_order = std::move(pair_order);
     result.helices = std::move(helices);
@@ -240,4 +356,3 @@ HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs)
 }
 
 } // namespace x3dna::algorithms
-

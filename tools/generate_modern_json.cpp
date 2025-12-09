@@ -105,6 +105,43 @@ bool detect_rna_structure(const Structure& structure) {
     return BaseFrameCalculator::detect_rna(structure);
 }
 
+// Helper function: Extract backbone O3' and P coordinates for 5'→3' direction checking
+BackboneData extract_backbone_data(const Structure& structure) {
+    BackboneData backbone;
+    
+    // Get residues in legacy order
+    auto residues = structure.residues_in_legacy_order();
+    
+    for (size_t i = 0; i < residues.size(); ++i) {
+        const Residue* residue = residues[i];
+        if (!residue) continue;
+        
+        // Get legacy residue index (1-based)
+        size_t legacy_idx = i + 1;
+        
+        BackboneAtoms atoms;
+        
+        // Find O3' atom
+        auto o3_prime = residue->find_atom(" O3'");
+        if (o3_prime.has_value()) {
+            atoms.O3_prime = o3_prime->position();
+        }
+        
+        // Find P atom
+        auto p_atom = residue->find_atom(" P  ");
+        if (p_atom.has_value()) {
+            atoms.P = p_atom->position();
+        }
+        
+        // Only add if we have at least one backbone atom
+        if (atoms.O3_prime.has_value() || atoms.P.has_value()) {
+            backbone[legacy_idx] = atoms;
+        }
+    }
+    
+    return backbone;
+}
+
 // Helper function: Setup frame calculator with RNA detection
 BaseFrameCalculator setup_frame_calculator(const std::filesystem::path& template_path, const Structure& structure,
                                            bool verbose = true) {
@@ -219,16 +256,18 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
             // We use HelixOrganizer to reorder pairs by helical continuity (matching legacy).
             if (stage == "all" || stage == "steps" || stage == "helical") {
                 if (base_pairs.size() >= 2) {
+                    // Extract backbone data for 5'→3' direction checking
+                    BackboneData backbone = extract_backbone_data(structure);
+                    
                     // Organize pairs by helical continuity (matching legacy .inp file ordering)
                     HelixOrganizer organizer;
-                    auto helix_order = organizer.organize(base_pairs);
+                    auto helix_order = organizer.organize(base_pairs, backbone);
                     
                     ParameterCalculator param_calc;
-                    constexpr double MAX_STEP_DISTANCE = 10.0; // Angstroms - typical step is ~3-5A
-                    size_t skipped_steps = 0;
                     size_t valid_steps = 0;
                     
-                    // Calculate step params for consecutive pairs in helix order
+                    // Calculate step params for ALL consecutive pairs in helix order
+                    // Legacy calculates steps even across helix boundaries
                     for (size_t i = 0; i + 1 < helix_order.pair_order.size(); ++i) {
                         size_t idx1 = helix_order.pair_order[i];
                         size_t idx2 = helix_order.pair_order[i + 1];
@@ -241,18 +280,12 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                             continue;
                         }
                         
-                        // Use frame1() from each pair (matching legacy strand 1 frames)
-                        ReferenceFrame frame1 = pair1.frame1().value();
-                        ReferenceFrame frame2 = pair2.frame1().value();
+                        // Get frames based on strand swap status (determined by backbone connectivity)
+                        bool swap1 = idx1 < helix_order.strand_swapped.size() && helix_order.strand_swapped[idx1];
+                        bool swap2 = idx2 < helix_order.strand_swapped.size() && helix_order.strand_swapped[idx2];
                         
-                        // Check for helix break - if origin distance is too large, skip this step
-                        double step_distance = (frame2.origin() - frame1.origin()).length();
-                        
-                        if (step_distance > MAX_STEP_DISTANCE) {
-                            // Helix break detected - skip this step
-                            skipped_steps++;
-                            continue;
-                        }
+                        ReferenceFrame frame1 = swap1 ? pair1.frame2().value() : pair1.frame1().value();
+                        ReferenceFrame frame2 = swap2 ? pair2.frame2().value() : pair2.frame1().value();
                         
                         // Calculate step parameters
                         auto step_params = param_calc.calculate_step_parameters(frame1, frame2);
@@ -271,9 +304,6 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                     if (verbose) {
                         size_t total_steps = base_pairs.size() - 1;
                         std::cout << "  ✅ Generated step/helical params (" << valid_steps << "/" << total_steps << " steps";
-                        if (skipped_steps > 0) {
-                            std::cout << ", " << skipped_steps << " helix breaks";
-                        }
                         std::cout << ", " << helix_order.helices.size() << " helices)\n";
                     }
                 }

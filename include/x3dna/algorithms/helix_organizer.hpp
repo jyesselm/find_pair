@@ -11,10 +11,24 @@
 
 #include <vector>
 #include <optional>
+#include <map>
 #include <x3dna/core/base_pair.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 
 namespace x3dna::algorithms {
+
+/**
+ * @brief Backbone atom coordinates for a residue
+ */
+struct BackboneAtoms {
+    std::optional<geometry::Vector3D> O3_prime;  ///< O3' atom coordinates
+    std::optional<geometry::Vector3D> P;          ///< P atom coordinates
+};
+
+/**
+ * @brief Map from residue index (1-based legacy) to backbone atoms
+ */
+using BackboneData = std::map<size_t, BackboneAtoms>;
 
 /**
  * @brief Represents a helix segment (continuous run of base pairs)
@@ -50,8 +64,9 @@ public:
     struct Config {
         double helix_break;      ///< Max distance (Å) between adjacent pairs
         double neighbor_cutoff;  ///< Cutoff for neighbor detection
+        double o3p_upper;        ///< Max O3'-P distance for backbone linkage (Å)
         
-        Config() : helix_break(7.5), neighbor_cutoff(8.0) {}
+        Config() : helix_break(7.5), neighbor_cutoff(8.0), o3p_upper(2.5) {}
     };
     
     explicit HelixOrganizer(const Config& config = Config());
@@ -60,9 +75,11 @@ public:
      * @brief Organize base pairs by helical continuity
      * 
      * @param pairs Vector of base pairs (in selection order)
+     * @param backbone Optional backbone data for 5'→3' direction checking
      * @return HelixOrdering with reordered indices and helix boundaries
      */
-    HelixOrdering organize(const std::vector<core::BasePair>& pairs) const;
+    HelixOrdering organize(const std::vector<core::BasePair>& pairs,
+                          const BackboneData& backbone = {}) const;
     
 private:
     Config config_;
@@ -103,12 +120,25 @@ private:
     /**
      * @brief Ensure 5'→3' direction within each helix
      * Equivalent to legacy five2three()
+     * 
+     * Uses backbone O3'-P connectivity to determine correct strand ordering.
      */
     void ensure_five_to_three(
         const std::vector<core::BasePair>& pairs,
+        const BackboneData& backbone,
         std::vector<size_t>& pair_order,
         std::vector<HelixSegment>& helices,
         std::vector<bool>& strand_swapped) const;
+    
+    /**
+     * @brief Check if residue i is linked to residue j via O3'-P bond
+     * 
+     * @param i Source residue index (1-based)
+     * @param j Target residue index (1-based)
+     * @param backbone Backbone coordinate data
+     * @return 1 if O3'[i] → P[j] linked, -1 if O3'[j] → P[i] linked, 0 otherwise
+     */
+    int is_linked(size_t i, size_t j, const BackboneData& backbone) const;
     
     /**
      * @brief Get combined z-axis for a base pair (average of both base z-axes)
@@ -122,4 +152,3 @@ private:
 };
 
 } // namespace x3dna::algorithms
-
