@@ -586,9 +586,9 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
             rtn_val[4] -= 2.0;
         }
 
-        // Only record pair_validation for valid pairs to save disk space
-        // (Recording all N² pairs generates 17GB+ of data)
-        if (result.is_valid) {
+        // Only record pair_validation for valid pairs when i < j to avoid duplicates
+        // (Recording both (i,j) and (j,i) doubles the file size unnecessarily)
+        if (result.is_valid && legacy_idx1 < legacy_idx2) {
             writer->record_pair_validation(base_i, base_j, result.is_valid, bp_type_id, result.dir_x, result.dir_y,
                                            result.dir_z, rtn_val, validator_.parameters());
         }
@@ -598,9 +598,9 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
     // (matching legacy behavior where base_pair records correspond to ref_frames.dat)
     // This recording happens after find_bestpair selection, not during validation
 
-    // Record distance checks only if also passes hydrogen bond check
+    // Record distance checks only if also passes hydrogen bond check and i < j
     // (legacy only records distance_checks for pairs that pass hbond check)
-    if (result.hbond_check) {
+    if (result.hbond_check && legacy_idx1 < legacy_idx2) {
         // Use 0-based indices for consistency with base_frame_calc
         size_t base_i = static_cast<size_t>(legacy_idx1 - 1);
         size_t base_j = static_cast<size_t>(legacy_idx2 - 1);

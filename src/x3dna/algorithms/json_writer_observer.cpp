@@ -22,7 +22,9 @@ void JsonWriterObserver::on_pair_validated(
     bool passes_cdns = result.distance_check && result.d_v_check && 
                        result.plane_angle_check && result.dNN_check;
 
-    if (passes_cdns) {
+    // Only record when i < j to avoid recording both (i,j) and (j,i)
+    // This cuts the output file size in half
+    if (passes_cdns && legacy_idx1 < legacy_idx2) {
         // Prepare rtn_val array: [dorg, d_v, plane_angle, dNN, quality_score]
         // Note: The quality_score in rtn_val has already been adjusted and bp_type_id
         // bonus applied by the time on_pair_validated is called
@@ -38,14 +40,14 @@ void JsonWriterObserver::on_pair_validated(
         }
     }
 
-    // Record distance checks only if also passes hydrogen bond check
-    if (result.hbond_check) {
+    // Record distance checks only if also passes hydrogen bond check and i < j
+    if (result.hbond_check && legacy_idx1 < legacy_idx2) {
         writer_.record_distance_checks(base_i, base_j, result.dorg, result.dNN,
                                        result.plane_angle, result.d_v, result.overlap_area);
     }
 
-    // Record H-bond list if present
-    if (!result.hbonds.empty()) {
+    // Record H-bond list if present and i < j
+    if (!result.hbonds.empty() && legacy_idx1 < legacy_idx2) {
         writer_.record_hbond_list(base_i, base_j, result.hbonds);
     }
 }
