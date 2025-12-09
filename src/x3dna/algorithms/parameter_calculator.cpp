@@ -335,8 +335,9 @@ core::HelicalParameters ParameterCalculator::calculate_helical_parameters_impl(c
     geometry::Vector3D mst_orgH = (org1_h + org2_h) * 0.5;
     params.midstep_frame = core::ReferenceFrame(mst_orienH, mst_orgH);
 
-    // Calculate X-disp and Y-disp from org1_h to org1
-    geometry::Vector3D disp = org1_h - org1;
+    // Calculate X-disp and Y-disp from org1 to org1_h
+    // Legacy: ddxyz(org1_h, org1, t1) which calculates t1 = org1 - org1_h
+    geometry::Vector3D disp = org1 - org1_h;
 
     // Project onto rotated frame axes
     geometry::Vector3D rot1_h_x = rot1_h.column(0);

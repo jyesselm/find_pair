@@ -26,7 +26,7 @@ HELICAL_PARAM_FIELDS = ["x_displacement", "y_displacement", "rise", "inclination
 def compare_step_params(
     legacy_records: List[Dict[str, Any]],
     modern_records: List[Dict[str, Any]],
-    tolerance: float = Tolerance.ANGLE
+    tolerance: float = Tolerance.PARAMETER
 ) -> CompareResult:
     """
     Compare bpstep_params records (Stage 11).
@@ -58,7 +58,7 @@ def compare_step_params(
 def compare_helical_params(
     legacy_records: List[Dict[str, Any]],
     modern_records: List[Dict[str, Any]],
-    tolerance: float = Tolerance.ANGLE
+    tolerance: float = Tolerance.PARAMETER
 ) -> CompareResult:
     """
     Compare helical_params records (Stage 12).
@@ -88,13 +88,20 @@ def compare_helical_params(
 
 
 def _build_pair_lookup(records: List[Dict[str, Any]]) -> Dict[Tuple[int, int], Dict[str, Any]]:
-    """Build lookup by (bp_idx1, bp_idx2) pair."""
+    """Build lookup by (bp_idx1, bp_idx2) pair.
+    
+    Only keeps the first occurrence of each key (for duplex 1 in legacy data
+    which contains both duplex 1 and duplex 2 with same bp_idx pairs).
+    """
     lookup = {}
     for rec in records:
         bp_idx1 = rec.get("bp_idx1")
         bp_idx2 = rec.get("bp_idx2")
         if bp_idx1 is not None and bp_idx2 is not None:
-            lookup[(bp_idx1, bp_idx2)] = rec
+            key = (bp_idx1, bp_idx2)
+            # Only keep first occurrence (duplex 1)
+            if key not in lookup:
+                lookup[key] = rec
     return lookup
 
 

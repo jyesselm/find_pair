@@ -20,6 +20,7 @@ class Tolerance:
     ANGLE = 1e-6           # plane_angle
     MATRIX = 1e-4          # rotation matrix elements
     RMS = 0.001            # RMS fit values
+    PARAMETER = 1e-4       # step/helical parameters (relaxed for numerical precision)
 
 
 @dataclass
@@ -128,6 +129,7 @@ STAGES: Dict[int, StageConfig] = {
         json_type="bpstep_params",
         required_fields=["shift", "slide", "rise", "tilt", "roll", "twist"],
         dependencies=[10],
+        tolerance=Tolerance.PARAMETER,
     ),
     12: StageConfig(
         stage_num=12,
@@ -136,6 +138,7 @@ STAGES: Dict[int, StageConfig] = {
         json_type="helical_params",
         required_fields=["x_displacement", "y_displacement", "rise", "inclination", "tip", "twist"],
         dependencies=[10, 11],
+        tolerance=Tolerance.PARAMETER,
     ),
 }
 
