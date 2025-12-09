@@ -241,9 +241,35 @@ void HelixOrganizer::ensure_five_to_three(
     for (auto& helix : helices) {
         if (helix.start_idx >= helix.end_idx) continue;
         
-        // Count forward and reverse backbone linkages to determine direction
-        int forward_links = 0;   // i1 → i2 or j1 → j2 (continuing same strands)
-        int cross_links = 0;     // i1 → j2 or j1 → i2 (cross-strand, needs swap)
+        // STEP 1: Check if helix segment needs reversal based on z-coordinate
+        // Legacy helices typically go from higher z to lower z
+        size_t first_idx = pair_order[helix.start_idx];
+        size_t last_idx = pair_order[helix.end_idx];
+        const auto& first_pair = pairs[first_idx];
+        const auto& last_pair = pairs[last_idx];
+        
+        // Get z-coordinates from pair origins
+        double first_z = 0, last_z = 0;
+        if (first_pair.frame1().has_value()) {
+            first_z = first_pair.frame1().value().origin().z();
+        }
+        if (last_pair.frame1().has_value()) {
+            last_z = last_pair.frame1().value().origin().z();
+        }
+        
+        // If first pair has LOWER z than last, reverse the segment
+        // (so the helix goes from high z to low z, matching legacy convention)
+        if (first_z < last_z) {
+            std::reverse(pair_order.begin() + helix.start_idx,
+                        pair_order.begin() + helix.end_idx + 1);
+        }
+        
+        // STEP 2: Count forward backbone linkages on each strand to determine strand swapping
+        // For proper legacy matching, strand 1 should be the continuous 5'->3' strand
+        int strand1_forward = 0;   // i1 → i2 (strand 1 continues to strand 1)
+        int strand2_forward = 0;   // j1 → j2 (strand 2 continues to strand 2)
+        int cross_i1_j2 = 0;       // i1 → j2 (strand 1 continues to strand 2)
+        int cross_j1_i2 = 0;       // j1 → i2 (strand 2 continues to strand 1)
         
         for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
             size_t idx_m = pair_order[pos];
@@ -257,17 +283,19 @@ void HelixOrganizer::ensure_five_to_three(
             size_t i2 = pair_n.residue_idx1();
             size_t j2 = pair_n.residue_idx2();
             
-            // Check all linkage patterns
-            if (is_linked(i1, i2, backbone) == 1 || is_linked(j1_m, j2, backbone) == 1) {
-                forward_links++;
-            }
-            if (is_linked(i1, j2, backbone) == 1 || is_linked(j1_m, i2, backbone) == 1) {
-                cross_links++;
-            }
+            // Check backbone linkage patterns
+            if (is_linked(i1, i2, backbone) == 1) strand1_forward++;
+            if (is_linked(j1_m, j2, backbone) == 1) strand2_forward++;
+            if (is_linked(i1, j2, backbone) == 1) cross_i1_j2++;
+            if (is_linked(j1_m, i2, backbone) == 1) cross_j1_i2++;
         }
         
-        // If most links are cross-strand, all pairs in this helix need swapping
-        bool swap_all = (cross_links > forward_links);
+        // Determine if strand swap is needed
+        // Swap if strand 2 has more forward links than strand 1 (legacy wants continuous strand as strand 1)
+        // Also swap if cross-strand links dominate
+        int total_cross = cross_i1_j2 + cross_j1_i2;
+        bool swap_all = (strand2_forward > strand1_forward) || 
+                        (total_cross > strand1_forward + strand2_forward);
         
         // Apply strand swapping
         for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
