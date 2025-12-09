@@ -198,11 +198,11 @@ void HelixOrganizer::ensure_five_to_three(
     
     strand_swapped.resize(pairs.size(), false);
     
-    // For now, skip the 5'→3' direction check
-    // This requires O3'-P atom connectivity information which we don't have yet
-    // The basic helix ordering should still work for step parameter calculation
+    // For now, don't swap strands - this requires more sophisticated analysis
+    // The selection order already has a consistent strand assignment within each helix
+    // The issue is matching the legacy's strand assignment which depends on backbone connectivity
     
-    // TODO: Implement proper 5'→3' direction check using backbone atoms
+    // TODO: Implement proper strand swapping based on backbone O3'-P connectivity
 }
 
 HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs) const {

@@ -241,20 +241,18 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                             continue;
                         }
                         
+                        // Use frame1() from each pair (matching legacy strand 1 frames)
+                        ReferenceFrame frame1 = pair1.frame1().value();
+                        ReferenceFrame frame2 = pair2.frame1().value();
+                        
                         // Check for helix break - if origin distance is too large, skip this step
-                        Vector3D org1 = pair1.frame1().value().origin();
-                        Vector3D org2 = pair2.frame1().value().origin();
-                        double step_distance = (org2 - org1).length();
+                        double step_distance = (frame2.origin() - frame1.origin()).length();
                         
                         if (step_distance > MAX_STEP_DISTANCE) {
                             // Helix break detected - skip this step
                             skipped_steps++;
                             continue;
                         }
-                        
-                        // Use frame1() from each pair (matching legacy strand 1 frames)
-                        ReferenceFrame frame1 = pair1.frame1().value();
-                        ReferenceFrame frame2 = pair2.frame1().value();
                         
                         // Calculate step parameters
                         auto step_params = param_calc.calculate_step_parameters(frame1, frame2);
