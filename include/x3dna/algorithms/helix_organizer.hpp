@@ -38,6 +38,19 @@ struct HelixSegment {
     size_t end_idx;         ///< End index (inclusive) in the ordered pair list
     bool is_zdna = false;   ///< Z-DNA conformation detected
     bool has_break = false; ///< Broken O3'-P linkage within helix
+    bool is_parallel = false; ///< Parallel strand orientation (vs anti-parallel)
+};
+
+/**
+ * @brief Direction counts for backbone linkages in a helix
+ */
+struct DirectionCounts {
+    int strand1_forward = 0;   ///< i1 → i2 linkages (strand 1 forward)
+    int strand1_reverse = 0;   ///< i2 → i1 linkages (strand 1 reverse)
+    int strand1_none = 0;      ///< No linkage on strand 1
+    int strand2_forward = 0;   ///< j1 → j2 linkages (strand 2 forward)
+    int strand2_reverse = 0;   ///< j2 → j1 linkages (strand 2 reverse)
+    int strand2_none = 0;      ///< No linkage on strand 2
 };
 
 /**
@@ -65,8 +78,9 @@ public:
         double helix_break;      ///< Max distance (Å) between adjacent pairs
         double neighbor_cutoff;  ///< Cutoff for neighbor detection
         double o3p_upper;        ///< Max O3'-P distance for backbone linkage (Å)
+        double end_stack_xang;   ///< Max x-angle for stacked WC pairs (degrees)
         
-        Config() : helix_break(7.5), neighbor_cutoff(8.0), o3p_upper(2.5) {}
+        Config() : helix_break(7.5), neighbor_cutoff(8.0), o3p_upper(2.5), end_stack_xang(110.0) {}
     };
     
     explicit HelixOrganizer(const Config& config = Config());
@@ -95,34 +109,17 @@ private:
         double dist2 = 0.0;             ///< Distance to neighbor2
     };
     
-    /**
-     * @brief Calculate pair context (neighbors) for all pairs
-     * Equivalent to legacy bp_context()
-     */
+    // Context calculation
     std::vector<PairContext> calculate_context(
         const std::vector<core::BasePair>& pairs) const;
-    
-    /**
-     * @brief Find helix endpoints from context
-     */
     std::vector<size_t> find_endpoints(
         const std::vector<PairContext>& context) const;
-    
-    /**
-     * @brief Chain pairs into helices starting from endpoints
-     * Equivalent to legacy locate_helix()
-     */
     std::pair<std::vector<size_t>, std::vector<HelixSegment>> locate_helices(
         const std::vector<PairContext>& context,
         const std::vector<size_t>& endpoints,
         size_t num_pairs) const;
     
-    /**
-     * @brief Ensure 5'→3' direction within each helix
-     * Equivalent to legacy five2three()
-     * 
-     * Uses backbone O3'-P connectivity to determine correct strand ordering.
-     */
+    // Five-to-three algorithm (legacy equivalent)
     void ensure_five_to_three(
         const std::vector<core::BasePair>& pairs,
         const BackboneData& backbone,
@@ -130,25 +127,79 @@ private:
         std::vector<HelixSegment>& helices,
         std::vector<bool>& strand_swapped) const;
     
-    /**
-     * @brief Check if residue i is linked to residue j via O3'-P bond
-     * 
-     * @param i Source residue index (1-based)
-     * @param j Target residue index (1-based)
-     * @param backbone Backbone coordinate data
-     * @return 1 if O3'[i] → P[j] linked, -1 if O3'[j] → P[i] linked, 0 otherwise
-     */
+    // Helper: get residue indices based on swap status
+    void get_ij(const core::BasePair& pair, bool swapped, 
+                size_t& i, size_t& j) const;
+    
+    // Five2three sub-functions (legacy equivalents)
+    
+    /** @brief Set initial strand assignment for first pair in helix */
+    void first_step(const std::vector<core::BasePair>& pairs,
+                   const BackboneData& backbone,
+                   std::vector<size_t>& pair_order,
+                   const HelixSegment& helix,
+                   std::vector<bool>& swapped) const;
+    
+    /** @brief Check Watson-Crick base pair z-direction alignment */
+    bool wc_bporien(const core::BasePair& pair_m, const core::BasePair& pair_n,
+                    bool swap_m, bool swap_n,
+                    const BackboneData& backbone) const;
+    
+    /** @brief Check O3' distance patterns for swap indication */
+    bool check_o3dist(const core::BasePair& pair_m, const core::BasePair& pair_n,
+                      bool swap_m, bool swap_n,
+                      const BackboneData& backbone) const;
+    
+    /** @brief Check strand chain connectivity for swap indication */
+    bool check_schain(const core::BasePair& pair_m, const core::BasePair& pair_n,
+                      bool swap_m, bool swap_n,
+                      const BackboneData& backbone) const;
+    
+    /** @brief Check frame orientation alignment for swap indication */
+    bool check_others(const core::BasePair& pair_m, const core::BasePair& pair_n,
+                      bool swap_m, bool swap_n,
+                      const BackboneData& backbone) const;
+    
+    /** @brief Ensure strand 1 direction is consistent */
+    bool chain1dir(const core::BasePair& pair_m, const core::BasePair& pair_n,
+                   bool swap_m, bool swap_n,
+                   const BackboneData& backbone) const;
+    
+    /** @brief Count backbone linkage directions in a helix */
+    DirectionCounts check_direction(
+        const std::vector<core::BasePair>& pairs,
+        const BackboneData& backbone,
+        const std::vector<size_t>& pair_order,
+        const HelixSegment& helix,
+        const std::vector<bool>& swapped) const;
+    
+    /** @brief Additional strand corrections based on direction counts */
+    void check_strand2(const std::vector<core::BasePair>& pairs,
+                      const BackboneData& backbone,
+                      const std::vector<size_t>& pair_order,
+                      HelixSegment& helix,
+                      std::vector<bool>& swapped,
+                      const DirectionCounts& direction) const;
+    
+    // Backbone connectivity
     int is_linked(size_t i, size_t j, const BackboneData& backbone) const;
     
-    /**
-     * @brief Get combined z-axis for a base pair (average of both base z-axes)
-     */
-    geometry::Vector3D get_pair_z_axis(const core::BasePair& pair) const;
+    /** @brief Get O3'-O3' distance between residues */
+    double o3_distance(size_t i, size_t j, const BackboneData& backbone) const;
     
-    /**
-     * @brief Get pair origin (midpoint of both base origins)
-     */
+    // Geometry helpers
+    geometry::Vector3D get_pair_z_axis(const core::BasePair& pair) const;
     geometry::Vector3D get_pair_origin(const core::BasePair& pair) const;
+    
+    /** @brief Get frame z-direction based on swap status */
+    geometry::Vector3D get_frame_z(const core::BasePair& pair, bool swapped) const;
+    
+    /** @brief Calculate angle between x-axes of two pair frames */
+    double wcbp_xang(const core::BasePair& pair_m, const core::BasePair& pair_n) const;
+    
+    /** @brief Calculate z-direction dot product for WC pairs */
+    double wcbp_zdir(const core::BasePair& pair_m, const core::BasePair& pair_n,
+                     bool swap_m, bool swap_n) const;
 };
 
 } // namespace x3dna::algorithms

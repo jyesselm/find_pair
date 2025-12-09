@@ -263,6 +263,15 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                     HelixOrganizer organizer;
                     auto helix_order = organizer.organize(base_pairs, backbone);
                     
+                    // Debug: print swap status for first few pairs
+                    if (verbose && helix_order.pair_order.size() <= 15) {
+                        std::cout << "  Debug strand_swapped: ";
+                        for (size_t i = 0; i < helix_order.strand_swapped.size() && i < 12; ++i) {
+                            std::cout << (helix_order.strand_swapped[i] ? "1" : "0");
+                        }
+                        std::cout << "\n";
+                    }
+                    
                     ParameterCalculator param_calc;
                     size_t valid_steps = 0;
                     
