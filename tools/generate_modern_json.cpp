@@ -20,6 +20,7 @@
 #include <x3dna/io/frame_json_recorder.hpp>
 #include <x3dna/algorithms/base_pair_finder.hpp>
 #include <x3dna/algorithms/parameter_calculator.hpp>
+#include <x3dna/algorithms/helix_organizer.hpp>
 
 using namespace x3dna::core;
 using namespace x3dna::io;
@@ -214,18 +215,25 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
             }
             
             // Stages 11-12: Step and helical parameters
-            // Note: Step parameters are only meaningful for consecutive pairs within the same helix.
-            // For complex structures like tRNA, the selection order may not match helical order.
-            // We detect helix breaks by checking spatial distance between consecutive pairs.
+            // Step parameters are only meaningful for consecutive pairs within the same helix.
+            // We use HelixOrganizer to reorder pairs by helical continuity (matching legacy).
             if (stage == "all" || stage == "steps" || stage == "helical") {
                 if (base_pairs.size() >= 2) {
+                    // Organize pairs by helical continuity (matching legacy .inp file ordering)
+                    HelixOrganizer organizer;
+                    auto helix_order = organizer.organize(base_pairs);
+                    
                     ParameterCalculator param_calc;
                     constexpr double MAX_STEP_DISTANCE = 10.0; // Angstroms - typical step is ~3-5A
                     size_t skipped_steps = 0;
+                    size_t valid_steps = 0;
                     
-                    for (size_t i = 0; i + 1 < base_pairs.size(); ++i) {
-                        const auto& pair1 = base_pairs[i];
-                        const auto& pair2 = base_pairs[i + 1];
+                    // Calculate step params for consecutive pairs in helix order
+                    for (size_t i = 0; i + 1 < helix_order.pair_order.size(); ++i) {
+                        size_t idx1 = helix_order.pair_order[i];
+                        size_t idx2 = helix_order.pair_order[i + 1];
+                        const auto& pair1 = base_pairs[idx1];
+                        const auto& pair2 = base_pairs[idx2];
                         
                         // Verify both pairs have frames
                         if (!pair1.frame1().has_value() || !pair1.frame2().has_value() ||
@@ -250,7 +258,7 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                         
                         // Calculate step parameters
                         auto step_params = param_calc.calculate_step_parameters(frame1, frame2);
-                        // Use 1-based base pair indices (selection order)
+                        // Use 1-based indices in helix order (matching legacy)
                         size_t bp_idx1 = i + 1;
                         size_t bp_idx2 = i + 2;
                         writer.record_bpstep_params(bp_idx1, bp_idx2, step_params);
@@ -258,16 +266,17 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                         // Calculate helical parameters
                         auto helical_params = param_calc.calculate_helical_parameters(pair1, pair2);
                         writer.record_helical_params(bp_idx1, bp_idx2, helical_params);
+                        
+                        valid_steps++;
                     }
                     
                     if (verbose) {
                         size_t total_steps = base_pairs.size() - 1;
-                        size_t valid_steps = total_steps - skipped_steps;
                         std::cout << "  ✅ Generated step/helical params (" << valid_steps << "/" << total_steps << " steps";
                         if (skipped_steps > 0) {
-                            std::cout << ", " << skipped_steps << " helix breaks skipped";
+                            std::cout << ", " << skipped_steps << " helix breaks";
                         }
-                        std::cout << ")\n";
+                        std::cout << ", " << helix_order.helices.size() << " helices)\n";
                     }
                 }
             }

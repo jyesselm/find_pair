@@ -51,6 +51,7 @@ add_library(x3dna
     src/x3dna/algorithms/base_pair_validator.cpp
     src/x3dna/algorithms/base_pair_finder.cpp
     src/x3dna/algorithms/parameter_calculator.cpp
+    src/x3dna/algorithms/helix_organizer.cpp
     src/x3dna/algorithms/hydrogen_bond_finder.cpp
     src/x3dna/algorithms/helix_detector.cpp
     src/x3dna/algorithms/residue_index_map.cpp
