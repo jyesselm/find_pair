@@ -263,15 +263,6 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                     HelixOrganizer organizer;
                     auto helix_order = organizer.organize(base_pairs, backbone);
                     
-                    // Debug: print swap status for first few pairs
-                    if (verbose && helix_order.pair_order.size() <= 15) {
-                        std::cout << "  Debug strand_swapped: ";
-                        for (size_t i = 0; i < helix_order.strand_swapped.size() && i < 12; ++i) {
-                            std::cout << (helix_order.strand_swapped[i] ? "1" : "0");
-                        }
-                        std::cout << "\n";
-                    }
-                    
                     ParameterCalculator param_calc;
                     size_t valid_steps = 0;
                     
@@ -303,8 +294,22 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                         size_t bp_idx2 = i + 2;
                         writer.record_bpstep_params(bp_idx1, bp_idx2, step_params);
                         
-                        // Calculate helical parameters
-                        auto helical_params = param_calc.calculate_helical_parameters(pair1, pair2);
+                        // Calculate helical parameters using correctly swapped frames
+                        // Legacy uses frame1 from each pair, but if swapped, we use frame2
+                        auto swapped_pair1 = pair1;
+                        auto swapped_pair2 = pair2;
+                        if (swap1) {
+                            // Swap frame1 and frame2 for pair1
+                            swapped_pair1.set_frame1(pair1.frame2().value());
+                            swapped_pair1.set_frame2(pair1.frame1().value());
+                        }
+                        if (swap2) {
+                            // Swap frame1 and frame2 for pair2
+                            swapped_pair2.set_frame1(pair2.frame2().value());
+                            swapped_pair2.set_frame2(pair2.frame1().value());
+                        }
+                        
+                        auto helical_params = param_calc.calculate_helical_parameters(swapped_pair1, swapped_pair2);
                         writer.record_helical_params(bp_idx1, bp_idx2, helical_params);
                         
                         valid_steps++;
