@@ -4638,14 +4638,11 @@ void check_pair(long i, long j, char *bseq, long **seidx, double **xyz,
             rtn_val[5] +=
                 adjust_pairQuality(i, j, bseq[i], bseq[j], seidx, idx, AtomName, xyz,
                                    misc_pars);
-            /* Record pair validation results to JSON - only for valid pairs when i < j */
+            /* Record pair validation and distance checks - only for valid pairs (bpid != 0) when i < j */
             /* (Recording both (i,j) and (j,i) doubles the file size unnecessarily) */
             if (*bpid != 0 && i < j) {
                 json_writer_record_pair_validation(i, j, 1, *bpid,
                                                  dir_x, dir_y, dir_z, rtn_val, misc_pars);
-            }
-            /* Record distance checks - only when i < j to avoid duplicates */
-            if (i < j) {
                 json_writer_record_distance_checks(i, j, rtn_val[1], rtn_val[4], rtn_val[3],
                                                  rtn_val[2], get_oarea(i, j, ring_atom, oave, zave, xyz, 0));
             }

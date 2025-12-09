@@ -40,14 +40,14 @@ void JsonWriterObserver::on_pair_validated(
         }
     }
 
-    // Record distance checks only if also passes hydrogen bond check and i < j
-    if (result.hbond_check && legacy_idx1 < legacy_idx2) {
+    // Record distance checks only for valid pairs when i < j
+    if (result.is_valid && legacy_idx1 < legacy_idx2) {
         writer_.record_distance_checks(base_i, base_j, result.dorg, result.dNN,
                                        result.plane_angle, result.d_v, result.overlap_area);
     }
 
-    // Record H-bond list if present and i < j
-    if (!result.hbonds.empty() && legacy_idx1 < legacy_idx2) {
+    // Record H-bond list only for valid pairs when i < j
+    if (result.is_valid && !result.hbonds.empty() && legacy_idx1 < legacy_idx2) {
         writer_.record_hbond_list(base_i, base_j, result.hbonds);
     }
 }

@@ -598,9 +598,9 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
     // (matching legacy behavior where base_pair records correspond to ref_frames.dat)
     // This recording happens after find_bestpair selection, not during validation
 
-    // Record distance checks only if also passes hydrogen bond check and i < j
-    // (legacy only records distance_checks for pairs that pass hbond check)
-    if (result.hbond_check && legacy_idx1 < legacy_idx2) {
+    // Record distance checks only for valid pairs (is_valid) when i < j
+    // (only output pairs that pass all checks to reduce file size)
+    if (result.is_valid && legacy_idx1 < legacy_idx2) {
         // Use 0-based indices for consistency with base_frame_calc
         size_t base_i = static_cast<size_t>(legacy_idx1 - 1);
         size_t base_j = static_cast<size_t>(legacy_idx2 - 1);
