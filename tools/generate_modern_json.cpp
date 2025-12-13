@@ -253,72 +253,46 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
             }
 
             // Stages 11-12: Step and helical parameters
-            // Step parameters are only meaningful for consecutive pairs within the same helix.
-            // We use HelixOrganizer to reorder pairs by helical continuity (matching legacy).
+            // Legacy iterates through pairs in backbone connectivity order (5' to 3'),
+            // NOT sequential base pair order. HelixOrganizer determines this order.
             if (stage == "all" || stage == "steps" || stage == "helical") {
                 if (base_pairs.size() >= 2) {
-                    // Extract backbone data for 5'→3' direction checking
+                    // Get helix order from HelixOrganizer
                     BackboneData backbone = extract_backbone_data(structure);
-
-                    // Organize pairs by helical continuity (matching legacy .inp file ordering)
                     HelixOrganizer organizer;
                     auto helix_order = organizer.organize(base_pairs, backbone);
 
                     ParameterCalculator param_calc;
                     size_t valid_steps = 0;
-                    size_t skipped_breaks = 0;
 
-                    // Calculate step params for consecutive pairs in helix order
-                    // Skip steps at helix boundaries (no backbone connectivity)
+                    // Calculate step params following backbone connectivity order
+                    // This matches legacy behavior - pairs are in five2three order
                     for (size_t i = 0; i + 1 < helix_order.pair_order.size(); ++i) {
-                        // Check if this is a helix break (no backbone connectivity)
-                        bool is_helix_break = i < helix_order.helix_breaks.size() && helix_order.helix_breaks[i];
-                        if (is_helix_break) {
-                            skipped_breaks++;
-                            continue;  // Skip step parameter calculation at helix boundaries
-                        }
-
                         size_t idx1 = helix_order.pair_order[i];
                         size_t idx2 = helix_order.pair_order[i + 1];
                         const auto& pair1 = base_pairs[idx1];
                         const auto& pair2 = base_pairs[idx2];
 
                         // Verify both pairs have frames
-                        if (!pair1.frame1().has_value() || !pair1.frame2().has_value() || !pair2.frame1().has_value() ||
-                            !pair2.frame2().has_value()) {
+                        if (!pair1.frame1().has_value() || !pair1.frame2().has_value() ||
+                            !pair2.frame1().has_value() || !pair2.frame2().has_value()) {
                             continue;
                         }
 
-                        // Get frames based on strand swap status (determined by backbone connectivity)
-                        bool swap1 = idx1 < helix_order.strand_swapped.size() && helix_order.strand_swapped[idx1];
-                        bool swap2 = idx2 < helix_order.strand_swapped.size() && helix_order.strand_swapped[idx2];
+                        // Legacy uses frame1 (org_i, orien_i) directly for step params
+                        // Verified: legacy mst_org = (bp1.org_i + bp2.org_i) / 2
+                        auto bp1_frame = pair1.frame1().value();
+                        auto bp2_frame = pair2.frame1().value();
 
-                        ReferenceFrame frame1 = swap1 ? pair1.frame2().value() : pair1.frame1().value();
-                        ReferenceFrame frame2 = swap2 ? pair2.frame2().value() : pair2.frame1().value();
-
-                        // Calculate step parameters
-                        auto step_params = param_calc.calculate_step_parameters(frame1, frame2);
-                        // Use 1-based indices in helix order (matching legacy)
+                        // Calculate step parameters between org_i frames
+                        auto step_params = param_calc.calculate_step_parameters(bp1_frame, bp2_frame);
+                        // Use 1-based helix position indices (matching legacy)
                         size_t bp_idx1 = i + 1;
                         size_t bp_idx2 = i + 2;
                         writer.record_bpstep_params(bp_idx1, bp_idx2, step_params);
 
-                        // Calculate helical parameters using correctly swapped frames
-                        // Legacy uses frame1 from each pair, but if swapped, we use frame2
-                        auto swapped_pair1 = pair1;
-                        auto swapped_pair2 = pair2;
-                        if (swap1) {
-                            // Swap frame1 and frame2 for pair1
-                            swapped_pair1.set_frame1(pair1.frame2().value());
-                            swapped_pair1.set_frame2(pair1.frame1().value());
-                        }
-                        if (swap2) {
-                            // Swap frame1 and frame2 for pair2
-                            swapped_pair2.set_frame1(pair2.frame2().value());
-                            swapped_pair2.set_frame2(pair2.frame1().value());
-                        }
-
-                        auto helical_params = param_calc.calculate_helical_parameters(swapped_pair1, swapped_pair2);
+                        // Calculate helical parameters using same frames
+                        auto helical_params = param_calc.calculate_helical_parameters_impl(bp1_frame, bp2_frame);
                         writer.record_helical_params(bp_idx1, bp_idx2, helical_params);
 
                         valid_steps++;
@@ -327,11 +301,7 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                     if (verbose) {
                         size_t total_steps = base_pairs.size() - 1;
                         std::cout << "  ✅ Generated step/helical params (" << valid_steps << "/" << total_steps
-                                  << " steps";
-                        if (skipped_breaks > 0) {
-                            std::cout << ", " << skipped_breaks << " helix breaks skipped";
-                        }
-                        std::cout << ", " << helix_order.helices.size() << " helices)\n";
+                                  << " steps)\n";
                     }
                 }
             }
