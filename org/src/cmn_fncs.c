@@ -4528,7 +4528,8 @@ static void calculate_more_bppars(long i, long j, double dir_x, double dir_y,
             pars[1], pars[2], pars[3], pars[4], pars[5], pars[6]);
     sprintf(bpi, "%c%c", toupper((int) bseq[i]), toupper((int) bseq[j]));
     /* Record base pair frame details to JSON (from calculate_more_bppars) */
-    {
+    /* Only record when i < j to avoid duplicate entries from mutual best checking */
+    if (i < j) {
         double dir_xyz_arr[4] = {dir_x, dir_y, dir_z};
         json_writer_record_base_pair(i, j, bpi, dir_xyz_arr, r1, r2, org[i], org[j]);
     }

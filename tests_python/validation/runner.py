@@ -69,15 +69,19 @@ def validate_pdb(
     legacy_data = _load_json(json_dir, pdb_id, config.json_type, legacy=True)
     modern_data = _load_json(json_dir, pdb_id, config.json_type, legacy=False)
     
+    # Handle missing data cases
+    if legacy_data is None and modern_data is None:
+        # Both missing = consistent (e.g., single-pair structures with no step params)
+        return ValidationResult(pdb_id, stage_num, True, [])
     if legacy_data is None:
         return ValidationResult(
-            pdb_id, stage_num, False, [],
-            skipped=True, skip_reason="Missing legacy JSON"
+            pdb_id, stage_num, False,
+            [f"Missing legacy JSON but modern has {len(modern_data)} records"]
         )
     if modern_data is None:
         return ValidationResult(
-            pdb_id, stage_num, False, [],
-            skipped=True, skip_reason="Missing modern JSON"
+            pdb_id, stage_num, False,
+            [f"Missing modern JSON but legacy has {len(legacy_data)} records"]
         )
     
     comparator = COMPARATORS.get(stage_num)

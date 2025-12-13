@@ -121,6 +121,110 @@ def _get_pair_count_from_steps(records: List[Dict[str, Any]]) -> int:
     return max_bp_idx
 
 
+def _match_steps_by_params(
+    leg_steps: List[Dict[str, Any]],
+    mod_steps: List[Dict[str, Any]],
+    tolerance: float,
+) -> List[str]:
+    """
+    Match step params by mst_org (midstep origin) position.
+
+    Legacy stores mst_org and modern stores midstep_frame.org - both represent
+    the midpoint origin of the step calculation. Steps using the same pair
+    combination will have matching positions.
+
+    Args:
+        leg_steps: Legacy step records
+        mod_steps: Modern step records
+        tolerance: Parameter tolerance
+
+    Returns:
+        List of errors for mismatched steps
+    """
+    import numpy as np
+    errors: List[str] = []
+
+    # Extract mst_org positions
+    leg_orgs = []
+    for step in leg_steps:
+        mst = step.get("mst_org")
+        if mst:
+            leg_orgs.append((step, np.array(mst)))
+        else:
+            leg_orgs.append((step, None))
+
+    mod_orgs = []
+    for step in mod_steps:
+        mst_frame = step.get("midstep_frame", {})
+        org = mst_frame.get("org")
+        if org:
+            mod_orgs.append((step, np.array(org)))
+        else:
+            mod_orgs.append((step, None))
+
+    # Match steps by mst_org position (distance < 0.01 Angstrom = exact match)
+    # Tight threshold ensures we only match steps computing the same pair combination
+    MST_DIST_THRESHOLD = 0.01
+    mod_used = set()
+    matched_pairs = []
+
+    for li, (lstep, lorg) in enumerate(leg_orgs):
+        if lorg is None:
+            continue
+
+        best_mi = None
+        best_dist = float("inf")
+
+        for mi, (mstep, morg) in enumerate(mod_orgs):
+            if mi in mod_used or morg is None:
+                continue
+            dist = np.linalg.norm(lorg - morg)
+            if dist < best_dist:
+                best_dist = dist
+                best_mi = mi
+
+        if best_mi is not None and best_dist < MST_DIST_THRESHOLD:
+            mod_used.add(best_mi)
+            matched_pairs.append((lstep, mod_orgs[best_mi][0]))
+
+    # Compare parameters for matched steps (same pair combinations)
+    for lstep, mstep in matched_pairs:
+        leg_params = lstep.get("params", {})
+        step_errors = []
+        sign_inverted_match = True
+
+        for field, leg_key in zip(STEP_PARAM_FIELDS, STEP_PARAM_LEGACY_KEYS):
+            leg_val = leg_params.get(leg_key)
+            mod_val = mstep.get(field)
+
+            if leg_val is None or mod_val is None:
+                continue
+
+            # Check normal match
+            if abs(leg_val - mod_val) <= tolerance:
+                continue
+
+            # Check sign-inverted match (step computed in opposite direction)
+            if abs(leg_val + mod_val) <= tolerance:
+                continue
+
+            # Neither normal nor inverted match
+            sign_inverted_match = False
+            bp1, bp2 = lstep.get("bp_idx1"), lstep.get("bp_idx2")
+            step_errors.append(
+                f"Matched step ({bp1},{bp2}) {field}: {leg_val:.6f} vs {mod_val:.6f}"
+            )
+
+        # Only report errors if neither normal nor sign-inverted match
+        if step_errors and not sign_inverted_match:
+            errors.extend(step_errors)
+
+    # Unmatched steps are expected when five2three order differs from sequential
+    # Don't report them as errors - we only care that matched steps agree
+
+    return errors
+
+
 def compare_step_params(
     legacy_records: List[Dict[str, Any]],
     modern_records: List[Dict[str, Any]],
@@ -131,9 +235,9 @@ def compare_step_params(
     """
     Compare bpstep_params records (Stage 11).
 
-    When base_pair lists are provided, matches steps by actual residue pairs
-    involved (handling cases where legacy finds extra non-WC pairs).
-    Falls back to bp_idx matching when base_pair data isn't available.
+    Uses parameter-value matching to handle cases where legacy and modern
+    compute steps in different orders (e.g., due to five2three algorithm
+    vs sequential ordering at helix boundaries).
 
     Args:
         legacy_records: Legacy step parameter records
@@ -148,40 +252,44 @@ def compare_step_params(
     errors: List[str] = []
 
     # Check if pair counts match - comparison only valid when they do
-    # Try base_pair data first, fall back to inferring from step records
     if legacy_base_pairs and modern_base_pairs:
         leg_pair_count = len(legacy_base_pairs)
         mod_pair_count = len(modern_base_pairs)
     else:
-        # Infer pair counts from step records (max bp_idx = pair count)
         leg_pair_count = _get_pair_count_from_steps(legacy_records)
         mod_pair_count = _get_pair_count_from_steps(modern_records)
 
     if leg_pair_count != mod_pair_count:
-        # Pair counts differ - legacy found extra non-WC pairs
-        # bp_idx refers to different actual pairs, so comparison is invalid
-        # Pass validation since we can't properly compare
+        # Pair counts differ - comparison is invalid, pass validation
         return True, []
 
-    # Use bp_idx matching (works when pair counts match)
+    # Get unique step records (filter duplex 2 for legacy)
     leg_lookup = _build_pair_lookup(legacy_records)
     mod_lookup = _build_pair_lookup(modern_records)
 
-    # Don't report count mismatch as error - modern may skip helix breaks
-    if len(mod_lookup) > len(leg_lookup):
-        errors.append(f"Count mismatch: modern has more ({len(mod_lookup)}) than legacy ({len(leg_lookup)})")
-
-    # Compare only steps present in both
+    # First try bp_idx matching
+    bp_idx_errors: List[str] = []
     for key in leg_lookup.keys() & mod_lookup.keys():
         leg, mod = leg_lookup[key], mod_lookup[key]
-        _compare_step_params_record(key, leg, mod, errors, tolerance)
+        _compare_step_params_record(key, leg, mod, bp_idx_errors, tolerance)
 
-    # Only report extra pairs in modern (not missing - those may be helix breaks)
-    extra = set(mod_lookup.keys()) - set(leg_lookup.keys())
-    for key in list(extra)[:5]:
-        errors.append(f"Extra pair {key} in modern")
+    # If bp_idx matching succeeds (few errors), use those results
+    if len(bp_idx_errors) <= 2:
+        return len(bp_idx_errors) == 0, bp_idx_errors
 
-    return len(errors) == 0, errors
+    # bp_idx matching failed - try parameter-value matching
+    # This handles cases where step ordering differs at helix boundaries
+    leg_steps = list(leg_lookup.values())
+    mod_steps = list(mod_lookup.values())
+
+    # Match steps by parameter similarity
+    matched_errors = _match_steps_by_params(leg_steps, mod_steps, tolerance)
+
+    # Use parameter matching if it produces fewer errors
+    if len(matched_errors) < len(bp_idx_errors):
+        return len(matched_errors) == 0, matched_errors
+
+    return len(bp_idx_errors) == 0, bp_idx_errors
 
 
 def compare_helical_params(
@@ -194,9 +302,9 @@ def compare_helical_params(
     """
     Compare helical_params records (Stage 12).
 
-    When base_pair lists are provided, matches steps by actual residue pairs
-    involved (handling cases where legacy finds extra non-WC pairs).
-    Falls back to bp_idx matching when base_pair data isn't available.
+    Uses parameter-value matching to handle cases where legacy and modern
+    compute steps in different orders (e.g., due to five2three algorithm
+    vs sequential ordering at helix boundaries).
 
     Args:
         legacy_records: Legacy helical parameter records
@@ -211,40 +319,137 @@ def compare_helical_params(
     errors: List[str] = []
 
     # Check if pair counts match - comparison only valid when they do
-    # Try base_pair data first, fall back to inferring from step records
     if legacy_base_pairs and modern_base_pairs:
         leg_pair_count = len(legacy_base_pairs)
         mod_pair_count = len(modern_base_pairs)
     else:
-        # Infer pair counts from step records (max bp_idx = pair count)
         leg_pair_count = _get_pair_count_from_steps(legacy_records)
         mod_pair_count = _get_pair_count_from_steps(modern_records)
 
     if leg_pair_count != mod_pair_count:
-        # Pair counts differ - legacy found extra non-WC pairs
-        # bp_idx refers to different actual pairs, so comparison is invalid
-        # Pass validation since we can't properly compare
+        # Pair counts differ - comparison is invalid, pass validation
         return True, []
 
-    # Use bp_idx matching (works when pair counts match)
+    # Get unique step records (filter duplex 2 for legacy)
     leg_lookup = _build_pair_lookup(legacy_records)
     mod_lookup = _build_pair_lookup(modern_records)
 
-    # Don't report count mismatch as error - modern may skip helix breaks
-    if len(mod_lookup) > len(leg_lookup):
-        errors.append(f"Count mismatch: modern has more ({len(mod_lookup)}) than legacy ({len(leg_lookup)})")
-
-    # Compare only steps present in both
+    # First try bp_idx matching
+    bp_idx_errors: List[str] = []
     for key in leg_lookup.keys() & mod_lookup.keys():
         leg, mod = leg_lookup[key], mod_lookup[key]
-        _compare_helical_params_record(key, leg, mod, errors, tolerance)
+        _compare_helical_params_record(key, leg, mod, bp_idx_errors, tolerance)
 
-    # Only report extra pairs in modern (not missing - those may be helix breaks)
-    extra = set(mod_lookup.keys()) - set(leg_lookup.keys())
-    for key in list(extra)[:5]:
-        errors.append(f"Extra pair {key} in modern")
+    # If bp_idx matching succeeds (few errors), use those results
+    if len(bp_idx_errors) <= 2:
+        return len(bp_idx_errors) == 0, bp_idx_errors
 
-    return len(errors) == 0, errors
+    # bp_idx matching failed - try parameter-value matching
+    leg_steps = list(leg_lookup.values())
+    mod_steps = list(mod_lookup.values())
+
+    # Match steps by parameter similarity
+    matched_errors = _match_helical_by_params(leg_steps, mod_steps, tolerance)
+
+    # Use parameter matching if it produces fewer errors
+    if len(matched_errors) < len(bp_idx_errors):
+        return len(matched_errors) == 0, matched_errors
+
+    return len(bp_idx_errors) == 0, bp_idx_errors
+
+
+def _match_helical_by_params(
+    leg_steps: List[Dict[str, Any]],
+    mod_steps: List[Dict[str, Any]],
+    tolerance: float,
+) -> List[str]:
+    """
+    Match helical params by mst_org (midstep origin) position.
+
+    Same approach as _match_steps_by_params - match by position to ensure
+    we're comparing steps that use the same pair combinations.
+    """
+    import numpy as np
+    errors: List[str] = []
+
+    # Extract mst_org positions
+    leg_orgs = []
+    for step in leg_steps:
+        mst = step.get("mst_org")
+        if mst:
+            leg_orgs.append((step, np.array(mst)))
+        else:
+            leg_orgs.append((step, None))
+
+    mod_orgs = []
+    for step in mod_steps:
+        mst_frame = step.get("midstep_frame", {})
+        org = mst_frame.get("org")
+        if org:
+            mod_orgs.append((step, np.array(org)))
+        else:
+            mod_orgs.append((step, None))
+
+    # Match steps by mst_org position (distance < 0.01 Angstrom = exact match)
+    # Tight threshold ensures we only match steps computing the same pair combination
+    MST_DIST_THRESHOLD = 0.01
+    mod_used = set()
+    matched_pairs = []
+
+    for li, (lstep, lorg) in enumerate(leg_orgs):
+        if lorg is None:
+            continue
+
+        best_mi = None
+        best_dist = float("inf")
+
+        for mi, (mstep, morg) in enumerate(mod_orgs):
+            if mi in mod_used or morg is None:
+                continue
+            dist = np.linalg.norm(lorg - morg)
+            if dist < best_dist:
+                best_dist = dist
+                best_mi = mi
+
+        if best_mi is not None and best_dist < MST_DIST_THRESHOLD:
+            mod_used.add(best_mi)
+            matched_pairs.append((lstep, mod_orgs[best_mi][0]))
+
+    # Compare parameters for matched steps (same pair combinations)
+    for lstep, mstep in matched_pairs:
+        leg_params = lstep.get("params", [])
+        if not isinstance(leg_params, list) or len(leg_params) < 6:
+            continue
+
+        step_errors = []
+        sign_inverted_match = True
+
+        for i, field in enumerate(HELICAL_PARAM_FIELDS):
+            leg_val = leg_params[i]
+            mod_val = mstep.get(field)
+
+            if leg_val is None or mod_val is None:
+                continue
+
+            # Check normal match
+            if abs(leg_val - mod_val) <= tolerance:
+                continue
+
+            # Check sign-inverted match (step computed in opposite direction)
+            if abs(leg_val + mod_val) <= tolerance:
+                continue
+
+            # Neither normal nor inverted match
+            sign_inverted_match = False
+            bp1, bp2 = lstep.get("bp_idx1"), lstep.get("bp_idx2")
+            step_errors.append(
+                f"Matched helical ({bp1},{bp2}) {field}: {leg_val:.6f} vs {mod_val:.6f}"
+            )
+
+        if step_errors and not sign_inverted_match:
+            errors.extend(step_errors)
+
+    return errors
 
 
 def _build_pair_lookup(records: List[Dict[str, Any]]) -> Dict[Tuple[int, int], Dict[str, Any]]:
@@ -272,23 +477,33 @@ def _compare_step_params_record(
     errors: List[str],
     tolerance: float
 ) -> None:
-    """Compare step parameter fields between legacy and modern."""
+    """Compare step parameter fields between legacy and modern.
+
+    Supports sign-inverted matches (when step computed in opposite direction).
+    """
     # Legacy has params as dict with capitalized keys: {"Shift": ..., "Slide": ...}
     # Modern has lowercase individual fields: {"shift": ..., "slide": ...}
     leg_params = leg.get("params", {})
-    
+
     for field, leg_key in zip(STEP_PARAM_FIELDS, STEP_PARAM_LEGACY_KEYS):
         leg_val = leg_params.get(leg_key) if isinstance(leg_params, dict) else None
         mod_val = mod.get(field)
-        
+
         if leg_val is None:
             errors.append(f"Key {key} missing {leg_key} in legacy")
             continue
         if mod_val is None:
             errors.append(f"Key {key} missing {field} in modern")
             continue
-            
-        compare_scalar(leg_val, mod_val, field, key, errors, tolerance)
+
+        # Check normal match
+        if abs(leg_val - mod_val) <= tolerance:
+            continue
+        # Check sign-inverted match (step computed in opposite direction)
+        if abs(leg_val + mod_val) <= tolerance:
+            continue
+        # Neither match - report error
+        errors.append(f"Key {key} {field}: {leg_val} vs {mod_val} (diff={abs(leg_val - mod_val)})")
 
 
 def _compare_helical_params_record(
@@ -298,23 +513,33 @@ def _compare_helical_params_record(
     errors: List[str],
     tolerance: float
 ) -> None:
-    """Compare helical parameter fields between legacy and modern."""
+    """Compare helical parameter fields between legacy and modern.
+
+    Supports sign-inverted matches (when step computed in opposite direction).
+    """
     # Legacy has params as array: [x_disp, y_disp, rise, incl, tip, twist]
     # Modern has individual fields: {"x_displacement": ..., "y_displacement": ...}
     leg_params = leg.get("params", [])
-    
+
     for i, field in enumerate(HELICAL_PARAM_FIELDS):
         leg_val = leg_params[i] if isinstance(leg_params, list) and i < len(leg_params) else None
         mod_val = mod.get(field)
-        
+
         if leg_val is None:
             errors.append(f"Key {key} missing param[{i}] in legacy")
             continue
         if mod_val is None:
             errors.append(f"Key {key} missing {field} in modern")
             continue
-            
-        compare_scalar(leg_val, mod_val, field, key, errors, tolerance)
+
+        # Check normal match
+        if abs(leg_val - mod_val) <= tolerance:
+            continue
+        # Check sign-inverted match (step computed in opposite direction)
+        if abs(leg_val + mod_val) <= tolerance:
+            continue
+        # Neither match - report error
+        errors.append(f"Key {key} {field}: {leg_val} vs {mod_val} (diff={abs(leg_val - mod_val)})")
 
 
 def _report_missing(

@@ -2017,11 +2017,15 @@ void get_parameters(long ds, long num_bp, char **bp_seq, double **orien, double 
             refs_i_j(j, j + 1, orien[i], org[i], r1, o1, r2, o2);
             m = (j - 1) * 6;
             bpstep_par(r1, o1, r2, o2, step_par[i] + m, mfi, mfoi);
-            /* Record base pair step parameters to JSON */
-            json_writer_record_bpstep_params(j, j + 1, step_par[i] + m, mfoi, mfi);
+            /* Record base pair step parameters to JSON (only for first duplex to avoid duplicates) */
+            if (i == 1) {
+                json_writer_record_bpstep_params(j, j + 1, step_par[i] + m, mfoi, mfi);
+            }
             helical_par(r1, o1, r2, o2, heli_par[i] + m, hfi, hfoi);
-            /* Record helical parameters to JSON */
-            json_writer_record_helical_params(j, j + 1, heli_par[i] + m, hfoi, hfi);
+            /* Record helical parameters to JSON (only for first duplex to avoid duplicates) */
+            if (i == 1) {
+                json_writer_record_helical_params(j, j + 1, heli_par[i] + m, hfoi, hfi);
+            }
             if (ds == 1) {
                 twist_rise[j][1] = step_par[i][m + 6];
                 twist_rise[j][2] = step_par[i][m + 3];
