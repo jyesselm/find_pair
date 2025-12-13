@@ -83,14 +83,23 @@ def validate_pdb(
     comparator = COMPARATORS.get(stage_num)
     if comparator is None:
         return ValidationResult(pdb_id, stage_num, False, [f"No comparator for stage {stage_num}"])
-    
-    passed, errors = comparator(legacy_data, modern_data, config.tolerance)
-    
+
+    # For stages 11 and 12, load base_pair data for residue-based matching
+    if stage_num in (11, 12):
+        legacy_bp = _load_base_pairs(json_dir, pdb_id, legacy=True)
+        modern_bp = _load_base_pairs(json_dir, pdb_id, legacy=False)
+        passed, errors = comparator(
+            legacy_data, modern_data, config.tolerance,
+            legacy_base_pairs=legacy_bp, modern_base_pairs=modern_bp
+        )
+    else:
+        passed, errors = comparator(legacy_data, modern_data, config.tolerance)
+
     if verbose and errors:
         print(f"  {pdb_id}: {len(errors)} error(s)")
         for err in errors[:3]:
             print(f"    - {err}")
-    
+
     return ValidationResult(pdb_id, stage_num, passed, errors)
 
 
@@ -215,13 +224,52 @@ def _read_json_file(path: Path) -> Optional[List[Dict[str, Any]]]:
     """Read and parse a JSON file."""
     if not path.exists():
         return None
-    
+
     try:
         with open(path) as f:
             data = json.load(f)
         return _extract_records(data)
     except (json.JSONDecodeError, IOError):
         return None
+
+
+def _load_base_pairs(
+    json_dir: Path,
+    pdb_id: str,
+    legacy: bool = True
+) -> List[Tuple[int, int]]:
+    """Load base pair ordering from JSON files.
+
+    Returns list of (res1, res2) tuples in helix order, normalized to (min, max).
+    Used for matching step params by actual residue pairs instead of bp_idx.
+    """
+    if legacy:
+        bp_file = json_dir.parent / "json_legacy" / "base_pair" / f"{pdb_id}.json"
+    else:
+        bp_file = json_dir / "base_pair" / f"{pdb_id}.json"
+
+    if not bp_file.exists():
+        return []
+
+    try:
+        with open(bp_file) as f:
+            bp_data = json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return []
+
+    # Get unique pairs in order (legacy has duplicates for each duplex)
+    seen = set()
+    pairs = []
+    for bp in bp_data:
+        base_i = bp.get("base_i")
+        base_j = bp.get("base_j")
+        if base_i is not None and base_j is not None:
+            key = tuple(sorted([base_i, base_j]))
+            if key not in seen:
+                seen.add(key)
+                pairs.append(key)
+
+    return pairs
 
 
 def _extract_records(data: Any) -> Optional[List[Dict[str, Any]]]:

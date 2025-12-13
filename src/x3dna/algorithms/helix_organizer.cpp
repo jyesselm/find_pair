@@ -106,19 +106,46 @@ int HelixOrganizer::is_linked(size_t i, size_t j, const BackboneData& backbone) 
 double HelixOrganizer::o3_distance(size_t i, size_t j, const BackboneData& backbone) const {
     auto it_i = backbone.find(i);
     auto it_j = backbone.find(j);
-    
+
     if (it_i == backbone.end() || it_j == backbone.end()) {
         return -1.0;
     }
-    
+
     const auto& atoms_i = it_i->second;
     const auto& atoms_j = it_j->second;
-    
+
     if (atoms_i.O3_prime.has_value() && atoms_j.O3_prime.has_value()) {
         return (atoms_i.O3_prime.value() - atoms_j.O3_prime.value()).length();
     }
-    
+
     return -1.0;
+}
+
+bool HelixOrganizer::are_pairs_backbone_connected(
+    const core::BasePair& pair1, const core::BasePair& pair2,
+    const BackboneData& backbone) const {
+
+    if (backbone.empty()) {
+        return true;  // Assume connected when no backbone data
+    }
+
+    // Get residue indices for both pairs
+    size_t i1 = pair1.residue_idx1();
+    size_t j1 = pair1.residue_idx2();
+    size_t i2 = pair2.residue_idx1();
+    size_t j2 = pair2.residue_idx2();
+
+    // Check all possible strand linkages:
+    // Strand 1: i1 -> i2 or i2 -> i1
+    // Strand 2: j1 -> j2 or j2 -> j1
+    // Cross: i1 -> j2 or j1 -> i2 (for strand swaps)
+
+    if (is_linked(i1, i2, backbone) != 0) return true;
+    if (is_linked(j1, j2, backbone) != 0) return true;
+    if (is_linked(i1, j2, backbone) != 0) return true;
+    if (is_linked(j1, i2, backbone) != 0) return true;
+
+    return false;
 }
 
 // =============================================================================
@@ -544,67 +571,75 @@ void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs,
 // =============================================================================
 
 std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
-    const std::vector<core::BasePair>& pairs) const {
-    
+    const std::vector<core::BasePair>& pairs,
+    const BackboneData& backbone) const {
+
     size_t n = pairs.size();
     std::vector<PairContext> context(n);
-    
+
     if (n < 2) return context;
-    
+
     for (size_t i = 0; i < n; ++i) {
         auto org_i = get_pair_origin(pairs[i]);
         auto z_i = get_pair_z_axis(pairs[i]);
-        
+
         std::vector<std::pair<double, size_t>> neighbors;
-        
+
         for (size_t j = 0; j < n; ++j) {
             if (j == i) continue;
-            
+
             auto org_j = get_pair_origin(pairs[j]);
             double dist = (org_j - org_i).length();
-            
+
             if (dist <= config_.neighbor_cutoff) {
                 neighbors.emplace_back(dist, j);
             }
         }
-        
+
         std::sort(neighbors.begin(), neighbors.end());
-        
+
         if (neighbors.empty()) {
             context[i].is_endpoint = true;
             continue;
         }
-        
+
         context[i].neighbor1 = neighbors[0].second;
         context[i].dist1 = neighbors[0].first;
-        
+
+        // Check backbone connectivity to neighbor1
+        context[i].has_backbone_link1 = are_pairs_backbone_connected(
+            pairs[i], pairs[neighbors[0].second], backbone);
+
         if (context[i].dist1 > config_.helix_break) {
             context[i].is_endpoint = true;
             continue;
         }
-        
+
         auto v1 = get_pair_origin(pairs[neighbors[0].second]) - org_i;
         double d1 = z_i.dot(v1);
-        
+
         for (size_t k = 1; k < neighbors.size(); ++k) {
             if (neighbors[k].first > config_.helix_break) break;
-            
+
             auto vk = get_pair_origin(pairs[neighbors[k].second]) - org_i;
             double dk = z_i.dot(vk);
-            
+
             if (d1 * dk < 0) {
                 context[i].neighbor2 = neighbors[k].second;
                 context[i].dist2 = neighbors[k].first;
+                // Check backbone connectivity to neighbor2
+                context[i].has_backbone_link2 = are_pairs_backbone_connected(
+                    pairs[i], pairs[neighbors[k].second], backbone);
                 context[i].is_endpoint = false;
                 break;
             }
         }
-        
+
         if (!context[i].neighbor2.has_value()) {
             context[i].is_endpoint = true;
         }
     }
-    
+
     return context;
 }
 
@@ -629,55 +664,81 @@ std::vector<size_t> HelixOrganizer::find_endpoints(
 std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate_helices(
     const std::vector<PairContext>& context,
     const std::vector<size_t>& endpoints,
+    const BackboneData& backbone,
     size_t num_pairs) const {
-    
+
     std::vector<size_t> pair_order;
     std::vector<HelixSegment> helices;
     std::vector<bool> visited(num_pairs, false);
-    
+
     pair_order.reserve(num_pairs);
-    
+
     for (size_t ep : endpoints) {
         if (visited[ep]) continue;
-        
+
         HelixSegment helix;
         helix.start_idx = pair_order.size();
-        
+
         size_t current = ep;
         std::optional<size_t> prev;
-        
+
         while (!visited[current]) {
             visited[current] = true;
             pair_order.push_back(current);
-            
+
             const auto& ctx = context[current];
             std::optional<size_t> next;
-            
+
+            // Prefer backbone-connected neighbors
             if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()]) {
                 if (!prev.has_value() || ctx.neighbor1.value() != prev.value()) {
-                    next = ctx.neighbor1;
+                    // Check if backbone connected (or if no backbone data)
+                    bool is_connected = ctx.has_backbone_link1 || backbone.empty();
+                    if (is_connected) {
+                        next = ctx.neighbor1;
+                    }
                 }
             }
-            
-            if (!next.has_value() && ctx.neighbor2.has_value() && 
+
+            if (!next.has_value() && ctx.neighbor2.has_value() &&
                 !visited[ctx.neighbor2.value()]) {
                 if (!prev.has_value() || ctx.neighbor2.value() != prev.value()) {
-                    next = ctx.neighbor2;
+                    // Check if backbone connected (or if no backbone data)
+                    bool is_connected = ctx.has_backbone_link2 || backbone.empty();
+                    if (is_connected) {
+                        next = ctx.neighbor2;
+                    }
                 }
             }
-            
+
+            // If no backbone-connected neighbor, try geometric neighbors anyway
+            // but this will create a helix break
+            if (!next.has_value() && !backbone.empty()) {
+                if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()]) {
+                    if (!prev.has_value() || ctx.neighbor1.value() != prev.value()) {
+                        next = ctx.neighbor1;
+                    }
+                }
+                if (!next.has_value() && ctx.neighbor2.has_value() &&
+                    !visited[ctx.neighbor2.value()]) {
+                    if (!prev.has_value() || ctx.neighbor2.value() != prev.value()) {
+                        next = ctx.neighbor2;
+                    }
+                }
+            }
+
             if (!next.has_value()) break;
-            
+
             prev = current;
             current = next.value();
         }
-        
+
         helix.end_idx = pair_order.size() - 1;
         if (helix.end_idx >= helix.start_idx) {
             helices.push_back(helix);
         }
     }
-    
+
     for (size_t i = 0; i < num_pairs; ++i) {
         if (!visited[i]) {
             HelixSegment helix;
@@ -687,7 +748,7 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
             helices.push_back(helix);
         }
     }
-    
+
     return {pair_order, helices};
 }
 
@@ -772,35 +833,48 @@ void HelixOrganizer::ensure_five_to_three(
 HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs,
                                         const BackboneData& backbone) const {
     HelixOrdering result;
-    
+
     if (pairs.empty()) {
         return result;
     }
-    
+
     if (pairs.size() == 1) {
         result.pair_order = {0};
         result.helices = {{0, 0, false, false, false}};
         result.strand_swapped = {false};
+        result.helix_breaks = {};  // No breaks for single pair
         return result;
     }
-    
-    // Step 1: Calculate neighbor context
-    auto context = calculate_context(pairs);
-    
+
+    // Step 1: Calculate neighbor context (now includes backbone connectivity)
+    auto context = calculate_context(pairs, backbone);
+
     // Step 2: Find helix endpoints
     auto endpoints = find_endpoints(context);
-    
-    // Step 3: Chain pairs into helices
-    auto [pair_order, helices] = locate_helices(context, endpoints, pairs.size());
-    
+
+    // Step 3: Chain pairs into helices (respects backbone connectivity)
+    auto [pair_order, helices] = locate_helices(context, endpoints, backbone, pairs.size());
+
     // Step 4: Ensure 5'→3' direction (full five2three algorithm)
     std::vector<bool> strand_swapped;
     ensure_five_to_three(pairs, backbone, pair_order, helices, strand_swapped);
-    
+
+    // Step 5: Identify helix breaks (positions without backbone connectivity)
+    std::vector<bool> helix_breaks(pair_order.size() > 0 ? pair_order.size() - 1 : 0, false);
+    if (!backbone.empty() && pair_order.size() > 1) {
+        for (size_t i = 0; i + 1 < pair_order.size(); ++i) {
+            size_t idx1 = pair_order[i];
+            size_t idx2 = pair_order[i + 1];
+            bool connected = are_pairs_backbone_connected(pairs[idx1], pairs[idx2], backbone);
+            helix_breaks[i] = !connected;
+        }
+    }
+
     result.pair_order = std::move(pair_order);
     result.helices = std::move(helices);
     result.strand_swapped = std::move(strand_swapped);
-    
+    result.helix_breaks = std::move(helix_breaks);
+
     return result;
 }
 

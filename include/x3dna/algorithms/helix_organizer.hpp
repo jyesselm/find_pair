@@ -60,6 +60,7 @@ struct HelixOrdering {
     std::vector<size_t> pair_order;     ///< Indices into original pair list, in helix order
     std::vector<HelixSegment> helices;  ///< Helix segment boundaries
     std::vector<bool> strand_swapped;   ///< Whether strand assignment was swapped for each pair
+    std::vector<bool> helix_breaks;     ///< True at positions that are helix boundaries (no backbone link)
 };
 
 /**
@@ -107,17 +108,26 @@ private:
         std::optional<size_t> neighbor2; ///< 2nd neighbor (opposite z-side)
         double dist1 = 0.0;             ///< Distance to neighbor1
         double dist2 = 0.0;             ///< Distance to neighbor2
+        bool has_backbone_link1 = false; ///< Backbone connected to neighbor1
+        bool has_backbone_link2 = false; ///< Backbone connected to neighbor2
     };
     
     // Context calculation
     std::vector<PairContext> calculate_context(
-        const std::vector<core::BasePair>& pairs) const;
+        const std::vector<core::BasePair>& pairs,
+        const BackboneData& backbone) const;
     std::vector<size_t> find_endpoints(
         const std::vector<PairContext>& context) const;
     std::pair<std::vector<size_t>, std::vector<HelixSegment>> locate_helices(
         const std::vector<PairContext>& context,
         const std::vector<size_t>& endpoints,
+        const BackboneData& backbone,
         size_t num_pairs) const;
+
+    /** @brief Check if two pairs are backbone-connected (either strand) */
+    bool are_pairs_backbone_connected(
+        const core::BasePair& pair1, const core::BasePair& pair2,
+        const BackboneData& backbone) const;
     
     // Five-to-three algorithm (legacy equivalent)
     void ensure_five_to_three(

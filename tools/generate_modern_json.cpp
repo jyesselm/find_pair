@@ -266,10 +266,18 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
 
                     ParameterCalculator param_calc;
                     size_t valid_steps = 0;
+                    size_t skipped_breaks = 0;
 
-                    // Calculate step params for ALL consecutive pairs in helix order
-                    // Legacy calculates steps even across helix boundaries
+                    // Calculate step params for consecutive pairs in helix order
+                    // Skip steps at helix boundaries (no backbone connectivity)
                     for (size_t i = 0; i + 1 < helix_order.pair_order.size(); ++i) {
+                        // Check if this is a helix break (no backbone connectivity)
+                        bool is_helix_break = i < helix_order.helix_breaks.size() && helix_order.helix_breaks[i];
+                        if (is_helix_break) {
+                            skipped_breaks++;
+                            continue;  // Skip step parameter calculation at helix boundaries
+                        }
+
                         size_t idx1 = helix_order.pair_order[i];
                         size_t idx2 = helix_order.pair_order[i + 1];
                         const auto& pair1 = base_pairs[idx1];
@@ -320,6 +328,9 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                         size_t total_steps = base_pairs.size() - 1;
                         std::cout << "  ✅ Generated step/helical params (" << valid_steps << "/" << total_steps
                                   << " steps";
+                        if (skipped_breaks > 0) {
+                            std::cout << ", " << skipped_breaks << " helix breaks skipped";
+                        }
                         std::cout << ", " << helix_order.helices.size() << " helices)\n";
                     }
                 }
