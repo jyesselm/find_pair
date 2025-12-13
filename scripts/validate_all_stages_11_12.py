@@ -14,7 +14,7 @@ import os
 sys.path.insert(0, str(Path(__file__).parent.parent / "tests_python"))
 from validation.runner import validate_pdb
 
-JSON_DIR = Path("data/json_modern")
+JSON_DIR = Path("data/json_test")
 CHECKPOINT_FILE = Path("data/validation_checkpoint_stage11_12.json")
 
 
@@ -27,8 +27,10 @@ def validate_single(pdb: str) -> dict:
             "pdb": pdb,
             "stage11_pass": r11.passed,
             "stage12_pass": r12.passed,
-            "stage11_errors": len(r11.errors) if not r11.passed else 0,
-            "stage12_errors": len(r12.errors) if not r12.passed else 0,
+            "stage11_skip": r11.skipped,
+            "stage12_skip": r12.skipped,
+            "stage11_errors": len(r11.errors) if not r11.passed and not r11.skipped else 0,
+            "stage12_errors": len(r12.errors) if not r12.passed and not r12.skipped else 0,
             "error": None,
         }
     except Exception as e:
@@ -36,6 +38,8 @@ def validate_single(pdb: str) -> dict:
             "pdb": pdb,
             "stage11_pass": False,
             "stage12_pass": False,
+            "stage11_skip": False,
+            "stage12_skip": False,
             "error": str(e),
         }
 
@@ -61,8 +65,10 @@ def main():
         results = {
             "stage11_pass": [],
             "stage11_fail": [],
+            "stage11_skip": [],
             "stage12_pass": [],
             "stage12_fail": [],
+            "stage12_skip": [],
         }
 
     # Filter to only uncompleted
@@ -100,12 +106,16 @@ def main():
 
                     completed.add(pdb)
 
-                    if result["stage11_pass"]:
+                    if result.get("stage11_skip"):
+                        results["stage11_skip"].append(pdb)
+                    elif result["stage11_pass"]:
                         results["stage11_pass"].append(pdb)
                     else:
                         results["stage11_fail"].append(pdb)
 
-                    if result["stage12_pass"]:
+                    if result.get("stage12_skip"):
+                        results["stage12_skip"].append(pdb)
+                    elif result["stage12_pass"]:
                         results["stage12_pass"].append(pdb)
                     else:
                         results["stage12_fail"].append(pdb)
@@ -122,11 +132,13 @@ def main():
 
             s11_pass = len(results["stage11_pass"])
             s11_fail = len(results["stage11_fail"])
+            s11_skip = len(results.get("stage11_skip", []))
             s12_pass = len(results["stage12_pass"])
             s12_fail = len(results["stage12_fail"])
+            s12_skip = len(results.get("stage12_skip", []))
 
             print(
-                f"  Completed: {done}/{len(pdbs)} | S11: {s11_pass}✓/{s11_fail}✗ | S12: {s12_pass}✓/{s12_fail}✗ | ETA: {eta/60:.1f}m"
+                f"  Completed: {done}/{len(pdbs)} | S11: {s11_pass}✓/{s11_fail}✗/{s11_skip}⊘ | S12: {s12_pass}✓/{s12_fail}✗/{s12_skip}⊘ | ETA: {eta/60:.1f}m"
             )
             print()
 
@@ -136,9 +148,20 @@ def main():
     print("=" * 60)
     total = len(pdbs)
     s11_pass = len(results["stage11_pass"])
+    s11_fail = len(results["stage11_fail"])
+    s11_skip = len(results.get("stage11_skip", []))
     s12_pass = len(results["stage12_pass"])
-    print(f"Stage 11 (Step Parameters):    {s11_pass}/{total} pass ({100*s11_pass/total:.1f}%)")
-    print(f"Stage 12 (Helical Parameters): {s12_pass}/{total} pass ({100*s12_pass/total:.1f}%)")
+    s12_fail = len(results["stage12_fail"])
+    s12_skip = len(results.get("stage12_skip", []))
+
+    # Calculate pass rate excluding skips
+    s11_tested = s11_pass + s11_fail
+    s12_tested = s12_pass + s12_fail
+    s11_pct = 100 * s11_pass / s11_tested if s11_tested > 0 else 0
+    s12_pct = 100 * s12_pass / s12_tested if s12_tested > 0 else 0
+
+    print(f"Stage 11 (Step Parameters):    {s11_pass}/{s11_tested} pass ({s11_pct:.1f}%), {s11_skip} skipped")
+    print(f"Stage 12 (Helical Parameters): {s12_pass}/{s12_tested} pass ({s12_pct:.1f}%), {s12_skip} skipped")
 
     if results["stage11_fail"]:
         print(f'\nStage 11 failures ({len(results["stage11_fail"])}): first 10 = {results["stage11_fail"][:10]}')

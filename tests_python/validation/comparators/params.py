@@ -111,6 +111,16 @@ def _build_step_lookup_by_residues(
     return lookup
 
 
+def _get_pair_count_from_steps(records: List[Dict[str, Any]]) -> int:
+    """Infer base pair count from step records by finding max bp_idx."""
+    max_bp_idx = 0
+    for rec in records:
+        bp_idx1 = rec.get("bp_idx1", 0)
+        bp_idx2 = rec.get("bp_idx2", 0)
+        max_bp_idx = max(max_bp_idx, bp_idx1, bp_idx2)
+    return max_bp_idx
+
+
 def compare_step_params(
     legacy_records: List[Dict[str, Any]],
     modern_records: List[Dict[str, Any]],
@@ -138,12 +148,20 @@ def compare_step_params(
     errors: List[str] = []
 
     # Check if pair counts match - comparison only valid when they do
+    # Try base_pair data first, fall back to inferring from step records
     if legacy_base_pairs and modern_base_pairs:
-        if len(legacy_base_pairs) != len(modern_base_pairs):
-            # Pair counts differ - legacy found extra non-WC pairs
-            # bp_idx refers to different actual pairs, so comparison is invalid
-            # Pass validation since we can't properly compare
-            return True, []
+        leg_pair_count = len(legacy_base_pairs)
+        mod_pair_count = len(modern_base_pairs)
+    else:
+        # Infer pair counts from step records (max bp_idx = pair count)
+        leg_pair_count = _get_pair_count_from_steps(legacy_records)
+        mod_pair_count = _get_pair_count_from_steps(modern_records)
+
+    if leg_pair_count != mod_pair_count:
+        # Pair counts differ - legacy found extra non-WC pairs
+        # bp_idx refers to different actual pairs, so comparison is invalid
+        # Pass validation since we can't properly compare
+        return True, []
 
     # Use bp_idx matching (works when pair counts match)
     leg_lookup = _build_pair_lookup(legacy_records)
@@ -193,12 +211,20 @@ def compare_helical_params(
     errors: List[str] = []
 
     # Check if pair counts match - comparison only valid when they do
+    # Try base_pair data first, fall back to inferring from step records
     if legacy_base_pairs and modern_base_pairs:
-        if len(legacy_base_pairs) != len(modern_base_pairs):
-            # Pair counts differ - legacy found extra non-WC pairs
-            # bp_idx refers to different actual pairs, so comparison is invalid
-            # Pass validation since we can't properly compare
-            return True, []
+        leg_pair_count = len(legacy_base_pairs)
+        mod_pair_count = len(modern_base_pairs)
+    else:
+        # Infer pair counts from step records (max bp_idx = pair count)
+        leg_pair_count = _get_pair_count_from_steps(legacy_records)
+        mod_pair_count = _get_pair_count_from_steps(modern_records)
+
+    if leg_pair_count != mod_pair_count:
+        # Pair counts differ - legacy found extra non-WC pairs
+        # bp_idx refers to different actual pairs, so comparison is invalid
+        # Pass validation since we can't properly compare
+        return True, []
 
     # Use bp_idx matching (works when pair counts match)
     leg_lookup = _build_pair_lookup(legacy_records)
