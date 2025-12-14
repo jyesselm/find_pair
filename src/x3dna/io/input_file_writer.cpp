@@ -395,5 +395,113 @@ void InputFileWriter::write_ref_frames(const std::filesystem::path& output_path,
     out.close();
 }
 
+void InputFileWriter::write_step_params(const std::filesystem::path& output_path,
+                                        const std::vector<core::BasePairStepParameters>& step_params,
+                                        const std::vector<core::BasePair>& base_pairs,
+                                        const core::Structure& structure) {
+    std::ofstream out(output_path);
+    if (!out.is_open()) {
+        throw std::runtime_error("Cannot open output file: " + output_path.string());
+    }
+
+    // Helper to get one-letter code for a residue using legacy index
+    // Base pair indices are 0-based but correspond to legacy 1-based indices
+    auto get_base_code = [&structure](size_t res_idx) -> char {
+        // Convert 0-based index to 1-based legacy index
+        int legacy_idx = static_cast<int>(res_idx + 1);
+        auto residue = structure.get_residue_by_legacy_idx(legacy_idx);
+        if (residue) {
+            return residue->one_letter_code();
+        }
+        return '-';
+    };
+
+    // Header line
+    out << "#        Shift    Slide     Rise     Tilt     Roll    Twist\n";
+
+    // Output each step
+    for (size_t i = 0; i < step_params.size() && i + 1 < base_pairs.size(); ++i) {
+        const auto& params = step_params[i];
+        const auto& bp1 = base_pairs[i];
+        const auto& bp2 = base_pairs[i + 1];
+
+        // Get base types from residues
+        char bp1_base1 = get_base_code(bp1.residue_idx1());
+        char bp1_base2 = get_base_code(bp1.residue_idx2());
+        char bp2_base1 = get_base_code(bp2.residue_idx1());
+        char bp2_base2 = get_base_code(bp2.residue_idx2());
+
+        // Format step label: e.g., "UA/UA" for step between U-A and U-A pairs
+        std::string step_label;
+        step_label = std::string(1, bp1_base1) + std::string(1, bp2_base1) + "/" +
+                     std::string(1, bp1_base2) + std::string(1, bp2_base2);
+
+        out << std::fixed << std::setprecision(2);
+        out << std::setw(5) << step_label << " ";
+        out << std::setw(8) << params.shift << " ";
+        out << std::setw(8) << params.slide << " ";
+        out << std::setw(8) << params.rise << " ";
+        out << std::setw(8) << params.tilt << " ";
+        out << std::setw(8) << params.roll << " ";
+        out << std::setw(8) << params.twist << "\n";
+    }
+
+    out.close();
+}
+
+void InputFileWriter::write_helical_params(const std::filesystem::path& output_path,
+                                           const std::vector<core::HelicalParameters>& helical_params,
+                                           const std::vector<core::BasePair>& base_pairs,
+                                           const core::Structure& structure) {
+    std::ofstream out(output_path);
+    if (!out.is_open()) {
+        throw std::runtime_error("Cannot open output file: " + output_path.string());
+    }
+
+    // Helper to get one-letter code for a residue using legacy index
+    // Base pair indices are 0-based but correspond to legacy 1-based indices
+    auto get_base_code = [&structure](size_t res_idx) -> char {
+        // Convert 0-based index to 1-based legacy index
+        int legacy_idx = static_cast<int>(res_idx + 1);
+        auto residue = structure.get_residue_by_legacy_idx(legacy_idx);
+        if (residue) {
+            return residue->one_letter_code();
+        }
+        return '-';
+    };
+
+    // Header line
+    out << "#        X-disp   Y-disp   h-Rise    Incl.     Tip   h-Twist\n";
+
+    // Output each step
+    for (size_t i = 0; i < helical_params.size() && i + 1 < base_pairs.size(); ++i) {
+        const auto& params = helical_params[i];
+        const auto& bp1 = base_pairs[i];
+        const auto& bp2 = base_pairs[i + 1];
+
+        // Get base types from residues
+        char bp1_base1 = get_base_code(bp1.residue_idx1());
+        char bp1_base2 = get_base_code(bp1.residue_idx2());
+        char bp2_base1 = get_base_code(bp2.residue_idx1());
+        char bp2_base2 = get_base_code(bp2.residue_idx2());
+
+        // Format step label: e.g., "UA/UA" for step between U-A and U-A pairs
+        std::string step_label;
+        step_label = std::string(1, bp1_base1) + std::string(1, bp2_base1) + "/" +
+                     std::string(1, bp1_base2) + std::string(1, bp2_base2);
+
+        out << std::fixed << std::setprecision(2);
+        out << std::setw(5) << step_label << " ";
+        out << std::setw(8) << params.x_displacement << " ";
+        out << std::setw(8) << params.y_displacement << " ";
+        out << std::setw(8) << params.rise << " ";
+        out << std::setw(8) << params.inclination << " ";
+        out << std::setw(8) << params.tip << " ";
+        out << std::setw(8) << params.twist << "\n";
+    }
+
+    out.close();
+}
+
 } // namespace io
 } // namespace x3dna

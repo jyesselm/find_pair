@@ -11,6 +11,7 @@
 #include <map>
 #include <x3dna/core/base_pair.hpp>
 #include <x3dna/core/structure.hpp>
+#include <x3dna/core/parameters.hpp>
 #include <x3dna/algorithms/parameter_calculator.hpp>
 
 namespace x3dna {
@@ -73,6 +74,30 @@ public:
      * @return Map from (min_idx, max_idx) -> first residue index in legacy
      */
     static std::map<std::pair<int, int>, int> parse_legacy_inp_ordering(const std::filesystem::path& inp_file);
+
+    /**
+     * @brief Write step parameters to .par file (bp_step.par format)
+     * @param output_path Path to output .par file
+     * @param step_params Vector of step parameters
+     * @param base_pairs Vector of base pairs (for residue names)
+     * @param structure Structure containing residue information
+     */
+    static void write_step_params(const std::filesystem::path& output_path,
+                                  const std::vector<core::BasePairStepParameters>& step_params,
+                                  const std::vector<core::BasePair>& base_pairs,
+                                  const core::Structure& structure);
+
+    /**
+     * @brief Write helical parameters to .par file (bp_helical.par format)
+     * @param output_path Path to output .par file
+     * @param helical_params Vector of helical parameters
+     * @param base_pairs Vector of base pairs (for residue names)
+     * @param structure Structure containing residue information
+     */
+    static void write_helical_params(const std::filesystem::path& output_path,
+                                     const std::vector<core::HelicalParameters>& helical_params,
+                                     const std::vector<core::BasePair>& base_pairs,
+                                     const core::Structure& structure);
 
 private:
     /**

@@ -4587,6 +4587,10 @@ void check_pair(long i, long j, char *bseq, long **seidx, double **xyz,
     double dorg[4], oave[4], zave[4], dNN_vec[4];
     long cdns, m, n, num_base_hb = 0, num_o2_hb = 0;
     *bpid = 0;
+    /* DEBUG: trace entry to check_pair for pair 29,42 */
+    if ((i == 29 && j == 42) || (i == 42 && j == 29)) {
+        fprintf(stderr, "[DEBUG check_pair START] i=%ld j=%ld\n", i, j);
+    }
     if (i == j)
         return;
     get_bp_zoave(i, j, orien, org, oave, zave);

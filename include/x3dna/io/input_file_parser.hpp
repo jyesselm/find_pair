@@ -54,9 +54,10 @@ private:
      * @brief Parse base pair line
      * @param line Input line
      * @param line_number Line number (for error reporting)
+     * @param flags Flags from .inp file header (flags & 1 means explicit bp numbering)
      * @return Base pair indices (residue_idx1, residue_idx2) - 0-based
      */
-    static std::pair<size_t, size_t> parse_base_pair_line(const std::string& line, size_t line_number);
+    static std::pair<size_t, size_t> parse_base_pair_line(const std::string& line, size_t line_number, int flags);
 };
 
 } // namespace io

@@ -5,6 +5,7 @@
 
 #include <x3dna/apps/command_line_parser.hpp>
 #include <x3dna/protocols/find_pair_protocol.hpp>
+#include <x3dna/protocols/analyze_protocol.hpp>
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/io/input_file_writer.hpp>
 #include <x3dna/io/json_writer.hpp>
@@ -94,6 +95,38 @@ int main(int argc, char* argv[]) {
             } else {
                 x3dna::io::InputFileWriter::write_ref_frames("ref_frames_modern.dat", base_pairs, structure);
                 std::cout << "Reference frames written: ref_frames_modern.dat\n";
+            }
+
+            // Calculate and write step/helical parameters
+            if (base_pairs.size() >= 2) {
+                std::cout << "Calculating step and helical parameters...\n";
+
+                // Create AnalyzeProtocol to calculate parameters
+                x3dna::protocols::AnalyzeProtocol analyze_protocol;
+                analyze_protocol.set_config_manager(config);
+                analyze_protocol.set_legacy_mode(options.legacy_mode);
+
+                // Execute on the .inp file we just wrote
+                analyze_protocol.execute(options.output_file);
+
+                // Get results
+                const auto& step_params = analyze_protocol.step_parameters();
+                const auto& helical_params = analyze_protocol.helical_parameters();
+                const auto& analyze_base_pairs = analyze_protocol.base_pairs();
+
+                std::cout << "Calculated " << step_params.size() << " step parameters\n";
+                std::cout << "Calculated " << helical_params.size() << " helical parameters\n";
+
+                // Write .par files
+                if (!step_params.empty()) {
+                    x3dna::io::InputFileWriter::write_step_params("bp_step.par", step_params, analyze_base_pairs, structure);
+                    std::cout << "Step parameters written: bp_step.par\n";
+                }
+
+                if (!helical_params.empty()) {
+                    x3dna::io::InputFileWriter::write_helical_params("bp_helical.par", helical_params, analyze_base_pairs, structure);
+                    std::cout << "Helical parameters written: bp_helical.par\n";
+                }
             }
         } else {
             std::cout << "No base pairs found - no output file written\n";

@@ -185,14 +185,15 @@ def compare_step_parameters(
     # If bp_idx matching has errors, try mst_org position matching
     # This handles cases where legacy and modern compute steps in different orders
     if len(result.mismatched_steps) > 0:
-        position_mismatches = _match_steps_by_position(
+        position_mismatches, position_match_count = _match_steps_by_position(
             list(legacy_map.values()),
             list(modern_map.values()),
             parameter_type,
             tolerance
         )
-        # Use position matching if it produces fewer errors
-        if len(position_mismatches) < len(result.mismatched_steps):
+        # Only use position matching if it matched ALL common keys
+        # Otherwise we'd be silently ignoring steps that couldn't be position-matched
+        if position_match_count >= len(common_keys) and len(position_mismatches) < len(result.mismatched_steps):
             result.mismatched_steps = position_mismatches
 
     return result
@@ -203,7 +204,7 @@ def _match_steps_by_position(
     modern_steps: List[Dict],
     parameter_type: str,
     tolerance: float
-) -> List[Dict]:
+) -> Tuple[List[Dict], int]:
     """
     Match steps by mst_org (midstep origin) position.
 
@@ -218,7 +219,7 @@ def _match_steps_by_position(
         tolerance: Parameter tolerance
 
     Returns:
-        List of mismatched steps
+        Tuple of (list of mismatched steps, number of position matches found)
     """
     mismatches = []
 
@@ -318,5 +319,5 @@ def _match_steps_by_position(
                 'modern_record': mstep
             })
 
-    return mismatches
+    return mismatches, len(matched_pairs)
 

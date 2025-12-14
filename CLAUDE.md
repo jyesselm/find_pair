@@ -74,8 +74,11 @@ PYTHONPATH=. X3DNA=/Users/jyesselman2/local/installs/x3dna python3 scripts/rebui
 | 1: Atoms | 94% (94/100) | 6 failures: 2CV2, 4RQF, 5VOE, 8UPT, 8Z1P, 8ZYC |
 | 2: Residue Indices | 100% (100/100) | All pass |
 | 3-5: Frames | 99% (99/100) | 1 failure: 6OZK (base_type `g` vs `I` for inosine) |
-| 6-7: Pairs | 27% (27/100) | Different pair counts between legacy/modern |
-| 11-12: Steps | 4% (4/100) | Cascading failures from pair selection differences |
+| 6-7: Pairs | 100% (100/100) | All pass |
+| 11-12: Steps | 47% (47/100) | Step parameter calculation differences - see `docs/STEP_PARAMETER_INVESTIGATION.md` |
+
+**Note**: The step parameter failures are NOT due to pair selection differences (pairs now match 100%).
+The issue is in how step parameters are calculated from matching pairs. See investigation doc for details.
 
 ### Validation Stages (must pass in order)
 

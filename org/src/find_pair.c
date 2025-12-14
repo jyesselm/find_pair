@@ -680,6 +680,8 @@ static void all_pairs(long num_residue, long *RY, double **NC1xyz, double **orie
     fp_auffinger = open_tmpfile();
     allpairs_to_analyze_header(fp_auffinger, pdbfile, hetatm);
     rtmp = open_file(TMP_FILE, "w");
+    /* DEBUG: unconditional debug to verify this code is reached */
+    fprintf(stderr, "[DEBUG MAIN] UNCONDITIONAL: num_residue=%ld\n", num_residue);
     /* DEBUG: trace RY values for residues 29 and 42 */
     if (num_residue >= 42) {
         fprintf(stderr, "[DEBUG MAIN] RY[29]=%ld, RY[42]=%ld, num_residue=%ld\n",

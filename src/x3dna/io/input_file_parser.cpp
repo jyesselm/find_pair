@@ -96,9 +96,11 @@ InputData InputFileParser::parse_stream(std::istream& stream) {
         }
 
         // Parse base pair line
-        // Format: bp_num res1 res2 flag # comment
+        // Format depends on flags:
+        // - flags & 1: bp_num res1 res2 flag # comment
+        // - otherwise: res1 res2 [flag] # comment
         try {
-            auto [res1, res2] = parse_base_pair_line(line, line_number);
+            auto [res1, res2] = parse_base_pair_line(line, line_number, data.flags);
 
             // Create base pair (type will be determined later during analysis)
             core::BasePair bp(res1, res2, core::BasePairType::UNKNOWN);
@@ -112,22 +114,44 @@ InputData InputFileParser::parse_stream(std::istream& stream) {
     return data;
 }
 
-std::pair<size_t, size_t> InputFileParser::parse_base_pair_line(const std::string& line, size_t line_number) {
+std::pair<size_t, size_t> InputFileParser::parse_base_pair_line(const std::string& line, size_t line_number, int flags) {
     std::istringstream iss(line);
 
-    // Legacy format: reads two residue/atom indices directly (no base pair number in line)
-    // Format: res1 res2 [flag] # comment
-    // Legacy code: sscanf(str, "%ld %ld %ld", &pair_num[1][i], &pair_num[2][i], &pair_num[3][i])
-    // The base pair number is the loop index, not in the line
+    // Two formats:
+    // 1. Modern format (flags & 1): bp_num res1 res2 flag # comment
+    // 2. Legacy format: res1 res2 [flag] # comment
+    //
+    // Detection: If first number is small (1-1000 range) and second/third exist,
+    // check if it looks like modern format (bp_num res1 res2) or legacy (res1 res2 flag)
 
-    // Read residue/atom indices (1-based in file, convert to 0-based)
-    int res1, res2;
-    if (!(iss >> res1 >> res2)) {
+    int val1, val2, val3;
+    bool has_val3 = false;
+
+    if (!(iss >> val1 >> val2)) {
         throw std::runtime_error("Cannot parse residue indices at line " + std::to_string(line_number));
     }
 
+    if (iss >> val3) {
+        has_val3 = true;
+    }
+
+    int res1, res2;
+
+    // Use explicit bp numbering flag to determine format
+    // flags & 1 means bp_num is included in each line
+    if ((flags & 1) && has_val3) {
+        // Modern format: bp_num res1 res2 flag
+        // val1 = bp_num, val2 = res1, val3 = res2
+        res1 = val2;
+        res2 = val3;
+    } else {
+        // Legacy format: res1 res2 [flag]
+        // val1 = res1, val2 = res2
+        res1 = val1;
+        res2 = val2;
+    }
+
     // Convert from 1-based to 0-based
-    // Handle case where res2 might be 0 (shouldn't happen, but be safe)
     if (res1 <= 0 || res2 <= 0) {
         throw std::runtime_error("Invalid residue indices at line " + std::to_string(line_number) +
                                  ": res1=" + std::to_string(res1) + ", res2=" + std::to_string(res2));
