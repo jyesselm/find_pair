@@ -123,6 +123,11 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::
             int bp_type_id = calculate_bp_type_id(res1, res2, result, adjusted_quality_score);
             phase1_bp_type_ids[normalized_pair] = bp_type_id;
 
+            // NOTE: base_pair recording is now done in find_best_partner, not Phase 1
+            // Analysis showed legacy base_pair and pair_validation have IDENTICAL pairs,
+            // meaning legacy only records base_pair for pairs validated during greedy selection
+            // Phase 1 validation populates phase1_validation_results for selection decisions
+
             // NOTE: pair_validation recording is now done in find_best_partner, not Phase 1
             // This matches legacy behavior where check_pair records during best_pair iteration
             // Legacy only records pairs that are actually checked during greedy selection
@@ -597,12 +602,33 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
         if (result.is_valid && legacy_idx1 < legacy_idx2) {
             writer->record_pair_validation(base_i, base_j, result.is_valid, bp_type_id, result.dir_x, result.dir_y,
                                            result.dir_z, rtn_val, validator_.parameters());
+
+            // Record base_pair for the same pairs as pair_validation (matches legacy behavior)
+            // Analysis confirmed legacy pair_validation and base_pair have IDENTICAL pairs
+            BasePair pair(base_i, base_j, result.bp_type);
+
+            // Set reference frames
+            if (res1->reference_frame().has_value()) {
+                pair.set_frame1(res1->reference_frame().value());
+            }
+            if (res2->reference_frame().has_value()) {
+                pair.set_frame2(res2->reference_frame().value());
+            }
+
+            // Set hydrogen bonds
+            pair.set_hydrogen_bonds(result.hbonds);
+
+            // Set bp_type string from residue names
+            char base1 = res1->one_letter_code();
+            char base2 = res2->one_letter_code();
+            if (base1 != ' ' && base2 != ' ') {
+                pair.set_bp_type(std::string(1, base1) + std::string(1, base2));
+            }
+
+            // Record to JSON (duplicate detection handled in JsonWriter)
+            writer->record_base_pair(pair);
         }
     }
-
-    // NOTE: base_pair records are now only recorded for pairs in the final selection
-    // (matching legacy behavior where base_pair records correspond to ref_frames.dat)
-    // This recording happens after find_bestpair selection, not during validation
 
     // Record distance checks only for valid pairs (is_valid) when i < j
     // (only output pairs that pass all checks to reduce file size)

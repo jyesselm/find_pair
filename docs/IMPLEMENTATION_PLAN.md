@@ -1,7 +1,7 @@
 # Implementation Plan: Systematically Fix X3DNA Legacy/Modern Validation Differences
 
-**Last Updated**: 2024-12-14
-**Status**: Phase 1 Complete, Phase 2 In Progress
+**Last Updated**: 2025-12-14
+**Status**: Phase 3 Complete - Stages 6-9 at 100%
 
 ## Current Status Summary
 
@@ -10,6 +10,18 @@
   - `include/x3dna/debug/pair_validation_debugger.hpp` - Debug class for pair validation
   - `src/x3dna/debug/pair_validation_debugger.cpp` - Implementation
   - `tools/compare_single_pair.cpp` - Tool for comparing specific pairs
+
+- **Phase 2: Fix pair_validation Recording Timing** - COMPLETE
+  - **Root Cause Found**: Modern was recording pair_validation during Phase 1 (all pairs validation),
+    while legacy records during Phase 2 (greedy selection)
+  - **Fix Applied**: Code already fixed to record during find_best_partner, matching legacy behavior
+  - **Result**: Stages 6-7 now at 100%
+
+- **Phase 3: Fix hbond_list and base_pair Recording** - COMPLETE
+  - **Key Finding**: Legacy pair_validation and base_pair have IDENTICAL pairs
+  - base_pair recording moved to greedy selection (same location as pair_validation)
+  - hbond_list recording happens during greedy selection validation
+  - **Result**: Stages 8-9 now at 100%
 
 - **Phase 4: bp_type_id and WC Detection** - COMPLETE
   - Watson-Crick pair detection working correctly
@@ -20,57 +32,49 @@
 | Stage | Pass Rate | Status |
 |-------|-----------|--------|
 | 1: Atoms | 94% (94/100) | 6 failures: 2CV2, 4RQF, 5VOE, 8UPT, 8Z1P, 8ZYC |
-| 2-5: Frames | 100% | All pass |
-| 6-7: Pairs | ~65% | 34 PDBs have extra pairs in modern |
-| 8: H-bonds | 99% | 1 failure |
-| 9: Base Pair | ~65% | Cascading from pair differences |
-| 10: Selection | 99% | 1 failure |
-| 11-12: Steps | ~5% | Cascading from pair differences |
+| 2-5: Frames | 99% (99/100) | 1 failure: 6OZK (inosine recognition) |
+| 6: pair_validation | **100%** | ✅ Fixed |
+| 7: distance_checks | **100%** | ✅ Fixed |
+| 8: hbond_list | **100%** | ✅ Fixed |
+| 9: base_pair | **100%** | ✅ Fixed |
+| 10: Selection | TBD | |
+| 11-12: Steps/Helical | TBD | |
 
-### Key Finding
-- Modern identifies MORE pairs than legacy (not fewer)
-- 65/100 PDBs have matching pair_validation records
-- 34/100 PDBs have extra pairs in modern that legacy doesn't have
-- 0/100 PDBs are missing pairs that legacy has
+### Key Findings from Phase 3 Investigation
+
+1. **pair_validation Recording Issue (SOLVED)**
+   - The issue was NOT H-bond counting logic
+   - The issue was WHEN pair_validation was recorded
+   - Legacy records during greedy selection (best_pair loop), modern was recording during Phase 1
+   - After regenerating JSON with correct recording timing, stages 6-7 are 100%
+
+2. **hbond_list and base_pair Recording Issue (SOLVED)**
+   - Key insight: Legacy pair_validation and base_pair have IDENTICAL pairs
+   - Legacy records both during greedy selection (find_best_partner)
+   - hbond_list also recorded during validation phase via get_hbond_ij
+   - Fix: Record base_pair at same location as pair_validation in modern code
+   - Result: Stages 8-9 now at 100%
+
+3. **Multiplet Pairs Clarification**
+   - Some pairs appear in hbond_list but not in base_pair (e.g., 1QRU pair 37,38)
+   - These come from "network mode" validation which records hbond_list but not base_pair
+   - The comparison normalizes pair keys so (37,38) and (38,37) are considered identical
 
 ## What Needs To Be Done
 
-### Phase 2: Fix H-bond Counting (Current Focus)
+### Phase 5: Fix Steps/Helical Parameters
+- Stages 11-12 need investigation
+- May cascade from any remaining pair selection differences
 
-**Problem**: Modern `count_simple()` is more lenient than legacy, causing extra pairs to be validated.
-
-**Investigation Notes**:
-- Example: 1ASY pair (29, 42) - C-C pair with O2-O2 H-bond at 3.76 Å
-- Modern counts this as valid H-bond, legacy doesn't
-- Need to trace exact difference in `is_baseatom()` + `good_hbatoms()` logic
-
-**Files to investigate**:
-- `src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.cpp`
-- `src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.cpp`
-- Legacy: `org/src/cmn_fncs.c` lines 4624-4636
-
-**Debug command**:
-```bash
-./build/compare_single_pair data/pdb/1ASY.pdb 29 42 --json-dir data/json_legacy --verbose
-```
-
-### Phase 3: Fix Quality Score Calculation
-- Verify MFACTOR (10000) scaling
-- Match [2.5, 3.5] Å distance range for good H-bonds
-- Verify -3.0 for 2+ good H-bonds, -1.0 for 1, 0.0 for none
-
-### Phase 5: Fix is_nucleotide() Detection
+### Phase 6: Fix is_nucleotide() Detection
 - Compare ring atom matching
 - Verify RMSD threshold (NT_CUTOFF = 0.2618)
-
-### Phase 6: Fix Pair Validation Recording
-- Ensure only valid pairs (bpid != 0) are recorded
-- Ensure i < j ordering to avoid duplicates
 
 ### Phase 7: Fix Atom Indexing (6 failing PDBs)
 - HETATM vs ATOM record handling
 - alt_loc selection
 - Insertion code handling
+- Affected PDBs: 2CV2, 4RQF, 5VOE, 8UPT, 8Z1P, 8ZYC
 
 ### Phase 8: Integration Testing
 - Achieve 95%+ on all stages
@@ -81,9 +85,9 @@
 | File | Purpose |
 |------|---------|
 | `tools/compare_single_pair.cpp` | Compare specific pair between legacy/modern |
+| `src/x3dna/algorithms/base_pair_finder.cpp` | Main pair finding logic, greedy selection |
 | `src/x3dna/algorithms/base_pair_validator.cpp` | H-bond counting, validation |
 | `src/x3dna/algorithms/quality_score_calculator.cpp` | Quality score, bp_type_id |
-| `src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.cpp` | Simple H-bond counting |
 
 ## Validation Commands
 
@@ -91,14 +95,15 @@
 # Build
 make release
 
-# Test specific pair
-./build/compare_single_pair data/pdb/1EHZ.pdb 1 72 --json-dir data/json_legacy --verbose
+# Regenerate JSON for test set
+./build/generate_modern_json --pdb-list=data/test_set_100_list.txt --pdb-dir=data/pdb data/json --stage=validation
 
 # Run stage validation
 X3DNA=/Users/jyesselman2/local/installs/x3dna fp2-validate validate 6 --test-set 100
+X3DNA=/Users/jyesselman2/local/installs/x3dna fp2-validate validate pairs --test-set 100
 
 # Compare specific PDB
-X3DNA=/Users/jyesselman2/local/installs/x3dna fp2-validate compare 1ASY --verbose
+X3DNA=/Users/jyesselman2/local/installs/x3dna fp2-validate compare 1QRU --verbose
 ```
 
 ## User Preferences
