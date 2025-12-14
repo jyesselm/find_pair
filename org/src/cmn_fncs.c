@@ -4620,6 +4620,13 @@ void check_pair(long i, long j, char *bseq, long **seidx, double **xyz,
             dval_in_range(rtn_val[2], misc_pars->min_dv, misc_pars->max_dv) &&
             dval_in_range(rtn_val[3], misc_pars->min_plane_angle, misc_pars->max_plane_angle)
             && dval_in_range(rtn_val[4], misc_pars->min_dNN, misc_pars->max_dNN));
+    /* DEBUG: trace specific pair */
+    if ((i == 29 && j == 42) || (i == 42 && j == 29)) {
+        double oarea = get_oarea(i, j, ring_atom, oave, zave, xyz, 0);
+        fprintf(stderr, "[DEBUG ENTRY] check_pair(%ld,%ld): cdns=%d, oarea=%.6f, OVERLAP=%.6f\n", i, j, cdns, oarea, OVERLAP);
+        fprintf(stderr, "[DEBUG]   dorg=%.6f, d_v=%.6f, plane_angle=%.6f, dNN=%.6f\n",
+                rtn_val[1], rtn_val[2], rtn_val[3], rtn_val[4]);
+    }
     if (cdns && get_oarea(i, j, ring_atom, oave, zave, xyz, 0) < OVERLAP) {
         for (m = seidx[i][1]; m <= seidx[i][2]; m++)
             for (n = seidx[j][1]; n <= seidx[j][2]; n++) {
@@ -4632,6 +4639,11 @@ void check_pair(long i, long j, char *bseq, long **seidx, double **xyz,
                     || is_equal_string(AtomName[n], " O2'"))
                     num_o2_hb++;
             }
+        /* DEBUG: trace H-bond counts for specific pair */
+        if ((i == 29 && j == 42) || (i == 42 && j == 29)) {
+            fprintf(stderr, "[DEBUG] Pair (%ld,%ld): num_base_hb=%ld, num_o2_hb=%ld, min_base_hb=%ld\n",
+                    i, j, num_base_hb, num_o2_hb, misc_pars->min_base_hb);
+        }
         if ((misc_pars->min_base_hb && (num_base_hb >= misc_pars->min_base_hb)) ||
             (!misc_pars->min_base_hb && (num_o2_hb || num_base_hb))) {
             calculate_more_bppars(i, j, dir_x, dir_y, dir_z, orien, org, bseq, NC1xyz,

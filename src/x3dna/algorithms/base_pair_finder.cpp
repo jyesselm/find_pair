@@ -123,12 +123,10 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::
             int bp_type_id = calculate_bp_type_id(res1, res2, result, adjusted_quality_score);
             phase1_bp_type_ids[normalized_pair] = bp_type_id;
 
-            // Record validation and base_pair for all pairs that pass validation (only if writer
-            // provided) (matches legacy check_pair -> calculate_more_bppars ->
-            // json_writer_record_base_pair)
-            if (writer) {
-                record_validation_results(legacy_idx1, legacy_idx2, res1, res2, result, writer);
-            }
+            // NOTE: pair_validation recording is now done in find_best_partner, not Phase 1
+            // This matches legacy behavior where check_pair records during best_pair iteration
+            // Legacy only records pairs that are actually checked during greedy selection
+            // Phase 1 validation is still needed to populate phase1_validation_results for selection
         }
     }
 
@@ -500,8 +498,16 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             }
         }
 
-        // NOTE: Validation results are now recorded in Phase 1 (validate_all_pairs)
-        // We only use the result here for best partner selection
+        // Record pair_validation during selection (matches legacy check_pair recording)
+        // Legacy records in check_pair when: bpid != 0 && i < j
+        // Here we record when: result.is_valid && legacy_idx1 < legacy_idx2
+        // This ensures only pairs actually checked during greedy selection are recorded
+        if (writer && result.is_valid && legacy_idx1 < legacy_idx2) {
+            // Get residue pointers in correct order for recording
+            const Residue* rec_res1 = res1;
+            const Residue* rec_res2 = residue;
+            record_validation_results(legacy_idx1, legacy_idx2, rec_res1, rec_res2, result, writer);
+        }
 
         // Check if valid and has better score
         // Note: result.is_valid is already checked above (we skip invalid pairs)

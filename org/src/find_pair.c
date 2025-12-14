@@ -680,6 +680,11 @@ static void all_pairs(long num_residue, long *RY, double **NC1xyz, double **orie
     fp_auffinger = open_tmpfile();
     allpairs_to_analyze_header(fp_auffinger, pdbfile, hetatm);
     rtmp = open_file(TMP_FILE, "w");
+    /* DEBUG: trace RY values for residues 29 and 42 */
+    if (num_residue >= 42) {
+        fprintf(stderr, "[DEBUG MAIN] RY[29]=%ld, RY[42]=%ld, num_residue=%ld\n",
+                RY[29], RY[42], num_residue);
+    }
     for (i = 1; i < num_residue; i++) {
         if (RY[i] < 0)
             continue;
@@ -687,6 +692,10 @@ static void all_pairs(long num_residue, long *RY, double **NC1xyz, double **orie
         for (j = i + 1; j <= num_residue; j++) {
             if (RY[j] < 0)
                 continue;
+            /* DEBUG: trace specific pair */
+            if (i == 29 && j == 42) {
+                fprintf(stderr, "[DEBUG MAIN] Calling check_pair(29, 42)\n");
+            }
             check_pair(i, j, bseq, seidx, xyz, NC1xyz, orien, org, idx, AtomName,
                        misc_pars, rtn_val, &bpid, ring_atom, 0);
             if (!bpid)
@@ -756,6 +765,11 @@ static void best_pair(long i, long num_residue, long *RY, long **seidx, double *
 {
     double ddmin = XBIG, rtn_val[RTNNUM];
     long bpid, j, k, nout = PSTNUM - 1;
+    /* DEBUG: trace best_pair entry for residues 29 and 42 */
+    if (i == 29 || i == 42) {
+        fprintf(stderr, "[DEBUG best_pair] ENTRY i=%ld matched_idx[29]=%ld matched_idx[42]=%ld\n",
+                i, matched_idx[29], matched_idx[42]);
+    }
     long num_candidates = 0;
     long *candidate_j = NULL;
     double *candidate_scores = NULL;
@@ -828,6 +842,12 @@ static void best_pair(long i, long num_residue, long *RY, long **seidx, double *
     if (candidate_scores) free_dvector(candidate_scores, 1, max_candidates);
     if (candidate_bp_type_ids) free_lvector(candidate_bp_type_ids, 1, max_candidates);
     if (is_eligible) free_lvector(is_eligible, 1, max_candidates);
+
+    /* DEBUG: trace best_pair exit for residues 29 and 42 */
+    if (i == 29 || i == 42) {
+        fprintf(stderr, "[DEBUG best_pair] EXIT i=%ld best_partner=%ld score=%.6f\n",
+                i, pair_stat[1], ddmin < XBIG ? ddmin : -1.0);
+    }
 }
 
 static long bp_coplanar(long i, double d, double d2, double *txyz, double *txyz2, long n,

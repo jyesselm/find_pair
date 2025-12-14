@@ -1267,37 +1267,97 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
     stages_with_diffs = 0
     diff_details = []
     
-    if result.atom_comparison and len(result.atom_comparison.mismatched_fields) > 0:
-        stages_with_diffs += 1
-        diff_details.append(f"atoms: {len(result.atom_comparison.mismatched_fields)} mismatches")
+    if result.atom_comparison:
+        ac = result.atom_comparison
+        total_diffs = len(ac.mismatched_fields) + len(ac.missing_in_modern) + len(ac.extra_in_modern)
+        if total_diffs > 0:
+            stages_with_diffs += 1
+            parts = []
+            if len(ac.mismatched_fields) > 0:
+                parts.append(f"{len(ac.mismatched_fields)} mismatches")
+            if len(ac.missing_in_modern) > 0:
+                parts.append(f"{len(ac.missing_in_modern)} missing in modern")
+            if len(ac.extra_in_modern) > 0:
+                parts.append(f"{len(ac.extra_in_modern)} extra in modern")
+            diff_details.append(f"atoms: {', '.join(parts)}")
+
+    if result.frame_comparison:
+        fc = result.frame_comparison
+        total_diffs = len(fc.mismatched_calculations) + len(fc.missing_residues)
+        if total_diffs > 0:
+            stages_with_diffs += 1
+            parts = []
+            if len(fc.mismatched_calculations) > 0:
+                parts.append(f"{len(fc.mismatched_calculations)} mismatches")
+            if len(fc.missing_residues) > 0:
+                parts.append(f"{len(fc.missing_residues)} missing residues")
+            diff_details.append(f"frames: {', '.join(parts)}")
     
-    if result.frame_comparison and len(result.frame_comparison.mismatched_calculations) > 0:
-        stages_with_diffs += 1
-        diff_details.append(f"frames: {len(result.frame_comparison.mismatched_calculations)} mismatches")
-    
-    if result.step_comparison and len(result.step_comparison.mismatched_steps) > 0:
-        stages_with_diffs += 1
-        diff_details.append(f"steps: {len(result.step_comparison.mismatched_steps)} mismatches")
-    
-    if result.helical_comparison and len(result.helical_comparison.mismatched_steps) > 0:
-        stages_with_diffs += 1
-        diff_details.append(f"helical: {len(result.helical_comparison.mismatched_steps)} mismatches")
+    if result.step_comparison:
+        sc = result.step_comparison
+        total_diffs = len(sc.mismatched_steps) + len(sc.missing_steps)
+        if total_diffs > 0:
+            stages_with_diffs += 1
+            parts = []
+            if len(sc.mismatched_steps) > 0:
+                parts.append(f"{len(sc.mismatched_steps)} mismatches")
+            if len(sc.missing_steps) > 0:
+                parts.append(f"{len(sc.missing_steps)} missing steps")
+            diff_details.append(f"steps: {', '.join(parts)}")
+
+    if result.helical_comparison:
+        hc = result.helical_comparison
+        total_diffs = len(hc.mismatched_steps) + len(hc.missing_steps)
+        if total_diffs > 0:
+            stages_with_diffs += 1
+            parts = []
+            if len(hc.mismatched_steps) > 0:
+                parts.append(f"{len(hc.mismatched_steps)} mismatches")
+            if len(hc.missing_steps) > 0:
+                parts.append(f"{len(hc.missing_steps)} missing steps")
+            diff_details.append(f"helical: {', '.join(parts)}")
     
     if hasattr(result, 'distance_checks_comparison') and result.distance_checks_comparison:
-        if len(result.distance_checks_comparison.mismatched_checks) > 0:
+        dcc = result.distance_checks_comparison
+        total_diffs = len(dcc.mismatched_checks) + len(dcc.missing_in_modern) + len(dcc.extra_in_modern)
+        if total_diffs > 0:
             stages_with_diffs += 1
-            diff_details.append(f"distance_checks: {len(result.distance_checks_comparison.mismatched_checks)} mismatches")
+            parts = []
+            if len(dcc.mismatched_checks) > 0:
+                parts.append(f"{len(dcc.mismatched_checks)} mismatches")
+            if len(dcc.missing_in_modern) > 0:
+                parts.append(f"{len(dcc.missing_in_modern)} missing in modern")
+            if len(dcc.extra_in_modern) > 0:
+                parts.append(f"{len(dcc.extra_in_modern)} extra in modern")
+            diff_details.append(f"distance_checks: {', '.join(parts)}")
     
     if hasattr(result, 'hbond_list_comparison') and result.hbond_list_comparison:
-        if len(result.hbond_list_comparison.mismatched_pairs) > 0:
+        hlc = result.hbond_list_comparison
+        total_diffs = len(hlc.mismatched_pairs) + len(hlc.missing_in_modern) + len(hlc.extra_in_modern)
+        if total_diffs > 0:
             stages_with_diffs += 1
-            diff_details.append(f"hbond_list: {len(result.hbond_list_comparison.mismatched_pairs)} mismatches")
+            parts = []
+            if len(hlc.mismatched_pairs) > 0:
+                parts.append(f"{len(hlc.mismatched_pairs)} mismatches")
+            if len(hlc.missing_in_modern) > 0:
+                parts.append(f"{len(hlc.missing_in_modern)} missing in modern")
+            if len(hlc.extra_in_modern) > 0:
+                parts.append(f"{len(hlc.extra_in_modern)} extra in modern")
+            diff_details.append(f"hbond_list: {', '.join(parts)}")
     
     if hasattr(result, 'pair_validation_comparison') and result.pair_validation_comparison:
         pvc = result.pair_validation_comparison
-        if len(pvc.mismatched_validations) > 0:
+        total_diffs = len(pvc.mismatched_validations) + len(pvc.missing_in_modern) + len(pvc.extra_in_modern)
+        if total_diffs > 0:
             stages_with_diffs += 1
-            diff_details.append(f"pair_validation: {len(pvc.mismatched_validations)} mismatches")
+            parts = []
+            if len(pvc.mismatched_validations) > 0:
+                parts.append(f"{len(pvc.mismatched_validations)} mismatches")
+            if len(pvc.missing_in_modern) > 0:
+                parts.append(f"{len(pvc.missing_in_modern)} missing in modern")
+            if len(pvc.extra_in_modern) > 0:
+                parts.append(f"{len(pvc.extra_in_modern)} extra in modern")
+            diff_details.append(f"pair_validation: {', '.join(parts)}")
     
     if hasattr(result, 'find_bestpair_comparison') and result.find_bestpair_comparison:
         fbc = result.find_bestpair_comparison
@@ -1306,9 +1366,18 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
             diff_details.append(f"find_bestpair_selection: {len(fbc.missing_in_modern) + len(fbc.extra_in_modern)} differences")
     
     if hasattr(result, 'base_pair_comparison') and result.base_pair_comparison:
-        if len(result.base_pair_comparison.mismatched_pairs) > 0:
+        bpc = result.base_pair_comparison
+        total_diffs = len(bpc.mismatched_pairs) + len(bpc.missing_in_modern) + len(bpc.extra_in_modern)
+        if total_diffs > 0:
             stages_with_diffs += 1
-            diff_details.append(f"base_pair: {len(result.base_pair_comparison.mismatched_pairs)} mismatches")
+            parts = []
+            if len(bpc.mismatched_pairs) > 0:
+                parts.append(f"{len(bpc.mismatched_pairs)} mismatches")
+            if len(bpc.missing_in_modern) > 0:
+                parts.append(f"{len(bpc.missing_in_modern)} missing in modern")
+            if len(bpc.extra_in_modern) > 0:
+                parts.append(f"{len(bpc.extra_in_modern)} extra in modern")
+            diff_details.append(f"base_pair: {', '.join(parts)}")
     
     reporter.add_summary(
         stages_compared=stages_compared,

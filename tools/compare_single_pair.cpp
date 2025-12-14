@@ -260,9 +260,19 @@ int main(int argc, char* argv[]) {
         std::cout << "  d_v: " << modern_result.d_v << "\n";
         std::cout << "  plane_angle: " << modern_result.plane_angle << "\n";
         std::cout << "  dNN: " << modern_result.dNN << "\n";
+        std::cout << "  overlap_area: " << modern_result.overlap_area << "\n";
+        std::cout << "  num_base_hb: " << modern_result.num_base_hb << "\n";
+        std::cout << "  num_o2_hb: " << modern_result.num_o2_hb << "\n";
         std::cout << "  quality_score: " << modern_result.quality_score << "\n";
         std::cout << "  hbond_adjustment: " << hbond_adjustment << "\n";
         std::cout << "  adjusted_quality: " << adjusted_quality << "\n";
+        std::cout << "  Validation checks:\n";
+        std::cout << "    distance_check: " << modern_result.distance_check << "\n";
+        std::cout << "    d_v_check: " << modern_result.d_v_check << "\n";
+        std::cout << "    plane_angle_check: " << modern_result.plane_angle_check << "\n";
+        std::cout << "    dNN_check: " << modern_result.dNN_check << "\n";
+        std::cout << "    overlap_check: " << modern_result.overlap_check << "\n";
+        std::cout << "    hbond_check: " << modern_result.hbond_check << "\n";
         all_match = false;
     } else {
         std::cout << "--- Geometry ---\n";
