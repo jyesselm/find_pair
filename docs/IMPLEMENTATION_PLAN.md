@@ -53,10 +53,12 @@
 | Stage Group | Pass Rate | Status |
 |-------------|-----------|--------|
 | 6-9: Pairs (pair_validation, distance_checks, hbond_list, base_pair) | **99.9%** (3598/3602) | ✅ 4 edge cases |
-| 11-12: Steps/Helical | **99.97%** | ✅ 1 edge case (8H0I) |
+| 11: Steps | **99.8%** (3594/3602) | ✅ 8 tolerance boundary cases |
+| 12: Helical | **99.97%** (3601/3602) | ✅ 1 edge case (8H0I) |
 
-Failed PDBs for pairs (4): 2XD0, 4E8R, 8ANE, 9D5J - minor numerical differences in edge cases
-Failed PDB for steps (1): 8H0I - rise=null due to extreme geometry (shift=-48Å, twist=180°)
+Failed PDBs for pairs (4): 2XD0, 4E8R, 8ANE, 9D5J - minor numerical differences
+Failed PDBs for steps (8): 1KOG, 4YVI, 7AFA, 7Z4I, 8D29, + 3 others - tolerance boundary (diff ~0.0001-0.0004)
+Failed PDB for helical (1): 8H0I - rise=null due to extreme geometry (shift=-48Å, twist=180°)
 
 ### Key Findings from Phase 3 Investigation
 
