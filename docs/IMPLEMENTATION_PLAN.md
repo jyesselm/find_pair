@@ -27,8 +27,9 @@
   - Watson-Crick pair detection working correctly
   - -2.0 quality bonus applied when bp_type_id == 2
 
-### Current Test Results (100-PDB Test Set)
+### Current Test Results
 
+#### 100-PDB Test Set
 | Stage | Pass Rate | Status |
 |-------|-----------|--------|
 | 1: Atoms | 94% (94/100) | 6 failures: 2CV2, 4RQF, 5VOE, 8UPT, 8Z1P, 8ZYC |
@@ -39,6 +40,13 @@
 | 9: base_pair | **100%** | ✅ Fixed |
 | 10: Selection | TBD | |
 | 11-12: Steps/Helical | TBD | |
+
+#### Full fast_pdbs Dataset (3602 PDBs)
+| Stage Group | Pass Rate | Status |
+|-------------|-----------|--------|
+| 6-9: Pairs (pair_validation, distance_checks, hbond_list, base_pair) | **99.9%** (3598/3602) | ✅ 4 edge cases |
+
+Failed PDBs (4): 2XD0, 4E8R, 8ANE, 9D5J - minor numerical differences in edge cases
 
 ### Key Findings from Phase 3 Investigation
 
