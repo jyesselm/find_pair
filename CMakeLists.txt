@@ -65,6 +65,7 @@ add_library(x3dna
     src/x3dna/protocols/find_pair_protocol.cpp
     src/x3dna/protocols/analyze_protocol.cpp
     src/x3dna/apps/command_line_parser.cpp
+    src/x3dna/debug/pair_validation_debugger.cpp
 )
 target_include_directories(x3dna PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -107,6 +108,9 @@ endif()
 # Commented out - tools archived or removed from repository
 add_executable(generate_modern_json tools/generate_modern_json.cpp)
 target_link_libraries(generate_modern_json PRIVATE x3dna)
+
+add_executable(compare_single_pair tools/compare_single_pair.cpp)
+target_link_libraries(compare_single_pair PRIVATE x3dna)
 # 
 # add_executable(check_residue_indices tools/check_residue_indices.cpp)
 # target_link_libraries(check_residue_indices PRIVATE x3dna)
