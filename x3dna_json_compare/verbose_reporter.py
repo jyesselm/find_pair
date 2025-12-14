@@ -881,7 +881,7 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
     if result.step_comparison:
         import json
         from pathlib import Path
-        
+
         sc = result.step_comparison
         reporter.add_stage_header("steps", 5)
         reporter.add_stage_summary(
@@ -890,54 +890,67 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
             len(sc.missing_steps), 0,
             len(sc.mismatched_steps)
         )
-        
+
         # Load all step records to show every record
         if not diff_only:
             legacy_file = Path(f"data/json_legacy/bpstep_params/{pdb_id}.json")
             modern_file = Path(f"data/json/bpstep_params/{pdb_id}.json")
-            
+
             if legacy_file.exists() and modern_file.exists():
                 try:
                     with open(legacy_file) as f:
                         legacy_data = json.load(f)
                     with open(modern_file) as f:
                         modern_data = json.load(f)
-                    
-                    # Create dict for quick modern lookup
+
+                    # Create dict for quick modern lookup using (bp_idx1, bp_idx2) key
                     modern_dict = {}
                     for rec in modern_data:
-                        step_id = rec.get('step_id')
-                        if step_id:
-                            modern_dict[step_id] = rec
-                    
+                        bp_idx1 = rec.get('bp_idx1')
+                        bp_idx2 = rec.get('bp_idx2')
+                        if bp_idx1 is not None and bp_idx2 is not None:
+                            modern_dict[(bp_idx1, bp_idx2)] = rec
+
                     # Compare all legacy records
                     shown_count = 0
                     max_to_show = 1000
-                    
+
                     # Common step parameter fields
                     fields = ['shift', 'slide', 'rise', 'tilt', 'roll', 'twist']
-                    
+
                     for legacy_rec in legacy_data:
                         if shown_count >= max_to_show:
                             break
-                        
-                        step_id = legacy_rec.get('step_id')
-                        
+
+                        bp_idx1 = legacy_rec.get('bp_idx1')
+                        bp_idx2 = legacy_rec.get('bp_idx2')
+                        step_key = (bp_idx1, bp_idx2)
+
                         # Check if modern has this step
-                        if step_id not in modern_dict:
+                        if step_key not in modern_dict:
                             reporter.sections.append(
-                                f"⚠️  WARNING: step {step_id} - "
+                                f"⚠️  WARNING: step (bp_idx1={bp_idx1}, bp_idx2={bp_idx2}) - "
                                 f"Legacy step not found in modern output!\n"
                             )
                             shown_count += 1
                             continue
-                        
-                        modern_rec = modern_dict.get(step_id)
-                        
+
+                        modern_rec = modern_dict.get(step_key)
+
+                        # Convert legacy params dict to lowercase for comparison
+                        legacy_for_comparison = legacy_rec.copy()
+                        if 'params' in legacy_rec and isinstance(legacy_rec['params'], dict):
+                            params = legacy_rec['params']
+                            # Legacy uses capitalized keys like Shift, Slide, etc.
+                            for field in fields:
+                                cap_field = field.capitalize()
+                                if cap_field in params:
+                                    legacy_for_comparison[field] = params[cap_field]
+
                         rec_comp = create_record_comparison_from_dicts(
-                            record_key=step_id,
+                            record_key=step_key,
                             record_type="bpstep_params",
-                            legacy_record=legacy_rec,
+                            legacy_record=legacy_for_comparison,
                             modern_record=modern_rec,
                             fields_to_compare=fields,
                             tolerance=tolerance,
@@ -953,7 +966,7 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
     if result.helical_comparison:
         import json
         from pathlib import Path
-        
+
         hc = result.helical_comparison
         reporter.add_stage_header("helical", 6)
         reporter.add_stage_summary(
@@ -962,54 +975,69 @@ def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6,
             len(hc.missing_steps), 0,
             len(hc.mismatched_steps)
         )
-        
+
         # Load all helical records to show every record
         if not diff_only:
             legacy_file = Path(f"data/json_legacy/helical_params/{pdb_id}.json")
             modern_file = Path(f"data/json/helical_params/{pdb_id}.json")
-            
+
             if legacy_file.exists() and modern_file.exists():
                 try:
                     with open(legacy_file) as f:
                         legacy_data = json.load(f)
                     with open(modern_file) as f:
                         modern_data = json.load(f)
-                    
-                    # Create dict for quick modern lookup
+
+                    # Create dict for quick modern lookup using (bp_idx1, bp_idx2) key
                     modern_dict = {}
                     for rec in modern_data:
-                        step_id = rec.get('step_id')
-                        if step_id:
-                            modern_dict[step_id] = rec
-                    
+                        bp_idx1 = rec.get('bp_idx1')
+                        bp_idx2 = rec.get('bp_idx2')
+                        if bp_idx1 is not None and bp_idx2 is not None:
+                            modern_dict[(bp_idx1, bp_idx2)] = rec
+
                     # Compare all legacy records
                     shown_count = 0
                     max_to_show = 1000
-                    
-                    # Common helical parameter fields
-                    fields = ['x_disp', 'y_disp', 'h_rise', 'inclination', 'tip', 'h_twist']
-                    
+
+                    # Helical parameter fields - use modern field names for comparison
+                    fields = ['x_displacement', 'y_displacement', 'rise', 'inclination', 'tip', 'twist']
+
                     for legacy_rec in legacy_data:
                         if shown_count >= max_to_show:
                             break
-                        
-                        step_id = legacy_rec.get('step_id')
-                        
+
+                        bp_idx1 = legacy_rec.get('bp_idx1')
+                        bp_idx2 = legacy_rec.get('bp_idx2')
+                        step_key = (bp_idx1, bp_idx2)
+
                         # Check if modern has this step
-                        if step_id not in modern_dict:
+                        if step_key not in modern_dict:
                             reporter.sections.append(
-                                f"⚠️  WARNING: helical step {step_id} - "
+                                f"⚠️  WARNING: helical step (bp_idx1={bp_idx1}, bp_idx2={bp_idx2}) - "
                                 f"Legacy helical step not found in modern output!\n"
                             )
                             shown_count += 1
                             continue
-                        
-                        modern_rec = modern_dict.get(step_id)
-                        
+
+                        modern_rec = modern_dict.get(step_key)
+
+                        # Convert legacy params array to dict format for comparison
+                        legacy_for_comparison = legacy_rec.copy()
+                        if 'params' in legacy_rec and isinstance(legacy_rec['params'], list):
+                            params = legacy_rec['params']
+                            if len(params) >= 6:
+                                legacy_for_comparison['x_displacement'] = params[0]
+                                legacy_for_comparison['y_displacement'] = params[1]
+                                legacy_for_comparison['rise'] = params[2]
+                                legacy_for_comparison['inclination'] = params[3]
+                                legacy_for_comparison['tip'] = params[4]
+                                legacy_for_comparison['twist'] = params[5]
+
                         rec_comp = create_record_comparison_from_dicts(
-                            record_key=step_id,
+                            record_key=step_key,
                             record_type="helical_params",
-                            legacy_record=legacy_rec,
+                            legacy_record=legacy_for_comparison,
                             modern_record=modern_rec,
                             fields_to_compare=fields,
                             tolerance=tolerance,

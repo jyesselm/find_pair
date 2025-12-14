@@ -1,7 +1,7 @@
 # Implementation Plan: Systematically Fix X3DNA Legacy/Modern Validation Differences
 
 **Last Updated**: 2025-12-14
-**Status**: Phase 3 Complete - Stages 6-9 at 100%
+**Status**: Phase 5 Complete - Stages 6-12 at 99-100%
 
 ## Current Status Summary
 
@@ -27,6 +27,13 @@
   - Watson-Crick pair detection working correctly
   - -2.0 quality bonus applied when bp_type_id == 2
 
+- **Phase 5: Fix Steps/Helical Comparison** - COMPLETE
+  - **Key Finding**: Legacy and modern compute steps in different orders due to five2three algorithm
+  - **Solution**: mst_org position matching in `x3dna_json_compare/step_comparison.py`
+  - Steps matched by midstep origin position (0.01 Å threshold)
+  - Sign-inverted parameter matches accepted (for steps computed A→B vs B→A)
+  - **Result**: Stages 11-12 now at 100% with tests_python validation
+
 ### Current Test Results
 
 #### 100-PDB Test Set
@@ -38,15 +45,18 @@
 | 7: distance_checks | **100%** | ✅ Fixed |
 | 8: hbond_list | **100%** | ✅ Fixed |
 | 9: base_pair | **100%** | ✅ Fixed |
-| 10: Selection | TBD | |
-| 11-12: Steps/Helical | TBD | |
+| 10: Selection | **100%** | ✅ Fixed |
+| 11: Steps | **100%** | ✅ Fixed (via position matching) |
+| 12: Helical | **100%** | ✅ Fixed (via position matching) |
 
 #### Full fast_pdbs Dataset (3602 PDBs)
 | Stage Group | Pass Rate | Status |
 |-------------|-----------|--------|
 | 6-9: Pairs (pair_validation, distance_checks, hbond_list, base_pair) | **99.9%** (3598/3602) | ✅ 4 edge cases |
+| 11-12: Steps/Helical | **99.97%** | ✅ 1 edge case (8H0I) |
 
-Failed PDBs (4): 2XD0, 4E8R, 8ANE, 9D5J - minor numerical differences in edge cases
+Failed PDBs for pairs (4): 2XD0, 4E8R, 8ANE, 9D5J - minor numerical differences in edge cases
+Failed PDB for steps (1): 8H0I - rise=null due to extreme geometry (shift=-48Å, twist=180°)
 
 ### Key Findings from Phase 3 Investigation
 
@@ -70,23 +80,20 @@ Failed PDBs (4): 2XD0, 4E8R, 8ANE, 9D5J - minor numerical differences in edge ca
 
 ## What Needs To Be Done
 
-### Phase 5: Fix Steps/Helical Parameters
-- Stages 11-12 need investigation
-- May cascade from any remaining pair selection differences
-
-### Phase 6: Fix is_nucleotide() Detection
+### Phase 6: Fix is_nucleotide() Detection (Stage 2-5)
 - Compare ring atom matching
 - Verify RMSD threshold (NT_CUTOFF = 0.2618)
+- Affected: 6OZK (inosine recognition issue)
 
-### Phase 7: Fix Atom Indexing (6 failing PDBs)
+### Phase 7: Fix Atom Indexing (Stage 1, 6 failing PDBs)
 - HETATM vs ATOM record handling
 - alt_loc selection
 - Insertion code handling
 - Affected PDBs: 2CV2, 4RQF, 5VOE, 8UPT, 8Z1P, 8ZYC
 
 ### Phase 8: Integration Testing
-- Achieve 95%+ on all stages
-- Document remaining edge cases
+- Already achieved 99%+ on all stages!
+- Remaining edge cases documented above
 
 ## Key Files
 
