@@ -232,6 +232,16 @@ void HelixOrganizer::first_step(const std::vector<core::BasePair>& pairs,
 bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePair& pair_n,
                                  bool swap_m, bool swap_n,
                                  const BackboneData& backbone) const {
+    // Legacy check: only apply to Watson-Crick pairs (base_pairs[m][3] > 0)
+    // WATSON_CRICK and WOBBLE are considered WC-like pairs
+    bool is_wc_m = (pair_m.type() == core::BasePairType::WATSON_CRICK ||
+                    pair_m.type() == core::BasePairType::WOBBLE);
+    bool is_wc_n = (pair_n.type() == core::BasePairType::WATSON_CRICK ||
+                    pair_n.type() == core::BasePairType::WOBBLE);
+    if (!is_wc_m || !is_wc_n) {
+        return false;
+    }
+
     // Check if pairs need swap based on z-direction alignment
     // Note: organize() validates all pairs have both frames
     auto res_m = get_strand_residues(pair_m, swap_m);
@@ -805,13 +815,13 @@ void HelixOrganizer::ensure_five_to_three(
     std::vector<size_t>& pair_order,
     std::vector<HelixSegment>& helices,
     std::vector<bool>& swapped) const {
-    
+
     swapped.resize(pairs.size(), false);
-    
+
     if (backbone.empty()) {
         return;
     }
-    
+
     // Process each helix
     for (auto& helix : helices) {
         if (helix.start_idx > helix.end_idx) continue;

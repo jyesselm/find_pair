@@ -2,11 +2,11 @@
 
 ## Current Status (December 15, 2024)
 
-**Pass Rate**: 80% (80/100 PDBs)
+**Pass Rate**: 81% (81/100 PDBs)
 
 **Key Achievement**: bp_idx ordering now matches legacy **100%** (99/99 PDBs with step data)
 
-**Remaining Issue**: 20 PDBs have matching bp_idx pairs but different step parameter VALUES
+**Remaining Issue**: 19 PDBs have matching bp_idx pairs but different step parameter VALUES
 
 ## What's Working
 
@@ -14,10 +14,32 @@
 - ✅ bp_idx assignments - 100% match
 - ✅ HelixOrganizer five2three algorithm - produces correct pair ordering
 - ✅ end_stack_xang threshold (110° → 125°) - matches legacy
+- ✅ Watson-Crick pair check in wc_bporien - only applies to WC/wobble pairs (fixed 1TTT)
+
+## Recent Fix (December 15, 2024)
+
+### wc_bporien WC Pair Check
+
+**Problem**: The modern `wc_bporien` function was applying z-direction alignment checks to ALL pairs, but legacy only applies it to Watson-Crick pairs (`base_pairs[m][3] > 0`).
+
+**Symptom**: For 1TTT, the second pass was incorrectly flipping swaps for non-WC pairs (bp14, bp16, bp15 at end of helix 1) because wc_bporien was returning true when it should return false.
+
+**Fix**: Added check at start of `wc_bporien`:
+```cpp
+bool is_wc_m = (pair_m.type() == core::BasePairType::WATSON_CRICK ||
+                pair_m.type() == core::BasePairType::WOBBLE);
+bool is_wc_n = (pair_n.type() == core::BasePairType::WATSON_CRICK ||
+                pair_n.type() == core::BasePairType::WOBBLE);
+if (!is_wc_m || !is_wc_n) {
+    return false;  // Skip non-WC pairs
+}
+```
+
+**Result**: 1TTT now passes (80% → 81%)
 
 ## What Needs Investigation
 
-The 20 failing PDBs have identical bp_idx pairs but different calculated parameter values. This means:
+The 19 failing PDBs have identical bp_idx pairs but different calculated parameter values. This means:
 1. The pairs being compared are correct
 2. The step ordering is correct
 3. **The parameter calculation itself differs**
