@@ -111,7 +111,8 @@ public:
         double o3p_upper;        ///< Max O3'-P distance for backbone linkage (Å)
         double end_stack_xang;   ///< Max x-angle for stacked WC pairs (degrees)
         
-        Config() : helix_break(7.5), neighbor_cutoff(8.0), o3p_upper(2.5), end_stack_xang(125.0) {}
+        // Legacy uses helix_break=7.8 from $X3DNA/config/misc_3dna.par
+        Config() : helix_break(7.8), neighbor_cutoff(8.5), o3p_upper(2.5), end_stack_xang(125.0) {}
     };
     
     explicit HelixOrganizer(const Config& config = Config());

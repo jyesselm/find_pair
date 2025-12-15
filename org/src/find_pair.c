@@ -947,12 +947,6 @@ static void bp_context(long num_bp, miscPars *misc_pars, double **bp_xyz,
                 continue;
             ddxyz(bp_xyz[j], bp_xyz[i], txyz);
             d = veclen(txyz);
-            /* Debug: print distances between pairs 22,23,24 */
-            if (i == 23 && (j == 22 || j == 24)) {
-                fprintf(stderr, "[LEGACY DIST] pair 23 to pair %ld: %.4f (org_23=[%.2f,%.2f,%.2f] org_%ld=[%.2f,%.2f,%.2f])\n",
-                        j, d, bp_xyz[i][1], bp_xyz[i][2], bp_xyz[i][3],
-                        j, bp_xyz[j][1], bp_xyz[j][2], bp_xyz[j][3]);
-            }
             for (k = 1; k <= cnum; k++)
                 if (d < ddmin[k]) {
                     for (m = cnum; m > k; m--)
@@ -997,11 +991,6 @@ static void bp_context(long num_bp, miscPars *misc_pars, double **bp_xyz,
                         bp_order[i][1] = -1;
                         bp_order[i][2] = ddidx[1];
                         bp_order[i][3] = ddidx[j];
-                        /* Debug: trace when pair has both z-side neighbors */
-                        if (i >= 19 && i <= 31) {
-                            fprintf(stderr, "[LEGACY bp_context] pair %ld: n1=%ld n2=%ld (full neighbor)\n",
-                                    i, ddidx[1], ddidx[j]);
-                        }
                         break;
                     }
                 }
@@ -1010,10 +999,6 @@ static void bp_context(long num_bp, miscPars *misc_pars, double **bp_xyz,
                     end_list[++*num_ends][1] = i;
                     end_list[*num_ends][2] = ddidx[1];
                     bp_order[i][2] = ddidx[1];
-                    /* Debug: trace when pair becomes endpoint-like */
-                    if (i >= 19 && i <= 31) {
-                        fprintf(stderr, "[LEGACY bp_context] pair %ld: NO opposite z-side neighbor, n1=%ld\n", i, ddidx[1]);
-                    }
                     ddxyz(bp_xyz[ddidx[1]], bp_xyz[ddidx[n]], txyz2);
                     d2 = dot(zave, txyz2);
                     if (d * d2 < 0.0 && veclen(txyz2) <= helix_break) {
