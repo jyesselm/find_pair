@@ -333,17 +333,8 @@ bool HelixOrganizer::check_o3dist(const core::BasePair& pair_m, const core::Base
     double dj1_i2 = o3_distance(res_m.strand2, res_n.strand1, backbone);
     double dj1_j2 = o3_distance(res_m.strand2, res_n.strand2, backbone);
 
-    // Debug trace: print all check_o3dist calls that return true
-    bool result = (di1_i2 > 0.0 && di1_j2 > 0.0 && di1_i2 > di1_j2) &&
-                  (dj1_i2 > 0.0 && dj1_j2 > 0.0 && dj1_j2 > dj1_i2);
-    if (result) {
-        std::cerr << "[O3DIST TRUE] res_m=(" << res_m.strand1 << "," << res_m.strand2
-                  << ") res_n=(" << res_n.strand1 << "," << res_n.strand2 << ")"
-                  << " di1_i2=" << di1_i2 << " di1_j2=" << di1_j2
-                  << " dj1_i2=" << dj1_i2 << " dj1_j2=" << dj1_j2 << "\n";
-    }
-
-    return result;
+    return (di1_i2 > 0.0 && di1_j2 > 0.0 && di1_i2 > di1_j2) &&
+           (dj1_i2 > 0.0 && dj1_j2 > 0.0 && dj1_j2 > dj1_i2);
 }
 
 bool HelixOrganizer::check_schain(const core::BasePair& pair_m, const core::BasePair& pair_n,
@@ -926,6 +917,7 @@ void HelixOrganizer::ensure_five_to_three(
 
             // Check strand 1 direction
             bool rev_s1 = chain1dir(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
+
             if (rev_s1) {
                 swapped[idx_n] = !swapped[idx_n];
             }

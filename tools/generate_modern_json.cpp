@@ -109,34 +109,36 @@ bool detect_rna_structure(const Structure& structure) {
 BackboneData extract_backbone_data(const Structure& structure) {
     BackboneData backbone;
 
-    // Get residues in legacy order
-    auto residues = structure.residues_in_legacy_order();
+    // Iterate through all chains and residues to get backbone atoms
+    // Use legacy_residue_idx from atoms (matches how pairs are indexed)
+    for (const auto& chain : structure.chains()) {
+        for (const auto& residue : chain.residues()) {
+            if (residue.atoms().empty())
+                continue;
 
-    for (size_t i = 0; i < residues.size(); ++i) {
-        const Residue* residue = residues[i];
-        if (!residue)
-            continue;
+            // Get legacy residue index from first atom (matches how pairs are indexed)
+            int legacy_idx = residue.atoms()[0].legacy_residue_idx();
+            if (legacy_idx <= 0)
+                continue;
 
-        // Get legacy residue index (1-based)
-        size_t legacy_idx = i + 1;
+            BackboneAtoms atoms;
 
-        BackboneAtoms atoms;
+            // Find O3' atom
+            auto o3_prime = residue.find_atom(" O3'");
+            if (o3_prime.has_value()) {
+                atoms.O3_prime = o3_prime->position();
+            }
 
-        // Find O3' atom
-        auto o3_prime = residue->find_atom(" O3'");
-        if (o3_prime.has_value()) {
-            atoms.O3_prime = o3_prime->position();
-        }
+            // Find P atom
+            auto p_atom = residue.find_atom(" P  ");
+            if (p_atom.has_value()) {
+                atoms.P = p_atom->position();
+            }
 
-        // Find P atom
-        auto p_atom = residue->find_atom(" P  ");
-        if (p_atom.has_value()) {
-            atoms.P = p_atom->position();
-        }
-
-        // Only add if we have at least one backbone atom
-        if (atoms.O3_prime.has_value() || atoms.P.has_value()) {
-            backbone[legacy_idx] = atoms;
+            // Only add if we have at least one backbone atom
+            if (atoms.O3_prime.has_value() || atoms.P.has_value()) {
+                backbone[static_cast<size_t>(legacy_idx)] = atoms;
+            }
         }
     }
 
@@ -258,19 +260,6 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                 if (base_pairs.size() >= 2) {
                     // Get helix order from HelixOrganizer (matches legacy five2three algorithm)
                     BackboneData backbone = extract_backbone_data(structure);
-
-                    // Debug: print backbone keys and pair residue indices
-                    std::cerr << "\n[DEBUG] BackboneData has " << backbone.size() << " keys: ";
-                    if (!backbone.empty()) {
-                        std::cerr << backbone.begin()->first << " to " << backbone.rbegin()->first;
-                    }
-                    std::cerr << "\n";
-                    // Print ALL pairs for debugging
-                    std::cerr << "[DEBUG] All pairs residue indices:\n";
-                    for (size_t i = 0; i < base_pairs.size(); ++i) {
-                        std::cerr << "  pair[" << (i+1) << "]: res=(" << (base_pairs[i].residue_idx1()+1)
-                                  << "," << (base_pairs[i].residue_idx2()+1) << ")\n";
-                    }
 
                     HelixOrganizer organizer;
                     auto helix_order = organizer.organize(base_pairs, backbone);

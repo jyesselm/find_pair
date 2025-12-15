@@ -111,7 +111,7 @@ public:
         double o3p_upper;        ///< Max O3'-P distance for backbone linkage (Å)
         double end_stack_xang;   ///< Max x-angle for stacked WC pairs (degrees)
         
-        Config() : helix_break(7.5), neighbor_cutoff(8.0), o3p_upper(2.5), end_stack_xang(110.0) {}
+        Config() : helix_break(7.5), neighbor_cutoff(8.0), o3p_upper(2.5), end_stack_xang(125.0) {}
     };
     
     explicit HelixOrganizer(const Config& config = Config());
