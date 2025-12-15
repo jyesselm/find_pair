@@ -19,12 +19,43 @@ namespace x3dna::algorithms {
 
 namespace {
     constexpr double PI = 3.14159265358979323846;
-    
+
     // Convert dot product to angle in degrees
     double dot2ang(double d) {
         if (d > 1.0) d = 1.0;
         if (d < -1.0) d = -1.0;
         return std::acos(d) * 180.0 / PI;
+    }
+
+    /**
+     * @brief Check if a pair has positive bpid (WC-like geometry)
+     *
+     * Legacy code in calculate_more_bppars sets bpid = -1 by default,
+     * and only sets it positive if:
+     *   1. dir_x > 0 && dir_y < 0 && dir_z < 0
+     *   2. Then check_wc_wobble_pair validates shear/stretch/opening
+     *
+     * This function checks the first geometric condition.
+     * The wc_bporien check requires base_pairs[m][3] > 0 && base_pairs[n][3] > 0.
+     */
+    bool has_positive_bpid(const x3dna::core::BasePair& pair) {
+        if (!pair.frame1().has_value() || !pair.frame2().has_value()) {
+            return false;
+        }
+
+        // Copy to avoid dangling reference (optional returns by value)
+        auto f1 = pair.frame1().value();
+        auto f2 = pair.frame2().value();
+
+        // Legacy: dir_x = dot(&orien[i][0], &orien[j][0])
+        //         dir_y = dot(&orien[i][3], &orien[j][3])
+        //         dir_z = dot(&orien[i][6], &orien[j][6])
+        double dir_x = f1.x_axis().dot(f2.x_axis());
+        double dir_y = f1.y_axis().dot(f2.y_axis());
+        double dir_z = f1.z_axis().dot(f2.z_axis());
+
+        // Legacy condition: dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0
+        return (dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0);
     }
 }
 
@@ -260,24 +291,20 @@ bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePa
                                  bool swap_m, bool swap_n,
                                  const BackboneData& backbone) const {
     // Legacy check: only apply to Watson-Crick pairs (base_pairs[m][3] > 0)
-    // We check if the bp_type, when uppercased, matches a WC/Wobble pattern.
-    // This handles modified bases (e.g., "Cg" -> "CG") that still form WC-like geometry.
-    auto is_wc_like = [](const std::string& bp_type) {
-        if (bp_type.length() != 2) return false;
-        std::string upper;
-        upper += std::toupper(bp_type[0]);
-        upper += std::toupper(bp_type[1]);
-        // WC pairs: CG, GC, AU, UA, AT, TA, IC, CI
-        // Wobble pairs: GU, UG, GT, TG
-        return (upper == "CG" || upper == "GC" ||
-                upper == "AU" || upper == "UA" ||
-                upper == "AT" || upper == "TA" ||
-                upper == "IC" || upper == "CI" ||
-                upper == "GU" || upper == "UG" ||
-                upper == "GT" || upper == "TG");
-    };
+    //
+    // Legacy's bpid is set in calculate_more_bppars:
+    //   1. Default bpid = -1
+    //   2. If dir_x > 0 && dir_y < 0 && dir_z < 0, call check_wc_wobble_pair
+    //   3. check_wc_wobble_pair sets bpid = 1 (wobble) or 2 (WC) based on geometry
+    //
+    // The wc_bporien check requires: base_pairs[m][3] > 0 && base_pairs[n][3] > 0
+    // So we need to check the geometric condition, not just the bp_type string.
+    static bool debug = std::getenv("DEBUG_MODERN_FIVE2THREE") != nullptr;
 
-    if (!is_wc_like(pair_m.bp_type()) || !is_wc_like(pair_n.bp_type())) {
+    if (!has_positive_bpid(pair_m) || !has_positive_bpid(pair_n)) {
+        if (debug) {
+            std::cerr << "[MODERN wc_bporien] SKIP: pair_m or pair_n has non-positive bpid" << std::endl;
+        }
         return false;
     }
 
@@ -290,8 +317,6 @@ bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePa
     auto link_s1 = check_linkage(res_m.strand1, res_n.strand1, backbone);
     auto link_s2 = check_linkage(res_m.strand2, res_n.strand2, backbone);
 
-    // Debug output (temporary)
-    static bool debug = std::getenv("DEBUG_MODERN_FIVE2THREE") != nullptr;
     if (debug) {
         std::cerr << "[MODERN wc_bporien] res_m=(" << pair_m.residue_idx1() << "," << pair_m.residue_idx2() << ")"
                   << " res_n=(" << pair_n.residue_idx1() << "," << pair_n.residue_idx2() << ")"
