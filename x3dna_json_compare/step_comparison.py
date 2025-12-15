@@ -163,7 +163,7 @@ def compare_step_parameters(
         # Compare midstep frames if present
         if 'mst_org' in leg_rec and 'midstep_frame' in mod_rec:
             leg_org = leg_rec.get('mst_org')
-            mod_org = mod_rec.get('midstep_frame', {}).get('origin')
+            mod_org = mod_rec.get('midstep_frame', {}).get('org')
             if leg_org and mod_org:
                 for i in range(3):
                     if abs(float(leg_org[i]) - float(mod_org[i])) > tolerance:
