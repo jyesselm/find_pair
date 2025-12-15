@@ -297,6 +297,14 @@ public:
                                    const std::vector<core::BasePair>& pairs,
                                    const std::vector<bool>& strand_swapped);
 
+    /**
+     * @brief Record pair neighbor context (equivalent to legacy bp_order)
+     * @param pairs Base pairs
+     * @param context Vector of PairContextInfo structs
+     */
+    void record_bp_context(const std::vector<core::BasePair>& pairs,
+                           const std::vector<algorithms::PairContextInfo>& context);
+
 private:
     std::filesystem::path pdb_file_;
     std::string pdb_name_;

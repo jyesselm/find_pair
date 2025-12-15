@@ -275,6 +275,9 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                     HelixOrganizer organizer;
                     auto helix_order = organizer.organize(base_pairs, backbone);
 
+                    // Record bp_context for debugging (neighbor detection comparison)
+                    writer.record_bp_context(base_pairs, helix_order.context);
+
                     // Record helix organization for each helix
                     for (size_t h = 0; h < helix_order.helices.size(); ++h) {
                         writer.record_helix_organization(h + 1, helix_order.helices[h],

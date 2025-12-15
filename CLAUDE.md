@@ -75,9 +75,12 @@ PYTHONPATH=. X3DNA=/Users/jyesselman2/local/installs/x3dna python3 scripts/rebui
 | 2: Residue Indices | 100% (100/100) | All pass |
 | 3-5: Frames | 99% (99/100) | 1 failure: 6OZK (base_type `g` vs `I` for inosine) |
 | 6-7: Pairs | 99% (99/100) | Only 4RQF fails (corrupt legacy JSON) |
-| 11-12: Steps | 79% (79/100) | Step calculation uses HelixOrganizer + strand_swapped - see `docs/STEP_PARAMETER_INVESTIGATION.md` |
+| 11-12: Steps | 81% (81/100) | Step calculation uses HelixOrganizer + strand_swapped - see `docs/STEP_PARAMETER_INVESTIGATION.md` |
 
-**Note**: The 21 step failures are NOT precision issues - they're caused by `HelixOrganizer` producing different pair orderings than legacy's `five2three` algorithm. For complex structures (multiple pairs per base, non-WC pairs), legacy step 14 might use pairs 24+40 while modern uses pairs 14+16 - completely different pairs. See `docs/STEP_PARAMETER_INVESTIGATION.md` for details.
+**Note**: The 19 step failures are NOT precision issues - they're caused by remaining differences between modern's `HelixOrganizer` and legacy's `five2three` algorithm. Key fixes implemented:
+- `locate_helices` and `calculate_context` (bp_order) now match legacy
+- Added second `check_direction` call after `check_strand2` (legacy line 1361)
+- Remaining issues: helix ordering for certain edge cases where both endpoints are valid (e.g., 1B23 helix 2). See `docs/STEP_PARAMETER_INVESTIGATION.md` for details.
 
 ### Validation Stages (must pass in order)
 

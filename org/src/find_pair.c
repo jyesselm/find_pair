@@ -1594,6 +1594,8 @@ static void re_ordering(long num_bp, long **base_pairs, long *bp_idx, long *heli
     bp_order = lmatrix(1, num_bp, 1, 3);
     end_list = lmatrix(1, num_bp, 1, 3);
     bp_context(num_bp, misc_pars, bp_xyz, bp_order, end_list, &num_ends, tfp);
+    /* Record bp_order neighbor relationships for comparison */
+    json_writer_record_bp_order(num_bp, bp_order, base_pairs);
     locate_helix(num_bp, helix_idx, num_ends, num_helix, end_list, bp_order, bp_idx,
                  helix_marker);
     five2three(num_bp, num_helix, helix_idx, bp_idx, bp_xyz, base_pairs, o3_p, tfp);

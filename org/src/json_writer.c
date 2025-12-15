@@ -1862,3 +1862,39 @@ void json_writer_record_helix_organization(long helix_num, long *helix_idx_row,
 
     fflush(type_file);
 }
+
+/* Record bp_order neighbor relationships from bp_context */
+void json_writer_record_bp_order(long num_bp, long **bp_order, long **base_pairs) {
+    FILE *type_file;
+    long is_first;
+    long i;
+
+    if (!json_writer_is_initialized()) return;
+
+    type_file = get_type_file_handle("bp_order", &is_first);
+    if (!type_file) return;
+
+    if (!is_first) fprintf(type_file, ",\n");
+
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"bp_order\",\n");
+    fprintf(type_file, "      \"num_bp\": %ld,\n", num_bp);
+    fprintf(type_file, "      \"pairs\": [\n");
+
+    for (i = 1; i <= num_bp; i++) {
+        if (i > 1) fprintf(type_file, ",\n");
+        fprintf(type_file, "        {\n");
+        fprintf(type_file, "          \"bp_idx\": %ld,\n", i);
+        fprintf(type_file, "          \"is_endpoint\": %s,\n", bp_order[i][1] == 0 ? "true" : "false");
+        fprintf(type_file, "          \"neighbor1\": %ld,\n", bp_order[i][2]);
+        fprintf(type_file, "          \"neighbor2\": %ld,\n", bp_order[i][3]);
+        fprintf(type_file, "          \"base_i\": %ld,\n", base_pairs[i][1]);
+        fprintf(type_file, "          \"base_j\": %ld\n", base_pairs[i][2]);
+        fprintf(type_file, "        }");
+    }
+
+    fprintf(type_file, "\n      ]\n");
+    fprintf(type_file, "    }");
+
+    fflush(type_file);
+}

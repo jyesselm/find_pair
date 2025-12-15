@@ -74,6 +74,15 @@ struct DirectionCounts {
 };
 
 /**
+ * @brief Pair context for comparison with legacy bp_order
+ */
+struct PairContextInfo {
+    bool is_endpoint = true;        ///< True if pair is at helix end
+    std::optional<size_t> neighbor1; ///< First neighbor (closest)
+    std::optional<size_t> neighbor2; ///< Second neighbor (opposite z-side)
+};
+
+/**
  * @brief Result of helix organization
  */
 struct HelixOrdering {
@@ -81,6 +90,7 @@ struct HelixOrdering {
     std::vector<HelixSegment> helices;  ///< Helix segment boundaries
     std::vector<bool> strand_swapped;   ///< Whether strand assignment was swapped for each pair
     std::vector<bool> helix_breaks;     ///< True at positions that are helix boundaries (no backbone link)
+    std::vector<PairContextInfo> context; ///< Neighbor context for each pair (for debugging)
 };
 
 /**

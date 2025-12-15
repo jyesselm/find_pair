@@ -828,5 +828,31 @@ void JsonWriter::record_helix_organization(size_t helix_num, const algorithms::H
     add_calculation_record(record);
 }
 
+void JsonWriter::record_bp_context(const std::vector<core::BasePair>& pairs,
+                                   const std::vector<algorithms::PairContextInfo>& context) {
+    nlohmann::json record;
+    record["type"] = "bp_order";
+    record["num_bp"] = static_cast<int>(pairs.size());
+
+    nlohmann::json pairs_array = nlohmann::json::array();
+    for (size_t i = 0; i < pairs.size(); ++i) {
+        const auto& ctx = context[i];
+        const auto& pair = pairs[i];
+
+        nlohmann::json pair_info;
+        pair_info["bp_idx"] = static_cast<int>(i + 1);  // 1-based
+        pair_info["is_endpoint"] = ctx.is_endpoint;
+        pair_info["neighbor1"] = ctx.neighbor1.has_value() ? static_cast<int>(ctx.neighbor1.value() + 1) : 0;
+        pair_info["neighbor2"] = ctx.neighbor2.has_value() ? static_cast<int>(ctx.neighbor2.value() + 1) : 0;
+        pair_info["base_i"] = static_cast<int>(pair.residue_idx1() + 1);
+        pair_info["base_j"] = static_cast<int>(pair.residue_idx2() + 1);
+
+        pairs_array.push_back(pair_info);
+    }
+    record["pairs"] = pairs_array;
+
+    add_calculation_record(record);
+}
+
 } // namespace io
 } // namespace x3dna

@@ -670,6 +670,23 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
         auto v1 = get_pair_origin(pairs[neighbors[0].second]) - org_i;
         double d1 = z_i.dot(v1);
 
+        // Legacy lines 931-941: If 2nd and 3rd closest are both on opposite z-side,
+        // swap them if 2nd has larger |z-distance| (prefer smaller |z-distance|)
+        if (neighbors.size() >= 3 &&
+            neighbors[1].first <= config_.helix_break &&
+            neighbors[2].first <= config_.helix_break) {
+            auto v2 = get_pair_origin(pairs[neighbors[1].second]) - org_i;
+            auto v3 = get_pair_origin(pairs[neighbors[2].second]) - org_i;
+            double d2 = z_i.dot(v2);
+            double d3 = z_i.dot(v3);
+
+            // Both on opposite z-side from n1, and 2nd has larger |z-dist|
+            if (d1 * d2 < 0 && d1 * d3 < 0 && std::abs(d2) > std::abs(d3)) {
+                // Swap 2nd and 3rd
+                std::swap(neighbors[1], neighbors[2]);
+            }
+        }
+
         for (size_t k = 1; k < neighbors.size(); ++k) {
             if (neighbors[k].first > config_.helix_break) break;
 
@@ -689,6 +706,28 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
 
         if (!context[i].neighbor2.has_value()) {
             context[i].is_endpoint = true;
+
+            // Legacy special case (find_pair.c lines 971-976):
+            // Even for endpoints, try to find n2 through an indirect check:
+            // If vector from n1 to 2nd closest is on opposite z-side AND within helix_break
+            if (neighbors.size() >= 2) {
+                size_t n2_idx = neighbors[1].second;
+                auto org_n1 = get_pair_origin(pairs[neighbors[0].second]);
+                auto org_n2 = get_pair_origin(pairs[n2_idx]);
+                // Legacy ddxyz(n1, n2) = n1 - n2, so we compute org_n1 - org_n2
+                auto v_n2_n1 = org_n1 - org_n2;
+                double dist_n1_n2 = v_n2_n1.length();
+                double d2 = z_i.dot(v_n2_n1);
+
+                // If n2->n1 is on opposite z-side from i->n1 AND within helix_break
+                if (d1 * d2 < 0 && dist_n1_n2 <= config_.helix_break) {
+                    context[i].neighbor2 = n2_idx;
+                    context[i].dist2 = neighbors[1].first;
+                    context[i].has_backbone_link2 = are_pairs_backbone_connected(
+                        pairs[i], pairs[n2_idx], backbone);
+                    // Still an endpoint, but now has a neighbor2
+                }
+            }
         }
     }
 
@@ -697,19 +736,19 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
 
 std::vector<size_t> HelixOrganizer::find_endpoints(
     const std::vector<PairContext>& context) const {
-    
+
     std::vector<size_t> endpoints;
-    
+
     for (size_t i = 0; i < context.size(); ++i) {
         if (context[i].is_endpoint) {
             endpoints.push_back(i);
         }
     }
-    
+
     if (endpoints.empty() && !context.empty()) {
         endpoints.push_back(0);
     }
-    
+
     return endpoints;
 }
 
@@ -723,56 +762,93 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
     std::vector<HelixSegment> helices;
     std::vector<bool> visited(num_pairs, false);
 
+    (void)backbone;  // Not used in traverse - backbone connectivity checked in calculate_context
     pair_order.reserve(num_pairs);
 
+    // Legacy locate_helix algorithm (find_pair.c lines 1029-1082):
+    // For each endpoint, add endpoint + neighbors from end_list, then traverse
     for (size_t ep : endpoints) {
-        if (visited[ep]) continue;
+        // Skip if all items in this endpoint's "end_list" are already matched
+        const auto& ep_ctx = context[ep];
+        int matched_count = 0;
+        int item_count = 1;  // The endpoint itself
+        if (visited[ep]) matched_count++;
+        if (ep_ctx.neighbor1.has_value()) {
+            item_count++;
+            if (visited[ep_ctx.neighbor1.value()]) matched_count++;
+        }
+        if (ep_ctx.neighbor2.has_value()) {
+            item_count++;
+            if (visited[ep_ctx.neighbor2.value()]) matched_count++;
+        }
+        if (matched_count == item_count) continue;
 
         HelixSegment helix;
         helix.start_idx = pair_order.size();
 
-        size_t current = ep;
-        std::optional<size_t> prev;
+        // Legacy lines 1039-1045: Add endpoint and its neighbors from end_list
+        // Add endpoint
+        if (!visited[ep]) {
+            pair_order.push_back(ep);
+            visited[ep] = true;
+        }
+        // Add neighbor1
+        if (ep_ctx.neighbor1.has_value() && !visited[ep_ctx.neighbor1.value()]) {
+            pair_order.push_back(ep_ctx.neighbor1.value());
+            visited[ep_ctx.neighbor1.value()] = true;
+        }
+        // Add neighbor2
+        if (ep_ctx.neighbor2.has_value() && !visited[ep_ctx.neighbor2.value()]) {
+            pair_order.push_back(ep_ctx.neighbor2.value());
+            visited[ep_ctx.neighbor2.value()] = true;
+        }
 
-        while (!visited[current]) {
-            visited[current] = true;
-            pair_order.push_back(current);
-
+        // Legacy lines 1046-1068: Traverse from the last added pair
+        // Continue adding neighbors until we can't anymore
+        while (pair_order.size() >= helix.start_idx + 1) {
+            size_t ip = pair_order.size() - 1;
+            size_t current = pair_order[ip];
             const auto& ctx = context[current];
+
+            // If this is an endpoint (bp_order[k][1] == 0 in legacy means endpoint)
+            if (ctx.is_endpoint) {
+                // Legacy lines 1050-1055: Only add neighbor1 if it exists, not matched, and no neighbor2
+                if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()] &&
+                    !ctx.neighbor2.has_value()) {
+                    pair_order.push_back(ctx.neighbor1.value());
+                    visited[ctx.neighbor1.value()] = true;
+                }
+                break;  // Stop traversal for this helix
+            }
+
+            // Not an endpoint - continue traversal
+            bool n1_matched = !ctx.neighbor1.has_value() || visited[ctx.neighbor1.value()];
+            bool n2_matched = !ctx.neighbor2.has_value() || visited[ctx.neighbor2.value()];
+
+            // Legacy line 1057-1059: If both or neither neighbor matched, stop
+            if ((n1_matched && n2_matched) || (!n1_matched && !n2_matched && ctx.neighbor1.has_value() && ctx.neighbor2.has_value())) {
+                // Both matched or neither matched - stop
+                // For "neither matched" case, only apply if both neighbors actually exist
+                break;
+            }
+
+            // Get previous pair
+            std::optional<size_t> prev;
+            if (ip > helix.start_idx) {
+                prev = pair_order[ip - 1];
+            }
+
+            // Legacy lines 1060-1067: Go to the other neighbor
             std::optional<size_t> next;
-
-            // Prefer backbone-connected neighbors
-            if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()]) {
-                if (!prev.has_value() || ctx.neighbor1.value() != prev.value()) {
-                    bool is_connected = ctx.has_backbone_link1 || backbone.empty();
-                    if (is_connected) {
-                        next = ctx.neighbor1;
-                    }
+            if (ctx.neighbor1.has_value() && prev.has_value() && ctx.neighbor1.value() == prev.value()) {
+                // Previous was neighbor1, add neighbor2
+                if (ctx.neighbor2.has_value() && !visited[ctx.neighbor2.value()]) {
+                    next = ctx.neighbor2;
                 }
-            }
-
-            if (!next.has_value() && ctx.neighbor2.has_value() &&
-                !visited[ctx.neighbor2.value()]) {
-                if (!prev.has_value() || ctx.neighbor2.value() != prev.value()) {
-                    bool is_connected = ctx.has_backbone_link2 || backbone.empty();
-                    if (is_connected) {
-                        next = ctx.neighbor2;
-                    }
-                }
-            }
-
-            // If no backbone-connected neighbor, try geometric neighbors anyway
-            if (!next.has_value() && !backbone.empty()) {
+            } else if (ctx.neighbor2.has_value() && prev.has_value() && ctx.neighbor2.value() == prev.value()) {
+                // Previous was neighbor2, add neighbor1
                 if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()]) {
-                    if (!prev.has_value() || ctx.neighbor1.value() != prev.value()) {
-                        next = ctx.neighbor1;
-                    }
-                }
-                if (!next.has_value() && ctx.neighbor2.has_value() &&
-                    !visited[ctx.neighbor2.value()]) {
-                    if (!prev.has_value() || ctx.neighbor2.value() != prev.value()) {
-                        next = ctx.neighbor2;
-                    }
+                    next = ctx.neighbor1;
                 }
             }
 
@@ -780,8 +856,8 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
                 break;
             }
 
-            prev = current;
-            current = next.value();
+            pair_order.push_back(next.value());
+            visited[next.value()] = true;
         }
 
         helix.end_idx = pair_order.size() - 1;
@@ -841,42 +917,17 @@ void HelixOrganizer::ensure_five_to_three(
             bool rev_csc = check_schain(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
             bool rev_oth = check_others(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
 
-            // Debug: trace swap decisions for pairs of interest
-            if (idx_n >= 21 && idx_n <= 25) {
-                auto res_m = get_strand_residues(pair_m, swapped[idx_m]);
-                auto res_n = get_strand_residues(pair_n, swapped[idx_n]);
-                std::cerr << "[SWAP TRACE] Step " << (idx_m+1) << "->" << (idx_n+1)
-                          << " STEP2: res_m=(" << res_m.strand1 << "," << res_m.strand2 << ")"
-                          << " res_n=(" << res_n.strand1 << "," << res_n.strand2 << ")"
-                          << " wc=" << rev_wc << " o3d=" << rev_o3d
-                          << " csc=" << rev_csc << " oth=" << rev_oth
-                          << " swap_m=" << swapped[idx_m] << " swap_n=" << swapped[idx_n];
-            }
-
             // Apply swap based on checks
             if (rev_wc) {
                 swapped[idx_n] = !swapped[idx_n];
-                if (idx_n >= 21 && idx_n <= 25) {
-                    std::cerr << " -> SWAP(wc)";
-                }
             } else if (rev_o3d || rev_csc || rev_oth) {
                 swapped[idx_n] = !swapped[idx_n];
-                if (idx_n >= 21 && idx_n <= 25) {
-                    std::cerr << " -> SWAP(o3d/csc/oth)";
-                }
             }
 
             // Check strand 1 direction
             bool rev_s1 = chain1dir(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
             if (rev_s1) {
                 swapped[idx_n] = !swapped[idx_n];
-                if (idx_n >= 21 && idx_n <= 25) {
-                    std::cerr << " -> SWAP(s1)";
-                }
-            }
-
-            if (idx_n >= 21 && idx_n <= 25) {
-                std::cerr << " final=" << swapped[idx_n] << "\n";
             }
         }
 
@@ -890,40 +941,19 @@ void HelixOrganizer::ensure_five_to_three(
 
             bool rev_wc = wc_bporien(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
             if (rev_wc) {
-                if (idx_m >= 20 && idx_m <= 25) {
-                    std::cerr << "[SWAP TRACE] Step " << (idx_m+1) << "->" << (idx_n+1)
-                              << " STEP3: wc=1 -> SWAP pair " << (idx_m+1) << "\n";
-                }
                 swapped[idx_m] = !swapped[idx_m];
             }
         }
 
-        // Debug: print swap state before check_direction
-        std::cerr << "[SWAP TRACE] Before STEP4 (check_direction): ";
-        for (size_t i = 0; i < swapped.size(); ++i) {
-            if (swapped[i]) std::cerr << (i+1) << " ";
-        }
-        std::cerr << "\n";
-
         // STEP 4: check_direction - count backbone linkage directions and apply fixes
         DirectionCounts direction = check_direction(pairs, backbone, pair_order, helix, swapped);
-
-        // Debug: print swap state after check_direction
-        std::cerr << "[SWAP TRACE] After STEP4 (check_direction): ";
-        for (size_t i = 0; i < swapped.size(); ++i) {
-            if (swapped[i]) std::cerr << (i+1) << " ";
-        }
-        std::cerr << "\n";
 
         // STEP 5: check_strand2 - additional corrections based on direction
         check_strand2(pairs, backbone, pair_order, helix, swapped, direction);
 
-        // Debug: print swap state after check_strand2
-        std::cerr << "[SWAP TRACE] After STEP5 (check_strand2): ";
-        for (size_t i = 0; i < swapped.size(); ++i) {
-            if (swapped[i]) std::cerr << (i+1) << " ";
-        }
-        std::cerr << "\n";
+        // STEP 6: check_direction AGAIN (legacy line 1361 - at end of check_strand2)
+        // This recomputes direction with updated swaps and may apply additional corrections
+        check_direction(pairs, backbone, pair_order, helix, swapped);
     }
 }
 
@@ -975,6 +1005,16 @@ HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs,
     result.helices = std::move(helices);
     result.strand_swapped = std::move(strand_swapped);
     result.helix_breaks = std::move(helix_breaks);
+
+    // Convert internal PairContext to public PairContextInfo for debugging
+    result.context.reserve(context.size());
+    for (const auto& ctx : context) {
+        PairContextInfo info;
+        info.is_endpoint = ctx.is_endpoint;
+        info.neighbor1 = ctx.neighbor1;
+        info.neighbor2 = ctx.neighbor2;
+        result.context.push_back(info);
+    }
 
     return result;
 }
