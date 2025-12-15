@@ -247,10 +247,14 @@ bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePa
     auto res_m = get_strand_residues(pair_m, swap_m);
     auto res_n = get_strand_residues(pair_n, swap_n);
 
+    double xang = wcbp_xang(pair_m, pair_n);
+    auto link_s1 = check_linkage(res_m.strand1, res_n.strand1, backbone);
+    auto link_s2 = check_linkage(res_m.strand2, res_n.strand2, backbone);
+
     // If x-angle is too large or backbone is linked, don't swap
-    if (wcbp_xang(pair_m, pair_n) > config_.end_stack_xang ||
-        check_linkage(res_m.strand1, res_n.strand1, backbone) != LinkDirection::None ||
-        check_linkage(res_m.strand2, res_n.strand2, backbone) != LinkDirection::None) {
+    if (xang > config_.end_stack_xang ||
+        link_s1 != LinkDirection::None ||
+        link_s2 != LinkDirection::None) {
         return false;
     }
 
@@ -792,14 +796,24 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
     }
 
     // Handle any leftover pairs not reached from endpoints
+    // Legacy behavior (lines 1120-1128): Put ALL leftover pairs into ONE helix region
+    // This handles "complicated structures" with isolated pairs
+    std::vector<size_t> leftover;
     for (size_t i = 0; i < num_pairs; ++i) {
         if (!visited[i]) {
-            HelixSegment helix;
-            helix.start_idx = pair_order.size();
-            pair_order.push_back(i);
-            helix.end_idx = pair_order.size() - 1;
-            helices.push_back(helix);
+            leftover.push_back(i);
         }
+    }
+
+    if (!leftover.empty()) {
+        // All leftover pairs go into a single helix (matching legacy behavior)
+        HelixSegment helix;
+        helix.start_idx = pair_order.size();
+        for (size_t idx : leftover) {
+            pair_order.push_back(idx);
+        }
+        helix.end_idx = pair_order.size() - 1;
+        helices.push_back(helix);
     }
 
     return {pair_order, helices};
