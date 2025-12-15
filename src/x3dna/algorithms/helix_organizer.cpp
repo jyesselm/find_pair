@@ -39,6 +39,23 @@ namespace {
      * The wc_bporien check requires base_pairs[m][3] > 0 && base_pairs[n][3] > 0.
      */
     bool has_positive_bpid(const x3dna::core::BasePair& pair) {
+        static bool debug = std::getenv("DEBUG_MODERN_FIVE2THREE") != nullptr;
+
+        // Legacy check: base_pairs[m][3] > 0 requires both:
+        // 1. Pair is WC or wobble type (check_wc_wobble_pair only sets bpid for these)
+        // 2. Geometric condition (dir_x > 0 && dir_y < 0 && dir_z < 0)
+        // For non-WC/wobble pairs, bpid stays at -1 even if geometry matches.
+        using x3dna::core::BasePairType;
+        if (pair.type() != BasePairType::WATSON_CRICK &&
+            pair.type() != BasePairType::WOBBLE) {
+            if (debug) {
+                std::cerr << "[has_positive_bpid] pair(" << pair.residue_idx1() << ","
+                          << pair.residue_idx2() << ") type=" << pair.bp_type()
+                          << " -> 0 (not WC/wobble)" << std::endl;
+            }
+            return false;
+        }
+
         if (!pair.frame1().has_value() || !pair.frame2().has_value()) {
             return false;
         }
@@ -54,8 +71,17 @@ namespace {
         double dir_y = f1.y_axis().dot(f2.y_axis());
         double dir_z = f1.z_axis().dot(f2.z_axis());
 
+        bool result = (dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0);
+
+        if (debug) {
+            std::cerr << "[has_positive_bpid] pair(" << pair.residue_idx1() << "," << pair.residue_idx2() << ")"
+                      << " type=" << pair.bp_type()
+                      << " dir_x=" << dir_x << " dir_y=" << dir_y << " dir_z=" << dir_z
+                      << " -> " << result << std::endl;
+        }
+
         // Legacy condition: dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0
-        return (dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0);
+        return result;
     }
 }
 
@@ -98,9 +124,17 @@ geometry::Vector3D HelixOrganizer::get_frame_z(const core::BasePair& pair, bool 
 
 StrandResidues HelixOrganizer::get_strand_residues(
     const core::BasePair& pair, bool swapped) const {
-    // BasePair stores 0-based indices, but backbone data uses 1-based (legacy) indices
-    // Convert to 1-based for backbone lookup
-    if (swapped) {
+    // BasePair stores 0-based indices normalized to (smaller, larger).
+    // finding_order_swapped() indicates if original finding order was (larger, smaller).
+    // Legacy code uses the ORIGINAL finding order for strand assignments.
+    //
+    // To match legacy:
+    // - Start with original finding order (apply finding_order_swapped to restore it)
+    // - Then apply the five2three swap flag
+    // This is equivalent to XOR of finding_order_swapped and swapped.
+    bool use_reversed_order = (pair.finding_order_swapped() != swapped);
+
+    if (use_reversed_order) {
         return {pair.residue_idx2() + 1, pair.residue_idx1() + 1};
     }
     return {pair.residue_idx1() + 1, pair.residue_idx2() + 1};
@@ -670,9 +704,11 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
 
         std::sort(neighbors.begin(), neighbors.end());
 
-        if (neighbors.empty()) {
+        // Legacy behavior: if no neighbors within helix_break, pair is an isolated endpoint
+        // with NO stored neighbors (end_list only stores the endpoint itself)
+        if (neighbors.empty() || neighbors[0].first > config_.helix_break) {
             context[i].is_endpoint = true;
-            continue;
+            continue;  // Don't store neighbor1 - matches legacy line 963-965
         }
 
         context[i].neighbor1 = neighbors[0].second;
@@ -681,11 +717,6 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
         // Check backbone connectivity to neighbor1
         context[i].has_backbone_link1 = are_pairs_backbone_connected(
             pairs[i], pairs[neighbors[0].second], backbone);
-
-        if (context[i].dist1 > config_.helix_break) {
-            context[i].is_endpoint = true;
-            continue;
-        }
 
         auto v1 = get_pair_origin(pairs[neighbors[0].second]) - org_i;
         double d1 = z_i.dot(v1);
