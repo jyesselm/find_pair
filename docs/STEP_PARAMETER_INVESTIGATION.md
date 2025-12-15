@@ -2,19 +2,58 @@
 
 ## Current Status (December 15, 2024)
 
-**Pass Rate**: 81% (81/100 PDBs)
+**Pass Rate**: 95% (95/100 PDBs)
 
 **Key Achievement**: bp_idx ordering now matches legacy **100%** (99/99 PDBs with step data)
 
-**Remaining Issue**: 19 PDBs have matching bp_idx pairs but different step parameter VALUES
+**Remaining Issue**: 5 PDBs (3UCU, 5CCX, 7YGB, 8RUJ, 8U5Z) have algorithmic differences in five2three strand swap logic
+
+## Config Variable Verification (December 15, 2024)
+
+All config variables have been verified to match between legacy and modern code:
+
+| Variable | Legacy Source | Legacy Value | Modern Value | Status |
+|----------|--------------|--------------|--------------|--------|
+| helix_break | `$X3DNA/config/misc_3dna.par` | 7.8 | 7.8 | ✓ Fixed |
+| O3P_UPPER | `org/include/x3dna.h:147` (hardcoded) | 2.5 | o3p_upper=2.5 | ✓ Matches |
+| END_STACK_XANG | `org/include/x3dna.h:153` (hardcoded) | 125.0 | end_stack_xang=125.0 | ✓ Matches |
+| max_dorg | `$X3DNA/config/misc_3dna.par` | 15.0 | 15.0 | ✓ Matches |
+| max_dv | `$X3DNA/config/misc_3dna.par` | 2.5 | 2.5 | ✓ Matches |
+| max_plane_angle | `$X3DNA/config/misc_3dna.par` | 65.0 | 65.0 | ✓ Matches |
+| min_dNN | `$X3DNA/config/misc_3dna.par` | 4.5 | 4.5 | ✓ Matches |
+| hb_dist1 | `$X3DNA/config/misc_3dna.par` | 4.0 | 4.0 | ✓ Matches |
+| neighbor_cutoff | (no legacy equivalent) | N/A | 8.5 | ✓ OK (initial filter only) |
+
+**Note about o3p_dist vs O3P_UPPER:**
+- `o3p_dist=4.5` in `misc_3dna.par` is used for water/other analysis, NOT backbone linkage
+- `O3P_UPPER=2.5` (hardcoded constant in x3dna.h) is used for backbone linkage detection
+- Modern code correctly uses `o3p_upper=2.5` for backbone linkage
+
+### helix_break Fix (December 15, 2024)
+
+**Problem**: Legacy reads `helix_break=7.8` from `$X3DNA/config/misc_3dna.par`, but modern was hardcoded to 7.5.
+
+**Symptom**: Neighbor detection differed for distances between 7.5-7.8Å. For 2EEW, pair 16→27 distance was 7.74Å:
+- Legacy (7.8 cutoff): included as neighbor
+- Modern (7.5 cutoff): excluded as neighbor
+
+**Fix**: Updated `include/x3dna/algorithms/helix_organizer.hpp`:
+```cpp
+// Legacy uses helix_break=7.8 from $X3DNA/config/misc_3dna.par
+Config() : helix_break(7.8), neighbor_cutoff(8.5), o3p_upper(2.5), end_stack_xang(125.0) {}
+```
+
+**Result**: Pass rate improved from 90% to 95% (5 more PDBs now pass)
 
 ## What's Working
 
 - ✅ Helix organization (pair ordering) - 100% match
 - ✅ bp_idx assignments - 100% match
 - ✅ HelixOrganizer five2three algorithm - produces correct pair ordering
+- ✅ helix_break cutoff (7.5 → 7.8) - matches legacy config
 - ✅ end_stack_xang threshold (110° → 125°) - matches legacy
 - ✅ Watson-Crick pair check in wc_bporien - only applies to WC/wobble pairs (fixed 1TTT)
+- ✅ All config parameters verified to match legacy (see table above)
 
 ## Recent Fixes (December 15, 2024)
 
@@ -89,13 +128,17 @@ The 19 failing PDBs have identical bp_idx pairs but different calculated paramet
 2. **ParameterCalculator implementation** - Midstep frame or parameter formulas may differ
 3. **Frame selection logic** - How swap affects which frame (org_i vs org_j) is used
 
-### Failing PDBs Analysis (20 total)
+### Failing PDBs Analysis (5 total)
 
-| Category | Count | Examples | Issue |
-|----------|-------|----------|-------|
-| Single step mismatch | 3 | 1Y27, 3GAO, 4FEN | Only last step (29→30) differs |
-| Few step mismatches | 8 | 3UCU, 5CCX, 6MWN, 6XKN, 8EXA, 8UBD | 1-2 steps differ |
-| Many step mismatches | 9 | 1TTT, 2DU3, 2EEW, 5FJ1, 5Y85, 6ICZ, 7YGA, 7YGB, 8U5Z, 8RUJ, 8Z1P | Multiple steps differ |
+| PDB | Issue | Notes |
+|-----|-------|-------|
+| 3UCU | Strand swap differences | five2three algorithm edge case |
+| 5CCX | Strand swap differences | Small helix with junction patterns |
+| 7YGB | Strand swap differences | Complex multi-helix structure |
+| 8RUJ | Strand swap differences | Complex multi-helix structure |
+| 8U5Z | Strand swap differences | five2three algorithm edge case |
+
+All 5 failures are due to algorithmic differences in the five2three strand swap logic, not config mismatches.
 
 ### Next Steps to Fix
 

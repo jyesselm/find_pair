@@ -78,6 +78,7 @@ PYTHONPATH=. X3DNA=/Users/jyesselman2/local/installs/x3dna python3 scripts/rebui
 | 11-12: Steps | 95% (95/100) | 5 failures: 3UCU, 5CCX, 7YGB, 8RUJ, 8U5Z |
 
 **Note**: Step ordering (`bp_idx`) now matches legacy 100% when helices match. Fixes implemented:
+- Fixed `helix_break` cutoff: 7.5 → 7.8 (matches legacy `misc_3dna.par` config)
 - Fixed `end_stack_xang` threshold: 110° → 125° (matches legacy `END_STACK_XANG`)
 - Fixed backbone extraction to use `legacy_residue_idx` from atoms
 - Added second `check_direction` call after `check_strand2` (legacy line 1361)
@@ -86,7 +87,7 @@ PYTHONPATH=. X3DNA=/Users/jyesselman2/local/installs/x3dna python3 scripts/rebui
 - Fixed modified base handling in wc_bporien ("Cg" → "CG")
 - Added geometric bpid check (dir_x > 0 && dir_y < 0 && dir_z < 0)
 
-**Remaining 10 failures** (2EEW, 3UCU, 5FJ1, 5Y85, 6ICZ, 7YGA, 7YGB, 8RUJ, 8U5Z, 8Z1P) have different helix groupings. See `docs/STEP_PARAMETER_INVESTIGATION.md` for details.
+**Remaining 5 failures** (3UCU, 5CCX, 7YGB, 8RUJ, 8U5Z) have algorithmic differences in five2three strand swap logic. See `docs/STEP_PARAMETER_INVESTIGATION.md` for details.
 
 ### Validation Stages (must pass in order)
 
