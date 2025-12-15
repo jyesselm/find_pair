@@ -77,10 +77,12 @@ PYTHONPATH=. X3DNA=/Users/jyesselman2/local/installs/x3dna python3 scripts/rebui
 | 6-7: Pairs | 99% (99/100) | Only 4RQF fails (corrupt legacy JSON) |
 | 11-12: Steps | 81% (81/100) | Step calculation uses HelixOrganizer + strand_swapped - see `docs/STEP_PARAMETER_INVESTIGATION.md` |
 
-**Note**: The 19 step failures are NOT precision issues - they're caused by remaining differences between modern's `HelixOrganizer` and legacy's `five2three` algorithm. Key fixes implemented:
-- `locate_helices` and `calculate_context` (bp_order) now match legacy
+**Note**: The 19 step failures are NOT precision issues - they're caused by strand_swapped differences between modern's `HelixOrganizer` and legacy's `five2three` algorithm. Fixes implemented:
+- `locate_helices` and `calculate_context` now match legacy `bp_context`/`locate_helix`
 - Added second `check_direction` call after `check_strand2` (legacy line 1361)
-- Remaining issues: helix ordering for certain edge cases where both endpoints are valid (e.g., 1B23 helix 2). See `docs/STEP_PARAMETER_INVESTIGATION.md` for details.
+- Fixed neighbor swapping in `calculate_context` (legacy lines 931-941)
+
+**Remaining 19 failures** fall into categories: mixed direction helices (1TTT), tRNA-like junctions (1Y27, 2EEW, 3GAO), small helix junctions (5CCX), and complex swap patterns (2DU3). See `docs/STEP_PARAMETER_INVESTIGATION.md` for details.
 
 ### Validation Stages (must pass in order)
 

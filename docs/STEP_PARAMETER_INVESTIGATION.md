@@ -2,7 +2,7 @@
 
 ## Summary
 
-**Current Status**: 79% of PDBs pass step parameter validation (79/100)
+**Current Status**: 81% of PDBs pass step parameter validation (81/100)
 
 **Progress Made (December 2024)**:
 1. Fixed base_pair recording to include ALL valid pairs (35 pairs for 1EHZ, not just 30 selected pairs)
@@ -11,6 +11,9 @@
 4. Added strand_swapped support (using org_j instead of org_i when strand is swapped)
 5. **Fixed strand_swapped indexing bug** (was using helix position `i` instead of pair index `idx1`/`idx2`)
 6. **Fixed check_direction to flip swapped values and reverse helix order** (matching legacy behavior)
+7. **Added second check_direction call after check_strand2** (legacy line 1361)
+8. **Fixed locate_helices to match legacy end_list traversal algorithm**
+9. **Fixed calculate_context neighbor swapping logic** (legacy lines 931-941)
 
 **Bug Fix Details (December 14, 2024)**:
 
@@ -41,7 +44,31 @@ Legacy behavior (lines 1310-1322 in find_pair.c):
 
 Added this logic to modern `check_direction`, which improved from 57% to 68%.
 
-**Remaining Issue (December 2024)**: 21% of structures still fail (21/100). These are NOT precision issues - all failures have large algorithmic differences (130-354 units).
+**Remaining Issue (December 2024)**: 19% of structures still fail (19/100). These are NOT precision issues - all failures have large algorithmic differences (130-354 units in twist/tilt/roll).
+
+### Remaining 19 Failures Analysis (December 14, 2024)
+
+The 19 failing PDBs fall into several categories:
+
+1. **Mixed direction helices** (e.g., 1TTT):
+   - Helix has both forward and reverse linkages on strand1
+   - Legacy check_strand2's mixed branch applies different swap logic
+   - Modern detects mixed direction but may apply swaps differently
+
+2. **tRNA-like junction patterns** (e.g., 1Y27, 2EEW, 3GAO):
+   - All have 9-pair helices with swap difference at bp_idx 8
+   - Last pair in helix has different swap in legacy vs modern
+   - Related to endpoint handling in five2three
+
+3. **Small helices with junctions** (e.g., 5CCX):
+   - 3-pair helix with swap difference at position 2
+   - Likely caused by first_step or first pass check differences
+
+4. **Complex scattered swap differences** (e.g., 2DU3):
+   - Multiple pairs in helix have different swaps
+   - May be caused by subtle differences in check_* function implementations
+
+**Failing PDBs**: 1TTT, 1Y27, 2DU3, 2EEW, 3GAO, 4FEN, 5CCX, 5FJ1, 5Y85, 6ICZ, 6MWN, 6XKN, 7YGA, 7YGB, 8EXA, 8RUJ, 8U5Z, 8UBD, 8Z1P
 
 ### Root Cause: Helix Organization Differences
 
