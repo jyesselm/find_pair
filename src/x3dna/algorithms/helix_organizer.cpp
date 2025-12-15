@@ -11,7 +11,7 @@
 #include <cmath>
 #include <limits>
 #include <numeric>
-#include <iostream>  // For debug tracing
+#include <stdexcept>
 
 namespace x3dna::algorithms {
 
@@ -35,18 +35,9 @@ HelixOrganizer::HelixOrganizer(const Config& config) : config_(config) {}
 geometry::Vector3D HelixOrganizer::get_pair_origin(const core::BasePair& pair) const {
     // Legacy uses the average of both base origins (morg) for pair distance calculations
     // See refs_right_left() in cmn_fncs.c: morg[j] = (org[base1][j] + org[base2][j]) / 2
-    if (!pair.frame1().has_value() && !pair.frame2().has_value()) {
-        return geometry::Vector3D(0, 0, 0);
-    }
-    if (!pair.frame1().has_value()) {
-        return pair.frame2().value().origin();
-    }
-    if (!pair.frame2().has_value()) {
-        return pair.frame1().value().origin();
-    }
-    // Return average of both origins
-    auto o1 = pair.frame1().value().origin();
-    auto o2 = pair.frame2().value().origin();
+    // Note: organize() validates all pairs have both frames
+    const auto& o1 = pair.frame1()->origin();
+    const auto& o2 = pair.frame2()->origin();
     return geometry::Vector3D(
         (o1.x() + o2.x()) / 2.0,
         (o1.y() + o2.y()) / 2.0,
@@ -57,40 +48,19 @@ geometry::Vector3D HelixOrganizer::get_pair_origin(const core::BasePair& pair) c
 geometry::Vector3D HelixOrganizer::get_pair_z_axis(const core::BasePair& pair) const {
     // Legacy uses average z-axis from both frames (or difference if they point opposite)
     // This matches bp_context: (d <= 0.0) ? ddxyz(z2, z1, zave) : sumxyz(z2, z1, zave)
-    if (!pair.frame1().has_value() || !pair.frame2().has_value()) {
-        if (pair.frame1().has_value()) {
-            return pair.frame1().value().z_axis();
-        }
-        return geometry::Vector3D(0, 0, 1);
-    }
-
-    auto z1 = pair.frame1().value().z_axis();
-    auto z2 = pair.frame2().value().z_axis();
+    // Note: organize() validates all pairs have both frames
+    auto z1 = pair.frame1()->z_axis();
+    auto z2 = pair.frame2()->z_axis();
     double d = z1.dot(z2);
 
-    geometry::Vector3D zave;
-    if (d <= 0.0) {
-        // Opposite directions: take difference
-        zave = z2 - z1;
-    } else {
-        // Same direction: take sum
-        zave = z2 + z1;
-    }
+    geometry::Vector3D zave = (d <= 0.0) ? (z2 - z1) : (z2 + z1);
     zave.normalize();
     return zave;
 }
 
 geometry::Vector3D HelixOrganizer::get_frame_z(const core::BasePair& pair, bool swapped) const {
-    if (swapped) {
-        if (pair.frame2().has_value()) {
-            return pair.frame2().value().z_axis();
-        }
-    } else {
-        if (pair.frame1().has_value()) {
-            return pair.frame1().value().z_axis();
-        }
-    }
-    return geometry::Vector3D(0, 0, 1);
+    // Note: organize() validates all pairs have both frames
+    return swapped ? pair.frame2()->z_axis() : pair.frame1()->z_axis();
 }
 
 StrandResidues HelixOrganizer::get_strand_residues(
@@ -187,59 +157,23 @@ bool HelixOrganizer::are_pairs_backbone_connected(
 
 double HelixOrganizer::wcbp_xang(const core::BasePair& pair_m, const core::BasePair& pair_n) const {
     // Calculate angle between combined x-axes of the two pairs
-    if (!pair_m.frame1().has_value() || !pair_m.frame2().has_value() ||
-        !pair_n.frame1().has_value() || !pair_n.frame2().has_value()) {
-        return 180.0;  // Return large angle if frames missing
-    }
-    
-    // Sum of x-axes for each pair
-    auto xm = pair_m.frame1().value().x_axis() + pair_m.frame2().value().x_axis();
-    auto xn = pair_n.frame1().value().x_axis() + pair_n.frame2().value().x_axis();
-    
-    xm = xm.normalized();
-    xn = xn.normalized();
-    
-    double dot = xm.dot(xn);
-    return dot2ang(dot);
+    // Note: organize() validates all pairs have both frames
+    auto xm = (pair_m.frame1()->x_axis() + pair_m.frame2()->x_axis()).normalized();
+    auto xn = (pair_n.frame1()->x_axis() + pair_n.frame2()->x_axis()).normalized();
+    return dot2ang(xm.dot(xn));
 }
 
 double HelixOrganizer::wcbp_zdir(const core::BasePair& pair_m, const core::BasePair& pair_n,
                                   bool swap_m, bool swap_n) const {
     // Get z-direction vectors based on swap status
-    geometry::Vector3D zm, zn;
-    
-    if (swap_m) {
-        if (pair_m.frame2().has_value() && pair_m.frame1().has_value()) {
-            zm = pair_m.frame1().value().z_axis() - pair_m.frame2().value().z_axis();
-        } else {
-            return 0.0;
-        }
-    } else {
-        if (pair_m.frame1().has_value() && pair_m.frame2().has_value()) {
-            zm = pair_m.frame2().value().z_axis() - pair_m.frame1().value().z_axis();
-        } else {
-            return 0.0;
-        }
-    }
-    
-    if (swap_n) {
-        if (pair_n.frame2().has_value() && pair_n.frame1().has_value()) {
-            zn = pair_n.frame1().value().z_axis() - pair_n.frame2().value().z_axis();
-        } else {
-            return 0.0;
-        }
-    } else {
-        if (pair_n.frame1().has_value() && pair_n.frame2().has_value()) {
-            zn = pair_n.frame2().value().z_axis() - pair_n.frame1().value().z_axis();
-        } else {
-            return 0.0;
-        }
-    }
-    
-    zm = zm.normalized();
-    zn = zn.normalized();
-    
-    return zm.dot(zn);
+    // Note: organize() validates all pairs have both frames
+    // When swapped: z = z1 - z2, otherwise z = z2 - z1
+    auto zm = swap_m ? (pair_m.frame1()->z_axis() - pair_m.frame2()->z_axis())
+                     : (pair_m.frame2()->z_axis() - pair_m.frame1()->z_axis());
+    auto zn = swap_n ? (pair_n.frame1()->z_axis() - pair_n.frame2()->z_axis())
+                     : (pair_n.frame2()->z_axis() - pair_n.frame1()->z_axis());
+
+    return zm.normalized().dot(zn.normalized());
 }
 
 // =============================================================================
@@ -298,13 +232,8 @@ void HelixOrganizer::first_step(const std::vector<core::BasePair>& pairs,
 bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePair& pair_n,
                                  bool swap_m, bool swap_n,
                                  const BackboneData& backbone) const {
-    // Only check WC pairs (bp_type > 0 in legacy)
-    // For now, check if both pairs have proper frames
-    if (!pair_m.frame1().has_value() || !pair_m.frame2().has_value() ||
-        !pair_n.frame1().has_value() || !pair_n.frame2().has_value()) {
-        return false;
-    }
-
+    // Check if pairs need swap based on z-direction alignment
+    // Note: organize() validates all pairs have both frames
     auto res_m = get_strand_residues(pair_m, swap_m);
     auto res_n = get_strand_residues(pair_n, swap_n);
 
@@ -366,17 +295,12 @@ bool HelixOrganizer::check_others(const core::BasePair& pair_m, const core::Base
         return false;
     }
     
-    // Check frame alignment patterns
-    if (!pair_m.frame1().has_value() || !pair_m.frame2().has_value() ||
-        !pair_n.frame1().has_value() || !pair_n.frame2().has_value()) {
-        return false;
-    }
-    
     // Get frames based on swap status
-    auto frame_m1 = swap_m ? pair_m.frame2().value() : pair_m.frame1().value();
-    auto frame_m2 = swap_m ? pair_m.frame1().value() : pair_m.frame2().value();
-    auto frame_n1 = swap_n ? pair_n.frame2().value() : pair_n.frame1().value();
-    auto frame_n2 = swap_n ? pair_n.frame1().value() : pair_n.frame2().value();
+    // Note: organize() validates all pairs have both frames
+    auto frame_m1 = swap_m ? *pair_m.frame2() : *pair_m.frame1();
+    auto frame_m2 = swap_m ? *pair_m.frame1() : *pair_m.frame2();
+    auto frame_n1 = swap_n ? *pair_n.frame2() : *pair_n.frame1();
+    auto frame_n2 = swap_n ? *pair_n.frame1() : *pair_n.frame2();
     
     // Check axis alignment (similar to legacy dot product checks)
     double a1_x = frame_m1.x_axis().dot(frame_n1.x_axis());
@@ -959,6 +883,15 @@ HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs,
 
     if (pairs.empty()) {
         return result;
+    }
+
+    // Validate all pairs have both frames - required for helix organization
+    for (size_t i = 0; i < pairs.size(); ++i) {
+        if (!pairs[i].frame1().has_value() || !pairs[i].frame2().has_value()) {
+            throw std::invalid_argument(
+                "HelixOrganizer::organize: pair " + std::to_string(i) +
+                " missing frame(s). All pairs must have valid frames.");
+        }
     }
 
     if (pairs.size() == 1) {
