@@ -69,11 +69,37 @@ The strand_swapped flag determines which frame is used for step calculations. If
 - `org/src/find_pair.c` - `five2three()` function (lines 1404-1509)
 
 **How to debug:**
-```bash
-# Add JSON output for strand_swapped in legacy
-# Compare with modern helix_organization JSON
 
-# Example command to compare 1TTT:
+The legacy code now has comprehensive debug output controlled by environment variables:
+
+```bash
+# Enable five2three debug output for all pairs
+DEBUG_FIVE2THREE=1 X3DNA=/Users/jyesselman2/local/installs/x3dna \
+  ./org/build/bin/find_pair_original data/pdb/1Y27.pdb /dev/null 2>&1 | \
+  grep -E "^\[(five2three|first_step|1st pass|2nd pass|check_|chain1dir|wc_bporien)"
+
+# Filter to specific helix
+DEBUG_FIVE2THREE=1 DEBUG_HELIX=1 ...
+
+# Filter to specific bp_idx range
+DEBUG_FIVE2THREE=1 DEBUG_BP_MIN=10 DEBUG_BP_MAX=20 ...
+
+# Example output for 1Y27 helix 1:
+# [five2three] Helix 1 (pos 1-9, 9 pairs): 1 2 3 4 5 6 7 29 8
+# [first_step] helix=1 m=1 n=2 i1=2 i2=3 j1=68 j2=67 link(i1,i2)=1
+# [1st pass] m=1 n=2 wc=0 o3d=0 csc=0 oth=0 swapped[n]=0
+# ...
+# [five2three] Helix 1 FINAL SWAPS: 1:F 2:F 3:F 4:F 5:F 6:F 7:F 29:T 8:T
+```
+
+**Environment Variables:**
+- `DEBUG_FIVE2THREE=1` - Enable debug output
+- `DEBUG_BP_MIN=N` - Only show debug for bp_idx >= N
+- `DEBUG_BP_MAX=N` - Only show debug for bp_idx <= N
+- `DEBUG_HELIX=N` - Only show debug for helix N (-1 = all)
+
+```bash
+# Compare modern helix_organization JSON with legacy debug output:
 ./build/generate_modern_json data/pdb/1TTT.pdb data/json --stage=steps
 # Check data/json/helix_organization/1TTT.json for strand_swapped values
 ```

@@ -1,5 +1,51 @@
 #include "x3dna.h"
 #include "json_writer.h"
+
+/* Debug flag for five2three algorithm tracing
+ * Control via environment variables:
+ *   DEBUG_FIVE2THREE=1      - Enable debug output
+ *   DEBUG_BP_MIN=N          - Only debug bp_idx >= N
+ *   DEBUG_BP_MAX=N          - Only debug bp_idx <= N
+ *   DEBUG_HELIX=N           - Only debug helix N (-1 = all) */
+static int DEBUG_FIVE2THREE = 0;
+static long DEBUG_BP_MIN = 0;    /* Only debug bp_idx >= this */
+static long DEBUG_BP_MAX = 999;  /* Only debug bp_idx <= this */
+static long DEBUG_HELIX = -1;    /* Only debug this helix (-1 = all) */
+
+/* Initialize debug settings from environment variables */
+static void init_debug_settings(void) {
+    char *env_val;
+    if ((env_val = getenv("DEBUG_FIVE2THREE")) != NULL) {
+        DEBUG_FIVE2THREE = atoi(env_val);
+    }
+    if ((env_val = getenv("DEBUG_BP_MIN")) != NULL) {
+        DEBUG_BP_MIN = atol(env_val);
+    }
+    if ((env_val = getenv("DEBUG_BP_MAX")) != NULL) {
+        DEBUG_BP_MAX = atol(env_val);
+    }
+    if ((env_val = getenv("DEBUG_HELIX")) != NULL) {
+        DEBUG_HELIX = atol(env_val);
+    }
+    if (DEBUG_FIVE2THREE) {
+        fprintf(stderr, "[DEBUG] five2three debug enabled: bp_min=%ld bp_max=%ld helix=%ld\n",
+                DEBUG_BP_MIN, DEBUG_BP_MAX, DEBUG_HELIX);
+    }
+}
+
+#define DBG_FIVE2THREE(fmt, ...) \
+    do { if (DEBUG_FIVE2THREE) fprintf(stderr, fmt, ##__VA_ARGS__); } while(0)
+
+/* Debug macro with bp_idx range filter */
+#define DBG_BP(m, fmt, ...) \
+    do { if (DEBUG_FIVE2THREE && (m) >= DEBUG_BP_MIN && (m) <= DEBUG_BP_MAX) \
+        fprintf(stderr, fmt, ##__VA_ARGS__); } while(0)
+
+/* Debug macro with helix filter */
+#define DBG_HELIX(h, fmt, ...) \
+    do { if (DEBUG_FIVE2THREE && (DEBUG_HELIX == -1 || (h) == DEBUG_HELIX)) \
+        fprintf(stderr, fmt, ##__VA_ARGS__); } while(0)
+
 typedef struct {
     char pdbfile[BUF512];
     char outfile[BUF512];
@@ -1098,17 +1144,23 @@ static void first_step(long i, long **helix_idx, long *bp_idx, long *swapped,
                        long **base_pairs, double **o3_p)
 {
     long i1, i2, j, j1_osx, j2, k, m, n;
-    if (helix_idx[i][3] == 1)
+    if (helix_idx[i][3] == 1) {
+        DBG_HELIX(i, "[first_step] helix=%ld single-pair helix, skip\n", i);
         return;
+    }
     j = helix_idx[i][1];
     m = bp_idx[j];
     n = bp_idx[j + 1];
     get_ij(m, swapped, base_pairs, &i1, &j1_osx);
     get_ij(n, swapped, base_pairs, &i2, &j2);
     k = is_linked(i1, i2, o3_p);
-    if (k == -1)
+    DBG_HELIX(i, "[first_step] helix=%ld m=%ld n=%ld i1=%ld i2=%ld j1=%ld j2=%ld link(i1,i2)=%ld\n",
+              i, m, n, i1, i2, j1_osx, j2, k);
+    if (k == -1) {
         swapped[m] = !swapped[m];
-    else if (!k) {
+        DBG_HELIX(i, "[first_step] helix=%ld -> SWAP m=%ld (link=-1 reverse)\n", i, m);
+    } else if (!k) {
+        DBG_HELIX(i, "[first_step] helix=%ld -> REVERSE helix (link=0 none)\n", i);
         lreverse(helix_idx[i][1], helix_idx[i][3], bp_idx);
         j = helix_idx[i][1];
         m = bp_idx[j];
@@ -1116,20 +1168,26 @@ static void first_step(long i, long **helix_idx, long *bp_idx, long *swapped,
         get_ij(m, swapped, base_pairs, &i1, &j1_osx);
         get_ij(n, swapped, base_pairs, &i2, &j2);
         k = is_linked(i1, i2, o3_p);
-        if (k == -1)
+        DBG_HELIX(i, "[first_step] helix=%ld after reverse: m=%ld n=%ld link(i1,i2)=%ld\n", i, m, n, k);
+        if (k == -1) {
             swapped[m] = !swapped[m];
-        else if (!k)
+            DBG_HELIX(i, "[first_step] helix=%ld -> SWAP m=%ld after reverse\n", i, m);
+        } else if (!k) {
+            DBG_HELIX(i, "[first_step] helix=%ld -> RE-REVERSE (still no link)\n", i);
             lreverse(helix_idx[i][1], helix_idx[i][3], bp_idx);
+        }
     }
 }
 
 static long chain1dir(long m, long n, long *swapped, long **base_pairs, double **o3_p)
 {
-    long i1, i2, j1_osx, j2, k, irev0 = 0, irev1 = 1;
+    long i1, i2, j1_osx, j2, k, irev0 = 0, irev1 = 1, result;
     get_ij(m, swapped, base_pairs, &i1, &j1_osx);
     get_ij(n, swapped, base_pairs, &i2, &j2);
     k = is_linked(i1, i2, o3_p);
-    return (k == -1) ? irev1 : irev0;
+    result = (k == -1) ? irev1 : irev0;
+    DBG_BP(m, "[chain1dir] m=%ld n=%ld i1=%ld i2=%ld link=%ld -> %ld\n", m, n, i1, i2, k, result);
+    return result;
 }
 
 static void get_bidx(long m, long *swapped, long *idx1, long *idx2)
@@ -1166,16 +1224,36 @@ static long wc_bporien(long m, long n, long *swapped, long **base_pairs, double 
                        double **o3_p)
 {
     long i1, i2, j1_osx, j2, idxm1, idxm2, idxn1, idxn2, irev = 0;
+    double xang, zdir_normal, zdir_swapped;
+    int in_range = (m >= DEBUG_BP_MIN && m <= DEBUG_BP_MAX) ||
+                   (n >= DEBUG_BP_MIN && n <= DEBUG_BP_MAX);
+
     if (base_pairs[m][3] > 0 && base_pairs[n][3] > 0) {
         get_ij(m, swapped, base_pairs, &i1, &j1_osx);
         get_ij(n, swapped, base_pairs, &i2, &j2);
-        if (wcbp_xang(m, n, bp_xyz) > END_STACK_XANG ||
-            is_linked(i1, i2, o3_p) || is_linked(j1_osx, j2, o3_p))
+        xang = wcbp_xang(m, n, bp_xyz);
+        if (in_range) {
+            DBG_FIVE2THREE("[wc_bporien] m=%ld n=%ld WC_PAIR=Y xang=%.2f (max=%.2f) "
+                           "link_s1=%ld link_s2=%ld\n",
+                           m, n, xang, END_STACK_XANG,
+                           is_linked(i1, i2, o3_p), is_linked(j1_osx, j2, o3_p));
+        }
+        if (xang > END_STACK_XANG ||
+            is_linked(i1, i2, o3_p) || is_linked(j1_osx, j2, o3_p)) {
+            if (in_range) {
+                DBG_FIVE2THREE("[wc_bporien] m=%ld n=%ld -> 0 (early exit: xang>max or linked)\n", m, n);
+            }
             return irev;
+        }
         get_bidx(m, swapped, &idxm1, &idxm2);
         get_bidx(n, swapped, &idxn1, &idxn2);
-        if (wcbp_zdir(m, n, idxm1, idxm2, idxn1, idxn2, bp_xyz) < 0.0 &&
-            wcbp_zdir(m, n, idxm1, idxm2, idxn2, idxn1, bp_xyz) > 0.0)
+        zdir_normal = wcbp_zdir(m, n, idxm1, idxm2, idxn1, idxn2, bp_xyz);
+        zdir_swapped = wcbp_zdir(m, n, idxm1, idxm2, idxn2, idxn1, bp_xyz);
+        if (in_range) {
+            DBG_FIVE2THREE("[wc_bporien] m=%ld n=%ld zdir_normal=%.3f zdir_swapped=%.3f\n",
+                           m, n, zdir_normal, zdir_swapped);
+        }
+        if (zdir_normal < 0.0 && zdir_swapped > 0.0)
             irev = 1;
     }
     return irev;
@@ -1185,6 +1263,9 @@ static long check_o3dist(long m, long n, long *swapped, long **base_pairs, doubl
 {
     double di1_i2, di1_j2, dj1_i2, dj1_j2;
     long i1, i2, j1_osx, j2, irev = 0;
+    int in_range = (m >= DEBUG_BP_MIN && m <= DEBUG_BP_MAX) ||
+                   (n >= DEBUG_BP_MIN && n <= DEBUG_BP_MAX);
+
     get_ij(m, swapped, base_pairs, &i1, &j1_osx);
     get_ij(n, swapped, base_pairs, &i2, &j2);
     di1_i2 = distance_ab(o3_p, i1, i2, 4, 4);
@@ -1194,10 +1275,10 @@ static long check_o3dist(long m, long n, long *swapped, long **base_pairs, doubl
     if ((di1_i2 > 0.0 && di1_j2 > 0.0 && di1_i2 > di1_j2) &&
         (dj1_i2 > 0.0 && dj1_j2 > 0.0 && dj1_j2 > dj1_i2))
         irev = 1;
-    /* Debug trace */
-    if (m >= 20 && m <= 25) {
-        fprintf(stderr, "[LEGACY O3DIST] m=%ld n=%ld res_m=(%ld,%ld) res_n=(%ld,%ld) di1_i2=%.4f di1_j2=%.4f dj1_i2=%.4f dj1_j2=%.4f irev=%ld\n",
-                m, n, i1, j1_osx, i2, j2, di1_i2, di1_j2, dj1_i2, dj1_j2, irev);
+    if (in_range) {
+        DBG_FIVE2THREE("[check_o3dist] m=%ld n=%ld res_m=(%ld,%ld) res_n=(%ld,%ld) "
+                       "di1_i2=%.2f di1_j2=%.2f dj1_i2=%.2f dj1_j2=%.2f -> %ld\n",
+                       m, n, i1, j1_osx, i2, j2, di1_i2, di1_j2, dj1_i2, dj1_j2, irev);
     }
     return irev;
 }
@@ -1205,11 +1286,23 @@ static long check_o3dist(long m, long n, long *swapped, long **base_pairs, doubl
 static long check_schain(long m, long n, long *swapped, long **base_pairs, double **o3_p)
 {
     long i1, i2, j1_osx, j2, irev = 0;
+    long link_s1, link_s2, link_cross1, link_cross2;
+    int in_range = (m >= DEBUG_BP_MIN && m <= DEBUG_BP_MAX) ||
+                   (n >= DEBUG_BP_MIN && n <= DEBUG_BP_MAX);
+
     get_ij(m, swapped, base_pairs, &i1, &j1_osx);
     get_ij(n, swapped, base_pairs, &i2, &j2);
-    if (!is_linked(i1, i2, o3_p) && !is_linked(j1_osx, j2, o3_p) &&
-        (is_linked(i1, j2, o3_p) || is_linked(j1_osx, i2, o3_p)))
+    link_s1 = is_linked(i1, i2, o3_p);
+    link_s2 = is_linked(j1_osx, j2, o3_p);
+    link_cross1 = is_linked(i1, j2, o3_p);
+    link_cross2 = is_linked(j1_osx, i2, o3_p);
+    if (!link_s1 && !link_s2 && (link_cross1 || link_cross2))
         irev = 1;
+    if (in_range) {
+        DBG_FIVE2THREE("[check_schain] m=%ld n=%ld link_s1=%ld link_s2=%ld "
+                       "link_cross1=%ld link_cross2=%ld -> %ld\n",
+                       m, n, link_s1, link_s2, link_cross1, link_cross2, irev);
+    }
     return irev;
 }
 
@@ -1218,12 +1311,15 @@ static long check_others(long m, long n, long *swapped, long **base_pairs, doubl
 {
     double d[5], a1[4], a2[4], r1[4], r2[4];
     long i, j, i1, i2, j1_osx, j2, idxm1, idxm2, idxn1, idxn2;
-    long irev0 = 0, irev1 = 1;
-    get_ij(m, swapped, base_pairs, &i1, &j1_osx);
-    get_ij(n, swapped, base_pairs, &i2, &j2);
-    if (is_linked(i1, i2, o3_p) || is_linked(j1_osx, j2, o3_p) ||
-        is_linked(i1, j2, o3_p) || is_linked(j1_osx, i2, o3_p))
+    long irev0 = 0, irev1 = 1, result;
+    long res_i1, res_i2, res_j1_osx, res_j2;
+    get_ij(m, swapped, base_pairs, &res_i1, &res_j1_osx);
+    get_ij(n, swapped, base_pairs, &res_i2, &res_j2);
+    if (is_linked(res_i1, res_i2, o3_p) || is_linked(res_j1_osx, res_j2, o3_p) ||
+        is_linked(res_i1, res_j2, o3_p) || is_linked(res_j1_osx, res_i2, o3_p)) {
+        DBG_BP(m, "[check_others] m=%ld n=%ld -> 0 (has linkage)\n", m, n);
         return irev0;
+    }
     get_bidx(m, swapped, &idxm1, &idxm2);
     get_bidx(n, swapped, &idxn1, &idxn2);
     for (i = 1; i <= 3; i++) {
@@ -1233,8 +1329,10 @@ static long check_others(long m, long n, long *swapped, long **base_pairs, doubl
     }
     i1 = (a1[1] > 0.0 && a1[2] > 0.0 && a1[3] > 0.0);
     i2 = (a2[1] > 0.0 && a2[2] > 0.0 && a2[3] > 0.0);
-    if (i1 && i2)
+    if (i1 && i2) {
+        DBG_BP(m, "[check_others] m=%ld n=%ld -> 0 (both frames aligned)\n", m, n);
         return irev0;
+    }
     for (i = 1; i <= 3; i++) {
         j = (3 - i) * 3;
         r1[i] = dot(&bp_xyz[m][idxm1 - j], &bp_xyz[n][idxn2 - j]);
@@ -1243,24 +1341,30 @@ static long check_others(long m, long n, long *swapped, long **base_pairs, doubl
     j1_osx = (r1[1] > 0.0 && r1[2] > 0.0 && r1[3] > 0.0);
     j2 = (r2[1] > 0.0 && r2[2] > 0.0 && r2[3] > 0.0);
     if (!i1 && !i2) {
-        if (j1_osx || j2)
+        if (j1_osx || j2) {
+            DBG_BP(m, "[check_others] m=%ld n=%ld -> 1 (neither aligned, cross-aligned)\n", m, n);
             return irev1;
-        else if (!j1_osx && !j2)
+        } else if (!j1_osx && !j2) {
+            DBG_BP(m, "[check_others] m=%ld n=%ld -> 0 (none aligned)\n", m, n);
             return irev0;
+        }
     }
     d[1] = dot2ang(a1[1]) + dot2ang(a1[2]) + dot2ang(a1[3]);
     d[2] = dot2ang(a2[1]) + dot2ang(a2[2]) + dot2ang(a2[3]);
     d[3] = dot2ang(r1[1]) + dot2ang(r1[2]) + dot2ang(r1[3]);
     d[4] = dot2ang(r2[1]) + dot2ang(r2[2]) + dot2ang(r2[3]);
+    result = irev0;
     if (i1 && j1_osx)
-        return (d[1] > d[3]) ? irev1 : irev0;
-    if (i1 && j2)
-        return (d[1] > d[4]) ? irev1 : irev0;
-    if (i2 && j1_osx)
-        return (d[2] > d[3]) ? irev1 : irev0;
-    if (i2 && j2)
-        return (d[2] > d[4]) ? irev1 : irev0;
-    return irev0;
+        result = (d[1] > d[3]) ? irev1 : irev0;
+    else if (i1 && j2)
+        result = (d[1] > d[4]) ? irev1 : irev0;
+    else if (i2 && j1_osx)
+        result = (d[2] > d[3]) ? irev1 : irev0;
+    else if (i2 && j2)
+        result = (d[2] > d[4]) ? irev1 : irev0;
+    DBG_BP(m, "[check_others] m=%ld n=%ld i1=%ld i2=%ld j1=%ld j2=%ld d=[%.1f,%.1f,%.1f,%.1f] -> %ld\n",
+           m, n, i1, i2, j1_osx, j2, d[1], d[2], d[3], d[4], result);
+    return result;
 }
 
 static void check_direction(long i, long **helix_idx, long *bp_idx, long *swapped,
@@ -1278,30 +1382,49 @@ static void check_direction(long i, long **helix_idx, long *bp_idx, long *swappe
         k = is_linked(j1_osx, j2, o3_p);
         (k == 1) ? ++direction[4] : (k == -1) ? ++direction[5] : ++direction[6];
     }
+    DBG_FIVE2THREE("[check_direction] helix=%ld dir=[s1_fwd=%ld s1_rev=%ld s1_none=%ld "
+                   "s2_fwd=%ld s2_rev=%ld s2_none=%ld]\n",
+                   i, direction[1], direction[2], direction[3],
+                   direction[4], direction[5], direction[6]);
+
     if ((direction[1] && direction[2]) || (direction[4] && direction[5])) {
         helix_idx[i][7] = 1;
+        DBG_FIVE2THREE("[check_direction] helix=%ld -> MIXED (early return)\n", i);
         return;
     }
-    if (direction[1] + direction[2] + direction[4] + direction[5] == 0)
+    if (direction[1] + direction[2] + direction[4] + direction[5] == 0) {
+        DBG_FIVE2THREE("[check_direction] helix=%ld -> NO_LINKS (early return)\n", i);
         return;
+    }
     m = bp_idx[helix_idx[i][1]];
     n = bp_idx[helix_idx[i][2]];
     get_ij(m, swapped, base_pairs, &i1, &j1_osx);
     get_ij(n, swapped, base_pairs, &i2, &j2);
+    DBG_FIVE2THREE("[check_direction] helix=%ld first_pair=%ld last_pair=%ld "
+                   "i1=%ld j1=%ld i2=%ld j2=%ld\n",
+                   i, m, n, i1, j1_osx, i2, j2);
+
     if (direction[3] || direction[6])
         helix_idx[i][5] = 1;
     if (direction[1] && !direction[2]) {
         if (!direction[4] && direction[5]) {
+            DBG_FIVE2THREE("[check_direction] helix=%ld ANTI-PARALLEL check: i1=%ld > j2=%ld ? %s\n",
+                           i, i1, j2, (i1 > j2) ? "YES" : "NO");
             if (i1 > j2) {
+                DBG_FIVE2THREE("[check_direction] helix=%ld -> FLIP ALL & REVERSE\n", i);
                 for (j = helix_idx[i][1]; j <= helix_idx[i][2]; j++)
                     swapped[bp_idx[j]] = !swapped[bp_idx[j]];
                 lreverse(helix_idx[i][1], helix_idx[i][3], bp_idx);
             }
         } else if (direction[4] && !direction[5]) {
+            DBG_FIVE2THREE("[check_direction] helix=%ld PARALLEL check: i1=%ld > j1=%ld ? %s\n",
+                           i, i1, j1_osx, (i1 > j1_osx) ? "YES" : "NO");
             helix_idx[i][6] = 1;
-            if (i1 > j1_osx)
+            if (i1 > j1_osx) {
+                DBG_FIVE2THREE("[check_direction] helix=%ld -> FLIP ALL (no reverse)\n", i);
                 for (j = helix_idx[i][1]; j <= helix_idx[i][2]; j++)
                     swapped[bp_idx[j]] = !swapped[bp_idx[j]];
+            }
         }
     }
 }
@@ -1311,48 +1434,73 @@ static void check_strand2(long i, long **helix_idx, long *bp_idx, double **bp_xy
                           long *direction, FILE *tfp)
 {
     long i1, i2, j, j1_osx, j2, k, m, n, anti_p, parallel;
+    DBG_HELIX(i, "[check_strand2] helix=%ld helix_idx[7]=%ld direction=[%ld,%ld,%ld,%ld,%ld,%ld]\n",
+              i, helix_idx[i][7], direction[1], direction[2], direction[3],
+              direction[4], direction[5], direction[6]);
     if (!helix_idx[i][7]) {
-        if (direction[1] + direction[2] + direction[4] + direction[5] == 0)
+        if (direction[1] + direction[2] + direction[4] + direction[5] == 0) {
+            DBG_HELIX(i, "[check_strand2] helix=%ld -> SKIP (no linkage info)\n", i);
             return;
+        }
+        DBG_HELIX(i, "[check_strand2] helix=%ld -> BRANCH A (reset helix_idx[5-7])\n", i);
         init_lvector(helix_idx[i], 5, 7, 0);
         for (j = helix_idx[i][1]; j < helix_idx[i][2]; j++) {
             m = bp_idx[j];
             n = bp_idx[j + 1];
-            if (wc_bporien(m, n, swapped, base_pairs, bp_xyz, o3_p))
+            if (wc_bporien(m, n, swapped, base_pairs, bp_xyz, o3_p)) {
+                DBG_BP(m, "[check_strand2] m=%ld n=%ld -> wc_bporien=1, skip\n", m, n);
                 continue;
+            }
             get_ij(m, swapped, base_pairs, &i1, &j1_osx);
             get_ij(n, swapped, base_pairs, &i2, &j2);
-            if (!is_linked(i1, i2, o3_p) && !is_linked(j1_osx, j2, o3_p) &&
-                ((is_linked(i1, j2, o3_p) == 1) ||
-                 (is_linked(i1, j2, o3_p) && is_linked(j1_osx, i2, o3_p)))) {
+            long link_i1_i2 = is_linked(i1, i2, o3_p);
+            long link_j1_j2 = is_linked(j1_osx, j2, o3_p);
+            long link_i1_j2 = is_linked(i1, j2, o3_p);
+            long link_j1_i2 = is_linked(j1_osx, i2, o3_p);
+            DBG_BP(m, "[check_strand2-A] m=%ld n=%ld link(i1,i2)=%ld link(j1,j2)=%ld "
+                   "link(i1,j2)=%ld link(j1,i2)=%ld\n", m, n, link_i1_i2, link_j1_j2, link_i1_j2, link_j1_i2);
+            if (!link_i1_i2 && !link_j1_j2 &&
+                ((link_i1_j2 == 1) || (link_i1_j2 && link_j1_i2))) {
                 swapped[n] = !swapped[n];
+                DBG_BP(m, "[check_strand2-A] m=%ld n=%ld -> SWAP n (cross-strand link)\n", m, n);
                 fprintf(tfp, "                  000    [%ld-%ld]\n", m, n);
                 fprintf(stderr, "000:    [%ld-%ld]\n", m, n);
             }
         }
     } else {
+        DBG_HELIX(i, "[check_strand2] helix=%ld -> BRANCH B (helix_idx[7] set)\n", i);
         helix_idx[i][7] = 0;
         anti_p = (direction[1] > direction[2]) && (direction[4] < direction[5]);
         parallel = (direction[1] > direction[2]) && (direction[4] > direction[5]);
+        DBG_HELIX(i, "[check_strand2-B] helix=%ld anti_p=%ld parallel=%ld\n", i, anti_p, parallel);
         for (j = helix_idx[i][1]; j < helix_idx[i][2]; j++) {
             m = bp_idx[j];
             n = bp_idx[j + 1];
             get_ij(m, swapped, base_pairs, &i1, &j1_osx);
             get_ij(n, swapped, base_pairs, &i2, &j2);
             k = is_linked(j1_osx, j2, o3_p);
-            if (!is_linked(i1, i2, o3_p) && ((anti_p && k == 1) || (parallel && k == -1))) {
+            long link_i1_i2 = is_linked(i1, i2, o3_p);
+            DBG_BP(m, "[check_strand2-B] m=%ld n=%ld link(i1,i2)=%ld link(j1,j2)=%ld anti_p=%ld parallel=%ld\n",
+                   m, n, link_i1_i2, k, anti_p, parallel);
+            if (!link_i1_i2 && ((anti_p && k == 1) || (parallel && k == -1))) {
                 swapped[n] = !swapped[n];
+                DBG_BP(m, "[check_strand2-B] m=%ld n=%ld -> SWAP n (2nd check)\n", m, n);
                 fprintf(tfp, "                  2nd %2ld [%ld-%ld]\n", k, m, n);
             }
             get_ij(n, swapped, base_pairs, &i2, &j2);
-            if (!is_linked(i1, i2, o3_p) && !is_linked(j1_osx, j2, o3_p)) {
-                if ((anti_p && is_linked(j1_osx, i2, o3_p) == 1) ||
-                    (parallel && is_linked(i1, j2, o3_p) == -1)) {
+            long link_j1_j2 = is_linked(j1_osx, j2, o3_p);
+            long link_j1_i2 = is_linked(j1_osx, i2, o3_p);
+            long link_i1_j2 = is_linked(i1, j2, o3_p);
+            if (!link_i1_i2 && !link_j1_j2) {
+                DBG_BP(m, "[check_strand2-B] m=%ld n=%ld 3rd check: link(j1,i2)=%ld link(i1,j2)=%ld\n",
+                       m, n, link_j1_i2, link_i1_j2);
+                if ((anti_p && link_j1_i2 == 1) || (parallel && link_i1_j2 == -1)) {
+                    DBG_BP(m, "[check_strand2-B] m=%ld n=%ld -> SWAP m (3rdL)\n", m, n);
                     fprintf(tfp, "                  3rdL   [%ld-%ld]\n", m, n);
                     swapped[m] = !swapped[m];
-                } else if ((anti_p && is_linked(i1, j2, o3_p) == 1) ||
-                           (parallel && is_linked(j1_osx, i2, o3_p) == -1)) {
+                } else if ((anti_p && link_i1_j2 == 1) || (parallel && link_j1_i2 == -1)) {
                     swapped[n] = !swapped[n];
+                    DBG_BP(m, "[check_strand2-B] m=%ld n=%ld -> SWAP n (3rdU)\n", m, n);
                     fprintf(tfp, "                  3rdU    [%ld-%ld]\n", m, n);
                 }
             }
@@ -1421,23 +1569,19 @@ static void five2three(long num_bp, long *num_helix, long **helix_idx, long *bp_
     for (i = 1; i <= *num_helix; i++) {
         helix_idx[i][3] = helix_idx[i][2] - helix_idx[i][1] + 1;
         /* Debug: print helix structure */
-        {
+        if (DEBUG_FIVE2THREE && (DEBUG_HELIX == -1 || i == DEBUG_HELIX)) {
             long jj;
-            long has_target = 0;
+            fprintf(stderr, "[five2three] Helix %ld (pos %ld-%ld, %ld pairs): ",
+                    i, helix_idx[i][1], helix_idx[i][2], helix_idx[i][3]);
             for (jj = helix_idx[i][1]; jj <= helix_idx[i][2]; jj++) {
-                if (bp_idx[jj] >= 20 && bp_idx[jj] <= 31) has_target = 1;
+                fprintf(stderr, "%ld ", bp_idx[jj]);
             }
-            if (has_target) {
-                fprintf(stderr, "[LEGACY HELIX ORDER] Helix %ld (pos %ld-%ld): ", i, helix_idx[i][1], helix_idx[i][2]);
-                for (jj = helix_idx[i][1]; jj <= helix_idx[i][2]; jj++) {
-                    fprintf(stderr, "%ld ", bp_idx[jj]);
-                }
-                fprintf(stderr, "\n");
-            }
+            fprintf(stderr, "\n");
         }
         print_sep(tfp, '-', 84);
         fprintf(tfp, "Helix #%4.4ld\n", i);
         first_step(i, helix_idx, bp_idx, swapped, base_pairs, o3_p);
+        DBG_HELIX(i, "[five2three] Helix %ld FIRST PASS:\n", i);
         for (j = helix_idx[i][1]; j < helix_idx[i][2]; j++) {
             m = bp_idx[j];
             n = bp_idx[j + 1];
@@ -1445,10 +1589,8 @@ static void five2three(long num_bp, long *num_helix, long **helix_idx, long *bp_
             rev_o3d = check_o3dist(m, n, swapped, base_pairs, o3_p);
             rev_csc = check_schain(m, n, swapped, base_pairs, o3_p);
             rev_oth = check_others(m, n, swapped, base_pairs, o3_p, bp_xyz);
-            if (m >= 20 && m <= 25) {
-                fprintf(stderr, "[LEGACY 1ST PASS] m=%ld n=%ld wc=%ld o3d=%ld csc=%ld oth=%ld swapped_n_before=%ld",
-                        m, n, rev_wc, rev_o3d, rev_csc, rev_oth, swapped[n]);
-            }
+            DBG_BP(m, "[1st pass] m=%ld n=%ld wc=%ld o3d=%ld csc=%ld oth=%ld swapped[n]=%ld",
+                   m, n, rev_wc, rev_o3d, rev_csc, rev_oth, swapped[n]);
             fprintf(tfp, "          %4ld: %2ld %2ld %2ld %2ld", j, rev_wc, rev_o3d,
                     rev_oth, rev_csc);
             if (rev_wc)
@@ -1456,31 +1598,39 @@ static void five2three(long num_bp, long *num_helix, long **helix_idx, long *bp_
             else if (rev_o3d || rev_csc || rev_oth)
                 swapped[n] = !swapped[n];
             rev_s1 = chain1dir(m, n, swapped, base_pairs, o3_p);
-            if (m >= 20 && m <= 25) {
-                fprintf(stderr, " s1=%ld swapped_n_after=%ld\n", rev_s1, swapped[n]);
-            }
+            DBG_BP(m, " s1=%ld -> swapped[n]=%ld\n", rev_s1, swapped[n]);
             if (rev_s1)
                 swapped[n] = !swapped[n];
             fprintf(tfp, " %2ld [%ld-%ld]\n", rev_s1, m, n);
         }
         fprintf(tfp, "\n              ===> 2nd around checking or WC geometry steps\n");
+        DBG_HELIX(i, "[five2three] Helix %ld SECOND PASS:\n", i);
         for (j = helix_idx[i][1]; j < helix_idx[i][2]; j++) {
             m = bp_idx[j];
             n = bp_idx[j + 1];
             rev_wc = wc_bporien(m, n, swapped, base_pairs, bp_xyz, o3_p);
-            if (m >= 20 && m <= 25) {
-                fprintf(stderr, "[LEGACY 2ND PASS] m=%ld n=%ld rev_wc=%ld swapped[m]=%ld swapped[n]=%ld\n",
-                        m, n, rev_wc, swapped[m], swapped[n]);
-            }
+            DBG_BP(m, "[2nd pass] m=%ld n=%ld rev_wc=%ld swapped[m]=%ld swapped[n]=%ld",
+                   m, n, rev_wc, swapped[m], swapped[n]);
             if (rev_wc) {
                 swapped[m] = !swapped[m];
+                DBG_BP(m, " -> SWAP m=%ld", m);
                 fprintf(tfp, "          %4ld: [%ld-%ld]\n", j, m, n);
             }
+            DBG_BP(m, "\n");
         }
         fprintf(tfp, "\n");
         check_direction(i, helix_idx, bp_idx, swapped, base_pairs, o3_p, direction);
         check_strand2(i, helix_idx, bp_idx, bp_xyz, swapped, base_pairs, o3_p, direction, tfp);
         check_rise(i, helix_idx, bp_idx, swapped, base_pairs, bp_xyz, o3_p);
+        /* Debug: print final swap state before applying */
+        if (DEBUG_FIVE2THREE && (DEBUG_HELIX == -1 || i == DEBUG_HELIX)) {
+            fprintf(stderr, "[five2three] Helix %ld FINAL SWAPS: ", i);
+            for (j = helix_idx[i][1]; j <= helix_idx[i][2]; j++) {
+                m = bp_idx[j];
+                fprintf(stderr, "%ld:%s ", m, swapped[m] ? "T" : "F");
+            }
+            fprintf(stderr, "\n");
+        }
         /* Record helix organization before applying swaps */
         json_writer_record_helix_organization(i, helix_idx[i], bp_idx, swapped, base_pairs);
         for (j = helix_idx[i][1]; j <= helix_idx[i][2]; j++) {
@@ -2274,6 +2424,7 @@ int find_pair_main(int argc, char *argv[])
     struct_args_fp args;
     time_t time0;
     time(&time0);
+    init_debug_settings();
     set_my_globals(argv[0]);
     fp_cmdline(argc, argv, &args);
     fprintf(stderr, "\nhandling file <%s>\n", args.pdbfile);
