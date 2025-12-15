@@ -112,6 +112,30 @@ These have multiple steps with different values. Likely caused by strand_swapped
 
 **Pattern to look for**: Are the differing steps in specific helix segments? Check if all steps in helix 2+ are inverted.
 
+### Strand_swapped Analysis Results (December 15, 2024)
+
+**1TTT Analysis:**
+- 93.5% of strand_swapped values match (86/92)
+- 6 differences at bp_idx: 15, 16, 46, 47, 77, 78
+- All differences are at the LAST 2 positions of their respective helices
+- Pattern: Modern=False, Legacy=True for final helix pairs
+
+**Helix position analysis:**
+```
+Helix 1: positions 15-16 (bp_idx 16, 15) - DIFF
+Helix 4: positions 45-46 (bp_idx 47, 46) - DIFF
+Helix 7: positions 76-77 (bp_idx 78, 77) - DIFF
+```
+
+**Hypothesis**: The second pass of wc_bporien or check_direction/check_strand2
+handles the final pairs differently between legacy and modern. The issue appears
+to be in how swaps propagate to the last 2 pairs of each helix.
+
+**Next investigation steps:**
+1. Add debug output to trace second pass for helix 1 pairs 14-16
+2. Compare wc_bporien return values between legacy and modern
+3. Check if check_direction or check_strand2 has different logic for end-of-helix
+
 ---
 
 ## Historical Progress
