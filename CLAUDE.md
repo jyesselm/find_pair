@@ -75,16 +75,18 @@ PYTHONPATH=. X3DNA=/Users/jyesselman2/local/installs/x3dna python3 scripts/rebui
 | 2: Residue Indices | 100% (100/100) | All pass |
 | 3-5: Frames | 99% (99/100) | 1 failure: 6OZK (base_type `g` vs `I` for inosine) |
 | 6-7: Pairs | 99% (99/100) | Only 4RQF fails (corrupt legacy JSON) |
-| 11-12: Steps | 81% (81/100) | bp_idx ordering is 100% correct; 19 failures are parameter value differences |
+| 11-12: Steps | 90% (90/100) | 10 failures due to helix grouping differences |
 
-**Note**: Step ordering (`bp_idx`) now matches legacy 100%. The 19 failures have matching `bp_idx` pairs but differ in calculated parameter values. Fixes implemented:
+**Note**: Step ordering (`bp_idx`) now matches legacy 100% when helices match. Fixes implemented:
 - Fixed `end_stack_xang` threshold: 110° → 125° (matches legacy `END_STACK_XANG`)
 - Fixed backbone extraction to use `legacy_residue_idx` from atoms
 - Added second `check_direction` call after `check_strand2` (legacy line 1361)
 - Fixed neighbor swapping in `calculate_context` (legacy lines 931-941)
 - Added Watson-Crick pair check in `wc_bporien` (legacy `base_pairs[m][3] > 0`)
+- Fixed modified base handling in wc_bporien ("Cg" → "CG")
+- Added geometric bpid check (dir_x > 0 && dir_y < 0 && dir_z < 0)
 
-**Remaining 19 failures** have matching `bp_idx` ordering but parameter calculation differences. See `docs/STEP_PARAMETER_INVESTIGATION.md` for details.
+**Remaining 10 failures** (2EEW, 3UCU, 5FJ1, 5Y85, 6ICZ, 7YGA, 7YGB, 8RUJ, 8U5Z, 8Z1P) have different helix groupings. See `docs/STEP_PARAMETER_INVESTIGATION.md` for details.
 
 ### Validation Stages (must pass in order)
 
