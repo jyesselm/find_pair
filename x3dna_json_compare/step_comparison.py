@@ -321,3 +321,120 @@ def _match_steps_by_position(
 
     return mismatches, len(matched_pairs)
 
+
+def compare_steps_by_residue_pairs(
+    legacy_steps: List[Dict],
+    modern_steps: List[Dict],
+    legacy_pairs: List[Dict],
+    modern_pairs: List[Dict],
+    parameter_type: str = "bpstep_params",
+    tolerance: float = 1e-4
+) -> Tuple[List[Dict], int, int]:
+    """
+    Compare step parameters by matching steps that use the same residue pairs.
+
+    This handles cases where legacy and modern have different helix organization
+    (different bp_idx ordering) but compute steps for the same underlying pairs.
+
+    Args:
+        legacy_steps: Legacy step parameter records
+        modern_steps: Modern step parameter records
+        legacy_pairs: Legacy base_pair records (to get residue info)
+        modern_pairs: Modern base_pair records (to get residue info)
+        parameter_type: "bpstep_params" or "helical_params"
+        tolerance: Parameter comparison tolerance
+
+    Returns:
+        Tuple of (mismatches, matched_count, total_comparable)
+    """
+
+    def get_step_residue_key(step: Dict, pairs: List[Dict]) -> Optional[Tuple]:
+        """Get residue pair key for a step: ((base_i1, base_j1), (base_i2, base_j2))"""
+        bp_idx1 = step.get('bp_idx1', 0)
+        bp_idx2 = step.get('bp_idx2', 0)
+
+        # bp_idx is 1-based, convert to 0-based for list indexing
+        idx1 = bp_idx1 - 1
+        idx2 = bp_idx2 - 1
+
+        if idx1 < 0 or idx1 >= len(pairs) or idx2 < 0 or idx2 >= len(pairs):
+            return None
+
+        pair1 = pairs[idx1]
+        pair2 = pairs[idx2]
+
+        # Get residue indices (base_i, base_j) for each pair
+        res1 = (pair1.get('base_i'), pair1.get('base_j'))
+        res2 = (pair2.get('base_i'), pair2.get('base_j'))
+
+        if None in res1 or None in res2:
+            return None
+
+        return (res1, res2)
+
+    # Build maps from residue key to step record
+    legacy_by_residues = {}
+    for step in legacy_steps:
+        key = get_step_residue_key(step, legacy_pairs)
+        if key:
+            legacy_by_residues[key] = step
+
+    modern_by_residues = {}
+    for step in modern_steps:
+        key = get_step_residue_key(step, modern_pairs)
+        if key:
+            modern_by_residues[key] = step
+
+    # Find common residue pair combinations
+    common_keys = set(legacy_by_residues.keys()) & set(modern_by_residues.keys())
+
+    # Define parameter fields
+    if parameter_type == "bpstep_params":
+        param_fields = ['shift', 'slide', 'rise', 'tilt', 'roll', 'twist']
+        legacy_param_keys = ['Shift', 'Slide', 'Rise', 'Tilt', 'Roll', 'Twist']
+    else:  # helical_params
+        param_fields = ['x_displacement', 'y_displacement', 'rise', 'inclination', 'tip', 'twist']
+        legacy_param_keys = None
+
+    mismatches = []
+    matched_count = 0
+
+    for key in common_keys:
+        lstep = legacy_by_residues[key]
+        mstep = modern_by_residues[key]
+        step_mismatches = {}
+
+        for i, field in enumerate(param_fields):
+            # Get legacy value
+            if parameter_type == "bpstep_params":
+                leg_params = lstep.get("params", {})
+                leg_val = leg_params.get(legacy_param_keys[i]) if isinstance(leg_params, dict) else None
+            else:
+                leg_params = lstep.get("params", [])
+                leg_val = leg_params[i] if isinstance(leg_params, list) and i < len(leg_params) else None
+
+            mod_val = mstep.get(field)
+
+            if leg_val is None or mod_val is None:
+                continue
+
+            # Check match
+            if abs(float(leg_val) - float(mod_val)) > tolerance:
+                step_mismatches[field] = {
+                    'legacy': leg_val,
+                    'modern': mod_val,
+                    'diff': abs(float(leg_val) - float(mod_val))
+                }
+
+        if step_mismatches:
+            mismatches.append({
+                'residue_key': key,
+                'legacy_bp_idx': (lstep.get('bp_idx1'), lstep.get('bp_idx2')),
+                'modern_bp_idx': (mstep.get('bp_idx1'), mstep.get('bp_idx2')),
+                'mismatches': step_mismatches
+            })
+        else:
+            matched_count += 1
+
+    return mismatches, matched_count, len(common_keys)
+
