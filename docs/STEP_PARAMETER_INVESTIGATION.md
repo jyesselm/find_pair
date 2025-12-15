@@ -1,10 +1,122 @@
 # Step Parameter Investigation
 
-## Summary
+## Current Status (December 15, 2024)
 
-**Current Status**: 81% of PDBs pass step parameter validation (81/100)
+**Pass Rate**: 80% (80/100 PDBs)
 
-**Progress Made (December 2024)**:
+**Key Achievement**: bp_idx ordering now matches legacy **100%** (99/99 PDBs with step data)
+
+**Remaining Issue**: 20 PDBs have matching bp_idx pairs but different step parameter VALUES
+
+## What's Working
+
+- ✅ Helix organization (pair ordering) - 100% match
+- ✅ bp_idx assignments - 100% match
+- ✅ HelixOrganizer five2three algorithm - produces correct pair ordering
+- ✅ end_stack_xang threshold (110° → 125°) - matches legacy
+
+## What Needs Investigation
+
+The 20 failing PDBs have identical bp_idx pairs but different calculated parameter values. This means:
+1. The pairs being compared are correct
+2. The step ordering is correct
+3. **The parameter calculation itself differs**
+
+### Root Cause Candidates
+
+1. **strand_swapped differences** - Different swap flags cause different frame selection
+2. **ParameterCalculator implementation** - Midstep frame or parameter formulas may differ
+3. **Frame selection logic** - How swap affects which frame (org_i vs org_j) is used
+
+### Failing PDBs Analysis (20 total)
+
+| Category | Count | Examples | Issue |
+|----------|-------|----------|-------|
+| Single step mismatch | 3 | 1Y27, 3GAO, 4FEN | Only last step (29→30) differs |
+| Few step mismatches | 8 | 3UCU, 5CCX, 6MWN, 6XKN, 8EXA, 8UBD | 1-2 steps differ |
+| Many step mismatches | 9 | 1TTT, 2DU3, 2EEW, 5FJ1, 5Y85, 6ICZ, 7YGA, 7YGB, 8U5Z, 8RUJ, 8Z1P | Multiple steps differ |
+
+### Next Steps to Fix
+
+#### Phase 1: Compare strand_swapped Arrays (Priority: HIGH)
+
+The strand_swapped flag determines which frame is used for step calculations. If modern and legacy have different swap decisions, parameters will differ.
+
+**Files to investigate:**
+- `src/x3dna/algorithms/helix_organizer.cpp` - `ensure_five_to_three()` function
+- `org/src/find_pair.c` - `five2three()` function (lines 1404-1509)
+
+**How to debug:**
+```bash
+# Add JSON output for strand_swapped in legacy
+# Compare with modern helix_organization JSON
+
+# Example command to compare 1TTT:
+./build/generate_modern_json data/pdb/1TTT.pdb data/json --stage=steps
+# Check data/json/helix_organization/1TTT.json for strand_swapped values
+```
+
+**Key functions in five2three that affect swap:**
+1. `first_step()` - Initial swap assignment based on O3'-P linkage
+2. `wc_bporien()` - WC pair z-direction alignment check
+3. `check_o3dist()` - O3' distance patterns
+4. `check_schain()` - Sugar chain connectivity
+5. `check_others()` - Frame vector alignment
+6. `chain1dir()` - Strand1 reverse linkage check
+7. `check_direction()` - Global helix direction analysis
+8. `check_strand2()` - Additional strand corrections
+
+#### Phase 2: Investigate Cross-Helix Steps (Priority: MEDIUM)
+
+The 3 PDBs with single-step failures (1Y27, 3GAO, 4FEN) all fail on the LAST step (29→30). This step connects pairs from different helices.
+
+**Questions to answer:**
+- Does legacy calculate step params across helix boundaries?
+- Is the last step always a cross-helix step?
+- Should cross-helix steps use different frame selection?
+
+**Files to check:**
+- `tools/generate_modern_json.cpp` - Step calculation loop (lines ~290-340)
+- Check if `helix_breaks` vector is being used correctly
+
+#### Phase 3: Debug ParameterCalculator (Priority: LOW if swap is the issue)
+
+If strand_swapped matches but params still differ, investigate the calculation itself.
+
+**Files:**
+- `src/x3dna/analyze/ParameterCalculator.cpp`
+- `org/analyze.c`
+
+**Key calculations:**
+- Midstep frame computation
+- Step parameter formulas (Shift, Slide, Rise, Tilt, Roll, Twist)
+
+---
+
+### Detailed Failure Analysis
+
+#### Single-Step Failures (1Y27, 3GAO, 4FEN)
+
+All have:
+- 30 base pairs, 29 steps
+- Steps 1-28 match perfectly
+- Step 29→30 differs completely (different by 10-200+ units)
+
+**Hypothesis**: The last step connects bp_idx 29 (helix boundary) to bp_idx 30 (isolated pair or different helix). Legacy may skip this step or calculate it differently.
+
+**Test**: Compare legacy's bpstep_params JSON - does it even include step 29→30?
+
+#### Multi-Step Failures (1TTT, 2DU3, etc.)
+
+These have multiple steps with different values. Likely caused by strand_swapped differences that propagate through the helix.
+
+**Pattern to look for**: Are the differing steps in specific helix segments? Check if all steps in helix 2+ are inverted.
+
+---
+
+## Historical Progress
+
+**Previous Progress Made (December 2024)**:
 1. Fixed base_pair recording to include ALL valid pairs (35 pairs for 1EHZ, not just 30 selected pairs)
 2. Fixed bp_idx to use 1-based indexing (matching legacy)
 3. Implemented HelixOrganizer for pair ordering (backbone connectivity order)
@@ -14,6 +126,8 @@
 7. **Added second check_direction call after check_strand2** (legacy line 1361)
 8. **Fixed locate_helices to match legacy end_list traversal algorithm**
 9. **Fixed calculate_context neighbor swapping logic** (legacy lines 931-941)
+10. **Fixed end_stack_xang threshold** (110° → 125°) - matches legacy END_STACK_XANG
+11. **Fixed backbone extraction** - uses legacy_residue_idx from atoms
 
 **Bug Fix Details (December 14, 2024)**:
 
