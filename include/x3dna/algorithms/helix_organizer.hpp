@@ -18,6 +18,25 @@
 namespace x3dna::algorithms {
 
 /**
+ * @brief Direction of backbone linkage between residues
+ */
+enum class LinkDirection {
+    None = 0,      ///< No O3'-P linkage detected
+    Forward = 1,   ///< i → j linkage (5'→3' direction)
+    Reverse = -1   ///< j → i linkage (reverse direction)
+};
+
+/**
+ * @brief Residue indices for a base pair's two strands
+ *
+ * Uses 1-based indexing for compatibility with legacy backbone data.
+ */
+struct StrandResidues {
+    size_t strand1;  ///< Residue index on strand 1 (1-based)
+    size_t strand2;  ///< Residue index on strand 2 (1-based)
+};
+
+/**
  * @brief Backbone atom coordinates for a residue
  */
 struct BackboneAtoms {
@@ -39,6 +58,7 @@ struct HelixSegment {
     bool is_zdna = false;   ///< Z-DNA conformation detected
     bool has_break = false; ///< Broken O3'-P linkage within helix
     bool is_parallel = false; ///< Parallel strand orientation (vs anti-parallel)
+    bool has_mixed_direction = false; ///< Mixed strand directions detected
 };
 
 /**
@@ -137,9 +157,9 @@ private:
         std::vector<HelixSegment>& helices,
         std::vector<bool>& strand_swapped) const;
     
-    // Helper: get residue indices based on swap status
-    void get_ij(const core::BasePair& pair, bool swapped, 
-                size_t& i, size_t& j) const;
+    /** @brief Get residue indices based on swap status (returns 1-based indices) */
+    [[nodiscard]] StrandResidues get_strand_residues(
+        const core::BasePair& pair, bool swapped) const;
     
     // Five2three sub-functions (legacy equivalents)
     
@@ -175,13 +195,13 @@ private:
                    bool swap_m, bool swap_n,
                    const BackboneData& backbone) const;
     
-    /** @brief Count backbone linkage directions in a helix */
+    /** @brief Count backbone linkage directions in a helix (may modify swapped and pair_order) */
     DirectionCounts check_direction(
         const std::vector<core::BasePair>& pairs,
         const BackboneData& backbone,
-        const std::vector<size_t>& pair_order,
-        const HelixSegment& helix,
-        const std::vector<bool>& swapped) const;
+        std::vector<size_t>& pair_order,
+        HelixSegment& helix,
+        std::vector<bool>& swapped) const;
     
     /** @brief Additional strand corrections based on direction counts */
     void check_strand2(const std::vector<core::BasePair>& pairs,
@@ -191,8 +211,9 @@ private:
                       std::vector<bool>& swapped,
                       const DirectionCounts& direction) const;
     
-    // Backbone connectivity
-    int is_linked(size_t i, size_t j, const BackboneData& backbone) const;
+    /** @brief Check backbone linkage between residues */
+    [[nodiscard]] LinkDirection check_linkage(
+        size_t res_i, size_t res_j, const BackboneData& backbone) const;
     
     /** @brief Get O3'-O3' distance between residues */
     double o3_distance(size_t i, size_t j, const BackboneData& backbone) const;

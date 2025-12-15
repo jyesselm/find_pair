@@ -901,6 +901,12 @@ static void bp_context(long num_bp, miscPars *misc_pars, double **bp_xyz,
                 continue;
             ddxyz(bp_xyz[j], bp_xyz[i], txyz);
             d = veclen(txyz);
+            /* Debug: print distances between pairs 22,23,24 */
+            if (i == 23 && (j == 22 || j == 24)) {
+                fprintf(stderr, "[LEGACY DIST] pair 23 to pair %ld: %.4f (org_23=[%.2f,%.2f,%.2f] org_%ld=[%.2f,%.2f,%.2f])\n",
+                        j, d, bp_xyz[i][1], bp_xyz[i][2], bp_xyz[i][3],
+                        j, bp_xyz[j][1], bp_xyz[j][2], bp_xyz[j][3]);
+            }
             for (k = 1; k <= cnum; k++)
                 if (d < ddmin[k]) {
                     for (m = cnum; m > k; m--)
@@ -945,6 +951,11 @@ static void bp_context(long num_bp, miscPars *misc_pars, double **bp_xyz,
                         bp_order[i][1] = -1;
                         bp_order[i][2] = ddidx[1];
                         bp_order[i][3] = ddidx[j];
+                        /* Debug: trace when pair has both z-side neighbors */
+                        if (i >= 19 && i <= 31) {
+                            fprintf(stderr, "[LEGACY bp_context] pair %ld: n1=%ld n2=%ld (full neighbor)\n",
+                                    i, ddidx[1], ddidx[j]);
+                        }
                         break;
                     }
                 }
@@ -953,6 +964,10 @@ static void bp_context(long num_bp, miscPars *misc_pars, double **bp_xyz,
                     end_list[++*num_ends][1] = i;
                     end_list[*num_ends][2] = ddidx[1];
                     bp_order[i][2] = ddidx[1];
+                    /* Debug: trace when pair becomes endpoint-like */
+                    if (i >= 19 && i <= 31) {
+                        fprintf(stderr, "[LEGACY bp_context] pair %ld: NO opposite z-side neighbor, n1=%ld\n", i, ddidx[1]);
+                    }
                     ddxyz(bp_xyz[ddidx[1]], bp_xyz[ddidx[n]], txyz2);
                     d2 = dot(zave, txyz2);
                     if (d * d2 < 0.0 && veclen(txyz2) <= helix_break) {
@@ -1179,6 +1194,11 @@ static long check_o3dist(long m, long n, long *swapped, long **base_pairs, doubl
     if ((di1_i2 > 0.0 && di1_j2 > 0.0 && di1_i2 > di1_j2) &&
         (dj1_i2 > 0.0 && dj1_j2 > 0.0 && dj1_j2 > dj1_i2))
         irev = 1;
+    /* Debug trace */
+    if (m >= 20 && m <= 25) {
+        fprintf(stderr, "[LEGACY O3DIST] m=%ld n=%ld res_m=(%ld,%ld) res_n=(%ld,%ld) di1_i2=%.4f di1_j2=%.4f dj1_i2=%.4f dj1_j2=%.4f irev=%ld\n",
+                m, n, i1, j1_osx, i2, j2, di1_i2, di1_j2, dj1_i2, dj1_j2, irev);
+    }
     return irev;
 }
 
@@ -1400,6 +1420,21 @@ static void five2three(long num_bp, long *num_helix, long **helix_idx, long *bp_
     swapped = lvector(1, num_bp);
     for (i = 1; i <= *num_helix; i++) {
         helix_idx[i][3] = helix_idx[i][2] - helix_idx[i][1] + 1;
+        /* Debug: print helix structure */
+        {
+            long jj;
+            long has_target = 0;
+            for (jj = helix_idx[i][1]; jj <= helix_idx[i][2]; jj++) {
+                if (bp_idx[jj] >= 20 && bp_idx[jj] <= 31) has_target = 1;
+            }
+            if (has_target) {
+                fprintf(stderr, "[LEGACY HELIX ORDER] Helix %ld (pos %ld-%ld): ", i, helix_idx[i][1], helix_idx[i][2]);
+                for (jj = helix_idx[i][1]; jj <= helix_idx[i][2]; jj++) {
+                    fprintf(stderr, "%ld ", bp_idx[jj]);
+                }
+                fprintf(stderr, "\n");
+            }
+        }
         print_sep(tfp, '-', 84);
         fprintf(tfp, "Helix #%4.4ld\n", i);
         first_step(i, helix_idx, bp_idx, swapped, base_pairs, o3_p);
@@ -1410,6 +1445,10 @@ static void five2three(long num_bp, long *num_helix, long **helix_idx, long *bp_
             rev_o3d = check_o3dist(m, n, swapped, base_pairs, o3_p);
             rev_csc = check_schain(m, n, swapped, base_pairs, o3_p);
             rev_oth = check_others(m, n, swapped, base_pairs, o3_p, bp_xyz);
+            if (m >= 20 && m <= 25) {
+                fprintf(stderr, "[LEGACY 1ST PASS] m=%ld n=%ld wc=%ld o3d=%ld csc=%ld oth=%ld swapped_n_before=%ld",
+                        m, n, rev_wc, rev_o3d, rev_csc, rev_oth, swapped[n]);
+            }
             fprintf(tfp, "          %4ld: %2ld %2ld %2ld %2ld", j, rev_wc, rev_o3d,
                     rev_oth, rev_csc);
             if (rev_wc)
@@ -1417,6 +1456,9 @@ static void five2three(long num_bp, long *num_helix, long **helix_idx, long *bp_
             else if (rev_o3d || rev_csc || rev_oth)
                 swapped[n] = !swapped[n];
             rev_s1 = chain1dir(m, n, swapped, base_pairs, o3_p);
+            if (m >= 20 && m <= 25) {
+                fprintf(stderr, " s1=%ld swapped_n_after=%ld\n", rev_s1, swapped[n]);
+            }
             if (rev_s1)
                 swapped[n] = !swapped[n];
             fprintf(tfp, " %2ld [%ld-%ld]\n", rev_s1, m, n);
@@ -1426,6 +1468,10 @@ static void five2three(long num_bp, long *num_helix, long **helix_idx, long *bp_
             m = bp_idx[j];
             n = bp_idx[j + 1];
             rev_wc = wc_bporien(m, n, swapped, base_pairs, bp_xyz, o3_p);
+            if (m >= 20 && m <= 25) {
+                fprintf(stderr, "[LEGACY 2ND PASS] m=%ld n=%ld rev_wc=%ld swapped[m]=%ld swapped[n]=%ld\n",
+                        m, n, rev_wc, swapped[m], swapped[n]);
+            }
             if (rev_wc) {
                 swapped[m] = !swapped[m];
                 fprintf(tfp, "          %4ld: [%ld-%ld]\n", j, m, n);

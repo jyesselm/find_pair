@@ -56,6 +56,14 @@ public:
     }
 
     /**
+     * @brief Get base pairs in the order they were recorded
+     * @return Vector of base pairs in recording order (for step calculation)
+     */
+    const std::vector<core::BasePair>& ordered_base_pairs() const {
+        return ordered_base_pairs_;
+    }
+
+    /**
      * @brief Get the JSON as a string
      * @param pretty_print Whether to format with indentation
      * @return JSON string
@@ -288,11 +296,15 @@ private:
     mutable bool pdb_lines_loaded_ = false;
 
     // Index counters for tracking basepairs and hbonds
-    size_t basepair_idx_counter_ = 0;
+    // Legacy uses 1-based bp_idx, so start at 1
+    size_t basepair_idx_counter_ = 1;
     size_t hbond_idx_counter_ = 0;
 
     // Track recorded base pairs to avoid duplicates (normalized by (min, max))
     std::set<std::pair<size_t, size_t>> recorded_base_pairs_;
+
+    // Store base pairs in order for step calculation (matches legacy base_pair order)
+    std::vector<core::BasePair> ordered_base_pairs_;
 
     /**
      * @brief Initialize JSON structure

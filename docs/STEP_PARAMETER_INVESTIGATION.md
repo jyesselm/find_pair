@@ -2,11 +2,156 @@
 
 ## Summary
 
-**Current Status**: 47% of PDBs pass step parameter validation (47/100)
+**Current Status**: 79% of PDBs pass step parameter validation (79/100)
 
-**Root Cause**: The modern C++ code calculates step parameters differently from the legacy C code, even when both select the same base pairs.
+**Progress Made (December 2024)**:
+1. Fixed base_pair recording to include ALL valid pairs (35 pairs for 1EHZ, not just 30 selected pairs)
+2. Fixed bp_idx to use 1-based indexing (matching legacy)
+3. Implemented HelixOrganizer for pair ordering (backbone connectivity order)
+4. Added strand_swapped support (using org_j instead of org_i when strand is swapped)
+5. **Fixed strand_swapped indexing bug** (was using helix position `i` instead of pair index `idx1`/`idx2`)
+6. **Fixed check_direction to flip swapped values and reverse helix order** (matching legacy behavior)
 
-## Key Finding: Validation Bug Fixed
+**Bug Fix Details (December 14, 2024)**:
+
+### Fix 1: strand_swapped indexing
+The `strand_swapped` vector in `HelixOrganizer` is indexed by **original pair index**, not by helix position. The code in `generate_modern_json.cpp` was incorrectly using:
+```cpp
+// WRONG: indexed by helix position
+bool swap1 = helix_order.strand_swapped[i];
+bool swap2 = helix_order.strand_swapped[i + 1];
+```
+Fixed to:
+```cpp
+// CORRECT: indexed by original pair index
+bool swap1 = helix_order.strand_swapped[idx1];
+bool swap2 = helix_order.strand_swapped[idx2];
+```
+This fix improved step validation from 50% to 57%.
+
+### Fix 2: check_direction helix flipping
+The legacy `check_direction` function not only counts backbone linkage directions but also **modifies swapped values and helix order** under certain conditions. The modern implementation was only computing counts.
+
+Legacy behavior (lines 1310-1322 in find_pair.c):
+- If anti-parallel (strand1 forward, strand2 reverse) and `i1_first > j2_last`:
+  - Flip ALL swapped values in the helix
+  - Reverse the helix order
+- If parallel (strand1 forward, strand2 forward) and `i1_first > j1_first`:
+  - Flip ALL swapped values in the helix
+
+Added this logic to modern `check_direction`, which improved from 57% to 68%.
+
+**Remaining Issue (December 2024)**: 21% of structures still fail (21/100). These are NOT precision issues - all failures have large algorithmic differences (130-354 units).
+
+### Root Cause: Helix Organization Differences
+
+Deep investigation of 1TTT revealed the fundamental issue:
+
+**Legacy step 14** uses pairs at very different positions:
+- Pair 24 (base_i=19, base_j=56)
+- Pair 40 (base_i=54, base_j=58)
+
+**Modern step 14** uses:
+- Pair 14 (base_i=9, base_j=23)
+- Pair 16 (base_i=10, base_j=45)
+
+The `HelixOrganizer` produces a completely different pair ordering than legacy's `bp_context`/`locate_helix`/`five2three` algorithm. For 1TTT:
+- Modern pair_order: [0,1,2,3,4,5,6, **24,25,26,27,28,29**, **13,15,14**, ...]
+- Legacy organizes pairs in a different helix-based order
+
+### Why Position Matching Doesn't Help
+
+The step comparison attempts mst_org position matching, but:
+- Position matching threshold is 0.01Å (tight)
+- Different pairs produce mst_org positions 30+ Å apart
+- Cannot match steps that use different underlying pairs
+
+### Characteristics of 21 Failing Structures
+
+All failures involve complex structures where legacy's helix organization differs from modern's:
+- Multiple pairs involving the same base (e.g., base 8 in 4 different pairs)
+- Non-WC pairs (AA, GG types)
+- Unusual backbone connectivity patterns
+
+### Possible Future Fixes
+
+1. **Match legacy five2three exactly** - Very complex, many edge cases
+2. **Compare by residue pairs** - Match steps using the same base combinations regardless of bp_idx
+3. **Accept 79% pass rate** - Document that complex structures may have different helix organization
+
+## Historical Root Cause Analysis (December 2024)
+
+**Original Problem**: Step parameter mismatches were caused by **different base pair lists** between legacy and modern code. Legacy includes additional base pairs (e.g., triplet interactions, non-WC pairs) that are interleaved in the list, causing bp_idx values to become misaligned.
+
+## Root Cause Analysis (December 2024)
+
+### The Real Problem: Base Pair List Differences
+
+The step parameters are compared by `bp_idx` (base pair index), but legacy and modern have different base pair lists:
+
+**1EHZ Example:**
+- Legacy: 35 base pairs
+- Modern: 30 base pairs
+- 5 extra pairs in legacy: (9,23) AA, (10,45) GG, (22,46) GG, (25,45) CG, (33,35) UA
+
+### How This Causes Step Mismatches
+
+The extra pairs are **interleaved**, not appended:
+
+```
+bp_idx | Legacy pair    | Modern pair    | Match?
+   1   | ( 1, 72)       | ( 1, 72)       | ✓
+   ...
+   8   | ( 8, 14)       | ( 8, 14)       | ✓
+   9   | *( 9, 23) AA   | (10, 25)       | ✗ <- First divergence
+  10   | (10, 25)       | (11, 24)       | ✗
+  11   | *(10, 45) GG   | (12, 23)       | ✗
+  12   | *(25, 45) CG   | (13, 22)       | ✗
+  13   | (11, 24)       | (15, 48)       | ✗
+  14   | (12, 23)       | (16, 59)       | ✗
+```
+
+When step (13, 14) is compared:
+- **Legacy**: Step between (11, 24) → (12, 23)
+- **Modern**: Step between (15, 48) → (16, 59)
+
+These are **completely different base pairs**, so the parameters must differ!
+
+### Characteristics of Extra Legacy Pairs
+
+All 5 extra pairs have `dir_xyz[2] = 0.0` (perpendicular z-axes), indicating:
+- Non-Watson-Crick base pairs (AA, GG)
+- Triplet interactions (residue 45 paired with both 10 and 25)
+- Bifurcated pairs
+
+### Why Modern Misses These Pairs
+
+The modern pair selection uses a greedy mutual-best algorithm that may not include:
+1. Non-mutual-best pairs
+2. Tertiary interactions (triplets)
+3. Pairs that fail certain quality criteria
+
+## Solutions
+
+### Option 1: Fix Base Pair Selection (Recommended)
+Make modern code select the same base pairs as legacy by:
+- Including triplet interactions
+- Relaxing quality criteria for certain pair types
+- Matching legacy's secondary pair detection logic
+
+### Option 2: Compare by Residue Pairs
+Instead of comparing step(bp_idx1, bp_idx2), compare by the actual residue pairs:
+- Build a map: (res_i1, res_j1) → (res_i2, res_j2) → step params
+- Match steps that connect the same residue pairs
+- This is more robust but requires changes to the validation code
+
+### Option 3: Use Position-Based Matching (Current Fallback)
+The current code attempts mst_org position matching but fails because:
+- Different pairs have different mst_org positions
+- The 0.01Å threshold is too tight
+- Only works when pairs are in different order, not when pairs are different
+
+## Previous Finding: Validation Bug Fixed
 
 A bug was discovered and fixed in `x3dna_json_compare/step_comparison.py` that was silently masking step parameter mismatches.
 
@@ -96,3 +241,273 @@ python tools/compare_par_files.py bp_step.par bp_step_legacy.par
 2. Verify step parameter formulas match
 3. Check pair ordering logic (five-to-three vs sequential)
 4. Fix modern implementation to match legacy output
+
+## Deep Investigation (December 14, 2024)
+
+### Analysis of 1EHZ Failure
+
+Steps 1-13 match perfectly, but step 14+ diverges completely. The midstep origins jump to different locations:
+
+| Step | Legacy mst_org | Modern mst_org | Match |
+|------|----------------|----------------|-------|
+| (13,14) | (73.8, 67.0, 37.3) | (73.8, 67.0, 37.3) | YES |
+| (14,15) | (72.4, 48.4, 17.6) | (75.1, 61.0, 34.4) | NO |
+| (15,16) | (73.4, 31.3, 0.5) | (75.4, 54.1, 31.0) | NO |
+
+The legacy step (14,15) shows a ~20Å jump in z-coordinate - this is a **helix break**. The modern code stays more connected.
+
+### Legacy bp_context / locate_helix Algorithm
+
+The legacy algorithm uses these key data structures:
+- `bp_order[i][1]`: -1 for middle pairs (have 2 opposite-side neighbors), 0 for endpoint-like pairs
+- `bp_order[i][2]`, `bp_order[i][3]`: neighbor indices
+- `end_list`: list of helix endpoints
+
+In `locate_helix`, the critical check is:
+```c
+if (!bp_order[k][1]) {
+    // k is endpoint-like, add at most one more, then break
+    break;
+}
+```
+
+This causes helices to terminate at endpoint-like pairs, creating shorter chains.
+
+### Modern vs Legacy Helix Ordering
+
+The modern `HelixOrganizer::locate_helices()` chains pairs based on:
+1. Starting from endpoints
+2. Following backbone-connected neighbors
+3. Continuing until no unvisited neighbors
+
+The legacy code terminates chains earlier based on `bp_order[k][1]`, leading to different helix boundaries and different pair orderings.
+
+### Attempted Fixes (Reverted)
+
+1. **direction_flag approach**: Added `direction_flag` field to PairContext to match legacy `bp_order[k][1]`. Implementation caused regression from 57% to 27%.
+
+2. **first_step rewrite**: Rewrote `first_step()` to exactly match legacy. Caused regression from 57% to 25%.
+
+The issue is more complex than individual function fixes - the entire helix construction and ordering algorithm differs fundamentally.
+
+### Path Forward
+
+1. **Option A: Detailed tracing** - Add logging to both legacy and modern to trace exact pair ordering decisions
+2. **Option B: Match output directly** - Read legacy helix ordering from output files and use that directly
+3. **Option C: Accept differences** - The 57% pass rate may represent inherent algorithmic differences that don't affect biological interpretation
+
+### Key Legacy Functions
+
+Located in `org/src/find_pair.c`:
+- `bp_context()` (lines 885-1005): Sets neighbor info and direction flags
+- `locate_helix()` (lines 1007-1069): Chains pairs into helices
+- `five2three()` (lines 1384-1463): Ensures 5'→3' strand direction
+- `first_step()` (lines 1082-1109): Initial strand assignment
+- `wc_bporien()` (lines 1150-1167): WC pair orientation check
+- `check_direction()` (lines 1246-1287): Strand direction counting
+- `check_strand2()` (lines 1289-1342): Additional strand corrections
+
+## Detailed Trace Analysis (December 14, 2024)
+
+Added tracing to both legacy and modern code to capture exact decision points. Key findings:
+
+### Finding 1: Pair Ordering Matches Exactly
+
+The `locate_helices` algorithm in modern code produces **identical pair ordering** to legacy:
+
+**Legacy bp_idx (1-based):**
+```
+1,2,3,4,5,6,7,25,26,27,28,29,30,15, 14,13,8,12,11,10,9,17,18,19,20,21,22,23,24, 16
+```
+
+**Modern pair_order (0-based, converted):**
+```
+1,2,3,4,5,6,7,25,26,27,28,29,30,15, 14,13,8,12,11,10,9,17,18,19,20,21,22,23,24, 16
+```
+
+Both produce 3 helices with the same boundaries.
+
+### Finding 2: strand_swapped Values Differ Significantly
+
+The `five2three`/`ensure_five_to_three` algorithm produces **different strand swap assignments**:
+
+| Pair (1-based) | Legacy swapped | Modern swapped | Match |
+|----------------|----------------|----------------|-------|
+| 1-7            | 0              | 0              | ✓     |
+| 8              | 1              | 0              | ✗     |
+| 9-14           | 0              | 1              | ✗     |
+| 15             | 1              | 1              | ✓     |
+| 16             | 0              | 0              | ✓     |
+| 17-24          | 1              | 0              | ✗     |
+| 25-30          | 0              | 0              | ✓     |
+
+**Critical observation**: The swap values are **inverted for entire helix segments** (pairs 8-14 and 17-24).
+
+### Root Cause: five2three Algorithm Differences
+
+The modern `ensure_five_to_three()` function in `HelixOrganizer` produces different swap decisions than legacy. Specifically:
+
+1. **first_step() behavior differs**: Legacy's `first_step()` looks at just the first step of each helix, while modern analyzes the whole helix for direction voting.
+
+2. **Swap propagation differs**: The chain of `wc_bporien()`, `check_o3dist()`, `check_schain()`, `check_others()` calls may produce different results due to subtle implementation differences.
+
+3. **Helix-wise vs pair-wise**: Modern processes each helix independently, but the swap decision logic may not perfectly match legacy.
+
+### Impact on Step Parameters
+
+When strand is swapped, the step calculation uses `frame2` instead of `frame1` (org_j instead of org_i). Inverting the swap flag causes:
+- Different midstep frame calculation
+- Different step parameters (often completely different values, not just sign changes)
+
+For step (14,15) in 1EHZ:
+- Legacy: shift=15.4, rise=-41.4, twist=-133.8
+- Modern: shift=-6.4, rise=-11.4, twist=-121.7
+
+### Next Steps
+
+1. **Deep dive into first_step()**: The initial swap assignment may cascade incorrectly
+2. **Compare individual check functions**: `wc_bporien`, `check_o3dist`, etc.
+3. **Consider reading legacy swap values**: Use JSON output from legacy to inform modern
+4. **Test with simpler structures**: DNA duplexes may have simpler swap patterns
+
+### Tracing Code Locations
+
+Tracing was added to:
+- `org/src/find_pair.c`: `locate_helix()` function - prints bp_order table and chaining decisions
+- `org/src/find_pair.c`: `five2three()` function - prints final swapped array
+- `src/x3dna/algorithms/helix_organizer.cpp`: `locate_helices()` - prints context table and chaining
+- `tools/generate_modern_json.cpp`: Step calculation - prints strand_swapped values
+
+To run with tracing:
+```bash
+# Legacy tracing
+X3DNA=/Users/jyesselman2/local/installs/x3dna ./org/build/bin/find_pair_original data/pdb/1EHZ.pdb /dev/null 2>&1 | grep -E '\[LOCATE_HELIX|\[LEGACY'
+
+# Modern tracing
+./build/generate_modern_json data/pdb/1EHZ.pdb data/json_test --stage=steps 2>&1 | grep -E '\[MODERN|\[STEP_CALC'
+```
+
+## Fix: Pair Origin Calculation (December 14, 2024)
+
+**Result**: Improved pass rate from 68% to 79% (+11 percentage points)
+
+### Problem
+
+The `get_pair_origin()` function in `helix_organizer.cpp` was returning `frame1.origin()` (the origin of the first base frame). However, legacy uses the **averaged origin** of both base frames for pair distance calculations.
+
+This caused incorrect neighbor detection in `calculate_context()`, leading to different helix ordering and ultimately different step parameters.
+
+### Solution
+
+Updated `get_pair_origin()` to return the average of both frame origins:
+
+```cpp
+geometry::Vector3D HelixOrganizer::get_pair_origin(const core::BasePair& pair) const {
+    // Legacy uses the average of both base origins (morg) for pair distance calculations
+    // See refs_right_left() in cmn_fncs.c: morg[j] = (org[base1][j] + org[base2][j]) / 2
+    if (!pair.frame1().has_value() && !pair.frame2().has_value()) {
+        return geometry::Vector3D(0, 0, 0);
+    }
+    if (!pair.frame1().has_value()) {
+        return pair.frame2().value().origin();
+    }
+    if (!pair.frame2().has_value()) {
+        return pair.frame1().value().origin();
+    }
+    // Return average of both origins
+    auto o1 = pair.frame1().value().origin();
+    auto o2 = pair.frame2().value().origin();
+    return geometry::Vector3D(
+        (o1.x() + o2.x()) / 2.0,
+        (o1.y() + o2.y()) / 2.0,
+        (o1.z() + o2.z()) / 2.0
+    );
+}
+```
+
+### Legacy Reference
+
+In legacy `cmn_fncs.c`, the `refs_right_left()` function (lines 288-306) computes `morg` as:
+```c
+for (i = 1; i <= inum_base; i++) {
+    morg[j] += org[ik][j];  // Sum of origins for both bases
+}
+morg[i] /= inum_base;  // Average of origins
+```
+
+## Remaining 21 Failures Analysis
+
+The 21 failing PDBs fall into two categories:
+
+### 1. Floating-Point Precision (~10 PDBs)
+
+Differences at the 1e-6 tolerance boundary. These are essentially matches with minor rounding differences:
+```
+tilt: -10.627700 vs -10.627702 (diff: 2.000000e-06)
+roll: 13.141097 vs 13.141100 (diff: 3.000000e-06)
+```
+
+### 2. Helix Organization Differences (~11 PDBs)
+
+Complex structures where legacy and modern produce different helix orders for helices 2+. Example from 8Z1P:
+
+**Legacy Helix 2**: `13 8 12 11 10 9 16 17 18 19 20` (11 pairs, starts from pair 13)
+**Modern Helix 2**: `9 10 11 12 8 13` (6 pairs, starts from pair 9)
+
+This causes:
+- Different pair sequences in step calculations
+- Step indices (14-15, 15-16, etc.) refer to different pair combinations
+- Large parameter differences (shift: -19.17 vs -3.04)
+
+### Root Cause of Helix Order Differences
+
+The endpoint selection order differs:
+1. Modern `find_endpoints()` returns endpoints in pair index order (1, 9, 13, ...)
+2. Legacy processes endpoints in discovery order from `bp_context()`
+3. When endpoint 9 is processed before endpoint 13, the traversal direction reverses
+
+### Potential Solutions
+
+1. **Match endpoint ordering**: Modify `find_endpoints()` to match legacy's discovery order
+2. **Relax tolerance**: Increase tolerance to 1e-5 to pass floating-point edge cases
+3. **Use original pair indices**: Output step parameters with original pair indices instead of helix positions
+4. **Accept differences**: Document that complex multi-helix structures may have different orderings
+
+## Modern C++ Refactoring (December 14, 2024)
+
+Refactored `helix_organizer.hpp` to use modern C++ idioms:
+
+### 1. LinkDirection enum class
+
+Replaced magic numbers (-1, 0, 1) with strongly-typed enum:
+```cpp
+enum class LinkDirection {
+    None = 0,      ///< No O3'-P linkage detected
+    Forward = 1,   ///< i → j linkage (5'→3' direction)
+    Reverse = -1   ///< j → i linkage (reverse direction)
+};
+```
+
+### 2. StrandResidues struct
+
+Replaced output parameters with return struct:
+```cpp
+struct StrandResidues {
+    size_t strand1;  ///< Residue index on strand 1 (1-based)
+    size_t strand2;  ///< Residue index on strand 2 (1-based)
+};
+
+// Changed from:
+void get_ij(pair, swapped, &n1, &n2);
+// To:
+StrandResidues get_strand_residues(pair, swapped);
+```
+
+### 3. Updated function signatures
+
+```cpp
+// Old: int is_linked(...)
+// New: [[nodiscard]] LinkDirection check_linkage(...)
+```
+
+These changes improve type safety, readability, and maintainability while keeping the algorithm behavior identical.

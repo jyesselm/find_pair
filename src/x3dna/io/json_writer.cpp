@@ -410,6 +410,9 @@ void JsonWriter::record_base_pair(const core::BasePair& pair) {
     // Mark as recorded
     recorded_base_pairs_.insert(pair_key);
 
+    // Store in ordered vector for step calculation (before assigning idx)
+    ordered_base_pairs_.push_back(pair);
+
     // Create a mutable copy to assign index
     core::BasePair pair_with_idx = pair;
     pair_with_idx.set_basepair_idx(basepair_idx_counter_++);

@@ -11,6 +11,7 @@
 #include <cmath>
 #include <limits>
 #include <numeric>
+#include <iostream>  // For debug tracing
 
 namespace x3dna::algorithms {
 
@@ -32,17 +33,51 @@ HelixOrganizer::HelixOrganizer(const Config& config) : config_(config) {}
 // =============================================================================
 
 geometry::Vector3D HelixOrganizer::get_pair_origin(const core::BasePair& pair) const {
-    if (!pair.frame1().has_value()) {
+    // Legacy uses the average of both base origins (morg) for pair distance calculations
+    // See refs_right_left() in cmn_fncs.c: morg[j] = (org[base1][j] + org[base2][j]) / 2
+    if (!pair.frame1().has_value() && !pair.frame2().has_value()) {
         return geometry::Vector3D(0, 0, 0);
     }
-    return pair.frame1().value().origin();
+    if (!pair.frame1().has_value()) {
+        return pair.frame2().value().origin();
+    }
+    if (!pair.frame2().has_value()) {
+        return pair.frame1().value().origin();
+    }
+    // Return average of both origins
+    auto o1 = pair.frame1().value().origin();
+    auto o2 = pair.frame2().value().origin();
+    return geometry::Vector3D(
+        (o1.x() + o2.x()) / 2.0,
+        (o1.y() + o2.y()) / 2.0,
+        (o1.z() + o2.z()) / 2.0
+    );
 }
 
 geometry::Vector3D HelixOrganizer::get_pair_z_axis(const core::BasePair& pair) const {
-    if (!pair.frame1().has_value()) {
+    // Legacy uses average z-axis from both frames (or difference if they point opposite)
+    // This matches bp_context: (d <= 0.0) ? ddxyz(z2, z1, zave) : sumxyz(z2, z1, zave)
+    if (!pair.frame1().has_value() || !pair.frame2().has_value()) {
+        if (pair.frame1().has_value()) {
+            return pair.frame1().value().z_axis();
+        }
         return geometry::Vector3D(0, 0, 1);
     }
-    return pair.frame1().value().z_axis();
+
+    auto z1 = pair.frame1().value().z_axis();
+    auto z2 = pair.frame2().value().z_axis();
+    double d = z1.dot(z2);
+
+    geometry::Vector3D zave;
+    if (d <= 0.0) {
+        // Opposite directions: take difference
+        zave = z2 - z1;
+    } else {
+        // Same direction: take sum
+        zave = z2 + z1;
+    }
+    zave.normalize();
+    return zave;
 }
 
 geometry::Vector3D HelixOrganizer::get_frame_z(const core::BasePair& pair, bool swapped) const {
@@ -58,49 +93,50 @@ geometry::Vector3D HelixOrganizer::get_frame_z(const core::BasePair& pair, bool 
     return geometry::Vector3D(0, 0, 1);
 }
 
-void HelixOrganizer::get_ij(const core::BasePair& pair, bool swapped,
-                            size_t& i, size_t& j) const {
+StrandResidues HelixOrganizer::get_strand_residues(
+    const core::BasePair& pair, bool swapped) const {
+    // BasePair stores 0-based indices, but backbone data uses 1-based (legacy) indices
+    // Convert to 1-based for backbone lookup
     if (swapped) {
-        i = pair.residue_idx2();
-        j = pair.residue_idx1();
-    } else {
-        i = pair.residue_idx1();
-        j = pair.residue_idx2();
+        return {pair.residue_idx2() + 1, pair.residue_idx1() + 1};
     }
+    return {pair.residue_idx1() + 1, pair.residue_idx2() + 1};
 }
 
 // =============================================================================
 // Backbone connectivity
 // =============================================================================
 
-int HelixOrganizer::is_linked(size_t i, size_t j, const BackboneData& backbone) const {
-    auto it_i = backbone.find(i);
-    auto it_j = backbone.find(j);
-    
+LinkDirection HelixOrganizer::check_linkage(
+    size_t res_i, size_t res_j, const BackboneData& backbone) const {
+
+    auto it_i = backbone.find(res_i);
+    auto it_j = backbone.find(res_j);
+
     if (it_i == backbone.end() || it_j == backbone.end()) {
-        return 0;
+        return LinkDirection::None;
     }
-    
+
     const auto& atoms_i = it_i->second;
     const auto& atoms_j = it_j->second;
-    
-    // Check O3'[i] → P[j] direction
+
+    // Check O3'[i] → P[j] direction (5'→3')
     if (atoms_i.O3_prime.has_value() && atoms_j.P.has_value()) {
         double dist = (atoms_i.O3_prime.value() - atoms_j.P.value()).length();
         if (dist <= config_.o3p_upper) {
-            return 1;  // i → j linkage (5'→3')
+            return LinkDirection::Forward;
         }
     }
-    
+
     // Check O3'[j] → P[i] direction (reverse)
     if (atoms_j.O3_prime.has_value() && atoms_i.P.has_value()) {
         double dist = (atoms_j.O3_prime.value() - atoms_i.P.value()).length();
         if (dist <= config_.o3p_upper) {
-            return -1;  // j → i linkage (reverse)
+            return LinkDirection::Reverse;
         }
     }
-    
-    return 0;  // No linkage
+
+    return LinkDirection::None;
 }
 
 double HelixOrganizer::o3_distance(size_t i, size_t j, const BackboneData& backbone) const {
@@ -129,23 +165,20 @@ bool HelixOrganizer::are_pairs_backbone_connected(
         return true;  // Assume connected when no backbone data
     }
 
-    // Get residue indices for both pairs
-    size_t i1 = pair1.residue_idx1();
-    size_t j1 = pair1.residue_idx2();
-    size_t i2 = pair2.residue_idx1();
-    size_t j2 = pair2.residue_idx2();
+    // Get 1-based residue indices for both pairs
+    size_t i1 = pair1.residue_idx1() + 1;
+    size_t j1 = pair1.residue_idx2() + 1;
+    size_t i2 = pair2.residue_idx1() + 1;
+    size_t j2 = pair2.residue_idx2() + 1;
 
     // Check all possible strand linkages:
     // Strand 1: i1 -> i2 or i2 -> i1
     // Strand 2: j1 -> j2 or j2 -> j1
     // Cross: i1 -> j2 or j1 -> i2 (for strand swaps)
-
-    if (is_linked(i1, i2, backbone) != 0) return true;
-    if (is_linked(j1, j2, backbone) != 0) return true;
-    if (is_linked(i1, j2, backbone) != 0) return true;
-    if (is_linked(j1, i2, backbone) != 0) return true;
-
-    return false;
+    return check_linkage(i1, i2, backbone) != LinkDirection::None ||
+           check_linkage(j1, j2, backbone) != LinkDirection::None ||
+           check_linkage(i1, j2, backbone) != LinkDirection::None ||
+           check_linkage(j1, i2, backbone) != LinkDirection::None;
 }
 
 // =============================================================================
@@ -222,77 +255,44 @@ void HelixOrganizer::first_step(const std::vector<core::BasePair>& pairs,
     if (helix.end_idx <= helix.start_idx) {
         return;
     }
-    
-    // Count backbone direction across the WHOLE helix
-    int strand1_forward = 0;
-    int strand1_reverse = 0;
-    int strand2_forward = 0;
-    int strand2_reverse = 0;
-    
-    for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
-        size_t idx_m = pair_order[pos];
-        size_t idx_n = pair_order[pos + 1];
-        
-        const auto& pair_m = pairs[idx_m];
-        const auto& pair_n = pairs[idx_n];
-        
-        size_t i1, j1, i2, j2;
-        get_ij(pair_m, swapped[idx_m], i1, j1);
-        get_ij(pair_n, swapped[idx_n], i2, j2);
-        
-        int k1 = is_linked(i1, i2, backbone);
-        int k2 = is_linked(j1, j2, backbone);
-        
-        if (k1 == 1) strand1_forward++;
-        if (k1 == -1) strand1_reverse++;
-        if (k2 == 1) strand2_forward++;
-        if (k2 == -1) strand2_reverse++;
-    }
-    
-    // Check if backbone direction is consistent
-    bool backbone_consistent = (strand1_forward == 0 || strand1_reverse == 0) &&
-                               (strand2_forward == 0 || strand2_reverse == 0);
-    bool has_any_backbone = (strand1_forward + strand1_reverse + strand2_forward + strand2_reverse) > 0;
-    
-    if (has_any_backbone && backbone_consistent) {
-        // Backbone is consistent - use it to determine direction
-        // If strand 1 is reverse (-1) for most steps, that's the anti-parallel pattern
-        // No reversal needed if pattern is consistent
-        
-        // Check first step for strand swap
-        size_t idx_m = pair_order[helix.start_idx];
-        size_t idx_n = pair_order[helix.start_idx + 1];
-        
-        size_t i1, j1, i2, j2;
-        get_ij(pairs[idx_m], swapped[idx_m], i1, j1);
-        get_ij(pairs[idx_n], swapped[idx_n], i2, j2);
-        
-        int k = is_linked(i1, i2, backbone);
-        if (k == -1) {
-            swapped[idx_m] = !swapped[idx_m];
-        }
-    } else {
-        // Backbone is inconsistent or absent - use z-coordinate heuristic
-        // First pair should have higher z than last pair for typical 5'->3' direction
-        size_t first_idx = pair_order[helix.start_idx];
-        size_t last_idx = pair_order[helix.end_idx];
-        const auto& first_pair = pairs[first_idx];
-        const auto& last_pair = pairs[last_idx];
-        
-        double first_z = 0, last_z = 0;
-        if (first_pair.frame1().has_value()) {
-            first_z = first_pair.frame1().value().origin().z();
-        }
-        if (last_pair.frame1().has_value()) {
-            last_z = last_pair.frame1().value().origin().z();
-        }
-        
-        // Reverse if first pair has lower z than last (going wrong direction)
-        if (first_z < last_z) {
+
+    // Look at ONLY the first step (matching legacy behavior)
+    size_t pos = helix.start_idx;
+    size_t first_pair = pair_order[pos];
+    size_t second_pair = pair_order[pos + 1];
+
+    auto res_m = get_strand_residues(pairs[first_pair], swapped[first_pair]);
+    auto res_n = get_strand_residues(pairs[second_pair], swapped[second_pair]);
+
+    // Check if strand 1 residues are linked via backbone
+    auto link = check_linkage(res_m.strand1, res_n.strand1, backbone);
+
+    if (link == LinkDirection::Reverse) {
+        // Reverse linkage - swap the first pair
+        swapped[first_pair] = !swapped[first_pair];
+    } else if (link == LinkDirection::None) {
+        // No linkage - reverse the entire helix segment and try again
+        std::reverse(pair_order.begin() + helix.start_idx,
+                     pair_order.begin() + helix.end_idx + 1);
+
+        // Update pair indices after reversal
+        first_pair = pair_order[pos];
+        second_pair = pair_order[pos + 1];
+
+        res_m = get_strand_residues(pairs[first_pair], swapped[first_pair]);
+        res_n = get_strand_residues(pairs[second_pair], swapped[second_pair]);
+
+        link = check_linkage(res_m.strand1, res_n.strand1, backbone);
+
+        if (link == LinkDirection::Reverse) {
+            swapped[first_pair] = !swapped[first_pair];
+        } else if (link == LinkDirection::None) {
+            // Still no linkage - undo the reversal
             std::reverse(pair_order.begin() + helix.start_idx,
-                        pair_order.begin() + helix.end_idx + 1);
+                         pair_order.begin() + helix.end_idx + 1);
         }
     }
+    // Forward linkage: already correct, no action needed
 }
 
 bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePair& pair_n,
@@ -304,75 +304,74 @@ bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePa
         !pair_n.frame1().has_value() || !pair_n.frame2().has_value()) {
         return false;
     }
-    
-    size_t i1, j1, i2, j2;
-    get_ij(pair_m, swap_m, i1, j1);
-    get_ij(pair_n, swap_n, i2, j2);
-    
+
+    auto res_m = get_strand_residues(pair_m, swap_m);
+    auto res_n = get_strand_residues(pair_n, swap_n);
+
     // If x-angle is too large or backbone is linked, don't swap
     if (wcbp_xang(pair_m, pair_n) > config_.end_stack_xang ||
-        is_linked(i1, i2, backbone) || is_linked(j1, j2, backbone)) {
+        check_linkage(res_m.strand1, res_n.strand1, backbone) != LinkDirection::None ||
+        check_linkage(res_m.strand2, res_n.strand2, backbone) != LinkDirection::None) {
         return false;
     }
-    
+
     // Check z-direction alignment
     double zdir_normal = wcbp_zdir(pair_m, pair_n, swap_m, swap_n);
     double zdir_swapped = wcbp_zdir(pair_m, pair_n, swap_m, !swap_n);
-    
-    if (zdir_normal < 0.0 && zdir_swapped > 0.0) {
-        return true;  // Need to swap pair_n
-    }
-    
-    return false;
+
+    return zdir_normal < 0.0 && zdir_swapped > 0.0;  // Need to swap pair_n
 }
 
 bool HelixOrganizer::check_o3dist(const core::BasePair& pair_m, const core::BasePair& pair_n,
                                    bool swap_m, bool swap_n,
                                    const BackboneData& backbone) const {
-    size_t i1, j1, i2, j2;
-    get_ij(pair_m, swap_m, i1, j1);
-    get_ij(pair_n, swap_n, i2, j2);
-    
-    double di1_i2 = o3_distance(i1, i2, backbone);
-    double di1_j2 = o3_distance(i1, j2, backbone);
-    double dj1_i2 = o3_distance(j1, i2, backbone);
-    double dj1_j2 = o3_distance(j1, j2, backbone);
-    
-    // If i1-i2 > i1-j2 AND j1-j2 > j1-i2, swap is indicated
-    if ((di1_i2 > 0.0 && di1_j2 > 0.0 && di1_i2 > di1_j2) &&
-        (dj1_i2 > 0.0 && dj1_j2 > 0.0 && dj1_j2 > dj1_i2)) {
-        return true;
+    auto res_m = get_strand_residues(pair_m, swap_m);
+    auto res_n = get_strand_residues(pair_n, swap_n);
+
+    double di1_i2 = o3_distance(res_m.strand1, res_n.strand1, backbone);
+    double di1_j2 = o3_distance(res_m.strand1, res_n.strand2, backbone);
+    double dj1_i2 = o3_distance(res_m.strand2, res_n.strand1, backbone);
+    double dj1_j2 = o3_distance(res_m.strand2, res_n.strand2, backbone);
+
+    // Debug trace: print all check_o3dist calls that return true
+    bool result = (di1_i2 > 0.0 && di1_j2 > 0.0 && di1_i2 > di1_j2) &&
+                  (dj1_i2 > 0.0 && dj1_j2 > 0.0 && dj1_j2 > dj1_i2);
+    if (result) {
+        std::cerr << "[O3DIST TRUE] res_m=(" << res_m.strand1 << "," << res_m.strand2
+                  << ") res_n=(" << res_n.strand1 << "," << res_n.strand2 << ")"
+                  << " di1_i2=" << di1_i2 << " di1_j2=" << di1_j2
+                  << " dj1_i2=" << dj1_i2 << " dj1_j2=" << dj1_j2 << "\n";
     }
-    
-    return false;
+
+    return result;
 }
 
 bool HelixOrganizer::check_schain(const core::BasePair& pair_m, const core::BasePair& pair_n,
                                    bool swap_m, bool swap_n,
                                    const BackboneData& backbone) const {
-    size_t i1, j1, i2, j2;
-    get_ij(pair_m, swap_m, i1, j1);
-    get_ij(pair_n, swap_n, i2, j2);
-    
+    auto res_m = get_strand_residues(pair_m, swap_m);
+    auto res_n = get_strand_residues(pair_n, swap_n);
+
     // If no same-strand linkage but cross-strand linkage exists, swap is indicated
-    if (!is_linked(i1, i2, backbone) && !is_linked(j1, j2, backbone) &&
-        (is_linked(i1, j2, backbone) || is_linked(j1, i2, backbone))) {
-        return true;
-    }
-    
-    return false;
+    bool no_same_strand = check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
+                          check_linkage(res_m.strand2, res_n.strand2, backbone) == LinkDirection::None;
+    bool has_cross_strand = check_linkage(res_m.strand1, res_n.strand2, backbone) != LinkDirection::None ||
+                            check_linkage(res_m.strand2, res_n.strand1, backbone) != LinkDirection::None;
+
+    return no_same_strand && has_cross_strand;
 }
 
 bool HelixOrganizer::check_others(const core::BasePair& pair_m, const core::BasePair& pair_n,
                                    bool swap_m, bool swap_n,
                                    const BackboneData& backbone) const {
-    size_t i1, j1, i2, j2;
-    get_ij(pair_m, swap_m, i1, j1);
-    get_ij(pair_n, swap_n, i2, j2);
-    
+    auto res_m = get_strand_residues(pair_m, swap_m);
+    auto res_n = get_strand_residues(pair_n, swap_n);
+
     // If any backbone linkage exists, no swap needed
-    if (is_linked(i1, i2, backbone) || is_linked(j1, j2, backbone) ||
-        is_linked(i1, j2, backbone) || is_linked(j1, i2, backbone)) {
+    if (check_linkage(res_m.strand1, res_n.strand1, backbone) != LinkDirection::None ||
+        check_linkage(res_m.strand2, res_n.strand2, backbone) != LinkDirection::None ||
+        check_linkage(res_m.strand1, res_n.strand2, backbone) != LinkDirection::None ||
+        check_linkage(res_m.strand2, res_n.strand1, backbone) != LinkDirection::None) {
         return false;
     }
     
@@ -440,47 +439,95 @@ bool HelixOrganizer::check_others(const core::BasePair& pair_m, const core::Base
 bool HelixOrganizer::chain1dir(const core::BasePair& pair_m, const core::BasePair& pair_n,
                                 bool swap_m, bool swap_n,
                                 const BackboneData& backbone) const {
-    size_t i1, j1, i2, j2;
-    get_ij(pair_m, swap_m, i1, j1);
-    get_ij(pair_n, swap_n, i2, j2);
-    
-    int k = is_linked(i1, i2, backbone);
-    return (k == -1);  // Reverse linkage indicates need to swap
+    auto res_m = get_strand_residues(pair_m, swap_m);
+    auto res_n = get_strand_residues(pair_n, swap_n);
+
+    // Reverse linkage on strand 1 indicates need to swap
+    return check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::Reverse;
 }
 
 DirectionCounts HelixOrganizer::check_direction(
     const std::vector<core::BasePair>& pairs,
     const BackboneData& backbone,
-    const std::vector<size_t>& pair_order,
-    const HelixSegment& helix,
-    const std::vector<bool>& swapped) const {
-    
+    std::vector<size_t>& pair_order,
+    HelixSegment& helix,
+    std::vector<bool>& swapped) const {
+
     DirectionCounts dir;
-    
+
+    // First pass: compute direction counts
     for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
         size_t idx_m = pair_order[pos];
         size_t idx_n = pair_order[pos + 1];
-        
-        const auto& pair_m = pairs[idx_m];
-        const auto& pair_n = pairs[idx_n];
-        
-        size_t i1, j1, i2, j2;
-        get_ij(pair_m, swapped[idx_m], i1, j1);
-        get_ij(pair_n, swapped[idx_n], i2, j2);
-        
+
+        auto res_m = get_strand_residues(pairs[idx_m], swapped[idx_m]);
+        auto res_n = get_strand_residues(pairs[idx_n], swapped[idx_n]);
+
         // Strand 1 direction
-        int k = is_linked(i1, i2, backbone);
-        if (k == 1) dir.strand1_forward++;
-        else if (k == -1) dir.strand1_reverse++;
+        auto link1 = check_linkage(res_m.strand1, res_n.strand1, backbone);
+        if (link1 == LinkDirection::Forward) dir.strand1_forward++;
+        else if (link1 == LinkDirection::Reverse) dir.strand1_reverse++;
         else dir.strand1_none++;
-        
+
         // Strand 2 direction
-        k = is_linked(j1, j2, backbone);
-        if (k == 1) dir.strand2_forward++;
-        else if (k == -1) dir.strand2_reverse++;
+        auto link2 = check_linkage(res_m.strand2, res_n.strand2, backbone);
+        if (link2 == LinkDirection::Forward) dir.strand2_forward++;
+        else if (link2 == LinkDirection::Reverse) dir.strand2_reverse++;
         else dir.strand2_none++;
     }
-    
+
+    // Check for mixed direction (returns early in legacy)
+    bool mixed = (dir.strand1_forward && dir.strand1_reverse) ||
+                 (dir.strand2_forward && dir.strand2_reverse);
+    if (mixed) {
+        helix.has_mixed_direction = true;
+        return dir;
+    }
+
+    // No linkages at all
+    if (dir.strand1_forward + dir.strand1_reverse +
+        dir.strand2_forward + dir.strand2_reverse == 0) {
+        return dir;
+    }
+
+    // Get first and last pair info
+    size_t first_pair_idx = pair_order[helix.start_idx];
+    size_t last_pair_idx = pair_order[helix.end_idx];
+    auto res_first = get_strand_residues(pairs[first_pair_idx], swapped[first_pair_idx]);
+    auto res_last = get_strand_residues(pairs[last_pair_idx], swapped[last_pair_idx]);
+
+    // Set break flag if there are gaps
+    if (dir.strand1_none || dir.strand2_none) {
+        helix.has_break = true;
+    }
+
+    // Anti-parallel case: strand1 forward, strand2 reverse
+    if (dir.strand1_forward && !dir.strand1_reverse) {
+        if (!dir.strand2_forward && dir.strand2_reverse) {
+            // Normal anti-parallel
+            if (res_first.strand1 > res_last.strand2) {
+                // Flip all swapped values in helix AND reverse order
+                for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
+                    size_t idx = pair_order[pos];
+                    swapped[idx] = !swapped[idx];
+                }
+                // Reverse helix order
+                std::reverse(pair_order.begin() + helix.start_idx,
+                             pair_order.begin() + helix.end_idx + 1);
+            }
+        } else if (dir.strand2_forward && !dir.strand2_reverse) {
+            // Parallel case
+            helix.is_parallel = true;
+            if (res_first.strand1 > res_first.strand2) {
+                // Flip all swapped values in helix
+                for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
+                    size_t idx = pair_order[pos];
+                    swapped[idx] = !swapped[idx];
+                }
+            }
+        }
+    }
+
     return dir;
 }
 
@@ -490,37 +537,41 @@ void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs,
                                    HelixSegment& helix,
                                    std::vector<bool>& swapped,
                                    const DirectionCounts& direction) const {
-    
+
     bool mixed_direction = (direction.strand1_forward && direction.strand1_reverse) ||
                           (direction.strand2_forward && direction.strand2_reverse);
-    
+
     if (!mixed_direction) {
         // Normal case - check for cross-strand swaps
         if (direction.strand1_forward + direction.strand1_reverse +
             direction.strand2_forward + direction.strand2_reverse == 0) {
             return;  // No linkages to check
         }
-        
+
         for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
             size_t idx_m = pair_order[pos];
             size_t idx_n = pair_order[pos + 1];
-            
+
             const auto& pair_m = pairs[idx_m];
             const auto& pair_n = pairs[idx_n];
-            
+
             // Skip if WC orientation check would pass
             if (wc_bporien(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone)) {
                 continue;
             }
-            
-            size_t i1, j1, i2, j2;
-            get_ij(pair_m, swapped[idx_m], i1, j1);
-            get_ij(pair_n, swapped[idx_n], i2, j2);
-            
+
+            auto res_m = get_strand_residues(pair_m, swapped[idx_m]);
+            auto res_n = get_strand_residues(pair_n, swapped[idx_n]);
+
             // Check for cross-strand linkage indicating swap needed
-            if (!is_linked(i1, i2, backbone) && !is_linked(j1, j2, backbone) &&
-                ((is_linked(i1, j2, backbone) == 1) ||
-                 (is_linked(i1, j2, backbone) && is_linked(j1, i2, backbone)))) {
+            bool no_same_strand = check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
+                                  check_linkage(res_m.strand2, res_n.strand2, backbone) == LinkDirection::None;
+            auto cross_link = check_linkage(res_m.strand1, res_n.strand2, backbone);
+            auto cross_link2 = check_linkage(res_m.strand2, res_n.strand1, backbone);
+
+            if (no_same_strand &&
+                (cross_link == LinkDirection::Forward ||
+                 (cross_link != LinkDirection::None && cross_link2 != LinkDirection::None))) {
                 swapped[idx_n] = !swapped[idx_n];
             }
         }
@@ -530,35 +581,36 @@ void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs,
                      (direction.strand2_forward < direction.strand2_reverse);
         bool parallel = (direction.strand1_forward > direction.strand1_reverse) &&
                        (direction.strand2_forward > direction.strand2_reverse);
-        
+
         helix.is_parallel = parallel;
-        
+
         for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
             size_t idx_m = pair_order[pos];
             size_t idx_n = pair_order[pos + 1];
-            
+
             const auto& pair_m = pairs[idx_m];
             const auto& pair_n = pairs[idx_n];
-            
-            size_t i1, j1, i2, j2;
-            get_ij(pair_m, swapped[idx_m], i1, j1);
-            get_ij(pair_n, swapped[idx_n], i2, j2);
-            
-            int k = is_linked(j1, j2, backbone);
-            if (!is_linked(i1, i2, backbone) && 
-                ((anti_p && k == 1) || (parallel && k == -1))) {
+
+            auto res_m = get_strand_residues(pair_m, swapped[idx_m]);
+            auto res_n = get_strand_residues(pair_n, swapped[idx_n]);
+
+            auto link_strand2 = check_linkage(res_m.strand2, res_n.strand2, backbone);
+            if (check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
+                ((anti_p && link_strand2 == LinkDirection::Forward) ||
+                 (parallel && link_strand2 == LinkDirection::Reverse))) {
                 swapped[idx_n] = !swapped[idx_n];
             }
-            
-            // Re-get j2 after potential swap
-            get_ij(pair_n, swapped[idx_n], i2, j2);
-            
-            if (!is_linked(i1, i2, backbone) && !is_linked(j1, j2, backbone)) {
-                if ((anti_p && is_linked(j1, i2, backbone) == 1) ||
-                    (parallel && is_linked(i1, j2, backbone) == -1)) {
+
+            // Re-get residues after potential swap
+            res_n = get_strand_residues(pair_n, swapped[idx_n]);
+
+            if (check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
+                check_linkage(res_m.strand2, res_n.strand2, backbone) == LinkDirection::None) {
+                if ((anti_p && check_linkage(res_m.strand2, res_n.strand1, backbone) == LinkDirection::Forward) ||
+                    (parallel && check_linkage(res_m.strand1, res_n.strand2, backbone) == LinkDirection::Reverse)) {
                     swapped[idx_m] = !swapped[idx_m];
-                } else if ((anti_p && is_linked(i1, j2, backbone) == 1) ||
-                           (parallel && is_linked(j1, i2, backbone) == -1)) {
+                } else if ((anti_p && check_linkage(res_m.strand1, res_n.strand2, backbone) == LinkDirection::Forward) ||
+                           (parallel && check_linkage(res_m.strand2, res_n.strand1, backbone) == LinkDirection::Reverse)) {
                     swapped[idx_n] = !swapped[idx_n];
                 }
             }
@@ -692,7 +744,6 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
             // Prefer backbone-connected neighbors
             if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()]) {
                 if (!prev.has_value() || ctx.neighbor1.value() != prev.value()) {
-                    // Check if backbone connected (or if no backbone data)
                     bool is_connected = ctx.has_backbone_link1 || backbone.empty();
                     if (is_connected) {
                         next = ctx.neighbor1;
@@ -703,7 +754,6 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
             if (!next.has_value() && ctx.neighbor2.has_value() &&
                 !visited[ctx.neighbor2.value()]) {
                 if (!prev.has_value() || ctx.neighbor2.value() != prev.value()) {
-                    // Check if backbone connected (or if no backbone data)
                     bool is_connected = ctx.has_backbone_link2 || backbone.empty();
                     if (is_connected) {
                         next = ctx.neighbor2;
@@ -712,7 +762,6 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
             }
 
             // If no backbone-connected neighbor, try geometric neighbors anyway
-            // but this will create a helix break
             if (!next.has_value() && !backbone.empty()) {
                 if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()]) {
                     if (!prev.has_value() || ctx.neighbor1.value() != prev.value()) {
@@ -727,7 +776,9 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
                 }
             }
 
-            if (!next.has_value()) break;
+            if (!next.has_value()) {
+                break;
+            }
 
             prev = current;
             current = next.value();
@@ -739,6 +790,7 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
         }
     }
 
+    // Handle any leftover pairs not reached from endpoints
     for (size_t i = 0; i < num_pairs; ++i) {
         if (!visited[i]) {
             HelixSegment helix;
@@ -772,57 +824,106 @@ void HelixOrganizer::ensure_five_to_three(
     // Process each helix
     for (auto& helix : helices) {
         if (helix.start_idx > helix.end_idx) continue;
-        
+
         // STEP 1: first_step - set initial strand assignment
-        // This also handles helix reversal through backbone connectivity
         first_step(pairs, backbone, pair_order, helix, swapped);
-        
-        // STEP 3: First pass through steps - check each consecutive pair
+
+        // STEP 2: First pass through steps - check each consecutive pair
         for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
             size_t idx_m = pair_order[pos];
             size_t idx_n = pair_order[pos + 1];
-            
+
             const auto& pair_m = pairs[idx_m];
             const auto& pair_n = pairs[idx_n];
-            
+
             bool rev_wc = wc_bporien(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
             bool rev_o3d = check_o3dist(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
             bool rev_csc = check_schain(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
             bool rev_oth = check_others(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
-            
+
+            // Debug: trace swap decisions for pairs of interest
+            if (idx_n >= 21 && idx_n <= 25) {
+                auto res_m = get_strand_residues(pair_m, swapped[idx_m]);
+                auto res_n = get_strand_residues(pair_n, swapped[idx_n]);
+                std::cerr << "[SWAP TRACE] Step " << (idx_m+1) << "->" << (idx_n+1)
+                          << " STEP2: res_m=(" << res_m.strand1 << "," << res_m.strand2 << ")"
+                          << " res_n=(" << res_n.strand1 << "," << res_n.strand2 << ")"
+                          << " wc=" << rev_wc << " o3d=" << rev_o3d
+                          << " csc=" << rev_csc << " oth=" << rev_oth
+                          << " swap_m=" << swapped[idx_m] << " swap_n=" << swapped[idx_n];
+            }
+
             // Apply swap based on checks
             if (rev_wc) {
                 swapped[idx_n] = !swapped[idx_n];
+                if (idx_n >= 21 && idx_n <= 25) {
+                    std::cerr << " -> SWAP(wc)";
+                }
             } else if (rev_o3d || rev_csc || rev_oth) {
                 swapped[idx_n] = !swapped[idx_n];
+                if (idx_n >= 21 && idx_n <= 25) {
+                    std::cerr << " -> SWAP(o3d/csc/oth)";
+                }
             }
-            
+
             // Check strand 1 direction
             bool rev_s1 = chain1dir(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
             if (rev_s1) {
                 swapped[idx_n] = !swapped[idx_n];
+                if (idx_n >= 21 && idx_n <= 25) {
+                    std::cerr << " -> SWAP(s1)";
+                }
+            }
+
+            if (idx_n >= 21 && idx_n <= 25) {
+                std::cerr << " final=" << swapped[idx_n] << "\n";
             }
         }
-        
-        // STEP 4: Second pass - re-check WC orientation
+
+        // STEP 3: Second pass - re-check WC orientation
         for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
             size_t idx_m = pair_order[pos];
             size_t idx_n = pair_order[pos + 1];
-            
+
             const auto& pair_m = pairs[idx_m];
             const auto& pair_n = pairs[idx_n];
-            
+
             bool rev_wc = wc_bporien(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
             if (rev_wc) {
+                if (idx_m >= 20 && idx_m <= 25) {
+                    std::cerr << "[SWAP TRACE] Step " << (idx_m+1) << "->" << (idx_n+1)
+                              << " STEP3: wc=1 -> SWAP pair " << (idx_m+1) << "\n";
+                }
                 swapped[idx_m] = !swapped[idx_m];
             }
         }
-        
-        // STEP 5: check_direction - count backbone linkage directions
+
+        // Debug: print swap state before check_direction
+        std::cerr << "[SWAP TRACE] Before STEP4 (check_direction): ";
+        for (size_t i = 0; i < swapped.size(); ++i) {
+            if (swapped[i]) std::cerr << (i+1) << " ";
+        }
+        std::cerr << "\n";
+
+        // STEP 4: check_direction - count backbone linkage directions and apply fixes
         DirectionCounts direction = check_direction(pairs, backbone, pair_order, helix, swapped);
-        
-        // STEP 6: check_strand2 - additional corrections based on direction
+
+        // Debug: print swap state after check_direction
+        std::cerr << "[SWAP TRACE] After STEP4 (check_direction): ";
+        for (size_t i = 0; i < swapped.size(); ++i) {
+            if (swapped[i]) std::cerr << (i+1) << " ";
+        }
+        std::cerr << "\n";
+
+        // STEP 5: check_strand2 - additional corrections based on direction
         check_strand2(pairs, backbone, pair_order, helix, swapped, direction);
+
+        // Debug: print swap state after check_strand2
+        std::cerr << "[SWAP TRACE] After STEP5 (check_strand2): ";
+        for (size_t i = 0; i < swapped.size(); ++i) {
+            if (swapped[i]) std::cerr << (i+1) << " ";
+        }
+        std::cerr << "\n";
     }
 }
 

@@ -11,7 +11,7 @@ namespace algorithms {
 
 void JsonWriterObserver::on_pair_validated(
     int legacy_idx1, int legacy_idx2,
-    const core::Residue& /* res1 */, const core::Residue& /* res2 */,
+    const core::Residue& res1, const core::Residue& res2,
     const ValidationResult& result, int bp_type_id
 ) {
     // Convert to 0-based indices for JsonWriter
@@ -19,7 +19,7 @@ void JsonWriterObserver::on_pair_validated(
     size_t base_j = static_cast<size_t>(legacy_idx2 - 1);
 
     // Check if passes distance/angle checks (cdns) - matches legacy behavior
-    bool passes_cdns = result.distance_check && result.d_v_check && 
+    bool passes_cdns = result.distance_check && result.d_v_check &&
                        result.plane_angle_check && result.dNN_check;
 
     // Only record when i < j to avoid recording both (i,j) and (j,i)
@@ -49,6 +49,35 @@ void JsonWriterObserver::on_pair_validated(
     // Record H-bond list only for valid pairs when i < j
     if (result.is_valid && !result.hbonds.empty() && legacy_idx1 < legacy_idx2) {
         writer_.record_hbond_list(base_i, base_j, result.hbonds);
+    }
+
+    // Record base_pair for ALL valid pairs when i < j (matches legacy behavior)
+    // Legacy records base_pair for every pair that passes check_pair validation,
+    // not just the final mutual-best selected pairs
+    if (result.is_valid && legacy_idx1 < legacy_idx2) {
+        core::BasePair pair(base_i, base_j, result.bp_type);
+
+        // Set reference frames from residues
+        if (res1.reference_frame().has_value()) {
+            pair.set_frame1(res1.reference_frame().value());
+        }
+        if (res2.reference_frame().has_value()) {
+            pair.set_frame2(res2.reference_frame().value());
+        }
+
+        // Set hydrogen bonds
+        pair.set_hydrogen_bonds(result.hbonds);
+
+        // Note: dir_xyz is calculated from frames in to_json_legacy(), not stored separately
+
+        // Set bp_type string from residue names
+        char base1 = res1.one_letter_code();
+        char base2 = res2.one_letter_code();
+        if (base1 != ' ' && base2 != ' ') {
+            pair.set_bp_type(std::string(1, base1) + std::string(1, base2));
+        }
+
+        writer_.record_base_pair(pair);
     }
 }
 

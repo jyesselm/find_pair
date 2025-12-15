@@ -253,21 +253,37 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
             }
 
             // Stages 11-12: Step and helical parameters
-            // Legacy iterates through pairs in backbone connectivity order (5' to 3'),
-            // NOT sequential base pair order. HelixOrganizer determines this order.
+            // Legacy uses helix organization (backbone connectivity) for step calculation
             if (stage == "all" || stage == "steps" || stage == "helical") {
                 if (base_pairs.size() >= 2) {
-                    // Get helix order from HelixOrganizer
+                    // Get helix order from HelixOrganizer (matches legacy five2three algorithm)
                     BackboneData backbone = extract_backbone_data(structure);
+
+                    // Debug: print backbone keys and pair residue indices
+                    std::cerr << "\n[DEBUG] BackboneData has " << backbone.size() << " keys: ";
+                    if (!backbone.empty()) {
+                        std::cerr << backbone.begin()->first << " to " << backbone.rbegin()->first;
+                    }
+                    std::cerr << "\n";
+                    // Print ALL pairs for debugging
+                    std::cerr << "[DEBUG] All pairs residue indices:\n";
+                    for (size_t i = 0; i < base_pairs.size(); ++i) {
+                        std::cerr << "  pair[" << (i+1) << "]: res=(" << (base_pairs[i].residue_idx1()+1)
+                                  << "," << (base_pairs[i].residue_idx2()+1) << ")\n";
+                    }
+
                     HelixOrganizer organizer;
                     auto helix_order = organizer.organize(base_pairs, backbone);
 
                     ParameterCalculator param_calc;
                     size_t valid_steps = 0;
 
-                    // Calculate step params following backbone connectivity order
-                    // This matches legacy behavior - pairs are in five2three order
+                    // Calculate step params following helix backbone connectivity order
                     for (size_t i = 0; i + 1 < helix_order.pair_order.size(); ++i) {
+                        // Note: We don't skip helix breaks because legacy outputs all consecutive
+                        // steps with large values for discontinuities. The comparison expects
+                        // the same number of records.
+
                         size_t idx1 = helix_order.pair_order[i];
                         size_t idx2 = helix_order.pair_order[i + 1];
                         const auto& pair1 = base_pairs[idx1];
@@ -279,14 +295,18 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                             continue;
                         }
 
-                        // Legacy uses frame1 (org_i, orien_i) directly for step params
-                        // Verified: legacy mst_org = (bp1.org_i + bp2.org_i) / 2
-                        auto bp1_frame = pair1.frame1().value();
-                        auto bp2_frame = pair2.frame1().value();
+                        // Legacy swaps strands for some pairs based on five2three algorithm
+                        // strand_swapped is indexed by original pair index, not helix position
+                        bool swap1 = (idx1 < helix_order.strand_swapped.size()) ? helix_order.strand_swapped[idx1] : false;
+                        bool swap2 = (idx2 < helix_order.strand_swapped.size()) ? helix_order.strand_swapped[idx2] : false;
+
+                        // Use frame2 (org_j, orien_j) if strand is swapped, otherwise frame1 (org_i, orien_i)
+                        auto bp1_frame = swap1 ? pair1.frame2().value() : pair1.frame1().value();
+                        auto bp2_frame = swap2 ? pair2.frame2().value() : pair2.frame1().value();
 
                         // Calculate step parameters between org_i frames
                         auto step_params = param_calc.calculate_step_parameters(bp1_frame, bp2_frame);
-                        // Use 1-based helix position indices (matching legacy)
+                        // Use 1-based sequential position indices (matching legacy)
                         size_t bp_idx1 = i + 1;
                         size_t bp_idx2 = i + 2;
                         writer.record_bpstep_params(bp_idx1, bp_idx2, step_params);
@@ -301,7 +321,7 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                     if (verbose) {
                         size_t total_steps = base_pairs.size() - 1;
                         std::cout << "  ✅ Generated step/helical params (" << valid_steps << "/" << total_steps
-                                  << " steps)\n";
+                                  << " steps from " << base_pairs.size() << " selected pairs)\n";
                     }
                 }
             }
