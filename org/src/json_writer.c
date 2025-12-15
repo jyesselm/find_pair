@@ -1814,6 +1814,51 @@ void json_writer_record_iteration_state(long iteration_num, long num_matched, lo
     }
     fprintf(type_file, "]\n");
     fprintf(type_file, "    }");
-    
+
+    fflush(type_file);
+}
+
+/* Record helix organization decisions from five2three algorithm */
+void json_writer_record_helix_organization(long helix_num, long *helix_idx_row,
+                                           long *bp_idx, long *swapped,
+                                           long **base_pairs) {
+    FILE *type_file;
+    long is_first;
+    long j, m;
+    long start_pos, end_pos;
+
+    if (!json_writer_is_initialized()) return;
+
+    type_file = get_type_file_handle("helix_organization", &is_first);
+    if (!type_file) return;
+
+    if (!is_first) fprintf(type_file, ",\n");
+
+    start_pos = helix_idx_row[1];  /* First bp position in helix */
+    end_pos = helix_idx_row[2];    /* Last bp position in helix */
+
+    fprintf(type_file, "    {\n");
+    fprintf(type_file, "      \"type\": \"helix_organization\",\n");
+    fprintf(type_file, "      \"helix_num\": %ld,\n", helix_num);
+    fprintf(type_file, "      \"helix_start_pos\": %ld,\n", start_pos);
+    fprintf(type_file, "      \"helix_end_pos\": %ld,\n", end_pos);
+    fprintf(type_file, "      \"helix_length\": %ld,\n", helix_idx_row[3]);
+    fprintf(type_file, "      \"pairs\": [\n");
+
+    for (j = start_pos; j <= end_pos; j++) {
+        m = bp_idx[j];
+        if (j > start_pos) fprintf(type_file, ",\n");
+        fprintf(type_file, "        {\n");
+        fprintf(type_file, "          \"helix_pos\": %ld,\n", j);
+        fprintf(type_file, "          \"bp_idx\": %ld,\n", m);
+        fprintf(type_file, "          \"strand_swapped\": %s,\n", swapped[m] ? "true" : "false");
+        fprintf(type_file, "          \"base_i\": %ld,\n", base_pairs[m][1]);
+        fprintf(type_file, "          \"base_j\": %ld\n", base_pairs[m][2]);
+        fprintf(type_file, "        }");
+    }
+
+    fprintf(type_file, "\n      ]\n");
+    fprintf(type_file, "    }");
+
     fflush(type_file);
 }

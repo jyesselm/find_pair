@@ -1481,6 +1481,8 @@ static void five2three(long num_bp, long *num_helix, long **helix_idx, long *bp_
         check_direction(i, helix_idx, bp_idx, swapped, base_pairs, o3_p, direction);
         check_strand2(i, helix_idx, bp_idx, bp_xyz, swapped, base_pairs, o3_p, direction, tfp);
         check_rise(i, helix_idx, bp_idx, swapped, base_pairs, bp_xyz, o3_p);
+        /* Record helix organization before applying swaps */
+        json_writer_record_helix_organization(i, helix_idx[i], bp_idx, swapped, base_pairs);
         for (j = helix_idx[i][1]; j <= helix_idx[i][2]; j++) {
             m = bp_idx[j];
             if (swapped[m]) {

@@ -17,6 +17,7 @@
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/core/parameters.hpp>
 #include <x3dna/algorithms/base_pair_validator.hpp>
+#include <x3dna/algorithms/helix_organizer.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
 
@@ -282,6 +283,19 @@ public:
     void record_iteration_state(int iteration_num, int num_matched, int num_total,
                                 const std::vector<bool>& matched_indices,
                                 const std::vector<std::pair<int, int>>& pairs);
+
+    /**
+     * @brief Record helix organization decisions from five2three algorithm
+     * @param helix_num Helix number (1-based)
+     * @param helix Helix segment information
+     * @param pair_order Ordered pair indices
+     * @param pairs Base pairs
+     * @param strand_swapped Swap status for each pair
+     */
+    void record_helix_organization(size_t helix_num, const algorithms::HelixSegment& helix,
+                                   const std::vector<size_t>& pair_order,
+                                   const std::vector<core::BasePair>& pairs,
+                                   const std::vector<bool>& strand_swapped);
 
 private:
     std::filesystem::path pdb_file_;

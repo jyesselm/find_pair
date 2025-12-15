@@ -797,5 +797,36 @@ void JsonWriter::record_iteration_state(int iteration_num, int num_matched, int 
     add_calculation_record(record);
 }
 
+void JsonWriter::record_helix_organization(size_t helix_num, const algorithms::HelixSegment& helix,
+                                           const std::vector<size_t>& pair_order,
+                                           const std::vector<core::BasePair>& pairs,
+                                           const std::vector<bool>& strand_swapped) {
+    nlohmann::json record;
+    record["type"] = "helix_organization";
+    record["helix_num"] = static_cast<int>(helix_num);
+    record["helix_start_pos"] = static_cast<int>(helix.start_idx + 1);  // 1-based
+    record["helix_end_pos"] = static_cast<int>(helix.end_idx + 1);      // 1-based
+    record["helix_length"] = static_cast<int>(helix.end_idx - helix.start_idx + 1);
+
+    nlohmann::json pairs_array = nlohmann::json::array();
+    for (size_t j = helix.start_idx; j <= helix.end_idx; ++j) {
+        size_t bp_idx = pair_order[j];
+        const auto& pair = pairs[bp_idx];
+
+        nlohmann::json pair_info;
+        pair_info["helix_pos"] = static_cast<int>(j + 1);  // 1-based
+        pair_info["bp_idx"] = static_cast<int>(bp_idx + 1);  // 1-based (legacy format)
+        pair_info["strand_swapped"] = strand_swapped[bp_idx];
+        // Use residue_idx + 1 for legacy 1-based format
+        pair_info["base_i"] = static_cast<int>(pair.residue_idx1() + 1);
+        pair_info["base_j"] = static_cast<int>(pair.residue_idx2() + 1);
+
+        pairs_array.push_back(pair_info);
+    }
+    record["pairs"] = pairs_array;
+
+    add_calculation_record(record);
+}
+
 } // namespace io
 } // namespace x3dna

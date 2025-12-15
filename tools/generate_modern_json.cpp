@@ -275,6 +275,13 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                     HelixOrganizer organizer;
                     auto helix_order = organizer.organize(base_pairs, backbone);
 
+                    // Record helix organization for each helix
+                    for (size_t h = 0; h < helix_order.helices.size(); ++h) {
+                        writer.record_helix_organization(h + 1, helix_order.helices[h],
+                                                         helix_order.pair_order, base_pairs,
+                                                         helix_order.strand_swapped);
+                    }
+
                     ParameterCalculator param_calc;
                     size_t valid_steps = 0;
 

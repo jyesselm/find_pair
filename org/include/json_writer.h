@@ -137,4 +137,9 @@ long json_writer_is_initialized(void);
  */
 void json_writer_disable(void);
 
+/* Record helix organization decisions from five2three algorithm */
+void json_writer_record_helix_organization(long helix_num, long *helix_idx_row,
+                                           long *bp_idx, long *swapped,
+                                           long **base_pairs);
+
 #endif /* JSON_WRITER_H */
