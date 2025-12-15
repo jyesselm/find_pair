@@ -16,9 +16,9 @@
 - ✅ end_stack_xang threshold (110° → 125°) - matches legacy
 - ✅ Watson-Crick pair check in wc_bporien - only applies to WC/wobble pairs (fixed 1TTT)
 
-## Recent Fix (December 15, 2024)
+## Recent Fixes (December 15, 2024)
 
-### wc_bporien WC Pair Check
+### Fix 1: wc_bporien WC Pair Check
 
 **Problem**: The modern `wc_bporien` function was applying z-direction alignment checks to ALL pairs, but legacy only applies it to Watson-Crick pairs (`base_pairs[m][3] > 0`).
 
@@ -36,6 +36,45 @@ if (!is_wc_m || !is_wc_n) {
 ```
 
 **Result**: 1TTT now passes (80% → 81%)
+
+### Fix 2: Leftover Pair Grouping
+
+**Problem**: Modern code was creating a SEPARATE single-pair helix for EACH leftover pair (pairs not reached from endpoints). Legacy groups ALL leftover pairs into ONE helix region.
+
+**Symptom**: For 1Y27, bp_idx 16, 17, 30 were in separate helices (4, 5, 6) instead of one helix (4). This caused bp_idx 30 to have wrong swap (F instead of T) because single-pair helices don't get five2three processing.
+
+**Fix**: Changed `locate_helices` to collect all leftover pairs and add them to a single helix:
+```cpp
+std::vector<size_t> leftover;
+for (size_t i = 0; i < num_pairs; ++i) {
+    if (!visited[i]) leftover.push_back(i);
+}
+if (!leftover.empty()) {
+    HelixSegment helix;
+    helix.start_idx = pair_order.size();
+    for (size_t idx : leftover) pair_order.push_back(idx);
+    helix.end_idx = pair_order.size() - 1;
+    helices.push_back(helix);
+}
+```
+
+**Result**: Helix organization for 1Y27 helix 4 now matches legacy. However, other swap differences remain (bp_idx 8 in helix 1).
+
+### Current Issue: bp_idx 8 Swap Mismatch in 1Y27 Helix 1
+
+**Observation**: In helix 1 of 1Y27:
+- Legacy: bp_idx 8 has swap=True
+- Modern: bp_idx 8 has swap=False
+
+**Analysis from legacy debug**:
+- First pass, pair (7→29): wc=1, toggles swap[29] to True
+- First pass, pair (29→8): wc=1, toggles swap[8] to True
+- Legacy wc_bporien(29, 8) returns true because zdir_normal < 0 and zdir_swapped > 0
+
+**Next step**: Investigate why modern's wc_bporien(29, 8) returns false while legacy returns true. Possible causes:
+1. Different xang calculation
+2. Different linkage detection
+3. Different z-direction calculation
 
 ## What Needs Investigation
 
