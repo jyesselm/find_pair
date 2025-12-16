@@ -687,6 +687,12 @@
         "type": "ADENINE",
         "is_purine": true,
         "description": "Puromycin aminonucleoside"
+      },
+      "31M": {
+        "code": "a",
+        "type": "ADENINE",
+        "is_purine": true,
+        "description": "3-(3-amino-3-carboxypropyl)-1-methyladenosine"
       }
     },
     "modified_guanines": {
@@ -1707,6 +1713,12 @@
         "type": "CYTOSINE",
         "is_purine": false,
         "description": "Ribavirin-5'-phosphate"
+      },
+      "LHH": {
+        "code": "c",
+        "type": "CYTOSINE",
+        "is_purine": false,
+        "description": "1-[(2R,3R,4R,5R)-3,4-dihydroxy-5-(hydroxymethyl)oxolan-2-yl]pyrimidin-2-one"
       }
     },
     "modified_thymines": {
@@ -2385,6 +2397,12 @@
         "type": "PSEUDOURIDINE",
         "is_purine": false,
         "description": "5-carboxymethyl-pseudouridine"
+      },
+      "3TD": {
+        "code": "P",
+        "type": "PSEUDOURIDINE",
+        "is_purine": false,
+        "description": "3-methylpseudouridine"
       }
     }
   }
