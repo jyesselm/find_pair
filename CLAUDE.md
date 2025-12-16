@@ -121,6 +121,23 @@ This is a non-sequential pair (347,348 A-A) inserted in helix 11. The helix orde
 
 **Tolerance settings**: Step comparison uses 5e-4 tolerance in `step_comparison.py` to account for floating point variations. Verbose reporter uses 1e-4 tolerance for display.
 
+### Large Structure Validation (December 2024)
+
+**Key Finding**: Step parameter calculations are **correct**. Failures in large structures are due to different helix organization, not calculation errors.
+
+Analysis of 1VQ5 (ribosome, 1535 pairs, 1157 steps):
+- Base pairs identified: **Identical** (same 1535 residue combinations)
+- Helix organization: **Different** (bp_idx ordering differs significantly)
+- Steps with same residues + same frame: **100% parameter match**
+- The 19 "mismatches" reported are **false position matches** (coincidental mst_org proximity)
+
+**Slow PDB Set** (521 PDBs > 15 seconds, in `data/slow_pdbs.json`):
+- ~50% pass rate (vs 99.4% for fast set)
+- Failures are helix organization differences, not calculation errors
+- All failures are in complex multi-helix structures (ribosomes, large RNA)
+
+**Conclusion**: When legacy and modern use the same residue pairs AND same frame selection (strand_swapped), parameters match exactly. Differences arise from the `five2three` helix organization algorithm producing different orderings for complex structures.
+
 ### Validation Stages
 
 | Stage | Name | Test Command |

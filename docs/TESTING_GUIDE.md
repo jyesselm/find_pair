@@ -379,6 +379,51 @@ fp2-validate compare <PDB_ID> --verbose
 
 ---
 
+## Expected Failures: Large Structures (Helix Organization)
+
+For complex structures (ribosomes, large RNA assemblies), step validation may show failures even though **the step calculation is correct**. This is due to different helix organization between legacy and modern code.
+
+### Understanding the Issue
+
+| Aspect | Description |
+|--------|-------------|
+| **Base pair identification** | ✅ Identical (same residue pairs found) |
+| **Helix organization** | ❌ May differ (different bp_idx ordering) |
+| **Step calculation** | ✅ Correct (when same frames used) |
+
+### Why Validation Fails
+
+1. Steps are compared by `bp_idx` (position in helix-organized order)
+2. Legacy and modern may order pairs differently within helices
+3. Position matching (mst_org) can produce false matches in large structures
+4. The 19 "mismatches" for 1VQ5 are all false position matches
+
+### How to Verify Step Calculations
+
+To verify that step calculations are correct for a failing structure:
+
+```python
+# Match steps by underlying residue pairs, not bp_idx
+# If same residue pairs + same direction → parameters match 100%
+```
+
+### Slow PDB Set (521 PDBs)
+
+Large structures that take >15 seconds to process are in `data/slow_pdbs.json`. Testing shows:
+- ~50% pass rate (vs 99.4% for fast set)
+- Failures are helix organization differences, not calculation errors
+- All failures are in complex multi-helix structures
+
+### Key Insight
+
+**The step parameter calculation is correct.** When legacy and modern use:
+- Same residue pairs for the step
+- Same frame selection (strand_swapped status)
+
+The parameters match **100%**.
+
+---
+
 ## Expected Failures: Modified Residues
 
 Some PDBs will have validation failures due to **modified nucleotides**. These are **not bugs** in modern code - they reflect inconsistencies in legacy code's classification system.

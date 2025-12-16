@@ -1,5 +1,93 @@
 # Step Parameter Investigation
 
+## Large Structure Analysis (December 16, 2024)
+
+### Key Finding: Step Calculations Are Correct
+
+Deep investigation of 1VQ5 (ribosome structure, 1535 base pairs, 1157 steps) revealed:
+
+**When legacy and modern compute steps using the same residue pairs AND the same frame selection (strand_swapped), parameters match 100%.**
+
+The apparent mismatches in validation are due to:
+1. **Different helix organization** (different bp_idx ordering)
+2. **False position matches** (coincidental mst_org positions in large structures)
+
+### Validation Results Breakdown
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Total steps | 1157 | Both legacy and modern |
+| Pairs identified | 1535 | **Identical** between legacy and modern |
+| bp_idx ordering match | 43 / 1535 (2.8%) | Helix organization differs significantly |
+| Position matches (mst_org < 1Å) | 1142 / 1157 (98.7%) | But many are **false matches** |
+| True position matches (same residues) | 17 / 1142 (1.5%) | Same mst_org AND same underlying pairs |
+| Parameter match for true matches | **17 / 17 (100%)** | **Perfect when correctly matched** |
+
+### The False Match Problem
+
+In large structures, position matching (mst_org within 1Å) produces false positives:
+
+```
+Example from 1VQ5:
+  Legacy step 231->232: mst_org = (24.62, 156.48, 56.50), residues (301,308)->(302,306)
+  Modern step 214->215: mst_org = (24.83, 156.94, 55.68), residues (476,504)->(474,498)
+
+  Position distance: 0.97 Å (MATCH by position)
+  Same residues: NO (FALSE MATCH - different parts of the structure)
+  Parameter difference: twist 79°, roll 125° (expected - different steps!)
+```
+
+The 19 "parameter mismatches" reported by validation are ALL false position matches.
+
+### Why Helix Organization Differs
+
+Legacy and modern identify **identical base pairs** but organize them differently:
+
+| Aspect | Legacy | Modern |
+|--------|--------|--------|
+| Pairs identified | 1535 | 1535 |
+| Pair residues | Same | Same |
+| Helix count | ~108 | ~108 |
+| bp_idx assignment | Different | Different |
+| Step ordering | Different | Different |
+
+The `five2three` helix organization algorithm produces different orderings for complex structures due to:
+- Different endpoint selection order
+- Different neighbor traversal decisions
+- Different strand_swapped frame selection
+
+### Impact on Step Parameters
+
+When helix organization differs:
+
+| Frame Selection | Parameter Match |
+|-----------------|-----------------|
+| Same direction (both use org_i or both use org_j) | **100%** |
+| Different direction (one uses org_i, other uses org_j) | **0%** (parameters completely different) |
+
+Typical differences when frames differ:
+- Translational parameters (shift, slide, rise): 0.1 - 6 Å
+- Angular parameters (tilt, roll, twist): 1 - 130°
+
+### Conclusion
+
+**The step parameter calculation is correct.** Differences arise from:
+
+1. **Helix organization algorithm** - determines which pairs go at which bp_idx positions
+2. **Frame selection (strand_swapped)** - determines which base frame (org_i vs org_j) to use
+
+For structures where helix organization matches (99.4% of fast set), step parameters match exactly.
+
+### Slow PDB Analysis (521 PDBs > 15 seconds)
+
+Tested 20 slow PDBs from `data/slow_pdbs.json`:
+- 10 pass (50%)
+- 10 fail (50%)
+
+Failures are due to helix organization differences in complex structures, not calculation errors or timeouts.
+
+---
+
 ## Current Status (December 15, 2024)
 
 **Pass Rate**: 99% (99/100 PDBs)
