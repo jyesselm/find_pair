@@ -1853,6 +1853,12 @@
         "type": "THYMINE",
         "is_purine": false,
         "description": "3,9-dihydro thymine"
+      },
+      "TM2": {
+        "code": "t",
+        "type": "THYMINE",
+        "is_purine": false,
+        "description": "2'-O-methyl-5-methyluridine"
       }
     },
     "modified_uracils": {
