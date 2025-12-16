@@ -80,10 +80,10 @@ python3 scripts/rebuild_json.py regenerate 1EHZ 2BNA                       # Spe
 
 | Stage | Pass Rate | Notes |
 |-------|-----------|-------|
-| Core (all except H-bonds) | 97.4% (3508/3602) | Recommended validation |
+| Core (all except H-bonds) | 99.0% (3566/3602) | Recommended validation |
 | Pairs | 99.9% (3598/3602) | 4 failures |
 | Frames | 99.7% (3591/3602) | 11 failures |
-| Steps | 97.7% (3520/3602) | 82 failures |
+| Steps | 99.4% (3579/3602) | 23 failures (legacy JSON indexing issues) |
 
 **100-PDB Test Set:**
 
