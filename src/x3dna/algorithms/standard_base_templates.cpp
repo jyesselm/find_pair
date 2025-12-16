@@ -27,7 +27,23 @@ StandardBaseTemplates::StandardBaseTemplates(const std::filesystem::path& templa
 }
 
 std::filesystem::path StandardBaseTemplates::find_template_path() {
-    // Check X3DNA_HOMEDIR environment variable first
+    // Priority 1: Check resources/templates directory (self-contained)
+    std::vector<std::filesystem::path> search_paths = {
+        "resources/templates",
+        "../resources/templates",
+        "../../resources/templates",
+#ifdef X3DNA_SOURCE_DIR
+        std::filesystem::path(X3DNA_SOURCE_DIR) / "resources/templates",
+#endif
+    };
+
+    for (const auto& path : search_paths) {
+        if (std::filesystem::exists(path)) {
+            return path;
+        }
+    }
+
+    // Priority 2: Fall back to X3DNA environment variable
     const char* x3dna_home = std::getenv("X3DNA_HOMEDIR");
     if (x3dna_home) {
         std::filesystem::path config_path = std::filesystem::path(x3dna_home) / "config";
@@ -36,16 +52,12 @@ std::filesystem::path StandardBaseTemplates::find_template_path() {
         }
     }
 
-    // Check resources/templates directory (new location)
-    std::filesystem::path resources_path = "resources/templates";
-    if (std::filesystem::exists(resources_path)) {
-        return resources_path;
-    }
-
-    // Fall back to data/templates directory (backward compatibility)
-    std::filesystem::path local_path = "data/templates";
-    if (std::filesystem::exists(local_path)) {
-        return local_path;
+    const char* x3dna = std::getenv("X3DNA");
+    if (x3dna) {
+        std::filesystem::path config_path = std::filesystem::path(x3dna) / "config";
+        if (std::filesystem::exists(config_path)) {
+            return config_path;
+        }
     }
 
     // Return empty path if not found

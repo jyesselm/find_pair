@@ -805,19 +805,39 @@ void BasePairValidator::load_atom_list(const std::string& x3dna_home) {
         return; // Already loaded
     }
 
-    // Get X3DNA home directory
-    std::string home_dir = x3dna_home;
-    if (home_dir.empty()) {
-        const char* env_home = std::getenv("X3DNA");
-        if (env_home) {
-            home_dir = env_home;
-        } else {
-            // Default location
-            home_dir = "/Users/jyesselman2/installs/x3dna";
+    // Priority 1: Check local resources/config directory (self-contained)
+    std::vector<std::string> search_paths = {
+        "resources/config/atomlist.dat",
+        "../resources/config/atomlist.dat",
+        "../../resources/config/atomlist.dat",
+#ifdef X3DNA_SOURCE_DIR
+        std::string(X3DNA_SOURCE_DIR) + "/resources/config/atomlist.dat",
+#endif
+    };
+
+    std::string atomlist_file;
+    for (const auto& path : search_paths) {
+        std::ifstream test(path);
+        if (test.good()) {
+            atomlist_file = path;
+            break;
         }
     }
 
-    std::string atomlist_file = home_dir + "/config/atomlist.dat";
+    // Priority 2: Fall back to X3DNA environment variable
+    if (atomlist_file.empty()) {
+        std::string home_dir = x3dna_home;
+        if (home_dir.empty()) {
+            const char* env_home = std::getenv("X3DNA");
+            if (env_home) {
+                home_dir = env_home;
+            }
+        }
+        if (!home_dir.empty()) {
+            atomlist_file = home_dir + "/config/atomlist.dat";
+        }
+    }
+
     std::ifstream file(atomlist_file);
     if (!file.is_open()) {
         // If file not found, use fallback logic only

@@ -1,34 +1,51 @@
 build/
-data/pdb
-data/json
-data/json_legacy
-.comparison_cache
 cmake-build-*/
 .cache
 
-# Temporary test files
+# Data directories (large, can be regenerated)
+data/pdb
+data/json
+data/json_legacy
+data/json_test/
+data/json_modern/
+
+# Cache
+.comparison_cache
+
+# Legacy X3DNA working files (generated at runtime)
 *.inp
 *.out
-
-# Temporary directories
-temp_compare/
-base_frame_calc/
-
-# Temporary data files
+*.par
 bestpairs.pdb
 bp_order.dat
 hel_regions.pdb
 col_*.scr
-*.par
+ref_frames.dat
+auxiliary.par
+stacking.pdb
 
-# Generated comparison results
-comparison_results_summary.json
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+Testing/
+*.cmake
+!CMakeLists.txt
+!cmake/*.cmake
+
+# Compiled files
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
 
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
 .Python
 *.egg-info/
 dist/
@@ -47,32 +64,9 @@ env/
 ENV/
 .venv
 
-# Package installation
-*.egg-info
-x3dna_json_compare.egg-info/
-
-# CMake
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-compile_commands.json
-# Build directories
-Testing/
-
-*.cmake
-!CMakeLists.txt
-!cmake/*.cmake
-
-# Compiled files
-*.o
-*.a
-*.so
-*.dylib
-*.dll
-*.exe
-
 # IDE files
 .vscode/
+.cursor/
 .idea/
 *.swp
 *.swo
@@ -82,29 +76,13 @@ Testing/
 test_results/
 *.log
 
-# Documentation
-docs/api/
-
 # Temporary files
 *.tmp
 *.bak
+tmp/
+results/
+temp_compare/
 
 # OS files
 .DS_Store
 Thumbs.db
-
-# IDE files
-.cursor/
-
-# Temporary test directories
-base_frame_calc/
-
-# Generated comparison results (can be regenerated)
-comparison_results_summary.json
-
-# Large test JSON files (exceed GitHub file size limits)
-data/json_test/
-
-# Temporary working files
-tmp/
-data/json_modern/
