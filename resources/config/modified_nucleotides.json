@@ -681,6 +681,12 @@
         "type": "ADENINE",
         "is_purine": true,
         "description": "Puromycin"
+      },
+      "PUY": {
+        "code": "a",
+        "type": "ADENINE",
+        "is_purine": true,
+        "description": "Puromycin aminonucleoside"
       }
     },
     "modified_guanines": {
