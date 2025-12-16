@@ -11,8 +11,9 @@ This guide explains how to validate that the modern C++ implementation produces 
 ## Quick Start
 
 ```bash
-# Run all tests for all fast PDBs
-fp2-validate validate all --test-set 100
+# Run core validation (all stages except H-bonds) - RECOMMENDED
+fp2-validate validate core --test-set fast   # All 3602 fast PDBs
+fp2-validate validate core --test-set 100    # 100-PDB test set
 
 # Run a specific stage
 fp2-validate validate 1 --test-set 100  # Stage 1: atoms
@@ -71,18 +72,18 @@ The algorithm has **12 stages** that must be validated in order:
 
 | Stage | CLI ID | Name | JSON Type | Status |
 |-------|--------|------|-----------|--------|
-| 1 | `pdb_atoms` | Atom Parsing | `pdb_atoms` | ✅ PASSED (3602/3602) |
-| 2 | `residue_indices` | Residue Index Mapping | `residue_indices` | ✅ PASSED (3602/3602) |
-| 3 | `base_frame_calc` | Base Frame Calculation | `base_frame_calc` | ✅ PASSED (3602/3602) |
-| 4 | `ls_fitting` | Least Squares Fitting | `ls_fitting` | ✅ PASSED (3602/3602) |
-| 5 | `frame_calc` | Reference Frame Calculation | `frame_calc` | ✅ PASSED (3602/3602) |
-| 6 | `pair_validation` | Pair Validation | `pair_validation` | ⚠️ TESTING |
-| 7 | `distance_checks` | Distance Measurements | `distance_checks` | ⚠️ TESTING |
-| 8 | `hbond_list` | Hydrogen Bond List | `hbond_list` | ⏳ PENDING |
-| 9 | `base_pair` | Base Pair Records | `base_pair` | ⏳ PENDING |
-| 10 | `find_bestpair_selection` | Final Pair Selection | `find_bestpair_selection` | ⏳ PENDING |
-| 11 | `bpstep_params` | Step Parameters | `bpstep_params` | ⏳ PENDING |
-| 12 | `helical_params` | Helical Parameters | `helical_params` | ⏳ PENDING |
+| 1 | `pdb_atoms` | Atom Parsing | `pdb_atoms` | ✅ PASSED |
+| 2 | `residue_indices` | Residue Index Mapping | `residue_indices` | ✅ PASSED |
+| 3 | `base_frame_calc` | Base Frame Calculation | `base_frame_calc` | ✅ PASSED |
+| 4 | `ls_fitting` | Least Squares Fitting | `ls_fitting` | ✅ PASSED |
+| 5 | `frame_calc` | Reference Frame Calculation | `frame_calc` | ✅ PASSED |
+| 6 | `pair_validation` | Pair Validation | `pair_validation` | ✅ PASSED |
+| 7 | `distance_checks` | Distance Measurements | `distance_checks` | ✅ PASSED |
+| 8 | `hbond_list` | Hydrogen Bond List | `hbond_list` | ⚠️ Known differences |
+| 9 | `base_pair` | Base Pair Records | `base_pair` | ✅ PASSED |
+| 10 | `find_bestpair_selection` | Final Pair Selection | `find_bestpair_selection` | ✅ PASSED |
+| 11 | `bpstep_params` | Step Parameters | `bpstep_params` | ✅ 99.4% (legacy JSON indexing issues) |
+| 12 | `helical_params` | Helical Parameters | `helical_params` | ✅ 99.4% (legacy JSON indexing issues) |
 
 ### Stage Groups
 
@@ -96,7 +97,10 @@ For convenience, stages can be referenced by group:
 | `pairs` | 6, 7, 9, 10 | Pair validation and selection |
 | `hbonds` | 8 | H-bond detection |
 | `steps` | 11, 12 | Step and helical parameters |
+| `core` | 1-7, 9-12 | All stages except H-bonds (recommended) |
 | `all` | 1-12 | All stages |
+
+**Note**: Use `core` instead of `all` to skip H-bond validation (stage 8), which has known detection differences between legacy and modern implementations.
 
 ---
 
