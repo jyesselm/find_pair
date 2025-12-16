@@ -675,6 +675,12 @@
         "type": "ADENINE",
         "is_purine": true,
         "description": "N6-dimethyladenosine"
+      },
+      "PPU": {
+        "code": "a",
+        "type": "ADENINE",
+        "is_purine": true,
+        "description": "Puromycin"
       }
     },
     "modified_guanines": {
@@ -2343,6 +2349,12 @@
         "type": "PSEUDOURIDINE",
         "is_purine": false,
         "description": "5-formyl-pseudouridine"
+      },
+      "I2T": {
+        "code": "P",
+        "type": "PSEUDOURIDINE",
+        "is_purine": false,
+        "description": "5-iodo-2-thiouridine (pseudouridine analog)"
       }
     }
   }
