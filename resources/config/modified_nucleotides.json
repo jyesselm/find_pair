@@ -1701,6 +1701,12 @@
         "type": "CYTOSINE",
         "is_purine": false,
         "description": "2'-deoxy-5-methylisocytidine"
+      },
+      "RSP": {
+        "code": "c",
+        "type": "CYTOSINE",
+        "is_purine": false,
+        "description": "Ribavirin-5'-phosphate"
       }
     },
     "modified_thymines": {
@@ -2367,6 +2373,18 @@
         "type": "PSEUDOURIDINE",
         "is_purine": false,
         "description": "5-iodo-2-thiouridine (pseudouridine analog)"
+      },
+      "M1Y": {
+        "code": "P",
+        "type": "PSEUDOURIDINE",
+        "is_purine": false,
+        "description": "1-methylpseudouridine"
+      },
+      "C4J": {
+        "code": "P",
+        "type": "PSEUDOURIDINE",
+        "is_purine": false,
+        "description": "5-carboxymethyl-pseudouridine"
       }
     }
   }
