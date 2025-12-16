@@ -40,12 +40,14 @@ make org-clean-all
 ## Environment Setup
 
 ```bash
-# Required for legacy code execution
+# Required for LEGACY code execution only (modern code is self-contained)
 export X3DNA=/Users/jyesselman2/local/installs/x3dna
 
 # Install Python package
 pip install -e ".[dev]"
 ```
+
+Note: Modern C++ code uses resources in `resources/config/` and `resources/templates/` and does NOT require the X3DNA environment variable.
 
 ## Testing
 
