@@ -44,6 +44,73 @@ from datetime import datetime
 
 from x3dna_json_compare import JsonValidator
 
+# All record types that may be generated
+ALL_RECORD_TYPES = [
+    "pdb_atoms",
+    "base_frame_calc",
+    "frame_calc",
+    "ls_fitting",
+    "base_pair",
+    "hbond_list",
+    "step_params",
+    "helical_params",
+    "helix_organization",
+]
+
+MAX_RETRY_ATTEMPTS = 3
+
+
+def validate_all_json_files(
+    json_dir: Path, pdb_id: str, record_types: List[str] = None
+) -> Tuple[bool, List[str], List[str]]:
+    """
+    Validate all JSON files for a PDB.
+
+    Returns:
+        Tuple of (all_valid, valid_files, invalid_files)
+    """
+    from x3dna_json_compare.json_file_finder import find_json_file
+
+    if record_types is None:
+        record_types = ALL_RECORD_TYPES
+
+    valid_files = []
+    invalid_files = []
+
+    for record_type in record_types:
+        json_file = find_json_file(json_dir, pdb_id, record_type)
+        if json_file and json_file.exists():
+            try:
+                with open(json_file) as f:
+                    data = json.load(f)
+                # Accept both arrays and objects as valid JSON
+                if isinstance(data, (list, dict)):
+                    valid_files.append(str(json_file))
+                else:
+                    invalid_files.append(f"{json_file}: expected array or object, got {type(data).__name__}")
+            except json.JSONDecodeError as e:
+                invalid_files.append(f"{json_file}: JSON parse error: {str(e)}")
+            except Exception as e:
+                invalid_files.append(f"{json_file}: {str(e)}")
+
+    return len(invalid_files) == 0, valid_files, invalid_files
+
+
+def delete_json_files_for_pdb(json_dir: Path, pdb_id: str) -> int:
+    """Delete all JSON files for a PDB before regeneration."""
+    from x3dna_json_compare.json_file_finder import find_json_file
+
+    deleted = 0
+    for record_type in ALL_RECORD_TYPES:
+        json_file = find_json_file(json_dir, pdb_id, record_type)
+        if json_file and json_file.exists():
+            try:
+                json_file.unlink()
+                deleted += 1
+            except Exception:
+                pass
+    return deleted
+
 
 def find_executables(project_root: Path) -> Tuple[Optional[Path], Optional[Path]]:
     """Find legacy and modern executables."""
@@ -225,14 +292,14 @@ def generate_test_set(
 def regenerate_legacy_json(
     pdb_id: str, executable_path: str, project_root: str
 ) -> Dict:
-    """Regenerate legacy JSON for a single PDB with validation."""
+    """Regenerate legacy JSON for a single PDB with validation and retry."""
     if isinstance(project_root, str):
         project_root = Path(project_root)
     if isinstance(executable_path, str):
         executable_path = Path(executable_path)
 
     pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
-    json_output_dir = project_root / "data" / "json_legacy"  # Output directory
+    json_output_dir = project_root / "data" / "json_legacy"
 
     if not pdb_file.exists():
         return {
@@ -241,78 +308,67 @@ def regenerate_legacy_json(
             "message": f"PDB file not found: {pdb_file}",
         }
 
-    try:
-        # Legacy code outputs split files to json_legacy directory
-        # It will create files like: <PDB_ID>_pdb_atoms.json, <PDB_ID>_base_pair.json, etc.
-        cmd = [str(executable_path), str(pdb_file)]
+    last_error = None
+    retry_count = 0
 
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=300,
-            cwd=str(project_root / "org"),
-        )
+    for attempt in range(MAX_RETRY_ATTEMPTS):
+        try:
+            # Delete existing files before regeneration (clean slate)
+            if attempt > 0:
+                delete_json_files_for_pdb(json_output_dir, pdb_id)
 
-        # Check if any JSON files were created (legacy outputs split files in segmented structure)
-        # Check for at least one record type file in new segmented structure
-        from x3dna_json_compare.json_file_finder import find_json_file
-        
-        record_types = ["pdb_atoms", "base_frame_calc", "base_pair", "hbond_list"]
-        files_created = False
-        for record_type in record_types:
-            # Legacy outputs to segmented structure: <record_type>/<PDB_ID>.json
-            json_file = find_json_file(json_output_dir, pdb_id, record_type)
-            if json_file and json_file.exists():
-                files_created = True
-                # Validate the file (legacy files are arrays, not objects)
-                try:
-                    import json
-                    with open(json_file) as f:
-                        data = json.load(f)
-                    # Accept both arrays and objects as valid JSON
-                    if not isinstance(data, (list, dict)):
-                        return {
-                            "pdb_id": pdb_id,
-                            "status": "error",
-                            "message": f"Invalid JSON format: expected array or object, got {type(data).__name__}",
-                        }
-                except Exception as e:
-                    return {
-                        "pdb_id": pdb_id,
-                        "status": "error",
-                        "message": f"JSON parse error: {str(e)}",
-                    }
-                break  # Found at least one file, that's enough
+            cmd = [str(executable_path), str(pdb_file)]
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=300,
+                cwd=str(project_root / "org"),
+            )
 
-        if not files_created:
+            # Validate ALL generated JSON files
+            all_valid, valid_files, invalid_files = validate_all_json_files(
+                json_output_dir, pdb_id
+            )
+
+            if not valid_files:
+                last_error = f"No JSON files created in {json_output_dir}"
+                if result.stderr:
+                    last_error += f" (stderr: {result.stderr[-200:]})"
+                retry_count += 1
+                continue
+
+            if not all_valid:
+                last_error = f"Invalid JSON files: {', '.join(invalid_files)}"
+                retry_count += 1
+                continue
+
+            # All files validated successfully
+            message = f"JSON regenerated and validated ({len(valid_files)} files)"
+            if retry_count > 0:
+                message += f" after {retry_count} retry(s)"
+
             return {
                 "pdb_id": pdb_id,
-                "status": "error",
-                "message": f"No JSON files created in {json_output_dir}",
-                "stderr": result.stderr[-500:] if result.stderr else "",
+                "status": "success",
+                "message": message,
+                "retries": retry_count,
             }
 
-        return {
-            "pdb_id": pdb_id,
-            "status": "success",
-            "message": "JSON regenerated and validated successfully",
-        }
+        except subprocess.TimeoutExpired:
+            last_error = "Timeout after 5 minutes"
+            retry_count += 1
+        except Exception as e:
+            last_error = str(e)
+            retry_count += 1
 
-    except subprocess.TimeoutExpired:
-        return {
-            "pdb_id": pdb_id,
-            "status": "error",
-            "message": "Timeout after 5 minutes",
-            "removed": False,
-        }
-    except Exception as e:
-        return {
-            "pdb_id": pdb_id,
-            "status": "error",
-            "message": str(e),
-            "removed": False,
-        }
+    # All retries exhausted
+    return {
+        "pdb_id": pdb_id,
+        "status": "error",
+        "message": f"Failed after {MAX_RETRY_ATTEMPTS} attempts: {last_error}",
+        "retries": retry_count,
+    }
 
 
 def regenerate_modern_json(
@@ -321,9 +377,9 @@ def regenerate_modern_json(
     project_root: Path,
     use_legacy_mode: bool = False,
 ) -> Dict:
-    """Regenerate modern JSON for a single PDB."""
+    """Regenerate modern JSON for a single PDB with validation and retry."""
     pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
-    json_output_dir = project_root / "data" / "json"  # Output directory, not file
+    json_output_dir = project_root / "data" / "json"
 
     if not pdb_file.exists():
         return {
@@ -332,74 +388,67 @@ def regenerate_modern_json(
             "message": f"PDB file not found: {pdb_file}",
         }
 
-    try:
-        # Create output directory if needed
-        json_output_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Pass directory to executable (not a file path)
-        cmd = [str(executable_path), str(pdb_file), str(json_output_dir)]
-        if use_legacy_mode:
-            cmd.append("--legacy")
+    last_error = None
+    retry_count = 0
 
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    for attempt in range(MAX_RETRY_ATTEMPTS):
+        try:
+            # Delete existing files before regeneration (clean slate)
+            if attempt > 0:
+                delete_json_files_for_pdb(json_output_dir, pdb_id)
 
-        # Check if any JSON files were created in the output directory
-        # Look for at least one record type file
-        from x3dna_json_compare.json_file_finder import find_json_file
-        
-        record_types = ["pdb_atoms", "base_frame_calc", "base_pair", "hbond_list"]
-        files_created = False
-        for record_type in record_types:
-            json_file = find_json_file(json_output_dir, pdb_id, record_type)
-            if json_file and json_file.exists():
-                files_created = True
-                # Validate the file (modern files are arrays, not objects)
-                try:
-                    import json
-                    with open(json_file) as f:
-                        data = json.load(f)
-                    # Accept both arrays and objects as valid JSON
-                    if not isinstance(data, (list, dict)):
-                        return {
-                            "pdb_id": pdb_id,
-                            "status": "error",
-                            "message": f"Invalid JSON format: expected array or object, got {type(data).__name__}",
-                        }
-                except Exception as e:
-                    return {
-                        "pdb_id": pdb_id,
-                        "status": "error",
-                        "message": f"JSON parse error: {str(e)}",
-                    }
-                break  # Found at least one file, that's enough
+            # Create output directory if needed
+            json_output_dir.mkdir(parents=True, exist_ok=True)
 
-        if files_created:
+            cmd = [str(executable_path), str(pdb_file), str(json_output_dir)]
+            if use_legacy_mode:
+                cmd.append("--legacy")
+
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+
+            # Validate ALL generated JSON files
+            all_valid, valid_files, invalid_files = validate_all_json_files(
+                json_output_dir, pdb_id
+            )
+
+            if not valid_files:
+                last_error = f"No JSON files created in {json_output_dir}"
+                if result.stderr:
+                    last_error += f" (stderr: {result.stderr[-200:]})"
+                retry_count += 1
+                continue
+
+            if not all_valid:
+                last_error = f"Invalid JSON files: {', '.join(invalid_files)}"
+                retry_count += 1
+                continue
+
+            # All files validated successfully
+            message = f"JSON regenerated and validated ({len(valid_files)} files)"
+            if retry_count > 0:
+                message += f" after {retry_count} retry(s)"
+
             return {
                 "pdb_id": pdb_id,
                 "status": "success",
-                "message": "JSON regenerated and validated successfully",
-            }
-        else:
-            return {
-                "pdb_id": pdb_id,
-                "status": "error",
-                "message": f"No JSON files created in {json_output_dir}",
+                "message": message,
+                "retries": retry_count,
             }
 
-    except subprocess.TimeoutExpired:
-        return {
-            "pdb_id": pdb_id,
-            "status": "error",
-            "message": "Timeout during generation",
-            "removed": False,
-        }
-    except Exception as e:
-        return {
-            "pdb_id": pdb_id,
-            "status": "error",
-            "message": str(e),
-            "removed": False,
-        }
+        except subprocess.TimeoutExpired:
+            last_error = "Timeout after 5 minutes"
+            retry_count += 1
+        except Exception as e:
+            last_error = str(e)
+            retry_count += 1
+
+    # All retries exhausted
+    return {
+        "pdb_id": pdb_id,
+        "status": "error",
+        "message": f"Failed after {MAX_RETRY_ATTEMPTS} attempts: {last_error}",
+        "retries": retry_count,
+    }
 
 
 def validate_existing_json(json_file: Path) -> Dict:
@@ -487,8 +536,8 @@ def cli():
 )
 @click.option(
     "--test-set",
-    type=click.Choice(["10", "50", "100", "500", "1000"], case_sensitive=False),
-    help="Use a saved test set of the specified size (10, 50, 100, 500, or 1000 PDBs)",
+    type=click.Choice(["10", "50", "100", "500", "1000", "fast"], case_sensitive=False),
+    help="Use a test set: 10/50/100/500/1000 or 'fast' (3602 validated PDBs)",
 )
 @click.argument("pdb_ids", nargs=-1)
 def regenerate(legacy_only, modern_only, legacy_mode, threads, test_set, pdb_ids):
@@ -497,15 +546,26 @@ def regenerate(legacy_only, modern_only, legacy_mode, threads, test_set, pdb_ids
     legacy_exe, modern_exe = find_executables(project_root)
 
     if test_set:
-        test_pdb_ids = load_test_set(project_root, int(test_set))
-        if test_pdb_ids is None:
-            click.echo(
-                f"Error: Test set of size {test_set} not found. Generate it first with 'generate-test-sets' command.",
-                err=True,
-            )
-            return
-        pdb_ids = test_pdb_ids
-        click.echo(f"Using test set of size {test_set}: {len(pdb_ids)} PDB files")
+        if test_set.lower() == "fast":
+            # Load fast PDB list
+            fast_file = project_root / "data" / "valid_pdbs_fast.json"
+            if not fast_file.exists():
+                click.echo(f"Error: {fast_file} not found!", err=True)
+                return
+            with open(fast_file) as f:
+                data = json.load(f)
+                pdb_ids = data.get("valid_pdbs_with_atoms_and_frames", [])
+            click.echo(f"Using fast PDB list: {len(pdb_ids)} PDB files")
+        else:
+            test_pdb_ids = load_test_set(project_root, int(test_set))
+            if test_pdb_ids is None:
+                click.echo(
+                    f"Error: Test set of size {test_set} not found. Generate it first with 'generate-test-sets' command.",
+                    err=True,
+                )
+                return
+            pdb_ids = test_pdb_ids
+            click.echo(f"Using test set of size {test_set}: {len(pdb_ids)} PDB files")
     elif not pdb_ids:
         pdb_ids = get_all_pdb_ids(project_root)
         if not pdb_ids:
@@ -563,6 +623,8 @@ def regenerate(legacy_only, modern_only, legacy_mode, threads, test_set, pdb_ids
         elapsed = time.time() - start_time
         success_count = sum(1 for r in results if r["status"] == "success")
         error_count = sum(1 for r in results if r["status"] == "error")
+        retry_count = sum(r.get("retries", 0) for r in results)
+        retried_count = sum(1 for r in results if r.get("retries", 0) > 0)
 
         click.echo()
         click.echo("=" * 80)
@@ -571,6 +633,8 @@ def regenerate(legacy_only, modern_only, legacy_mode, threads, test_set, pdb_ids
         click.echo(f"Total processed: {len(results)}")
         click.echo(f"Success: {success_count}")
         click.echo(f"Errors: {error_count}")
+        if retried_count > 0:
+            click.echo(f"Files requiring retry: {retried_count} ({retry_count} total retries)")
         click.echo(f"Time elapsed: {elapsed:.2f} seconds ({elapsed/60:.2f} minutes)")
         click.echo()
     elif not modern_only:
@@ -632,6 +696,8 @@ def regenerate(legacy_only, modern_only, legacy_mode, threads, test_set, pdb_ids
         elapsed = time.time() - start_time
         success_count = sum(1 for r in results if r["status"] == "success")
         error_count = sum(1 for r in results if r["status"] == "error")
+        retry_count = sum(r.get("retries", 0) for r in results)
+        retried_count = sum(1 for r in results if r.get("retries", 0) > 0)
 
         click.echo()
         click.echo("=" * 80)
@@ -640,6 +706,8 @@ def regenerate(legacy_only, modern_only, legacy_mode, threads, test_set, pdb_ids
         click.echo(f"Total processed: {len(results)}")
         click.echo(f"Success: {success_count}")
         click.echo(f"Errors: {error_count}")
+        if retried_count > 0:
+            click.echo(f"Files requiring retry: {retried_count} ({retry_count} total retries)")
         click.echo(f"Time elapsed: {elapsed:.2f} seconds ({elapsed/60:.2f} minutes)")
         click.echo()
     elif not legacy_only:

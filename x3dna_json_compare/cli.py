@@ -40,8 +40,8 @@ def main():
 @click.argument('stages', nargs=-1)
 @click.option('--pdb', '-p', multiple=True, help='Specific PDB(s) to validate')
 @click.option('--max', '-n', 'max_count', type=int, help='Maximum number of PDBs to process')
-@click.option('--test-set', type=click.Choice(['10', '50', '100', '500', '1000']),
-              help='Use a saved test set of specified size')
+@click.option('--test-set', type=click.Choice(['10', '50', '100', '500', '1000', 'fast']),
+              help='Use a test set: 10/50/100/500/1000 or "fast" (3602 validated PDBs)')
 @click.option('--workers', '-w', type=int, help='Number of parallel workers (default: 10)')
 @click.option('--quiet', '-q', is_flag=True, help='Suppress output, exit code only')
 @click.option('--verbose', '-v', is_flag=True, help='Show per-PDB results')
@@ -54,11 +54,13 @@ def main():
               help='Resume from checkpoint, skipping already-passed PDBs')
 @click.option('--clean-on-match', is_flag=True,
               help='Delete modern JSON files that match legacy (save disk space)')
+@click.option('--skip-hbonds', is_flag=True,
+              help='Skip H-bond validation (known detection differences)')
 @click.option('--project-root', type=click.Path(path_type=Path, exists=True),
               help='Project root directory (default: current directory)')
-def validate(stages, pdb, max_count, test_set, workers, quiet, verbose, 
+def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
              stop_on_first, diff, diff_file, checkpoint, resume, clean_on_match,
-             project_root):
+             skip_hbonds, project_root):
     """Validate legacy vs modern JSON outputs.
     
     \b
@@ -83,6 +85,7 @@ def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
       pairs     = 6,7,9,10
       hbonds    = 8
       steps     = 11,12
+      core      = all except hbonds (recommended)
       all       = all stages
     
     \b
@@ -118,7 +121,16 @@ def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
     
     # Convert stages to list
     stages_list = list(stages) if stages else None
-    
+
+    # Handle --skip-hbonds: use 'core' stage group instead of 'all'
+    if skip_hbonds:
+        if stages_list is None or 'all' in stages_list:
+            stages_list = ['core']
+        elif '8' in stages_list:
+            stages_list = [s for s in stages_list if s != '8']
+        elif 'hbonds' in stages_list:
+            stages_list = [s for s in stages_list if s != 'hbonds']
+
     # Create runner
     runner = ValidationRunner(
         project_root=project_root,
@@ -139,7 +151,7 @@ def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
         pdb_ids = runner.get_pdb_list(
             specific=list(pdb) if pdb else None,
             max_count=max_count,
-            test_set=int(test_set) if test_set else None
+            test_set=test_set
         )
     except FileNotFoundError as e:
         if not quiet:
@@ -230,18 +242,20 @@ def alias_options(f):
     """Decorator to add common options to alias commands."""
     f = click.option('--pdb', '-p', multiple=True, help='Specific PDB(s) to validate')(f)
     f = click.option('--max', '-n', 'max_count', type=int, help='Maximum number of PDBs')(f)
-    f = click.option('--test-set', type=click.Choice(['10', '50', '100', '500', '1000']),
-                     help='Use a saved test set')(f)
+    f = click.option('--test-set', type=click.Choice(['10', '50', '100', '500', '1000', 'fast']),
+                     help='Use a test set (10/50/100/500/1000/fast)')(f)
     f = click.option('--workers', '-w', type=int, help='Number of parallel workers')(f)
     f = click.option('--quiet', '-q', is_flag=True, help='Suppress output')(f)
     f = click.option('--verbose', '-v', is_flag=True, help='Show per-PDB results')(f)
     f = click.option('--stop-on-first', '-s', is_flag=True, help='Stop at first failure')(f)
     f = click.option('--diff', is_flag=True, help='Document differences to file')(f)
-    f = click.option('--checkpoint', type=click.Path(path_type=Path), 
+    f = click.option('--checkpoint', type=click.Path(path_type=Path),
                      help='Save progress to checkpoint file')(f)
     f = click.option('--resume', is_flag=True, help='Resume from checkpoint')(f)
-    f = click.option('--clean-on-match', is_flag=True, 
+    f = click.option('--clean-on-match', is_flag=True,
                      help='Delete modern JSON that matches legacy')(f)
+    f = click.option('--skip-hbonds', is_flag=True,
+                     help='Skip H-bond validation')(f)
     return f
 
 

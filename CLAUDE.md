@@ -53,29 +53,48 @@ Primary testing is JSON regression comparison - modern output must match legacy 
 
 ```bash
 # Main validation CLI (always use fp2-validate)
-X3DNA=/Users/jyesselman2/local/installs/x3dna python -m x3dna_json_compare.cli validate all --test-set 100
-X3DNA=/Users/jyesselman2/local/installs/x3dna python -m x3dna_json_compare.cli validate frames --test-set 100
-X3DNA=/Users/jyesselman2/local/installs/x3dna python -m x3dna_json_compare.cli validate 3 --pdb 1EHZ -v
+# Test sets: 10, 50, 100, 500, 1000, or "fast" (3602 validated PDBs)
+fp2-validate validate core --test-set fast    # All fast PDBs, skip H-bonds (recommended)
+fp2-validate validate core --test-set 100     # 100-PDB test set, skip H-bonds
+fp2-validate validate steps --test-set fast   # Step validation only
+fp2-validate validate pairs --test-set 100    # Pair validation only
+fp2-validate validate 3 --pdb 1EHZ -v         # Single PDB, verbose
+
+# Stage groups: atoms, frames, pairs, steps, hbonds, core (all except hbonds), all
+# Use "core" instead of "all" to skip H-bond validation (known detection differences)
 
 # Run pytest
 pytest tests_python/
 
-# Generate JSON for comparison
-./build/generate_modern_json data/pdb/1H4S.pdb data/json/ --stage=frames
-
-# Regenerate JSON files (always verify after generation)
-PYTHONPATH=. X3DNA=/Users/jyesselman2/local/installs/x3dna python3 scripts/rebuild_json.py regenerate --test-set 100
+# Regenerate JSON files (always use rebuild_json.py CLI)
+python3 scripts/rebuild_json.py regenerate --test-set fast --modern-only   # Fast PDBs, modern only
+python3 scripts/rebuild_json.py regenerate --test-set 100                  # 100-PDB test set, both
+python3 scripts/rebuild_json.py regenerate 1EHZ 2BNA                       # Specific PDBs
 ```
 
-### Current Test Results (100-PDB Test Set)
+### Current Test Results
+
+**Fast PDB Set (3602 PDBs) - Core Stages (excludes H-bonds):**
 
 | Stage | Pass Rate | Notes |
 |-------|-----------|-------|
-| 1: Atoms | 94% (94/100) | 6 failures: 2CV2, 4RQF, 5VOE, 8UPT, 8Z1P, 8ZYC |
+| Core (all except H-bonds) | 97.4% (3508/3602) | Recommended validation |
+| Pairs | 99.9% (3598/3602) | 4 failures |
+| Frames | 99.7% (3591/3602) | 11 failures |
+| Steps | 97.7% (3520/3602) | 82 failures |
+
+**100-PDB Test Set:**
+
+| Stage | Pass Rate | Notes |
+|-------|-----------|-------|
+| 1: Atoms | 100% (100/100) | All pass |
 | 2: Residue Indices | 100% (100/100) | All pass |
-| 3-5: Frames | 99% (99/100) | 1 failure: 6OZK (base_type `g` vs `I` for inosine) |
-| 6-7: Pairs | 99% (99/100) | Only 4RQF fails (corrupt legacy JSON) |
-| 11-12: Steps | 95% (95/100) | 5 failures: 3UCU, 5CCX, 7YGB, 8RUJ, 8U5Z |
+| 3-5: Frames | 100% (100/100) | All pass |
+| 6-7: Pair Validation | 100% (100/100) | All pass |
+| 8: H-bond List | 46% (46/100) | Known issue: modern uses stricter H-bond criteria |
+| 9: Base Pair | 100% (100/100) | All pass |
+| 10: Bestpair Selection | 100% (100/100) | All pass |
+| 11-12: Steps | 99% (99/100) | 1 failure: 8RUJ (five2three strand swap algorithmic difference) |
 
 **Note**: Step ordering (`bp_idx`) now matches legacy 100% when helices match. Fixes implemented:
 - Fixed `helix_break` cutoff: 7.5 → 7.8 (matches legacy `misc_3dna.par` config)
@@ -86,17 +105,32 @@ PYTHONPATH=. X3DNA=/Users/jyesselman2/local/installs/x3dna python3 scripts/rebui
 - Added Watson-Crick pair check in `wc_bporien` (legacy `base_pairs[m][3] > 0`)
 - Fixed modified base handling in wc_bporien ("Cg" → "CG")
 - Added geometric bpid check (dir_x > 0 && dir_y < 0 && dir_z < 0)
+- Fixed `calculate_context` to not store neighbor1 when dist > helix_break (matches legacy line 963-965)
+- Fixed `has_positive_bpid` to check pair type (WC/wobble only) before geometry check
+- Fixed pair type classification to use case-insensitive comparison (matches legacy toupper)
+- Fixed helix_organization to swap base_i/base_j display order when strand_swapped=True (matches legacy format)
+- Fixed `check_others` to compare SPECIFIC frame pairs instead of sum totals (matches legacy lines 1342-1349)
+- **Fixed `has_positive_bpid` to use rotation matrix ROWS not COLUMNS for direction calculation** (legacy uses `&orien[i][0]` which is row 0, not column 0)
+- **Fixed atoms JSON output to include insertion codes** (PDB column 27, e.g., "520A" has insertion='A')
 
-**Remaining 5 failures** (3UCU, 5CCX, 7YGB, 8RUJ, 8U5Z) have algorithmic differences in five2three strand swap logic. See `docs/STEP_PARAMETER_INVESTIGATION.md` for details.
+**Remaining 1 failure** (8RUJ) has algorithmic differences in five2three strand swap logic for one "outlier" pair:
+- bp_idx 148 (helix 11, pos 143): legacy=swapped=false, modern=swapped=true
+This is a non-sequential pair (347,348 A-A) inserted in helix 11. The helix ordering matches exactly, but strand assignment differs due to complex cross-strand connectivity. Affects steps 142-143, 143-144 (2 mismatches).
 
-### Validation Stages (must pass in order)
+**Tolerance settings**: Step comparison uses 5e-4 tolerance in `step_comparison.py` to account for floating point variations. Verbose reporter uses 1e-4 tolerance for display.
+
+### Validation Stages
 
 | Stage | Name | Test Command |
 |-------|------|--------------|
+| **core** | All except H-bonds | `fp2-validate validate core --test-set fast` (recommended) |
 | 1 | Atoms | `fp2-validate validate 1` |
 | 2 | Residue Indices | `fp2-validate validate 2` |
 | 3-5 | Frames | `fp2-validate validate frames` |
 | 6-7 | Pair Validation | `fp2-validate validate pairs` |
+| 8 | H-bond List | `fp2-validate validate 8` (known differences) |
+| 9 | Base Pair | `fp2-validate validate 9` |
+| 10 | Bestpair Selection | `fp2-validate validate 10` |
 | 11-12 | Step/Helical Params | `fp2-validate validate steps` |
 
 ## Architecture

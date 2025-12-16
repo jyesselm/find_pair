@@ -71,41 +71,48 @@ def get_pdb_list(
     project_root: Path,
     specific: Optional[List[str]] = None,
     max_count: Optional[int] = None,
-    test_set: Optional[int] = None
+    test_set: Optional[str] = None
 ) -> List[str]:
     """Get list of PDBs to process.
-    
+
     Priority:
     1. Specific PDBs if provided
-    2. Test set if specified
-    3. All valid fast PDBs
-    
+    2. Test set if specified ('10', '50', '100', '500', '1000', or 'fast')
+    3. Default: all fast PDBs
+
     Args:
         project_root: Project root directory
         specific: Specific PDB IDs to use
         max_count: Maximum number of PDBs
-        test_set: Test set size to load
-        
+        test_set: Test set size ('10', '50', '100', '500', '1000') or 'fast'
+
     Returns:
         List of PDB IDs
     """
     if specific:
         return list(specific)
-    
+
     if test_set:
-        pdb_ids = load_test_set(project_root, test_set)
-        if pdb_ids is None:
-            raise FileNotFoundError(
-                f"Test set of size {test_set} not found. "
-                f"Generate it with: fp2-validate generate-test-sets"
-            )
+        if test_set == 'fast':
+            # Load fast PDB list
+            pdb_ids = load_valid_pdbs_fast(project_root)
+        else:
+            # Load numbered test set
+            pdb_ids = load_test_set(project_root, int(test_set))
+            if pdb_ids is None:
+                raise FileNotFoundError(
+                    f"Test set of size {test_set} not found. "
+                    f"Generate it with: fp2-validate generate-test-sets"
+                )
+        if max_count:
+            pdb_ids = pdb_ids[:max_count]
         return pdb_ids
-    
+
     # Default: load valid_pdbs_fast.json
     pdb_ids = load_valid_pdbs_fast(project_root)
-    
+
     if max_count:
         pdb_ids = pdb_ids[:max_count]
-    
+
     return pdb_ids
 

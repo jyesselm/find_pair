@@ -81,6 +81,8 @@ STAGE_GROUPS = {
     'hbonds': ['8'],
     'pairs': ['6', '7', '9', '10'],
     'steps': ['11', '12'],
+    # Core stages: everything except H-bonds (known detection differences)
+    'core': ['1', '2', '3', '4', '5', '6', '7', '9', '10', '11', '12'],
 }
 
 # Stage to JSON subdirectory mapping (for backward compatibility)
@@ -133,6 +135,7 @@ def _validate_single_pdb(args) -> Dict[str, Any]:
         'status': stage_status,  # Use stage-specific status
         'has_differences': stage_has_diff,
         'errors': result.errors,
+        'warnings': result.warnings,  # Warnings don't cause validation failure
         'atom_comparison': _summarize_atom_comparison(result.atom_comparison),
         'frame_comparison': _summarize_frame_comparison(result.frame_comparison),
         'hbond_comparison': _summarize_hbond_comparison(result.hbond_list_comparison),
@@ -454,10 +457,12 @@ class ValidationRunner:
     def get_pdb_list(self,
                      specific: List[str] = None,
                      max_count: int = None,
-                     test_set: int = None) -> List[str]:
+                     test_set: str = None) -> List[str]:
         """Get list of PDBs to validate.
-        
-        Uses data/valid_pdbs_fast.json by default.
+
+        Args:
+            test_set: '10', '50', '100', '500', '1000', or 'fast'
+
         If resume is enabled, skips PDBs that already passed.
         """
         pdb_ids = get_pdb_list(
