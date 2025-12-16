@@ -191,6 +191,11 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
                 atom_json["chain_id"] = std::string(1, atom.chain_id());
                 atom_json["residue_seq"] = atom.residue_seq();
 
+                // Insertion code (only if non-space, matches legacy format)
+                if (atom.insertion() != ' ') {
+                    atom_json["insertion"] = std::string(1, atom.insertion());
+                }
+
                 // Coordinates
                 const auto& pos = atom.position();
                 atom_json["xyz"] = nlohmann::json::array({pos.x(), pos.y(), pos.z()});
@@ -808,6 +813,21 @@ void JsonWriter::record_helix_organization(size_t helix_num, const algorithms::H
     record["helix_end_pos"] = static_cast<int>(helix.end_idx + 1);      // 1-based
     record["helix_length"] = static_cast<int>(helix.end_idx - helix.start_idx + 1);
 
+    // Debug fields for helix organization analysis
+    record["has_break"] = helix.has_break;
+    record["is_parallel"] = helix.is_parallel;
+    record["has_mixed_direction"] = helix.has_mixed_direction;
+
+    // Direction counts: [s1_fwd, s1_rev, s1_none, s2_fwd, s2_rev, s2_none]
+    record["direction"] = nlohmann::json::array({
+        helix.direction.strand1_forward,
+        helix.direction.strand1_reverse,
+        helix.direction.strand1_none,
+        helix.direction.strand2_forward,
+        helix.direction.strand2_reverse,
+        helix.direction.strand2_none
+    });
+
     nlohmann::json pairs_array = nlohmann::json::array();
     for (size_t j = helix.start_idx; j <= helix.end_idx; ++j) {
         size_t bp_idx = pair_order[j];
@@ -817,9 +837,14 @@ void JsonWriter::record_helix_organization(size_t helix_num, const algorithms::H
         pair_info["helix_pos"] = static_cast<int>(j + 1);  // 1-based
         pair_info["bp_idx"] = static_cast<int>(bp_idx + 1);  // 1-based (legacy format)
         pair_info["strand_swapped"] = strand_swapped[bp_idx];
-        // Use residue_idx + 1 for legacy 1-based format
-        pair_info["base_i"] = static_cast<int>(pair.residue_idx1() + 1);
-        pair_info["base_j"] = static_cast<int>(pair.residue_idx2() + 1);
+        // Preserve original finding order to match legacy behavior
+        if (pair.finding_order_swapped()) {
+            pair_info["base_i"] = static_cast<int>(pair.residue_idx2() + 1);
+            pair_info["base_j"] = static_cast<int>(pair.residue_idx1() + 1);
+        } else {
+            pair_info["base_i"] = static_cast<int>(pair.residue_idx1() + 1);
+            pair_info["base_j"] = static_cast<int>(pair.residue_idx2() + 1);
+        }
 
         pairs_array.push_back(pair_info);
     }
@@ -844,8 +869,16 @@ void JsonWriter::record_bp_context(const std::vector<core::BasePair>& pairs,
         pair_info["is_endpoint"] = ctx.is_endpoint;
         pair_info["neighbor1"] = ctx.neighbor1.has_value() ? static_cast<int>(ctx.neighbor1.value() + 1) : 0;
         pair_info["neighbor2"] = ctx.neighbor2.has_value() ? static_cast<int>(ctx.neighbor2.value() + 1) : 0;
-        pair_info["base_i"] = static_cast<int>(pair.residue_idx1() + 1);
-        pair_info["base_j"] = static_cast<int>(pair.residue_idx2() + 1);
+        // Preserve original finding order to match legacy behavior
+        // Legacy stores pairs in the order they were found (searching_residue, best_partner)
+        if (pair.finding_order_swapped()) {
+            // Original finding order was (j, i), so swap to match legacy
+            pair_info["base_i"] = static_cast<int>(pair.residue_idx2() + 1);
+            pair_info["base_j"] = static_cast<int>(pair.residue_idx1() + 1);
+        } else {
+            pair_info["base_i"] = static_cast<int>(pair.residue_idx1() + 1);
+            pair_info["base_j"] = static_cast<int>(pair.residue_idx2() + 1);
+        }
 
         pairs_array.push_back(pair_info);
     }

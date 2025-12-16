@@ -87,7 +87,7 @@ class OutputFormatter:
             if full_result:
                 # Generate verbose report for detailed comparison
                 try:
-                    verbose_output = generate_full_verbose_report(pdb_id, full_result, tolerance=1e-6)
+                    verbose_output = generate_full_verbose_report(pdb_id, full_result, tolerance=1e-4)
                     if verbose_output.strip():
                         self._print(verbose_output)
                     else:

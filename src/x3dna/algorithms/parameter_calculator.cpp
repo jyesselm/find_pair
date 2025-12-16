@@ -132,6 +132,7 @@ void ParameterCalculator::bpstep_par_impl(const geometry::Matrix3D& r1, const ge
     }
 
     // Calculate para_bp1 and para_bp2 (rotated frames)
+    // Legacy: multi_matrix(temp, rot2, para_bp2) = temp * rot2
     geometry::Matrix3D temp_rot = arb_rotation(hinge, -0.5 * rolltilt);
     geometry::Matrix3D para_bp2 = temp_rot * r2;
 

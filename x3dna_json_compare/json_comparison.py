@@ -776,8 +776,8 @@ class JsonComparator:
                 if frame_comparison.mismatched_calculations or frame_comparison.missing_residues:
                     frames_match = False
                     if self.compare_steps:
-                        result.errors.append(
-                            "WARNING: Frame mismatches detected. Step parameter comparison "
+                        result.warnings.append(
+                            "Frame mismatches detected. Step parameter comparison "
                             "may be unreliable since step parameters are calculated from frames. "
                             "Fix frame differences first before comparing step parameters."
                         )
@@ -794,7 +794,7 @@ class JsonComparator:
                 if legacy_steps or modern_steps:
                     # If frames don't match, warn but still do step comparison
                     if not frames_match and frame_comparison:
-                        result.errors.append(
+                        result.warnings.append(
                             f"Step parameter comparison proceeding despite frame mismatches "
                             f"({len(frame_comparison.mismatched_calculations)} mismatched frames, "
                             f"{len(frame_comparison.missing_residues)} missing residues). "

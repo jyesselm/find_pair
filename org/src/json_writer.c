@@ -1821,7 +1821,7 @@ void json_writer_record_iteration_state(long iteration_num, long num_matched, lo
 /* Record helix organization decisions from five2three algorithm */
 void json_writer_record_helix_organization(long helix_num, long *helix_idx_row,
                                            long *bp_idx, long *swapped,
-                                           long **base_pairs) {
+                                           long **base_pairs, long *direction) {
     FILE *type_file;
     long is_first;
     long j, m;
@@ -1843,6 +1843,12 @@ void json_writer_record_helix_organization(long helix_num, long *helix_idx_row,
     fprintf(type_file, "      \"helix_start_pos\": %ld,\n", start_pos);
     fprintf(type_file, "      \"helix_end_pos\": %ld,\n", end_pos);
     fprintf(type_file, "      \"helix_length\": %ld,\n", helix_idx_row[3]);
+    /* Debug info for helix direction analysis */
+    fprintf(type_file, "      \"has_break\": %s,\n", helix_idx_row[5] ? "true" : "false");
+    fprintf(type_file, "      \"is_parallel\": %s,\n", helix_idx_row[6] ? "true" : "false");
+    fprintf(type_file, "      \"has_mixed_direction\": %s,\n", helix_idx_row[7] ? "true" : "false");
+    fprintf(type_file, "      \"direction\": [%ld, %ld, %ld, %ld, %ld, %ld],\n",
+            direction[1], direction[2], direction[3], direction[4], direction[5], direction[6]);
     fprintf(type_file, "      \"pairs\": [\n");
 
     for (j = start_pos; j <= end_pos; j++) {

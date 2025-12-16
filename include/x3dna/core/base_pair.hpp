@@ -52,6 +52,7 @@ private:
     std::optional<ReferenceFrame> frame2_;      // Reference frame for second residue
     std::vector<hydrogen_bond> hbonds_;         // Hydrogen bonds
     std::optional<size_t> basepair_idx_;        // Optional index for tracking (assigned when recording)
+    bool finding_order_swapped_ = false;        // True if indices were swapped during normalization (finding order was j,i not i,j)
 
     /**
      * @brief Set base pair type from string and update enum
@@ -65,14 +66,21 @@ private:
      * as wobble based on geometry in the original code.
      */
     void update_type_from_bp_type() {
+        // Legacy uppercases base types before comparing (cmn_fncs.c:4529)
+        // So "Gc" should match "GC", "Ug" should match "UG"
+        std::string upper_bp;
+        for (char c : bp_type_) {
+            upper_bp += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+        }
+
         // Watson-Crick pairs from WC_LIST (excluding "XX" placeholder)
-        if (bp_type_ == "AT" || bp_type_ == "TA" || bp_type_ == "AU" || bp_type_ == "UA" || bp_type_ == "GC" ||
-            bp_type_ == "CG" || bp_type_ == "IC" || bp_type_ == "CI") {
+        if (upper_bp == "AT" || upper_bp == "TA" || upper_bp == "AU" || upper_bp == "UA" ||
+            upper_bp == "GC" || upper_bp == "CG" || upper_bp == "IC" || upper_bp == "CI") {
             type_ = BasePairType::WATSON_CRICK;
         }
         // Wobble pairs (not in WC_LIST, but commonly occur)
         // Note: Original code classifies these based on geometry, not just string
-        else if (bp_type_ == "GT" || bp_type_ == "TG" || bp_type_ == "GU" || bp_type_ == "UG") {
+        else if (upper_bp == "GT" || upper_bp == "TG" || upper_bp == "GU" || upper_bp == "UG") {
             type_ = BasePairType::WOBBLE;
         } else {
             type_ = BasePairType::UNKNOWN;
@@ -114,6 +122,14 @@ public:
     }
 
     /**
+     * @brief Check if the original finding order was swapped during normalization
+     * @return True if pair was found in (j,i) order but stored as (i,j) where i < j
+     */
+    bool finding_order_swapped() const {
+        return finding_order_swapped_;
+    }
+
+    /**
      * @brief Get reference frame for first residue
      */
     std::optional<ReferenceFrame> frame1() const {
@@ -125,6 +141,22 @@ public:
      */
     std::optional<ReferenceFrame> frame2() const {
         return frame2_;
+    }
+
+    /**
+     * @brief Get the reference frame to use for step parameter calculation
+     * @param strand_swapped Whether the five2three algorithm swapped this pair's strand direction
+     * @return The appropriate frame for step calculation
+     *
+     * This encapsulates the frame selection logic that matches legacy behavior:
+     * - Legacy stores pairs in finding order (searching_residue, best_partner)
+     * - Modern normalizes to (smaller_index, larger_index) and tracks finding_order_swapped
+     * - Legacy's five2three may swap frames based on helix direction (strand_swapped)
+     * - The correct frame is determined by XOR of these two flags
+     */
+    std::optional<ReferenceFrame> get_step_frame(bool strand_swapped) const {
+        bool use_larger_index_frame = (finding_order_swapped_ != strand_swapped);
+        return use_larger_index_frame ? frame2_ : frame1_;
     }
 
     // Setters
@@ -143,6 +175,14 @@ public:
     }
     void set_basepair_idx(size_t idx) {
         basepair_idx_ = idx;
+    }
+
+    /**
+     * @brief Set finding order swapped flag
+     * @param swapped True if pair was found in (j,i) order but stored as (i,j) where i < j
+     */
+    void set_finding_order_swapped(bool swapped) {
+        finding_order_swapped_ = swapped;
     }
 
     /**

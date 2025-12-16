@@ -1,11 +1,11 @@
 {
   "total_differences": 1,
   "stages_tested": [
-    "6"
+    "steps"
   ],
   "differences": [
     {
-      "pdb_id": "1D96",
+      "pdb_id": "8RUJ",
       "status": "diff",
       "has_differences": true,
       "errors": [],

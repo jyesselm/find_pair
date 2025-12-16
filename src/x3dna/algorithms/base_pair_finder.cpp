@@ -245,6 +245,7 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::
                 bool swapped = (legacy_idx1 > legacy_idx2);
 
                 BasePair pair(idx_small, idx_large, result1.bp_type);
+                pair.set_finding_order_swapped(swapped);  // Track if original finding order was (j,i)
 
                 // Set frames - swap if we reordered the indices to maintain correct correspondence
                 const Residue* res_small = swapped ? res2_ptr : res1_ptr;
@@ -274,12 +275,14 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::
 
                 base_pairs.push_back(pair);
 
-                // Store legacy indices for recording (smaller first for consistency)
-                selected_pairs_legacy_idx.push_back({idx_small + 1, idx_large + 1});
+                // Store legacy indices for recording (preserve original finding order to match legacy)
+                // Legacy stores pairs in the order they were found: (searching_residue, best_partner)
+                selected_pairs_legacy_idx.push_back({static_cast<size_t>(legacy_idx1),
+                                                     static_cast<size_t>(legacy_idx2)});
 
-                // Track pair found in this iteration
+                // Track pair found in this iteration (preserve finding order)
                 pairs_found_this_iteration.push_back(
-                    {static_cast<int>(idx_small + 1), static_cast<int>(idx_large + 1)});
+                    {static_cast<int>(legacy_idx1), static_cast<int>(legacy_idx2)});
 
                 // Record mutual best decision (after selection)
                 if (writer) {

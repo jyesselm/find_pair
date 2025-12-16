@@ -291,6 +291,11 @@ public:
         j["chain_id"] = (chain_id_ == '\0' || chain_id_ == ' ') ? "" : std::string(1, chain_id_);
         j["residue_seq"] = residue_seq_;
 
+        // Insertion code (only if non-space, matches legacy format)
+        if (insertion_ != ' ' && insertion_ != '\0') {
+            j["insertion"] = std::string(1, insertion_);
+        }
+
         // Coordinates
         j["xyz"] = nlohmann::json::array({position_.x(), position_.y(), position_.z()});
 

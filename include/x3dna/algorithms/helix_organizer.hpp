@@ -50,18 +50,6 @@ struct BackboneAtoms {
 using BackboneData = std::map<size_t, BackboneAtoms>;
 
 /**
- * @brief Represents a helix segment (continuous run of base pairs)
- */
-struct HelixSegment {
-    size_t start_idx;       ///< Start index in the ordered pair list
-    size_t end_idx;         ///< End index (inclusive) in the ordered pair list
-    bool is_zdna = false;   ///< Z-DNA conformation detected
-    bool has_break = false; ///< Broken O3'-P linkage within helix
-    bool is_parallel = false; ///< Parallel strand orientation (vs anti-parallel)
-    bool has_mixed_direction = false; ///< Mixed strand directions detected
-};
-
-/**
  * @brief Direction counts for backbone linkages in a helix
  */
 struct DirectionCounts {
@@ -71,6 +59,19 @@ struct DirectionCounts {
     int strand2_forward = 0;   ///< j1 → j2 linkages (strand 2 forward)
     int strand2_reverse = 0;   ///< j2 → j1 linkages (strand 2 reverse)
     int strand2_none = 0;      ///< No linkage on strand 2
+};
+
+/**
+ * @brief Represents a helix segment (continuous run of base pairs)
+ */
+struct HelixSegment {
+    size_t start_idx;       ///< Start index in the ordered pair list
+    size_t end_idx;         ///< End index (inclusive) in the ordered pair list
+    bool is_zdna = false;   ///< Z-DNA conformation detected
+    bool has_break = false; ///< Broken O3'-P linkage within helix
+    bool is_parallel = false; ///< Parallel strand orientation (vs anti-parallel)
+    bool has_mixed_direction = false; ///< Mixed strand directions detected
+    DirectionCounts direction; ///< Direction counts for backbone linkages (debug info)
 };
 
 /**

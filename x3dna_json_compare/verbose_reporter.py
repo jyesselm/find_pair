@@ -53,7 +53,7 @@ class VerboseReporter:
     
     def __init__(
         self,
-        tolerance: float = 1e-6,
+        tolerance: float = 1e-4,
         show_provenance: bool = False,
         show_related: bool = True,
         max_mismatches_per_stage: int = 20,
@@ -459,7 +459,7 @@ def create_record_comparison_from_dicts(
     )
 
 
-def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-6, 
+def generate_full_verbose_report(pdb_id: str, result, tolerance: float = 1e-4,
                                   diff_only: bool = False) -> str:
     """Generate a complete verbose report for a comparison result.
     

@@ -13,7 +13,7 @@ static long DEBUG_BP_MAX = 999;  /* Only debug bp_idx <= this */
 static long DEBUG_HELIX = -1;    /* Only debug this helix (-1 = all) */
 
 /* Initialize debug settings from environment variables */
-static void init_debug_settings(void) {
+void init_debug_settings(void) {
     char *env_val;
     if ((env_val = getenv("DEBUG_FIVE2THREE")) != NULL) {
         DEBUG_FIVE2THREE = atoi(env_val);
@@ -1213,6 +1213,12 @@ static long wc_bporien(long m, long n, long *swapped, long **base_pairs, double 
     int in_range = (m >= DEBUG_BP_MIN && m <= DEBUG_BP_MAX) ||
                    (n >= DEBUG_BP_MIN && n <= DEBUG_BP_MAX);
 
+    // Debug for helix 11 region
+    if ((m >= 139 || n >= 139) && DEBUG_FIVE2THREE) {
+        fprintf(stderr, "[wc_bporien] m=%ld n=%ld bpid_m=%ld bpid_n=%ld res_m=(%ld,%ld) res_n=(%ld,%ld)\n",
+                m, n, base_pairs[m][3], base_pairs[n][3],
+                base_pairs[m][1], base_pairs[m][2], base_pairs[n][1], base_pairs[n][2]);
+    }
     if (base_pairs[m][3] > 0 && base_pairs[n][3] > 0) {
         get_ij(m, swapped, base_pairs, &i1, &j1_osx);
         get_ij(n, swapped, base_pairs, &i2, &j2);
@@ -1362,10 +1368,16 @@ static void check_direction(long i, long **helix_idx, long *bp_idx, long *swappe
         n = bp_idx[j + 1];
         get_ij(m, swapped, base_pairs, &i1, &j1_osx);
         get_ij(n, swapped, base_pairs, &i2, &j2);
-        k = is_linked(i1, i2, o3_p);
-        (k == 1) ? ++direction[1] : (k == -1) ? ++direction[2] : ++direction[3];
-        k = is_linked(j1_osx, j2, o3_p);
-        (k == 1) ? ++direction[4] : (k == -1) ? ++direction[5] : ++direction[6];
+        long link1 = is_linked(i1, i2, o3_p);
+        (link1 == 1) ? ++direction[1] : (link1 == -1) ? ++direction[2] : ++direction[3];
+        long link2 = is_linked(j1_osx, j2, o3_p);
+        (link2 == 1) ? ++direction[4] : (link2 == -1) ? ++direction[5] : ++direction[6];
+        // Debug each step's linkages for helix 11 region
+        if (m >= 139 || n >= 139) {
+            DBG_FIVE2THREE("[check_dir_step] bp %ld->%ld res_m=(%ld,%ld) res_n=(%ld,%ld) "
+                           "swap_m=%ld swap_n=%ld link1=%ld link2=%ld\n",
+                           m, n, i1, j1_osx, i2, j2, swapped[m], swapped[n], link1, link2);
+        }
     }
     DBG_FIVE2THREE("[check_direction] helix=%ld dir=[s1_fwd=%ld s1_rev=%ld s1_none=%ld "
                    "s2_fwd=%ld s2_rev=%ld s2_none=%ld]\n",
@@ -1594,10 +1606,18 @@ static void five2three(long num_bp, long *num_helix, long **helix_idx, long *bp_
             m = bp_idx[j];
             n = bp_idx[j + 1];
             rev_wc = wc_bporien(m, n, swapped, base_pairs, bp_xyz, o3_p);
+            // Debug for helix 11 region
+            if (m >= 139 || n >= 139) {
+                DBG_FIVE2THREE("[2nd pass] bp %ld->%ld rev_wc=%ld swapped[m]=%ld swapped[n]=%ld\n",
+                       m, n, rev_wc, swapped[m], swapped[n]);
+            }
             DBG_BP(m, "[2nd pass] m=%ld n=%ld rev_wc=%ld swapped[m]=%ld swapped[n]=%ld",
                    m, n, rev_wc, swapped[m], swapped[n]);
             if (rev_wc) {
                 swapped[m] = !swapped[m];
+                if (m >= 139 || n >= 139) {
+                    DBG_FIVE2THREE("[2nd pass] -> TOGGLED swapped[%ld] to %ld\n", m, swapped[m]);
+                }
                 DBG_BP(m, " -> SWAP m=%ld", m);
                 fprintf(tfp, "          %4ld: [%ld-%ld]\n", j, m, n);
             }
@@ -1617,7 +1637,7 @@ static void five2three(long num_bp, long *num_helix, long **helix_idx, long *bp_
             fprintf(stderr, "\n");
         }
         /* Record helix organization before applying swaps */
-        json_writer_record_helix_organization(i, helix_idx[i], bp_idx, swapped, base_pairs);
+        json_writer_record_helix_organization(i, helix_idx[i], bp_idx, swapped, base_pairs, direction);
         for (j = helix_idx[i][1]; j <= helix_idx[i][2]; j++) {
             m = bp_idx[j];
             if (swapped[m]) {

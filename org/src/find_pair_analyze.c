@@ -39,6 +39,7 @@ extern void handle_str(struct_args_fp *args);  // from find_pair.c
 extern void process_str(char *inpfile, struct_args_ana *args);  // from analyze.c
 extern void fp_cmdline(int argc, char *argv[], struct_args_fp *args);  // from find_pair.c
 extern void analyze_cmdline(int argc, char *argv[], struct_args_ana *args);  // from analyze.c
+extern void init_debug_settings(void);  // from find_pair.c - debug five2three
 
 static void combined_usage(void)
 {
@@ -62,7 +63,8 @@ int main(int argc, char *argv[])
     
     time(&time0);
     set_my_globals(argv[0]);
-    
+    init_debug_settings();  // Initialize five2three debug from environment
+
     if (argc < 2)
         combined_usage();
     

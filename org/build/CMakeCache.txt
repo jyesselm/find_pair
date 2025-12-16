@@ -22,7 +22,7 @@ CMAKE_AR:FILEPATH=/usr/bin/ar
 
 //Choose the type of build, options are: None Debug Release RelWithDebInfo
 // MinSizeRel ...
-CMAKE_BUILD_TYPE:STRING=
+CMAKE_BUILD_TYPE:STRING=Release
 
 //CXX compiler
 CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/c++
@@ -242,9 +242,9 @@ CMAKE_CACHEFILE_DIR:INTERNAL=/Users/jyesselman2/local/code/cpp/find_pair_2/org/b
 //Major version of cmake used to create the current loaded cache
 CMAKE_CACHE_MAJOR_VERSION:INTERNAL=4
 //Minor version of cmake used to create the current loaded cache
-CMAKE_CACHE_MINOR_VERSION:INTERNAL=2
+CMAKE_CACHE_MINOR_VERSION:INTERNAL=1
 //Patch version of cmake used to create the current loaded cache
-CMAKE_CACHE_PATCH_VERSION:INTERNAL=0
+CMAKE_CACHE_PATCH_VERSION:INTERNAL=2
 //Path to CMake executable.
 CMAKE_COMMAND:INTERNAL=/opt/homebrew/bin/cmake
 //Path to cpack program executable.

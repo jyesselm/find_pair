@@ -250,9 +250,7 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
 
             BasePairFinder finder;
             auto base_pairs = finder.find_pairs_with_recording(structure, &writer);
-            for (const auto& pair : base_pairs) {
-                writer.record_base_pair(pair);
-            }
+            // Note: find_pairs_with_recording already records base_pairs internally
 
             // Stages 11-12: Step and helical parameters
             // Legacy uses helix organization (backbone connectivity) for step calculation
@@ -294,16 +292,15 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                             continue;
                         }
 
-                        // Legacy swaps strands for some pairs based on five2three algorithm
-                        // strand_swapped is indexed by original pair index, not helix position
+                        // Get strand_swapped flags from helix organization
                         bool swap1 = (idx1 < helix_order.strand_swapped.size()) ? helix_order.strand_swapped[idx1] : false;
                         bool swap2 = (idx2 < helix_order.strand_swapped.size()) ? helix_order.strand_swapped[idx2] : false;
 
-                        // Use frame2 (org_j, orien_j) if strand is swapped, otherwise frame1 (org_i, orien_i)
-                        auto bp1_frame = swap1 ? pair1.frame2().value() : pair1.frame1().value();
-                        auto bp2_frame = swap2 ? pair2.frame2().value() : pair2.frame1().value();
+                        // Use BasePair::get_step_frame() which encapsulates the legacy frame selection logic
+                        auto bp1_frame = pair1.get_step_frame(swap1).value();
+                        auto bp2_frame = pair2.get_step_frame(swap2).value();
 
-                        // Calculate step parameters between org_i frames
+                        // Calculate step parameters between selected frames
                         auto step_params = param_calc.calculate_step_parameters(bp1_frame, bp2_frame);
                         // Use 1-based sequential position indices (matching legacy)
                         size_t bp_idx1 = i + 1;

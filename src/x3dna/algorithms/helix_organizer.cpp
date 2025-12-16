@@ -466,20 +466,29 @@ bool HelixOrganizer::check_others(const core::BasePair& pair_m, const core::Base
         if (cross1 || cross2) {
             return true;
         }
+        // Neither aligned nor cross-aligned
+        return false;
     }
-    
-    // Compare total angles for mixed cases
-    if ((aligned1 || aligned2) && (cross1 || cross2)) {
-        double sum_aligned = dot2ang(a1_x) + dot2ang(a1_y) + dot2ang(a1_z) +
-                            dot2ang(a2_x) + dot2ang(a2_y) + dot2ang(a2_z);
-        double sum_cross = dot2ang(r1_x) + dot2ang(r1_y) + dot2ang(r1_z) +
-                          dot2ang(r2_x) + dot2ang(r2_y) + dot2ang(r2_z);
-        
-        if (sum_aligned > sum_cross) {
-            return true;
-        }
+
+    // Legacy logic: Compare SPECIFIC frame pairs, not total sums
+    // d[1] = angles for frame 1 aligned, d[2] = frame 2 aligned
+    // d[3] = angles for frame 1 cross, d[4] = frame 2 cross
+    double d1 = dot2ang(a1_x) + dot2ang(a1_y) + dot2ang(a1_z);  // aligned frame 1
+    double d2 = dot2ang(a2_x) + dot2ang(a2_y) + dot2ang(a2_z);  // aligned frame 2
+    double d3 = dot2ang(r1_x) + dot2ang(r1_y) + dot2ang(r1_z);  // cross frame 1 (m1 vs n2)
+    double d4 = dot2ang(r2_x) + dot2ang(r2_y) + dot2ang(r2_z);  // cross frame 2 (m2 vs n1)
+
+    // Legacy compares specific frame pairs based on which are aligned/crossed
+    if (aligned1 && cross1) {
+        return (d1 > d3);
+    } else if (aligned1 && cross2) {
+        return (d1 > d4);
+    } else if (aligned2 && cross1) {
+        return (d2 > d3);
+    } else if (aligned2 && cross2) {
+        return (d2 > d4);
     }
-    
+
     return false;
 }
 
@@ -1146,7 +1155,7 @@ HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs,
 
     if (pairs.size() == 1) {
         result.pair_order = {0};
-        result.helices = {{0, 0, false, false, false}};
+        result.helices = {{0, 0, false, false, false, false, {}}};  // Added direction field
         result.strand_swapped = {false};
         result.helix_breaks = {};  // No breaks for single pair
         return result;
