@@ -657,6 +657,24 @@
         "type": "ADENINE",
         "is_purine": true,
         "description": "2'-deoxyadenosine"
+      },
+      "5AA": {
+        "code": "a",
+        "type": "ADENINE",
+        "is_purine": true,
+        "description": "5-aminoallyl-2'-deoxyuridine converted to adenine"
+      },
+      "8AN": {
+        "code": "a",
+        "type": "ADENINE",
+        "is_purine": true,
+        "description": "8-aminoadenosine"
+      },
+      "MA6": {
+        "code": "a",
+        "type": "ADENINE",
+        "is_purine": true,
+        "description": "N6-dimethyladenosine"
       }
     },
     "modified_guanines": {
@@ -1665,6 +1683,12 @@
         "type": "CYTOSINE",
         "is_purine": false,
         "description": "6-fluoro-cytidine"
+      },
+      "DCZ": {
+        "code": "c",
+        "type": "CYTOSINE",
+        "is_purine": false,
+        "description": "2'-deoxy-5-methylisocytidine"
       }
     },
     "modified_thymines": {
