@@ -21,6 +21,21 @@ namespace {
     constexpr double PI = 3.14159265358979323846;
 
     /**
+     * @brief Result of frame axis alignment comparison
+     */
+    struct FrameAlignment {
+        double dot_x;  ///< Dot product of x-axes
+        double dot_y;  ///< Dot product of y-axes
+        double dot_z;  ///< Dot product of z-axes
+
+        [[nodiscard]] bool is_aligned() const {
+            return dot_x > 0.0 && dot_y > 0.0 && dot_z > 0.0;
+        }
+
+        [[nodiscard]] double angle_sum() const;  // Forward declaration, defined after dot2ang
+    };
+
+    /**
      * @brief Check if five2three debugging is enabled
      *
      * Uses ConfigManager for debug settings, which reads from environment
@@ -44,6 +59,26 @@ namespace {
         if (d > 1.0) d = 1.0;
         if (d < -1.0) d = -1.0;
         return std::acos(d) * 180.0 / PI;
+    }
+
+    // Implementation of FrameAlignment::angle_sum (after dot2ang is defined)
+    double FrameAlignment::angle_sum() const {
+        return dot2ang(dot_x) + dot2ang(dot_y) + dot2ang(dot_z);
+    }
+
+    /**
+     * @brief Compute alignment between two reference frames
+     * @param frame1 First reference frame
+     * @param frame2 Second reference frame
+     * @return FrameAlignment with dot products and alignment status
+     */
+    FrameAlignment compute_frame_alignment(const core::ReferenceFrame& frame1,
+                                           const core::ReferenceFrame& frame2) {
+        return FrameAlignment{
+            frame1.x_axis().dot(frame2.x_axis()),
+            frame1.y_axis().dot(frame2.y_axis()),
+            frame1.z_axis().dot(frame2.z_axis())
+        };
     }
 
     /**
@@ -439,73 +474,52 @@ bool HelixOrganizer::check_others(const core::BasePair& pair_m, const core::Base
     auto res_n = get_strand_residues(pair_n, swap_n);
 
     // If any backbone linkage exists, no swap needed
-    if (check_linkage(res_m.strand1, res_n.strand1, backbone) != LinkDirection::None ||
+    const bool has_any_linkage =
+        check_linkage(res_m.strand1, res_n.strand1, backbone) != LinkDirection::None ||
         check_linkage(res_m.strand2, res_n.strand2, backbone) != LinkDirection::None ||
         check_linkage(res_m.strand1, res_n.strand2, backbone) != LinkDirection::None ||
-        check_linkage(res_m.strand2, res_n.strand1, backbone) != LinkDirection::None) {
+        check_linkage(res_m.strand2, res_n.strand1, backbone) != LinkDirection::None;
+    if (has_any_linkage) {
         return false;
     }
-    
+
     // Get frames based on swap status
     // Note: organize() validates all pairs have both frames
-    auto frame_m1 = swap_m ? *pair_m.frame2() : *pair_m.frame1();
-    auto frame_m2 = swap_m ? *pair_m.frame1() : *pair_m.frame2();
-    auto frame_n1 = swap_n ? *pair_n.frame2() : *pair_n.frame1();
-    auto frame_n2 = swap_n ? *pair_n.frame1() : *pair_n.frame2();
-    
-    // Check axis alignment (similar to legacy dot product checks)
-    double a1_x = frame_m1.x_axis().dot(frame_n1.x_axis());
-    double a1_y = frame_m1.y_axis().dot(frame_n1.y_axis());
-    double a1_z = frame_m1.z_axis().dot(frame_n1.z_axis());
-    
-    double a2_x = frame_m2.x_axis().dot(frame_n2.x_axis());
-    double a2_y = frame_m2.y_axis().dot(frame_n2.y_axis());
-    double a2_z = frame_m2.z_axis().dot(frame_n2.z_axis());
-    
-    bool aligned1 = (a1_x > 0.0 && a1_y > 0.0 && a1_z > 0.0);
-    bool aligned2 = (a2_x > 0.0 && a2_y > 0.0 && a2_z > 0.0);
-    
-    if (aligned1 && aligned2) {
+    const auto frame_m1 = swap_m ? *pair_m.frame2() : *pair_m.frame1();
+    const auto frame_m2 = swap_m ? *pair_m.frame1() : *pair_m.frame2();
+    const auto frame_n1 = swap_n ? *pair_n.frame2() : *pair_n.frame1();
+    const auto frame_n2 = swap_n ? *pair_n.frame1() : *pair_n.frame2();
+
+    // Check same-strand alignment (m1 with n1, m2 with n2)
+    const auto align1 = compute_frame_alignment(frame_m1, frame_n1);
+    const auto align2 = compute_frame_alignment(frame_m2, frame_n2);
+
+    if (align1.is_aligned() && align2.is_aligned()) {
         return false;
     }
-    
-    // Check cross-alignment (m1 with n2, m2 with n1)
-    double r1_x = frame_m1.x_axis().dot(frame_n2.x_axis());
-    double r1_y = frame_m1.y_axis().dot(frame_n2.y_axis());
-    double r1_z = frame_m1.z_axis().dot(frame_n2.z_axis());
-    
-    double r2_x = frame_m2.x_axis().dot(frame_n1.x_axis());
-    double r2_y = frame_m2.y_axis().dot(frame_n1.y_axis());
-    double r2_z = frame_m2.z_axis().dot(frame_n1.z_axis());
-    
-    bool cross1 = (r1_x > 0.0 && r1_y > 0.0 && r1_z > 0.0);
-    bool cross2 = (r2_x > 0.0 && r2_y > 0.0 && r2_z > 0.0);
-    
-    if (!aligned1 && !aligned2) {
-        if (cross1 || cross2) {
-            return true;
-        }
-        // Neither aligned nor cross-aligned
-        return false;
+
+    // Check cross-strand alignment (m1 with n2, m2 with n1)
+    const auto cross1 = compute_frame_alignment(frame_m1, frame_n2);
+    const auto cross2 = compute_frame_alignment(frame_m2, frame_n1);
+
+    if (!align1.is_aligned() && !align2.is_aligned()) {
+        // Neither same-strand pair is aligned - check if cross-aligned
+        return cross1.is_aligned() || cross2.is_aligned();
     }
 
     // Legacy logic: Compare SPECIFIC frame pairs, not total sums
-    // d[1] = angles for frame 1 aligned, d[2] = frame 2 aligned
-    // d[3] = angles for frame 1 cross, d[4] = frame 2 cross
-    double d1 = dot2ang(a1_x) + dot2ang(a1_y) + dot2ang(a1_z);  // aligned frame 1
-    double d2 = dot2ang(a2_x) + dot2ang(a2_y) + dot2ang(a2_z);  // aligned frame 2
-    double d3 = dot2ang(r1_x) + dot2ang(r1_y) + dot2ang(r1_z);  // cross frame 1 (m1 vs n2)
-    double d4 = dot2ang(r2_x) + dot2ang(r2_y) + dot2ang(r2_z);  // cross frame 2 (m2 vs n1)
-
-    // Legacy compares specific frame pairs based on which are aligned/crossed
-    if (aligned1 && cross1) {
-        return (d1 > d3);
-    } else if (aligned1 && cross2) {
-        return (d1 > d4);
-    } else if (aligned2 && cross1) {
-        return (d2 > d3);
-    } else if (aligned2 && cross2) {
-        return (d2 > d4);
+    // Compare aligned angle sum vs cross angle sum for the appropriate pairs
+    if (align1.is_aligned() && cross1.is_aligned()) {
+        return align1.angle_sum() > cross1.angle_sum();
+    }
+    if (align1.is_aligned() && cross2.is_aligned()) {
+        return align1.angle_sum() > cross2.angle_sum();
+    }
+    if (align2.is_aligned() && cross1.is_aligned()) {
+        return align2.angle_sum() > cross1.angle_sum();
+    }
+    if (align2.is_aligned() && cross2.is_aligned()) {
+        return align2.angle_sum() > cross2.angle_sum();
     }
 
     return false;
