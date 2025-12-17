@@ -40,10 +40,8 @@ struct Vertex {
     long inside; // Inside count
 };
 
-// Constants matching legacy
-constexpr double XBIG = 1.0e+18;
+// Constants matching legacy (XBIG and GAMUT now in validation_constants namespace)
 constexpr long MNPOLY = 1000;
-constexpr double GAMUT = 5.0e8;
 
 namespace x3dna {
 namespace algorithms {
@@ -103,11 +101,13 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
         Vector3D dNN_vec = n1_n9_1.value() - n1_n9_2.value();
         result.dNN = dNN_vec.length();
     } else {
-        result.dNN = 1e10; // Large value if N1/N9 not found
+        result.dNN = validation_constants::DNN_FALLBACK; // Large value if N1/N9 not found
     }
 
     // Calculate quality score (matches rtn_val[5])
-    result.quality_score = result.dorg + 2.0 * result.d_v + result.plane_angle / 20.0;
+    result.quality_score = result.dorg +
+        validation_constants::D_V_WEIGHT * result.d_v +
+        result.plane_angle / validation_constants::PLANE_ANGLE_DIVISOR;
 
     // Perform validation checks
     result.distance_check = in_range(result.dorg, params_.min_dorg, params_.max_dorg);
@@ -311,8 +311,6 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
     }
 
     // For each ring atom, find ONE exocyclic atom (connected atom that's not a ring atom)
-    // Bond distance threshold: < 2.0 Angstroms (typical covalent bond)
-    const double BOND_DISTANCE = 2.0;
     std::set<std::string> ring_atom_names1;
     for (const auto* ring_atom : ring_atoms1) {
         ring_atom_names1.insert(ring_atom->name());
@@ -320,7 +318,7 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
 
     for (const auto* ring_atom : ring_atoms1) {
         const Atom* exocyclic_atom = nullptr;
-        double min_dist = BOND_DISTANCE;
+        double min_dist = validation_constants::BOND_DISTANCE;
 
         // Find closest connected atom that's not a ring atom
         // Legacy: skips hydrogen atoms (idx[ic] == 3 in get_cntatom)
@@ -333,7 +331,7 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
                 continue;
             }
             double dist = (atom.position() - ring_atom->position()).length();
-            if (dist < min_dist && dist > 0.1) { // Within bond distance, not same atom
+            if (dist < min_dist && dist > validation_constants::MIN_ATOM_DISTANCE) {
                 min_dist = dist;
                 exocyclic_atom = &atom;
             }
@@ -362,7 +360,7 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
 
     for (const auto* ring_atom : ring_atoms2) {
         const Atom* exocyclic_atom = nullptr;
-        double min_dist = BOND_DISTANCE;
+        double min_dist = validation_constants::BOND_DISTANCE;
 
         for (const auto& atom : res2.atoms()) {
             if (ring_atom_names2.find(atom.name()) != ring_atom_names2.end()) {
@@ -373,7 +371,7 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
                 continue;
             }
             double dist = (atom.position() - ring_atom->position()).length();
-            if (dist < min_dist && dist > 0.1) {
+            if (dist < min_dist && dist > validation_constants::MIN_ATOM_DISTANCE) {
                 min_dist = dist;
                 exocyclic_atom = &atom;
             }
@@ -562,8 +560,8 @@ static double calculate_polygon_intersection_area(const std::vector<Point2D>& po
     long nb = static_cast<long>(poly2.size());
 
     // Find bounding box
-    double minx = XBIG, miny = XBIG;
-    double maxx = -XBIG, maxy = -XBIG;
+    double minx = validation_constants::XBIG, miny = validation_constants::XBIG;
+    double maxx = -validation_constants::XBIG, maxy = -validation_constants::XBIG;
 
     for (long j = 0; j < na; j++) {
         if (minx > poly1[j].x)
@@ -593,9 +591,9 @@ static double calculate_polygon_intersection_area(const std::vector<Point2D>& po
     }
 
     // Scale to integer coordinates
-    const double mid = 0.5 * GAMUT;
-    double sclx = GAMUT / (maxx - minx);
-    double scly = GAMUT / (maxy - miny);
+    const double mid = 0.5 * validation_constants::GAMUT;
+    double sclx = validation_constants::GAMUT / (maxx - minx);
+    double scly = validation_constants::GAMUT / (maxy - miny);
     double ascale = sclx * scly;
 
     // Allocate vertex arrays (with +1 for wraparound)

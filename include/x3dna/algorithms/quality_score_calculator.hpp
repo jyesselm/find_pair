@@ -26,6 +26,33 @@ namespace algorithms {
  * The adjusted quality score is used during pair selection to determine
  * the best partner for each residue.
  */
+/**
+ * @brief Named constants for quality score calculations
+ *
+ * These constants match the legacy X3DNA code behavior.
+ * Extracting them to named constants improves code readability
+ * and makes the algorithm parameters explicit.
+ */
+namespace quality_constants {
+    // Quality score adjustments
+    constexpr double WC_PAIR_BONUS = -2.0;          // Bonus for Watson-Crick pairs
+    constexpr double GOOD_HBOND_ADJUSTMENT = -3.0;  // Adjustment for >= 2 good H-bonds
+
+    // H-bond distance range for "good" H-bonds (in Angstroms)
+    constexpr double GOOD_HBOND_MIN_DIST = 2.5;
+    constexpr double GOOD_HBOND_MAX_DIST = 3.5;
+    constexpr int MIN_GOOD_HBONDS_FOR_BONUS = 2;
+
+    // Shear thresholds for pair type classification
+    constexpr double WOBBLE_SHEAR_MIN = 1.8;        // Minimum shear for wobble pair
+    constexpr double WOBBLE_SHEAR_MAX = 2.8;        // Maximum shear for wobble pair
+    constexpr double WC_SHEAR_MAX = 1.8;            // Maximum shear for Watson-Crick pair
+
+    // Parameter thresholds for bp_type_id calculation
+    constexpr double STRETCH_THRESHOLD = 2.0;       // Maximum stretch for valid bp_type
+    constexpr double OPENING_THRESHOLD = 60.0;      // Maximum opening angle (degrees)
+}  // namespace quality_constants
+
 class QualityScoreCalculator {
 public:
     /**

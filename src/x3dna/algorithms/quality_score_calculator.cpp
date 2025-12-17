@@ -31,7 +31,7 @@ double QualityScoreCalculator::calculate_selection_score(
     // Apply bp_type_id == 2 bonus
     int bp_type_id = calculate_bp_type_id(res1, res2, result);
     if (bp_type_id == 2) {
-        adjusted_score -= 2.0;
+        adjusted_score += quality_constants::WC_PAIR_BONUS;
     }
 
     return adjusted_score;
@@ -64,14 +64,15 @@ double QualityScoreCalculator::adjust_pair_quality(
         // Then hb_numlist parses this string, so 2.4995 becomes 2.50
         // To match legacy, round distance to 2 decimal places before range check
         double rounded_dist = std::round(hbond.distance * 100.0) / 100.0;
-        if (rounded_dist >= 2.5 && rounded_dist <= 3.5) {
+        if (rounded_dist >= quality_constants::GOOD_HBOND_MIN_DIST &&
+            rounded_dist <= quality_constants::GOOD_HBOND_MAX_DIST) {
             num_good_hb++;
         }
     }
 
     // Legacy: if (num_good_hb >= 2) return -3.0; else return -num_good_hb;
-    if (num_good_hb >= 2) {
-        return -3.0;
+    if (num_good_hb >= quality_constants::MIN_GOOD_HBONDS_FOR_BONUS) {
+        return quality_constants::GOOD_HBOND_ADJUSTMENT;
     } else {
         return -static_cast<double>(num_good_hb);
     }
@@ -152,19 +153,21 @@ int QualityScoreCalculator::calculate_bp_type_id(
         // Check stretch and opening thresholds (matches legacy: fabs(stretch) > 2.0 ||
         // fabs(opening) > 60) CRITICAL: Legacy uses fabs(opening) > 60 (not >=), and opening is in
         // degrees
-        if (std::abs(stretch) > 2.0 || std::abs(opening) > 60.0) {
+        if (std::abs(stretch) > quality_constants::STRETCH_THRESHOLD ||
+            std::abs(opening) > quality_constants::OPENING_THRESHOLD) {
             return bp_type_id; // Keep -1
         }
 
         // Check for wobble pair (fabs(shear) in [1.8, 2.8])
         // CRITICAL: Legacy checks this first, then WC check can overwrite if both conditions met
-        if (std::abs(shear) >= 1.8 && std::abs(shear) <= 2.8) {
+        if (std::abs(shear) >= quality_constants::WOBBLE_SHEAR_MIN &&
+            std::abs(shear) <= quality_constants::WOBBLE_SHEAR_MAX) {
             bp_type_id = 1; // Wobble
         }
 
         // Check for Watson-Crick pair (fabs(shear) <= 1.8 AND in WC_LIST)
         // CRITICAL: This can overwrite wobble assignment if shear <= 1.8
-        if (std::abs(shear) <= 1.8) {
+        if (std::abs(shear) <= quality_constants::WC_SHEAR_MAX) {
             for (const auto& wc : WC_LIST) {
                 if (bp_type == wc) {
                     bp_type_id = 2; // Watson-Crick
