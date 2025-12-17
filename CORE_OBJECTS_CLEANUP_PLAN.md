@@ -4,6 +4,21 @@
 **Scope**: Core data structures (Atom, Residue, Chain, Structure, BasePair, ReferenceFrame)
 **Goal**: Clean container-like behavior, simple constructors, centralized ring atom/modified residue handling
 
+## Completion Status
+
+| Phase | Status | Commits |
+|-------|--------|---------|
+| Phase 1: Ring Atom Registry | ✅ Complete | `0f99d4f` |
+| Phase 2: Consolidate is_purine() | ✅ Complete | `def80f8` |
+| Phase 3: Residue Builder | ✅ Complete | `c999294` |
+| Phase 4: BasePair Frames Required | ✅ Complete | `669c5b2` |
+| Phase 5: Container Iteration | ✅ Complete | `2425e04` |
+| Phase 6: JSON Serializers | ✅ Complete | `2425e04` |
+| Additional: Named Constants | ✅ Complete | `c262bb8` |
+| Additional: Flatten Nesting | ✅ Complete | `b4c63bf`, `2fd9eb2`, `31e3ae4`, `22c9cf7` |
+
+**Validation**: test-set-100 = 99% (1 pre-existing failure in 8RUJ)
+
 ---
 
 ## Current State Analysis
