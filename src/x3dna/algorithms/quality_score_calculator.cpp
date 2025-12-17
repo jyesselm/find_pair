@@ -101,81 +101,95 @@ int QualityScoreCalculator::calculate_bp_type_id(
         return 0;
     }
 
-    // Check direction vector condition (matches legacy)
-    if (result.dir_x > 0.0 && result.dir_y < 0.0 && result.dir_z < 0.0) {
-        // Get reference frames from residues
-        if (!res1.reference_frame().has_value() || !res2.reference_frame().has_value()) {
-            return bp_type_id; // Keep -1 if frames not available
-        }
+    // Direction vector points from res1 to res2 in standard B-form orientation
+    // This check ensures proper Watson-Crick geometry
+    const bool has_standard_wc_geometry =
+        result.dir_x > 0.0 && result.dir_y < 0.0 && result.dir_z < 0.0;
 
-        // Calculate step parameters for this base pair
-        // Legacy: bpstep_par(r2, org[j], r1, org[i], ...)
-        // CRITICAL: Legacy reverses y and z columns of r2 when dir_z <= 0
-        // See legacy code: r2[l][k] = (k == 1 || dir_z > 0) ? orien[j][koffset + l] :
-        // -orien[j][koffset + l];
-        core::ReferenceFrame frame1 = res1.reference_frame().value();
-        core::ReferenceFrame frame2 = res2.reference_frame().value();
+    if (!has_standard_wc_geometry) {
+        return bp_type_id;
+    }
 
-        // Apply frame reversal if dir_z <= 0 (matches legacy logic)
-        if (result.dir_z <= 0.0) {
-            // Reverse y and z columns (columns 1 and 2 in 0-based indexing) of frame2
-            geometry::Matrix3D rot2 = frame2.rotation();
-            geometry::Vector3D y_col = rot2.column(1);
-            geometry::Vector3D z_col = rot2.column(2);
-            rot2.set_column(1, -y_col);
-            rot2.set_column(2, -z_col);
-            frame2 = core::ReferenceFrame(rot2, frame2.origin());
-        }
+    // Get reference frames from residues
+    if (!res1.reference_frame().has_value() || !res2.reference_frame().has_value()) {
+        return bp_type_id; // Keep -1 if frames not available
+    }
 
-        // Use frame2 first, frame1 second (matches legacy order)
-        core::BasePairStepParameters params = param_calculator_.calculate_step_parameters(frame2, frame1);
+    // Calculate step parameters for this base pair
+    // Legacy: bpstep_par(r2, org[j], r1, org[i], ...)
+    // CRITICAL: Legacy reverses y and z columns of r2 when dir_z <= 0
+    // See legacy code: r2[l][k] = (k == 1 || dir_z > 0) ? orien[j][koffset + l] :
+    // -orien[j][koffset + l];
+    core::ReferenceFrame frame1 = res1.reference_frame().value();
+    core::ReferenceFrame frame2 = res2.reference_frame().value();
 
-        // CRITICAL: Legacy has a bug - it passes wrong parameters to check_wc_wobble_pair!
-        // Legacy calls: check_wc_wobble_pair(bpid, bpi, pars[1], pars[2], pars[6])
-        // Where pars[1]=Shift, pars[2]=Slide, pars[6]=Twist
-        // But function expects: (shear, stretch, opening)
-        // So legacy incorrectly uses:
-        //   pars[1] (Shift) as shear ❌
-        //   pars[2] (Slide) as stretch ❌
-        //   pars[6] (Twist) as opening ✅
-        // To match legacy output exactly, we must replicate this bug:
-        double shear = params.shift;   // BUG: Should be params.slide
-        double stretch = params.slide; // BUG: Should be params.rise
-        double opening = params.twist; // Correct
+    // Apply frame reversal if dir_z <= 0 (matches legacy logic)
+    if (result.dir_z <= 0.0) {
+        // Reverse y and z columns (columns 1 and 2 in 0-based indexing) of frame2
+        geometry::Matrix3D rot2 = frame2.rotation();
+        geometry::Vector3D y_col = rot2.column(1);
+        geometry::Vector3D z_col = rot2.column(2);
+        rot2.set_column(1, -y_col);
+        rot2.set_column(2, -z_col);
+        frame2 = core::ReferenceFrame(rot2, frame2.origin());
+    }
 
-        // Get base pair type string (e.g., "AT", "GC")
-        // CRITICAL: Use ResidueType to get base letter (more reliable than one_letter_code)
-        // Legacy uses: sprintf(bpi, "%c%c", toupper((int) bseq[i]), toupper((int) bseq[j]));
-        char base1 = get_base_letter(res1.residue_type());
-        char base2 = get_base_letter(res2.residue_type());
-        std::string bp_type = std::string(1, base1) + std::string(1, base2);
+    // Use frame2 first, frame1 second (matches legacy order)
+    core::BasePairStepParameters params = param_calculator_.calculate_step_parameters(frame2, frame1);
 
-        // Check stretch and opening thresholds (matches legacy: fabs(stretch) > 2.0 ||
-        // fabs(opening) > 60) CRITICAL: Legacy uses fabs(opening) > 60 (not >=), and opening is in
-        // degrees
-        if (std::abs(stretch) > quality_constants::STRETCH_THRESHOLD ||
-            std::abs(opening) > quality_constants::OPENING_THRESHOLD) {
-            return bp_type_id; // Keep -1
-        }
+    // CRITICAL: Legacy has a bug - it passes wrong parameters to check_wc_wobble_pair!
+    // Legacy calls: check_wc_wobble_pair(bpid, bpi, pars[1], pars[2], pars[6])
+    // Where pars[1]=Shift, pars[2]=Slide, pars[6]=Twist
+    // But function expects: (shear, stretch, opening)
+    // So legacy incorrectly uses:
+    //   pars[1] (Shift) as shear ❌
+    //   pars[2] (Slide) as stretch ❌
+    //   pars[6] (Twist) as opening ✅
+    // To match legacy output exactly, we must replicate this bug:
+    double shear = params.shift;   // BUG: Should be params.slide
+    double stretch = params.slide; // BUG: Should be params.rise
+    double opening = params.twist; // Correct
 
-        // Check for wobble pair (fabs(shear) in [1.8, 2.8])
-        // CRITICAL: Legacy checks this first, then WC check can overwrite if both conditions met
-        if (std::abs(shear) >= quality_constants::WOBBLE_SHEAR_MIN &&
-            std::abs(shear) <= quality_constants::WOBBLE_SHEAR_MAX) {
-            bp_type_id = 1; // Wobble
-        }
+    // Get base pair type string (e.g., "AT", "GC")
+    // CRITICAL: Use ResidueType to get base letter (more reliable than one_letter_code)
+    // Legacy uses: sprintf(bpi, "%c%c", toupper((int) bseq[i]), toupper((int) bseq[j]));
+    char base1 = get_base_letter(res1.residue_type());
+    char base2 = get_base_letter(res2.residue_type());
+    std::string bp_type = std::string(1, base1) + std::string(1, base2);
 
-        // Check for Watson-Crick pair (fabs(shear) <= 1.8 AND in WC_LIST)
-        // CRITICAL: This can overwrite wobble assignment if shear <= 1.8
-        if (std::abs(shear) <= quality_constants::WC_SHEAR_MAX) {
-            for (const auto& wc : WC_LIST) {
-                if (bp_type == wc) {
-                    bp_type_id = 2; // Watson-Crick
-                    break;
-                }
+    // Check stretch and opening thresholds (matches legacy: fabs(stretch) > 2.0 ||
+    // fabs(opening) > 60) CRITICAL: Legacy uses fabs(opening) > 60 (not >=), and opening is in
+    // degrees
+    const bool exceeds_thresholds =
+        std::abs(stretch) > quality_constants::STRETCH_THRESHOLD ||
+        std::abs(opening) > quality_constants::OPENING_THRESHOLD;
+
+    if (exceeds_thresholds) {
+        return bp_type_id; // Keep -1
+    }
+
+    // Check for wobble pair (fabs(shear) in [1.8, 2.8])
+    // CRITICAL: Legacy checks this first, then WC check can overwrite if both conditions met
+    const bool is_wobble_range =
+        std::abs(shear) >= quality_constants::WOBBLE_SHEAR_MIN &&
+        std::abs(shear) <= quality_constants::WOBBLE_SHEAR_MAX;
+
+    if (is_wobble_range) {
+        bp_type_id = 1; // Wobble
+    }
+
+    // Check for Watson-Crick pair (fabs(shear) <= 1.8 AND in WC_LIST)
+    // CRITICAL: This can overwrite wobble assignment if shear <= 1.8
+    const bool is_wc_shear_range = std::abs(shear) <= quality_constants::WC_SHEAR_MAX;
+
+    if (is_wc_shear_range) {
+        for (const auto& wc : WC_LIST) {
+            if (bp_type == wc) {
+                bp_type_id = 2; // Watson-Crick
+                break;
             }
-            // If not in WC_LIST, keep previous assignment (wobble if set, otherwise -1)
         }
+        // If not in WC_LIST, keep previous assignment (wobble if set, otherwise -1)
     }
 
     return bp_type_id;
