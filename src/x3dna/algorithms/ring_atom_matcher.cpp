@@ -4,7 +4,7 @@
  */
 
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
-#include <x3dna/core/ring_atom_registry.hpp>
+#include <x3dna/core/constants.hpp>
 #include <algorithm>
 
 namespace x3dna {
@@ -71,9 +71,9 @@ MatchedAtoms RingAtomMatcher::match(const core::Residue& residue, const core::St
 }
 
 std::vector<std::string> RingAtomMatcher::get_ring_atom_names(core::ResidueType residue_type) {
-    // Use RingAtomRegistry as single source of truth for ring atom names
+    // Use constants as single source of truth for ring atom names
     // Pad names to PDB format for atom matching
-    return get_padded_names(core::RingAtomRegistry::atoms_for_type(residue_type));
+    return get_padded_names(constants::nucleotides::ring_atoms_for_type(residue_type));
 }
 
 std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Residue& residue,
@@ -101,7 +101,7 @@ std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Structu
 }
 
 bool RingAtomMatcher::is_purine(core::ResidueType type) {
-    return core::RingAtomRegistry::is_purine(type);
+    return constants::nucleotides::is_purine(type);
 }
 
 } // namespace algorithms

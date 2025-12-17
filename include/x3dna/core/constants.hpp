@@ -9,6 +9,11 @@
 #pragma once
 
 #include <cstddef>
+#include <cctype>
+#include <string>
+#include <string_view>
+#include <vector>
+#include <x3dna/core/residue_type.hpp>
 
 namespace x3dna {
 namespace constants {
@@ -97,9 +102,72 @@ namespace geometry {
  */
 namespace nucleotides {
     // Ring atom counts
-    constexpr size_t PURINE_RING_ATOMS = 9;            // N1, C2, N3, C4, C5, C6, N7, C8, N9
-    constexpr size_t PYRIMIDINE_RING_ATOMS = 6;        // N1, C2, N3, C4, C5, C6
+    constexpr size_t PURINE_RING_ATOM_COUNT = 9;       // N1, C2, N3, C4, C5, C6, N7, C8, N9
+    constexpr size_t PYRIMIDINE_RING_ATOM_COUNT = 6;   // N1, C2, N3, C4, C5, C6
     constexpr size_t MIN_ATOMS_FOR_FIT = 3;            // Minimum atoms for least-squares fitting
+
+    // Ring atom names (trimmed, without padding)
+    // Purine ring atoms: fused 6+5 ring system (A, G, I)
+    inline const std::vector<std::string>& purine_ring_atoms() {
+        static const std::vector<std::string> atoms = {
+            "N1", "C2", "N3", "C4", "C5", "C6", "N7", "C8", "N9"
+        };
+        return atoms;
+    }
+
+    // Pyrimidine ring atoms: single 6-membered ring (C, U, T, P)
+    inline const std::vector<std::string>& pyrimidine_ring_atoms() {
+        static const std::vector<std::string> atoms = {
+            "N1", "C2", "N3", "C4", "C5", "C6"
+        };
+        return atoms;
+    }
+
+    /**
+     * @brief Check if an atom name is a ring atom
+     * @param atom_name Atom name (leading/trailing spaces are trimmed)
+     * @return true if this is a base ring atom
+     */
+    inline bool is_ring_atom(std::string_view atom_name) {
+        // Trim whitespace
+        while (!atom_name.empty() && std::isspace(static_cast<unsigned char>(atom_name.front()))) {
+            atom_name.remove_prefix(1);
+        }
+        while (!atom_name.empty() && std::isspace(static_cast<unsigned char>(atom_name.back()))) {
+            atom_name.remove_suffix(1);
+        }
+
+        // Check against purine atoms (superset includes all pyrimidine atoms)
+        for (const auto& ring_atom : purine_ring_atoms()) {
+            if (atom_name == ring_atom) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @brief Check if a residue type is a purine
+     * @param type ResidueType enum value
+     * @return true for ADENINE, GUANINE, INOSINE; false otherwise
+     */
+    inline bool is_purine(core::ResidueType type) {
+        return type == core::ResidueType::ADENINE ||
+               type == core::ResidueType::GUANINE ||
+               type == core::ResidueType::INOSINE;
+    }
+
+    /**
+     * @brief Get ring atom names for a residue type
+     * @param type ResidueType enum value
+     * @return Ring atom names for that type (purine or pyrimidine set)
+     */
+    inline const std::vector<std::string>& ring_atoms_for_type(core::ResidueType type) {
+        if (is_purine(type)) {
+            return purine_ring_atoms();
+        }
+        return pyrimidine_ring_atoms();
+    }
 }  // namespace nucleotides
 
 /**

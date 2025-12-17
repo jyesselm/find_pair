@@ -8,7 +8,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include <x3dna/geometry/vector3d.hpp>
-#include <x3dna/core/ring_atom_registry.hpp>
+#include <x3dna/core/constants.hpp>
 
 namespace x3dna {
 namespace core {
@@ -154,7 +154,7 @@ public:
      * @return True if ring atom
      */
     [[nodiscard]] bool is_ring_atom() const {
-        return RingAtomRegistry::is_ring_atom(name_);
+        return constants::nucleotides::is_ring_atom(name_);
     }
 
     /**

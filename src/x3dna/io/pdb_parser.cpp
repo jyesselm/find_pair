@@ -6,7 +6,6 @@
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/chain.hpp>
-#include <x3dna/core/residue_factory.hpp>
 #include <x3dna/core/constants.hpp>
 #include <x3dna/core/modified_nucleotide_registry.hpp>
 #include <gemmi/pdb.hpp>
@@ -326,7 +325,7 @@ core::Structure PdbParser::build_structure_from_residues(
 
         auto [residue_name, chain_id, residue_seq, insertion_code] = key;
 
-        core::Residue residue = core::ResidueFactory::create(
+        core::Residue residue = core::Residue::create_from_atoms(
             residue_name, residue_seq, chain_id, insertion_code, atoms);
 
         auto [it, inserted] = chains.try_emplace(chain_id, chain_id);

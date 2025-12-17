@@ -27,7 +27,7 @@ namespace core {
  * Residues can be constructed via:
  * 1. Simple constructor: Residue(name, seq_num, chain_id) - for basic creation
  * 2. Builder pattern: Residue::create(name, seq_num, chain_id).type(...).build() - for full control
- * 3. ResidueFactory::create() - recommended for proper property initialization
+ * 3. Residue::create_from_atoms() - recommended for proper property initialization
  */
 class Residue {
 public:
@@ -57,6 +57,26 @@ public:
      * @return Builder instance for fluent construction
      */
     [[nodiscard]] static Builder create(const std::string& name, int seq_num, char chain_id);
+
+    /**
+     * @brief Create a fully-initialized residue from PDB/CIF data
+     *
+     * This is the recommended way to create residues. It uses ModifiedNucleotideRegistry
+     * to determine one_letter_code, type, and is_purine properties.
+     *
+     * @param name Three-letter residue name (e.g., "A", "ATP", "PSU")
+     * @param sequence_number PDB sequence number
+     * @param chain_id Chain identifier
+     * @param insertion_code Insertion code (default ' ')
+     * @param atoms Vector of atoms in this residue
+     * @return Residue with all properties initialized
+     */
+    [[nodiscard]] static Residue create_from_atoms(
+        const std::string& name,
+        int sequence_number,
+        char chain_id,
+        char insertion_code,
+        const std::vector<Atom>& atoms);
 
     // Getters
     [[nodiscard]] const std::string& name() const {
@@ -336,7 +356,6 @@ public:
 
 private:
     friend class Builder;
-    friend class ResidueFactory;
 
     std::string name_;                              // Residue name (e.g., "  C", "  G")
     char one_letter_code_ = '?';                    // One-letter code (stored, not computed)
@@ -436,6 +455,69 @@ private:
 // Inline implementation of create()
 inline Residue::Builder Residue::create(const std::string& name, int seq_num, char chain_id) {
     return Builder(name, seq_num, chain_id);
+}
+
+// Inline implementation of create_from_atoms()
+inline Residue Residue::create_from_atoms(
+    const std::string& name,
+    int sequence_number,
+    char chain_id,
+    char insertion_code,
+    const std::vector<Atom>& atoms)
+{
+    // Helper to trim whitespace
+    auto trim = [](const std::string& str) -> std::string {
+        size_t start = str.find_first_not_of(" \t");
+        if (start == std::string::npos) return "";
+        size_t end = str.find_last_not_of(" \t");
+        return str.substr(start, end - start + 1);
+    };
+
+    std::string trimmed = trim(name);
+
+    // Get one-letter code from registry
+    char one_letter = ModifiedNucleotideRegistry::get_one_letter_code(trimmed);
+
+    // Get base type from registry
+    ResidueType type = ResidueType::UNKNOWN;
+    auto type_opt = ModifiedNucleotideRegistry::get_base_type(trimmed);
+    if (type_opt.has_value()) {
+        type = type_opt.value();
+    } else {
+        // Check for water
+        if (trimmed == "HOH" || trimmed == "WAT") {
+            type = ResidueType::WATER;
+        }
+        // Check for common ions
+        else {
+            std::string upper = trimmed;
+            std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+            if (upper == "MG" || upper == "NA" || upper == "CL" || upper == "K" ||
+                upper == "CA" || upper == "ZN" || upper == "FE" || upper == "MN") {
+                type = ResidueType::ION;
+            }
+        }
+    }
+
+    // Get is_purine from registry
+    bool purine = false;
+    auto is_purine_opt = ModifiedNucleotideRegistry::is_purine(trimmed);
+    if (is_purine_opt.has_value()) {
+        purine = is_purine_opt.value();
+    } else {
+        // Fallback to type-based determination
+        purine = (type == ResidueType::ADENINE || type == ResidueType::GUANINE ||
+                  type == ResidueType::INOSINE);
+    }
+
+    // Build and return residue
+    return Residue::create(name, sequence_number, chain_id)
+        .insertion(insertion_code)
+        .one_letter_code(one_letter)
+        .type(type)
+        .is_purine(purine)
+        .atoms(atoms)
+        .build();
 }
 
 } // namespace core
