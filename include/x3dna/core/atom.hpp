@@ -45,58 +45,58 @@ public:
           record_type_(record_type) {}
 
     // Getters
-    const std::string& name() const {
+    [[nodiscard]] const std::string& name() const {
         return name_;
     }
-    const geometry::Vector3D& position() const {
+    [[nodiscard]] const geometry::Vector3D& position() const {
         return position_;
     }
-    const std::string& residue_name() const {
+    [[nodiscard]] const std::string& residue_name() const {
         return residue_name_;
     }
-    char chain_id() const {
+    [[nodiscard]] char chain_id() const {
         return chain_id_;
     }
-    int residue_seq() const {
+    [[nodiscard]] int residue_seq() const {
         return residue_seq_;
     }
-    char record_type() const {
+    [[nodiscard]] char record_type() const {
         return record_type_;
     }
-    char alt_loc() const {
+    [[nodiscard]] char alt_loc() const {
         return alt_loc_;
     }
-    char insertion() const {
+    [[nodiscard]] char insertion() const {
         return insertion_;
     }
-    double occupancy() const {
+    [[nodiscard]] double occupancy() const {
         return occupancy_;
     }
-    int atom_serial() const {
+    [[nodiscard]] int atom_serial() const {
         return atom_serial_;
     }
-    int model_number() const {
+    [[nodiscard]] int model_number() const {
         return model_number_;
     }
-    size_t line_number() const {
+    [[nodiscard]] size_t line_number() const {
         return line_number_;
     }
-    double b_factor() const {
+    [[nodiscard]] double b_factor() const {
         return b_factor_;
     }
-    const std::string& element() const {
+    [[nodiscard]] const std::string& element() const {
         return element_;
     }
-    const std::string& original_atom_name() const {
+    [[nodiscard]] const std::string& original_atom_name() const {
         return original_atom_name_;
     }
-    const std::string& original_residue_name() const {
+    [[nodiscard]] const std::string& original_residue_name() const {
         return original_residue_name_;
     }
-    int legacy_atom_idx() const {
+    [[nodiscard]] int legacy_atom_idx() const {
         return legacy_atom_idx_;
     }
-    int legacy_residue_idx() const {
+    [[nodiscard]] int legacy_residue_idx() const {
         return legacy_residue_idx_;
     }
 
@@ -161,7 +161,7 @@ public:
      * @param other Another atom
      * @return Distance in Angstroms
      */
-    double distance_to(const Atom& other) const {
+    [[nodiscard]] double distance_to(const Atom& other) const {
         return position_.distance_to(other.position_);
     }
 
@@ -169,7 +169,7 @@ public:
      * @brief Check if this atom is a ring atom (part of base ring)
      * @return True if ring atom
      */
-    bool is_ring_atom() const {
+    [[nodiscard]] bool is_ring_atom() const {
         // Common ring atoms in nucleic acids
         const std::string trimmed = trim_name();
         return (trimmed == "N1" || trimmed == "C2" || trimmed == "N3" || trimmed == "C4" || trimmed == "C5" ||
@@ -180,7 +180,7 @@ public:
      * @brief Check if this atom is a hydrogen bond donor
      * @return True if potential H-bond donor
      */
-    bool is_hydrogen_bond_donor() const {
+    [[nodiscard]] bool is_hydrogen_bond_donor() const {
         const std::string trimmed = trim_name();
         // Common H-bond donors: N with H (N1, N2, N3, N4, N6, N7, N9)
         return (trimmed.find("N") == 0 && trimmed.length() <= 2);
@@ -190,7 +190,7 @@ public:
      * @brief Check if this atom is a hydrogen bond acceptor
      * @return True if potential H-bond acceptor
      */
-    bool is_hydrogen_bond_acceptor() const {
+    [[nodiscard]] bool is_hydrogen_bond_acceptor() const {
         const std::string trimmed = trim_name();
         // Common H-bond acceptors: O (O2, O4, O6), N (N3, N7)
         return (trimmed.find("O") == 0 || trimmed == "N3" || trimmed == "N7");
@@ -200,7 +200,7 @@ public:
      * @brief Convert to legacy JSON format (for pdb_atoms record)
      * @return JSON object matching legacy format
      */
-    nlohmann::json to_json_legacy() const {
+    [[nodiscard]] nlohmann::json to_json_legacy() const {
         nlohmann::json j;
         // Always include all fields to match legacy format exactly
         j["atom_name"] = name_;
@@ -248,7 +248,7 @@ public:
      * @param j JSON object from pdb_atoms record
      * @return Atom object
      */
-    static Atom from_json_legacy(const nlohmann::json& j) {
+    [[nodiscard]] static Atom from_json_legacy(const nlohmann::json& j) {
         std::string name = j.value("atom_name", "");
         std::vector<double> xyz = j.value("xyz", std::vector<double>{0.0, 0.0, 0.0});
         geometry::Vector3D position(xyz[0], xyz[1], xyz[2]);
@@ -277,7 +277,7 @@ public:
      * @brief Convert to JSON format for pdb_atoms record
      * @return JSON object matching pdb_atoms format (atom_idx, atom_name, xyz, etc.)
      */
-    nlohmann::json to_json() const {
+    [[nodiscard]] nlohmann::json to_json() const {
         nlohmann::json j;
 
         // Use legacy_atom_idx for atom_idx to match legacy exactly (1-based)
@@ -313,7 +313,7 @@ public:
     /**
      * @brief Create Atom from modern JSON format
      */
-    static Atom from_json(const nlohmann::json& j) {
+    [[nodiscard]] static Atom from_json(const nlohmann::json& j) {
         std::string name = j.value("name", "");
         geometry::Vector3D position = geometry::Vector3D::from_json(j["position"]);
 
@@ -360,7 +360,7 @@ private:
     /**
      * @brief Trim whitespace from atom name for comparison
      */
-    std::string trim_name() const {
+    [[nodiscard]] std::string trim_name() const {
         std::string trimmed = name_;
         // Remove leading/trailing spaces
         trimmed.erase(0, trimmed.find_first_not_of(" \t"));
