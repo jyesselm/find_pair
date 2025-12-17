@@ -31,49 +31,15 @@ static ResidueType string_to_residue_type(const std::string& type_str) {
     throw std::runtime_error("Unknown residue type: " + type_str);
 }
 
-// Standard nucleotides - always available, no file loading needed
-static const std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> STANDARD_NUCLEOTIDES = {
-    // RNA nucleotides
-    {"A",   {'A', ResidueType::ADENINE, true, "Adenosine"}},
-    {"ADE", {'A', ResidueType::ADENINE, true, "Adenosine"}},
-    {"C",   {'C', ResidueType::CYTOSINE, false, "Cytidine"}},
-    {"CYT", {'C', ResidueType::CYTOSINE, false, "Cytidine"}},
-    {"G",   {'G', ResidueType::GUANINE, true, "Guanosine"}},
-    {"GUA", {'G', ResidueType::GUANINE, true, "Guanosine"}},
-    {"U",   {'U', ResidueType::URACIL, false, "Uridine"}},
-    {"URA", {'U', ResidueType::URACIL, false, "Uridine"}},
-    // DNA nucleotides
-    {"DA",  {'A', ResidueType::ADENINE, true, "Deoxyadenosine"}},
-    {"DC",  {'C', ResidueType::CYTOSINE, false, "Deoxycytidine"}},
-    {"DG",  {'G', ResidueType::GUANINE, true, "Deoxyguanosine"}},
-    {"DT",  {'T', ResidueType::THYMINE, false, "Deoxythymidine"}},
-    {"T",   {'T', ResidueType::THYMINE, false, "Thymidine"}},
-    {"THY", {'T', ResidueType::THYMINE, false, "Thymidine"}},
-    {"DU",  {'U', ResidueType::URACIL, false, "Deoxyuridine"}},
-    // Special nucleotides
-    {"I",   {'I', ResidueType::INOSINE, true, "Inosine"}},
-    {"INO", {'I', ResidueType::INOSINE, true, "Inosine"}},
-    {"P",   {'P', ResidueType::PSEUDOURIDINE, false, "Pseudouridine"}},
-    {"PSU", {'P', ResidueType::PSEUDOURIDINE, false, "Pseudouridine"}},
-};
-
 // Thread-safe lazy-loaded registry singleton
+// Auto-initializes ResourceLocator if not already initialized
 static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo>& get_registry() {
     static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> registry;
     static std::once_flag init_flag;
 
     std::call_once(init_flag, []() {
-        // Start with standard nucleotides
-        registry = STANDARD_NUCLEOTIDES;
-
-        // ResourceLocator MUST be initialized before using the registry
-        if (!config::ResourceLocator::is_initialized()) {
-            throw std::runtime_error(
-                "ModifiedNucleotideRegistry: ResourceLocator not initialized. "
-                "Call x3dna::config::ResourceLocator::set_resources_path() before using the library.");
-        }
-
-        // Load modified nucleotides from JSON - file MUST exist
+        // config_file() will auto-initialize ResourceLocator if possible
+        // (searches relative paths and environment variables)
         std::filesystem::path config_file = config::ResourceLocator::config_file("modified_nucleotides.json");
 
         std::ifstream file(config_file);
@@ -86,7 +52,7 @@ static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo>& get_re
         try {
             json j = json::parse(file);
 
-            // Load all categories
+            // Load all categories (including standard_nucleotides)
             for (const auto& [category, nucleotides] : j["modified_nucleotides"].items()) {
                 for (const auto& [name, info] : nucleotides.items()) {
                     ModifiedNucleotideRegistry::NucleotideInfo nucinfo;
