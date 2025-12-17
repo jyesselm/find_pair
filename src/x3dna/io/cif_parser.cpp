@@ -7,6 +7,7 @@
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/residue_factory.hpp>
+#include <x3dna/core/modified_nucleotide_registry.hpp>
 #include <gemmi/cif.hpp>
 #include <gemmi/mmcif.hpp>
 #include <gemmi/mmread.hpp>
@@ -237,26 +238,8 @@ bool CifParser::is_water(const std::string& residue_name) const {
 }
 
 bool CifParser::is_modified_nucleotide_name(const std::string& residue_name) const {
-    std::string trimmed = residue_name;
-    trimmed.erase(0, trimmed.find_first_not_of(" \t"));
-    trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
-
-    static const std::vector<std::string> modified_nucleotides = {
-        "PSU", "P5P", "PU",
-        "A2M", "1MA", "2MA", "6MA", "OMA", "MIA", "I6A", "T6A", "M6A", "A23", "DA",
-        "5MC", "OMC", "S4C", "5IC", "5FC", "CBR", "CVC", "CM0",
-        "OMG", "1MG", "2MG", "7MG", "M2G", "YYG", "YG", "QUO",
-        "5MU", "H2U", "DHU", "OMU", "4SU", "S4U", "5BU", "2MU", "UR3", "RT", "70U", "2YR",
-        "I", "DI", "EPE", "J48", "KIR", "NCA", "NF2", "NMN", "NNR", "WVQ"
-    };
-
-    for (const auto& mod : modified_nucleotides) {
-        if (trimmed == mod) {
-            return true;
-        }
-    }
-
-    return false;
+    // Use centralized registry instead of hardcoded list
+    return core::ModifiedNucleotideRegistry::contains(residue_name);
 }
 
 std::string CifParser::normalize_atom_name(const std::string& name) const {
