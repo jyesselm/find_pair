@@ -20,18 +20,21 @@ def trim_string(value: Any) -> Any:
 def create_atom_key(atom: Dict) -> Tuple[str, int, str, str]:
     """
     Create a unique key for an atom.
-    
+
     Args:
         atom: Atom dictionary from JSON
-        
+
     Returns:
         Tuple of (chain_id, residue_seq, insertion, atom_name)
+        Note: atom_name is trimmed to handle format differences between legacy and modern
     """
+    # Trim atom_name to handle PDB format differences (e.g., 'ZN  ' vs ' ZN ')
+    atom_name = atom.get('atom_name', '').strip()
     return (
         atom.get('chain_id', ''),
         atom.get('residue_seq', 0),
         atom.get('insertion', ' '),
-        atom.get('atom_name', '')
+        atom_name
     )
 
 
@@ -173,7 +176,7 @@ def compare_atoms(legacy_atoms: List[Dict], modern_atoms: List[Dict],
         'atom_name',              # Atom name
         'chain_id',               # Chain identifier
         'residue_seq',            # Residue sequence number
-        'line_number',            # PDB line number
+        # 'line_number' intentionally excluded - modern GEMMI parser doesn't track line numbers
         # 'pdb_line' intentionally excluded - modern doesn't store raw PDB lines
     ]
     

@@ -12,11 +12,11 @@ namespace x3dna {
 namespace core {
 
 std::vector<const Residue*> get_residues_in_legacy_order(const Structure& structure) {
-    // Collect all atoms with their line numbers and residue info
+    // Collect all atoms with their legacy indices and residue info
     struct AtomWithResidue {
         const Atom* atom;
         const Residue* residue;
-        size_t line_number;
+        int legacy_atom_idx;
     };
 
     std::vector<AtomWithResidue> atoms_with_residues;
@@ -25,15 +25,15 @@ std::vector<const Residue*> get_residues_in_legacy_order(const Structure& struct
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
             for (const auto& atom : residue.atoms()) {
-                atoms_with_residues.push_back({&atom, &residue, atom.line_number()});
+                atoms_with_residues.push_back({&atom, &residue, atom.legacy_atom_idx()});
             }
         }
     }
 
-    // Sort by line number (PDB file order)
+    // Sort by legacy_atom_idx (PDB file order - assigned sequentially during parsing)
     std::sort(atoms_with_residues.begin(), atoms_with_residues.end(),
               [](const AtomWithResidue& a, const AtomWithResidue& b) {
-                  return a.line_number < b.line_number;
+                  return a.legacy_atom_idx < b.legacy_atom_idx;
               });
 
     // Group by (ResName, ChainID, ResSeq, insertion) and collect unique residues in order
