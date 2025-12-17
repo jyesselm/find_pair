@@ -8,6 +8,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include <x3dna/geometry/vector3d.hpp>
+#include <x3dna/core/ring_atom_registry.hpp>
 
 namespace x3dna {
 namespace core {
@@ -153,10 +154,7 @@ public:
      * @return True if ring atom
      */
     [[nodiscard]] bool is_ring_atom() const {
-        // Common ring atoms in nucleic acids
-        const std::string trimmed = trim_name();
-        return (trimmed == "N1" || trimmed == "C2" || trimmed == "N3" || trimmed == "C4" || trimmed == "C5" ||
-                trimmed == "C6" || trimmed == "N7" || trimmed == "C8" || trimmed == "N9");
+        return RingAtomRegistry::is_ring_atom(name_);
     }
 
     /**

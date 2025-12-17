@@ -44,6 +44,7 @@ add_library(x3dna
     src/x3dna/core/structure_legacy_order_impl.cpp
     src/x3dna/core/modified_nucleotide_registry.cpp
     src/x3dna/core/residue_factory.cpp
+    src/x3dna/core/ring_atom_registry.cpp
     src/x3dna/algorithms/standard_base_templates.cpp
     src/x3dna/algorithms/ring_atom_matcher.cpp
     src/x3dna/algorithms/residue_type_detector.cpp

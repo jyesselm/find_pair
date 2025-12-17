@@ -4,19 +4,44 @@
  */
 
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
+#include <x3dna/core/ring_atom_registry.hpp>
 #include <algorithm>
 
 namespace x3dna {
 namespace algorithms {
 
-// Ring atom names from RA_LIST definition
-static const std::vector<std::string> RING_ATOMS_PURINE = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
-                                                           " C5 ", " N7 ", " C8 ", " N9 "};
+namespace {
 
-static const std::vector<std::string> RING_ATOMS_PYRIMIDINE = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
+/**
+ * @brief Pad an atom name to 4 characters (PDB format)
+ *
+ * PDB atom names are 4 characters with specific positioning:
+ * - 2-character elements right-aligned in first 2 chars
+ * - 1-character elements in column 2
+ *
+ * For simplicity, we pad to " XX " format (space + name + space)
+ */
+[[nodiscard]] std::string pad_atom_name(const std::string& name) {
+    if (name.length() == 2) {
+        return " " + name + " ";
+    }
+    // Already padded or longer - return as-is
+    return name;
+}
 
-// C1' is a sugar atom, not a ring atom, so it should NOT be included in ring atom matching
-// (even for RNA). The legacy code confirms this - it never includes C1' in base_frame_calc.
+/**
+ * @brief Convert registry atom names to PDB-padded format
+ */
+[[nodiscard]] std::vector<std::string> get_padded_names(const std::vector<std::string>& names) {
+    std::vector<std::string> padded;
+    padded.reserve(names.size());
+    for (const auto& name : names) {
+        padded.push_back(pad_atom_name(name));
+    }
+    return padded;
+}
+
+} // anonymous namespace
 
 MatchedAtoms RingAtomMatcher::match(const core::Residue& residue, const core::Structure& standard_template,
                                     std::optional<core::ResidueType> detected_type) {
@@ -46,16 +71,9 @@ MatchedAtoms RingAtomMatcher::match(const core::Residue& residue, const core::St
 }
 
 std::vector<std::string> RingAtomMatcher::get_ring_atom_names(core::ResidueType residue_type) {
-    // Use correct ring atom lists (includes C4, excludes C1' and H)
-    // NOTE: C1' is NOT a ring atom (it's a sugar atom), so it should NOT be included
-    // in ring atom matching, even for RNA. The legacy code confirms this - it never
-    // includes C1' in base_frame_calc matched_atoms.
-
-    if (is_purine(residue_type)) {
-        return RING_ATOMS_PURINE;
-    } else {
-        return RING_ATOMS_PYRIMIDINE;
-    }
+    // Use RingAtomRegistry as single source of truth for ring atom names
+    // Pad names to PDB format for atom matching
+    return get_padded_names(core::RingAtomRegistry::atoms_for_type(residue_type));
 }
 
 std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Residue& residue,
@@ -83,8 +101,7 @@ std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Structu
 }
 
 bool RingAtomMatcher::is_purine(core::ResidueType type) {
-    return type == core::ResidueType::ADENINE || type == core::ResidueType::GUANINE ||
-           type == core::ResidueType::INOSINE;
+    return core::RingAtomRegistry::is_purine(type);
 }
 
 } // namespace algorithms
