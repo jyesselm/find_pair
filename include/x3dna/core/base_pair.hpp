@@ -102,22 +102,22 @@ public:
     BasePair(size_t idx1, size_t idx2, BasePairType type) : residue_idx1_(idx1), residue_idx2_(idx2), type_(type) {}
 
     // Getters
-    size_t residue_idx1() const {
+    [[nodiscard]] size_t residue_idx1() const {
         return residue_idx1_;
     }
-    size_t residue_idx2() const {
+    [[nodiscard]] size_t residue_idx2() const {
         return residue_idx2_;
     }
-    BasePairType type() const {
+    [[nodiscard]] BasePairType type() const {
         return type_;
     }
-    const std::string& bp_type() const {
+    [[nodiscard]] const std::string& bp_type() const {
         return bp_type_;
     }
-    const std::vector<hydrogen_bond>& hydrogen_bonds() const {
+    [[nodiscard]] const std::vector<hydrogen_bond>& hydrogen_bonds() const {
         return hbonds_;
     }
-    std::optional<size_t> basepair_idx() const {
+    [[nodiscard]] std::optional<size_t> basepair_idx() const {
         return basepair_idx_;
     }
 
@@ -125,21 +125,21 @@ public:
      * @brief Check if the original finding order was swapped during normalization
      * @return True if pair was found in (j,i) order but stored as (i,j) where i < j
      */
-    bool finding_order_swapped() const {
+    [[nodiscard]] bool finding_order_swapped() const {
         return finding_order_swapped_;
     }
 
     /**
      * @brief Get reference frame for first residue
      */
-    std::optional<ReferenceFrame> frame1() const {
+    [[nodiscard]] std::optional<ReferenceFrame> frame1() const {
         return frame1_;
     }
 
     /**
      * @brief Get reference frame for second residue
      */
-    std::optional<ReferenceFrame> frame2() const {
+    [[nodiscard]] std::optional<ReferenceFrame> frame2() const {
         return frame2_;
     }
 
@@ -154,7 +154,7 @@ public:
      * - Legacy's five2three may swap frames based on helix direction (strand_swapped)
      * - The correct frame is determined by XOR of these two flags
      */
-    std::optional<ReferenceFrame> get_step_frame(bool strand_swapped) const {
+    [[nodiscard]] std::optional<ReferenceFrame> get_step_frame(bool strand_swapped) const {
         bool use_larger_index_frame = (finding_order_swapped_ != strand_swapped);
         return use_larger_index_frame ? frame2_ : frame1_;
     }
@@ -217,7 +217,7 @@ public:
      * @brief Calculate distance between origins of the two reference frames
      * @return Distance in Angstroms
      */
-    double origin_distance() const {
+    [[nodiscard]] double origin_distance() const {
         if (!frame1_.has_value() || !frame2_.has_value()) {
             return 0.0;
         }
@@ -228,7 +228,7 @@ public:
      * @brief Calculate plane angle between the two base planes
      * @return Angle in radians
      */
-    double plane_angle() const {
+    [[nodiscard]] double plane_angle() const {
         if (!frame1_.has_value() || !frame2_.has_value()) {
             return 0.0;
         }
@@ -248,7 +248,7 @@ public:
      * Note: This is a placeholder - actual implementation requires atom access
      * @return Distance in Angstroms
      */
-    double n_n_distance() const {
+    [[nodiscard]] double n_n_distance() const {
         // Will be implemented when we have residue access
         return 0.0;
     }
@@ -257,7 +257,7 @@ public:
      * @brief Get direction vector (z-axis dot product)
      * @return Dot product of z-axes (negative for valid base pairs)
      */
-    double direction_dot_product() const {
+    [[nodiscard]] double direction_dot_product() const {
         if (!frame1_.has_value() || !frame2_.has_value()) {
             return 0.0;
         }
@@ -267,7 +267,7 @@ public:
     /**
      * @brief Convert to legacy JSON format (base_pair record)
      */
-    nlohmann::json to_json_legacy() const {
+    [[nodiscard]] nlohmann::json to_json_legacy() const {
         nlohmann::json j;
         j["type"] = "base_pair";
         j["base_i"] = static_cast<long>(residue_idx1_);
@@ -342,7 +342,7 @@ public:
     /**
      * @brief Create BasePair from legacy JSON format
      */
-    static BasePair from_json_legacy(const nlohmann::json& j) {
+    [[nodiscard]] static BasePair from_json_legacy(const nlohmann::json& j) {
         size_t idx1 = j.value("base_i", 0);
         size_t idx2 = j.value("base_j", 0);
         std::string bp_type = j.value("bp_type", "");
@@ -392,7 +392,7 @@ public:
     /**
      * @brief Convert to modern JSON format
      */
-    nlohmann::json to_json() const {
+    [[nodiscard]] nlohmann::json to_json() const {
         nlohmann::json j;
         j["residue_idx1"] = residue_idx1_;
         j["residue_idx2"] = residue_idx2_;
@@ -427,7 +427,7 @@ public:
     /**
      * @brief Create BasePair from modern JSON format
      */
-    static BasePair from_json(const nlohmann::json& j) {
+    [[nodiscard]] static BasePair from_json(const nlohmann::json& j) {
         size_t idx1 = j.value("residue_idx1", 0);
         size_t idx2 = j.value("residue_idx2", 0);
         std::string bp_type = j.value("bp_type", "");

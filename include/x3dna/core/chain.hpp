@@ -31,23 +31,23 @@ public:
     explicit Chain(char id) : chain_id_(id) {}
 
     // Getters
-    char chain_id() const {
+    [[nodiscard]] char chain_id() const {
         return chain_id_;
     }
-    const std::vector<Residue>& residues() const {
+    [[nodiscard]] const std::vector<Residue>& residues() const {
         return residues_;
     }
     std::vector<Residue>& residues() {
         return residues_;
     }
-    size_t num_residues() const {
+    [[nodiscard]] size_t num_residues() const {
         return residues_.size();
     }
 
     /**
      * @brief Get total number of atoms in this chain
      */
-    size_t num_atoms() const {
+    [[nodiscard]] size_t num_atoms() const {
         size_t count = 0;
         for (const auto& residue : residues_) {
             count += residue.num_atoms();
@@ -71,7 +71,7 @@ public:
      * @brief Get sequence as one-letter code string
      * @return Sequence string (e.g., "ACGT")
      */
-    std::string sequence() const {
+    [[nodiscard]] std::string sequence() const {
         std::string seq;
         for (const auto& residue : residues_) {
             char code = residue.one_letter_code();
@@ -86,7 +86,7 @@ public:
      * @brief Get all nucleotides in this chain
      * @return Vector of nucleotide residues
      */
-    std::vector<Residue> nucleotides() const {
+    [[nodiscard]] std::vector<Residue> nucleotides() const {
         std::vector<Residue> nts;
         for (const auto& residue : residues_) {
             if (residue.is_nucleotide()) {
@@ -101,7 +101,7 @@ public:
      * @param seq_num Sequence number
      * @return Optional residue if found
      */
-    std::optional<Residue> find_residue(int seq_num) const {
+    [[nodiscard]] std::optional<Residue> find_residue(int seq_num) const {
         for (const auto& residue : residues_) {
             if (residue.seq_num() == seq_num) {
                 return residue;
@@ -113,7 +113,7 @@ public:
     /**
      * @brief Convert to legacy JSON format
      */
-    nlohmann::json to_json_legacy() const {
+    [[nodiscard]] nlohmann::json to_json_legacy() const {
         nlohmann::json j;
         j["chain_id"] = std::string(1, chain_id_);
         j["num_residues"] = static_cast<long>(residues_.size());
@@ -127,7 +127,7 @@ public:
     /**
      * @brief Create Chain from legacy JSON format
      */
-    static Chain from_json_legacy(const nlohmann::json& j) {
+    [[nodiscard]] static Chain from_json_legacy(const nlohmann::json& j) {
         std::string chain_str = j.value("chain_id", "");
         char chain_id = chain_str.empty() ? '\0' : chain_str[0];
 
@@ -145,7 +145,7 @@ public:
     /**
      * @brief Convert to modern JSON format
      */
-    nlohmann::json to_json() const {
+    [[nodiscard]] nlohmann::json to_json() const {
         nlohmann::json j;
         j["chain_id"] = std::string(1, chain_id_);
         j["residues"] = nlohmann::json::array();
@@ -158,7 +158,7 @@ public:
     /**
      * @brief Create Chain from modern JSON format
      */
-    static Chain from_json(const nlohmann::json& j) {
+    [[nodiscard]] static Chain from_json(const nlohmann::json& j) {
         std::string chain_str = j.value("chain_id", "");
         char chain_id = chain_str.empty() ? '\0' : chain_str[0];
 

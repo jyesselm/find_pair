@@ -32,7 +32,7 @@ class Structure;
  * @param structure The structure to get residues from
  * @return Vector of residue pointers in legacy order (non-owning)
  */
-std::vector<const Residue*> get_residues_in_legacy_order(const Structure& structure);
+[[nodiscard]] std::vector<const Residue*> get_residues_in_legacy_order(const Structure& structure);
 
 /**
  * @brief Get residue by legacy index (1-based)
@@ -44,7 +44,7 @@ std::vector<const Residue*> get_residues_in_legacy_order(const Structure& struct
  * @param legacy_idx Legacy residue index (1-based)
  * @return Pointer to residue, or nullptr if not found
  */
-const Residue* get_residue_by_legacy_idx(const Structure& structure, int legacy_idx);
+[[nodiscard]] const Residue* get_residue_by_legacy_idx(const Structure& structure, int legacy_idx);
 
 /**
  * @brief Get legacy index for a residue
@@ -56,7 +56,7 @@ const Residue* get_residue_by_legacy_idx(const Structure& structure, int legacy_
  * @param residue The residue to find the index for
  * @return Legacy residue index (1-based), or 0 if not found
  */
-int get_legacy_idx_for_residue(const Structure& structure, const Residue* residue);
+[[nodiscard]] int get_legacy_idx_for_residue(const Structure& structure, const Residue* residue);
 
 } // namespace core
 } // namespace x3dna

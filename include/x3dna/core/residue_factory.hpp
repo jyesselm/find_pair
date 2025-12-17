@@ -35,7 +35,7 @@ public:
      * @param atoms Vector of atoms in this residue
      * @return Residue with all properties initialized
      */
-    static Residue create(const std::string& name, int sequence_number, char chain_id, char insertion_code,
+    [[nodiscard]] static Residue create(const std::string& name, int sequence_number, char chain_id, char insertion_code,
                           const std::vector<Atom>& atoms);
 
 private:
@@ -43,17 +43,17 @@ private:
      * @brief Determine one-letter code from residue name
      * Uses ModifiedNucleotideRegistry for modified nucleotides
      */
-    static char determine_one_letter_code(const std::string& name);
+    [[nodiscard]] static char determine_one_letter_code(const std::string& name);
 
     /**
      * @brief Determine residue type from name and one-letter code
      */
-    static ResidueType determine_type(const std::string& name, char one_letter_code);
+    [[nodiscard]] static ResidueType determine_type(const std::string& name, char one_letter_code);
 
     /**
      * @brief Determine if residue is a purine
      */
-    static bool determine_is_purine(const std::string& name, ResidueType type);
+    [[nodiscard]] static bool determine_is_purine(const std::string& name, ResidueType type);
 };
 
 } // namespace core

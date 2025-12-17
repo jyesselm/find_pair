@@ -59,32 +59,32 @@ public:
           chain_id_(chain_id), insertion_(insertion), atoms_(atoms) {}
 
     // Getters
-    const std::string& name() const {
+    [[nodiscard]] const std::string& name() const {
         return name_;
     }
-    int seq_num() const {
+    [[nodiscard]] int seq_num() const {
         return seq_num_;
     }
-    char chain_id() const {
+    [[nodiscard]] char chain_id() const {
         return chain_id_;
     }
-    char insertion() const {
+    [[nodiscard]] char insertion() const {
         return insertion_;
     }
-    const std::vector<Atom>& atoms() const {
+    [[nodiscard]] const std::vector<Atom>& atoms() const {
         return atoms_;
     }
     std::vector<Atom>& atoms() {
         return atoms_;
     }
-    size_t num_atoms() const {
+    [[nodiscard]] size_t num_atoms() const {
         return atoms_.size();
     }
 
     /**
      * @brief Get reference frame (if set)
      */
-    std::optional<ReferenceFrame> reference_frame() const {
+    [[nodiscard]] std::optional<ReferenceFrame> reference_frame() const {
         return reference_frame_;
     }
 
@@ -121,7 +121,7 @@ public:
      * @param atom_name Atom name (e.g., " C1'", " N3 ")
      * @return Optional atom if found
      */
-    std::optional<Atom> find_atom(const std::string& atom_name) const {
+    [[nodiscard]] std::optional<Atom> find_atom(const std::string& atom_name) const {
         for (const auto& atom : atoms_) {
             if (atom.name() == atom_name) {
                 return atom;
@@ -134,7 +134,7 @@ public:
      * @brief Get all ring atoms (base ring atoms for nucleotides)
      * @return Vector of ring atoms
      */
-    std::vector<Atom> ring_atoms() const {
+    [[nodiscard]] std::vector<Atom> ring_atoms() const {
         std::vector<Atom> ring;
         for (const auto& atom : atoms_) {
             if (atom.is_ring_atom()) {
@@ -158,7 +158,7 @@ public:
      * @brief Get one-letter code (stored value, not computed)
      * @return One-letter code ('A', 'C', 'G', 'U', 'a', 'c', etc.)
      */
-    char one_letter_code() const {
+    [[nodiscard]] char one_letter_code() const {
         return one_letter_code_;
     }
 
@@ -166,7 +166,7 @@ public:
      * @brief Check if this is a nucleotide
      * @return True if nucleotide (A, C, G, T, U or modified a, c, g, t, u, P)
      */
-    bool is_nucleotide() const {
+    [[nodiscard]] bool is_nucleotide() const {
         char code = one_letter_code();
         // Standard nucleotides
         if (code == 'A' || code == 'C' || code == 'G' || code == 'T' || code == 'U' || code == 'I')
@@ -181,7 +181,7 @@ public:
      * @brief Check if residue is a purine (stored value, not computed)
      * @return true if purine (A, G, I), false otherwise
      */
-    bool is_purine() const {
+    [[nodiscard]] bool is_purine() const {
         return is_purine_;
     }
 
@@ -190,7 +190,7 @@ public:
      * Uses stored is_purine_ value
      * @return 1 for purines, 0 for pyrimidines, -1 for non-nucleotides
      */
-    int ry_classification() const {
+    [[nodiscard]] int ry_classification() const {
         if (is_purine_) {
             return 1; // Purine
         }
@@ -209,7 +209,7 @@ public:
      * @brief Get residue type (stored value, not computed)
      * @return ResidueType set by ResidueFactory at creation
      */
-    ResidueType residue_type() const {
+    [[nodiscard]] ResidueType residue_type() const {
         return type_;
     }
 
@@ -221,7 +221,7 @@ public:
      *
      * @return Pair of (start_atom, end_atom) legacy atom indices, or (0, 0) if no atoms
      */
-    std::pair<int, int> atom_range() const {
+    [[nodiscard]] std::pair<int, int> atom_range() const {
         if (atoms_.empty()) {
             return {0, 0};
         }
@@ -249,7 +249,7 @@ public:
      * Note: Residues are typically represented as part of pdb_atoms records
      * This creates a minimal representation for testing
      */
-    nlohmann::json to_json_legacy() const {
+    [[nodiscard]] nlohmann::json to_json_legacy() const {
         nlohmann::json j;
         j["residue_name"] = name_;
         j["residue_seq"] = seq_num_;
@@ -267,7 +267,7 @@ public:
     /**
      * @brief Create Residue from legacy JSON format
      */
-    static Residue from_json_legacy(const nlohmann::json& j) {
+    [[nodiscard]] static Residue from_json_legacy(const nlohmann::json& j) {
         std::string name = j.value("residue_name", "");
         int seq_num = j.value("residue_seq", 0);
         std::string chain_str = j.value("chain_id", "");
@@ -291,7 +291,7 @@ public:
     /**
      * @brief Convert to modern JSON format
      */
-    nlohmann::json to_json() const {
+    [[nodiscard]] nlohmann::json to_json() const {
         nlohmann::json j;
         j["name"] = name_;
         j["seq_num"] = seq_num_;
@@ -309,7 +309,7 @@ public:
     /**
      * @brief Create Residue from modern JSON format
      */
-    static Residue from_json(const nlohmann::json& j) {
+    [[nodiscard]] static Residue from_json(const nlohmann::json& j) {
         std::string name = j.value("name", "");
         int seq_num = j.value("seq_num", 0);
         std::string chain_str = j.value("chain_id", "");
@@ -344,7 +344,7 @@ private:
     /**
      * @brief Trim whitespace from residue name
      */
-    std::string trim_name() const {
+    [[nodiscard]] std::string trim_name() const {
         std::string trimmed = name_;
         trimmed.erase(0, trimmed.find_first_not_of(" \t"));
         trimmed.erase(trimmed.find_last_not_of(" \t") + 1);

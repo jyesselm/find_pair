@@ -38,23 +38,23 @@ public:
     explicit Structure(const std::string& pdb_id) : pdb_id_(pdb_id) {}
 
     // Getters
-    const std::string& pdb_id() const {
+    [[nodiscard]] const std::string& pdb_id() const {
         return pdb_id_;
     }
-    const std::vector<Chain>& chains() const {
+    [[nodiscard]] const std::vector<Chain>& chains() const {
         return chains_;
     }
     std::vector<Chain>& chains() {
         return chains_;
     }
-    size_t num_chains() const {
+    [[nodiscard]] size_t num_chains() const {
         return chains_.size();
     }
 
     /**
      * @brief Get total number of residues in all chains
      */
-    size_t num_residues() const {
+    [[nodiscard]] size_t num_residues() const {
         size_t count = 0;
         for (const auto& chain : chains_) {
             count += chain.num_residues();
@@ -65,7 +65,7 @@ public:
     /**
      * @brief Get total number of atoms in all chains
      */
-    size_t num_atoms() const {
+    [[nodiscard]] size_t num_atoms() const {
         size_t count = 0;
         for (const auto& chain : chains_) {
             count += chain.num_atoms();
@@ -122,7 +122,7 @@ public:
      * @brief Get all residues from all chains
      * @return Vector of residue pointers (non-owning)
      */
-    std::vector<const Residue*> all_residues() const {
+    [[nodiscard]] std::vector<const Residue*> all_residues() const {
         std::vector<const Residue*> residues;
         for (const auto& chain : chains_) {
             for (const auto& residue : chain.residues()) {
@@ -136,7 +136,7 @@ public:
      * @brief Get all nucleotide residues from all chains
      * @return Vector of nucleotide residue pointers (non-owning)
      */
-    std::vector<const Residue*> nucleotides() const {
+    [[nodiscard]] std::vector<const Residue*> nucleotides() const {
         std::vector<const Residue*> nts;
         for (const auto& chain : chains_) {
             for (const auto& residue : chain.residues()) {
@@ -160,7 +160,7 @@ public:
      *
      * @return Vector of residue pointers in legacy order (non-owning)
      */
-    std::vector<const Residue*> residues_in_legacy_order() const;
+    [[nodiscard]] std::vector<const Residue*> residues_in_legacy_order() const;
 
     /**
      * @brief Get residue by legacy index (1-based)
@@ -171,7 +171,7 @@ public:
      * @param legacy_idx Legacy residue index (1-based)
      * @return Pointer to residue, or nullptr if not found
      */
-    const Residue* get_residue_by_legacy_idx(int legacy_idx) const;
+    [[nodiscard]] const Residue* get_residue_by_legacy_idx(int legacy_idx) const;
 
     /**
      * @brief Get legacy index for a residue
@@ -182,14 +182,14 @@ public:
      * @param residue The residue to find the index for
      * @return Legacy residue index (1-based), or 0 if not found
      */
-    int get_legacy_idx_for_residue(const Residue* residue) const;
+    [[nodiscard]] int get_legacy_idx_for_residue(const Residue* residue) const;
 
     /**
      * @brief Find chain by ID
      * @param chain_id Chain identifier
      * @return Optional chain if found
      */
-    std::optional<Chain> find_chain(char chain_id) const {
+    [[nodiscard]] std::optional<Chain> find_chain(char chain_id) const {
         for (const auto& chain : chains_) {
             if (chain.chain_id() == chain_id) {
                 return chain;
@@ -201,7 +201,7 @@ public:
     /**
      * @brief Convert to legacy JSON format (pdb_atoms record)
      */
-    nlohmann::json to_json_legacy() const {
+    [[nodiscard]] nlohmann::json to_json_legacy() const {
         nlohmann::json j;
         j["pdb_id"] = pdb_id_;
         j["num_atoms"] = static_cast<long>(num_atoms());
@@ -227,7 +227,7 @@ public:
     /**
      * @brief Create Structure from legacy JSON format (pdb_atoms record)
      */
-    static Structure from_json_legacy(const nlohmann::json& j) {
+    [[nodiscard]] static Structure from_json_legacy(const nlohmann::json& j) {
         std::string pdb_id = j.value("pdb_id", "");
         Structure structure(pdb_id);
 
@@ -306,7 +306,7 @@ public:
     /**
      * @brief Convert to modern JSON format
      */
-    nlohmann::json to_json() const {
+    [[nodiscard]] nlohmann::json to_json() const {
         nlohmann::json j;
         j["pdb_id"] = pdb_id_;
         j["chains"] = nlohmann::json::array();
@@ -319,7 +319,7 @@ public:
     /**
      * @brief Create Structure from modern JSON format
      */
-    static Structure from_json(const nlohmann::json& j) {
+    [[nodiscard]] static Structure from_json(const nlohmann::json& j) {
         std::string pdb_id = j.value("pdb_id", "");
         Structure structure(pdb_id);
 

@@ -49,24 +49,24 @@ public:
           origin_(geometry::Vector3D(origin_array[0], origin_array[1], origin_array[2])) {}
 
     // Getters
-    const geometry::Matrix3D& rotation() const {
+    [[nodiscard]] const geometry::Matrix3D& rotation() const {
         return rotation_;
     }
-    const geometry::Vector3D& origin() const {
+    [[nodiscard]] const geometry::Vector3D& origin() const {
         return origin_;
     }
 
     /**
      * @brief Get x-axis (first column of rotation matrix)
      */
-    geometry::Vector3D x_axis() const {
+    [[nodiscard]] geometry::Vector3D x_axis() const {
         return geometry::Vector3D(rotation_.at(0, 0), rotation_.at(1, 0), rotation_.at(2, 0));
     }
 
     /**
      * @brief Get y-axis (second column of rotation matrix)
      */
-    geometry::Vector3D y_axis() const {
+    [[nodiscard]] geometry::Vector3D y_axis() const {
         return geometry::Vector3D(rotation_.at(0, 1), rotation_.at(1, 1), rotation_.at(2, 1));
     }
 
@@ -75,7 +75,7 @@ public:
      *
      * The z-axis is the normal to the base plane in nucleic acids.
      */
-    geometry::Vector3D z_axis() const {
+    [[nodiscard]] geometry::Vector3D z_axis() const {
         return geometry::Vector3D(rotation_.at(0, 2), rotation_.at(1, 2), rotation_.at(2, 2));
     }
 
@@ -88,7 +88,7 @@ public:
      * @param other Another reference frame
      * @return Dot product of z-axes
      */
-    double direction_dot_product(const ReferenceFrame& other) const {
+    [[nodiscard]] double direction_dot_product(const ReferenceFrame& other) const {
         return z_axis().dot(other.z_axis());
     }
 
@@ -97,7 +97,7 @@ public:
      * @param local_point Point in local frame
      * @return Point in global coordinates
      */
-    geometry::Vector3D transform(const geometry::Vector3D& local_point) const {
+    [[nodiscard]] geometry::Vector3D transform(const geometry::Vector3D& local_point) const {
         return rotation_ * local_point + origin_;
     }
 
@@ -106,7 +106,7 @@ public:
      * @param global_point Point in global coordinates
      * @return Point in local frame
      */
-    geometry::Vector3D inverse_transform(const geometry::Vector3D& global_point) const {
+    [[nodiscard]] geometry::Vector3D inverse_transform(const geometry::Vector3D& global_point) const {
         geometry::Vector3D translated = global_point - origin_;
         return rotation_.transpose() * translated;
     }
@@ -114,7 +114,7 @@ public:
     /**
      * @brief Get rotation matrix as 9-element array (row-major)
      */
-    std::array<double, 9> rotation_as_array() const {
+    [[nodiscard]] std::array<double, 9> rotation_as_array() const {
         return {rotation_.at(0, 0), rotation_.at(0, 1), rotation_.at(0, 2), rotation_.at(1, 0), rotation_.at(1, 1),
                 rotation_.at(1, 2), rotation_.at(2, 0), rotation_.at(2, 1), rotation_.at(2, 2)};
     }
@@ -122,7 +122,7 @@ public:
     /**
      * @brief Get origin as 3-element array
      */
-    std::array<double, 3> origin_as_array() const {
+    [[nodiscard]] std::array<double, 3> origin_as_array() const {
         return {origin_.x(), origin_.y(), origin_.z()};
     }
 
@@ -131,7 +131,7 @@ public:
      *
      * Legacy format uses "orien" (3x3 nested array) and "org" (3-element array)
      */
-    nlohmann::json to_json_legacy() const {
+    [[nodiscard]] nlohmann::json to_json_legacy() const {
         nlohmann::json j;
 
         // orien: 3x3 nested array (row-major)
@@ -155,7 +155,7 @@ public:
      * @param j JSON object with "orien" and "org" fields
      * @return ReferenceFrame object
      */
-    static ReferenceFrame from_json_legacy(const nlohmann::json& j) {
+    [[nodiscard]] static ReferenceFrame from_json_legacy(const nlohmann::json& j) {
         // Parse orien (3x3 nested array)
         std::array<double, 9> rotation_array;
         if (j.contains("orien") && j["orien"].is_array() && j["orien"].size() == 3) {
@@ -189,7 +189,7 @@ public:
     /**
      * @brief Convert to modern JSON format
      */
-    nlohmann::json to_json() const {
+    [[nodiscard]] nlohmann::json to_json() const {
         nlohmann::json j;
         j["rotation"] = rotation_.to_json_legacy(); // Use nested array format
         j["origin"] = origin_.to_json();
@@ -199,7 +199,7 @@ public:
     /**
      * @brief Create ReferenceFrame from modern JSON format
      */
-    static ReferenceFrame from_json(const nlohmann::json& j) {
+    [[nodiscard]] static ReferenceFrame from_json(const nlohmann::json& j) {
         geometry::Matrix3D rotation = geometry::Matrix3D::from_json_legacy(j["rotation"]);
         geometry::Vector3D origin = geometry::Vector3D::from_json(j["origin"]);
         return ReferenceFrame(rotation, origin);

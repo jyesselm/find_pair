@@ -49,7 +49,7 @@ struct BasePairStepParameters {
      * @brief Convert parameters to array format
      * @return Array of 6 parameters: [shift, slide, rise, tilt, roll, twist]
      */
-    std::array<double, 6> as_array() const {
+    [[nodiscard]] std::array<double, 6> as_array() const {
         return {shift, slide, rise, tilt, roll, twist};
     }
 
@@ -57,7 +57,7 @@ struct BasePairStepParameters {
      * @brief Create from array format
      * @param arr Array of 6 parameters: [shift, slide, rise, tilt, roll, twist]
      */
-    static BasePairStepParameters from_array(const std::array<double, 6>& arr) {
+    [[nodiscard]] static BasePairStepParameters from_array(const std::array<double, 6>& arr) {
         BasePairStepParameters params;
         params.shift = arr[0];
         params.slide = arr[1];
@@ -71,7 +71,7 @@ struct BasePairStepParameters {
     /**
      * @brief Equality comparison
      */
-    bool operator==(const BasePairStepParameters& other) const {
+    [[nodiscard]] bool operator==(const BasePairStepParameters& other) const {
         return shift == other.shift && slide == other.slide && rise == other.rise && tilt == other.tilt &&
                roll == other.roll && twist == other.twist;
     }
@@ -81,7 +81,7 @@ struct BasePairStepParameters {
      * @param other Other parameters to compare
      * @param tolerance Tolerance for comparison (default: 1e-6)
      */
-    bool approximately_equal(const BasePairStepParameters& other, double tolerance = 1e-6) const {
+    [[nodiscard]] bool approximately_equal(const BasePairStepParameters& other, double tolerance = 1e-6) const {
         return std::abs(shift - other.shift) < tolerance && std::abs(slide - other.slide) < tolerance &&
                std::abs(rise - other.rise) < tolerance && std::abs(tilt - other.tilt) < tolerance &&
                std::abs(roll - other.roll) < tolerance && std::abs(twist - other.twist) < tolerance;
@@ -90,7 +90,7 @@ struct BasePairStepParameters {
     /**
      * @brief Convert to modern JSON format
      */
-    nlohmann::json to_json() const {
+    [[nodiscard]] nlohmann::json to_json() const {
         nlohmann::json j;
         j["shift"] = shift;
         j["slide"] = slide;
@@ -107,7 +107,7 @@ struct BasePairStepParameters {
     /**
      * @brief Create from modern JSON format
      */
-    static BasePairStepParameters from_json(const nlohmann::json& j) {
+    [[nodiscard]] static BasePairStepParameters from_json(const nlohmann::json& j) {
         BasePairStepParameters params;
         params.shift = j.value("shift", 0.0);
         params.slide = j.value("slide", 0.0);
@@ -127,7 +127,7 @@ struct BasePairStepParameters {
      *          "params": {"Shift": ..., "Slide": ..., ...},
      *          "mst_org": [...], "mst_orien": [[...], [...], [...]]}
      */
-    nlohmann::json to_json_legacy(size_t bp_idx1 = 0, size_t bp_idx2 = 0) const {
+    [[nodiscard]] nlohmann::json to_json_legacy(size_t bp_idx1 = 0, size_t bp_idx2 = 0) const {
         nlohmann::json j;
         j["type"] = "bpstep_params";
         j["bp_idx1"] = static_cast<long>(bp_idx1);
@@ -150,7 +150,7 @@ struct BasePairStepParameters {
     /**
      * @brief Create from legacy JSON format (bpstep_params record)
      */
-    static BasePairStepParameters from_json_legacy(const nlohmann::json& j) {
+    [[nodiscard]] static BasePairStepParameters from_json_legacy(const nlohmann::json& j) {
         BasePairStepParameters params;
 
         if (j.contains("params") && j["params"].is_object()) {
@@ -210,7 +210,7 @@ struct HelicalParameters {
      * @return Array of 6 parameters: [x_displacement, y_displacement, rise, inclination, tip,
      * twist]
      */
-    std::array<double, 6> as_array() const {
+    [[nodiscard]] std::array<double, 6> as_array() const {
         return {x_displacement, y_displacement, rise, inclination, tip, twist};
     }
 
@@ -219,7 +219,7 @@ struct HelicalParameters {
      * @param arr Array of 6 parameters: [x_displacement, y_displacement, rise, inclination, tip,
      * twist]
      */
-    static HelicalParameters from_array(const std::array<double, 6>& arr) {
+    [[nodiscard]] static HelicalParameters from_array(const std::array<double, 6>& arr) {
         HelicalParameters params;
         params.x_displacement = arr[0];
         params.y_displacement = arr[1];
@@ -233,7 +233,7 @@ struct HelicalParameters {
     /**
      * @brief Equality comparison
      */
-    bool operator==(const HelicalParameters& other) const {
+    [[nodiscard]] bool operator==(const HelicalParameters& other) const {
         return x_displacement == other.x_displacement && y_displacement == other.y_displacement && rise == other.rise &&
                inclination == other.inclination && tip == other.tip && twist == other.twist;
     }
@@ -243,7 +243,7 @@ struct HelicalParameters {
      * @param other Other parameters to compare
      * @param tolerance Tolerance for comparison (default: 1e-6)
      */
-    bool approximately_equal(const HelicalParameters& other, double tolerance = 1e-6) const {
+    [[nodiscard]] bool approximately_equal(const HelicalParameters& other, double tolerance = 1e-6) const {
         return std::abs(x_displacement - other.x_displacement) < tolerance &&
                std::abs(y_displacement - other.y_displacement) < tolerance && std::abs(rise - other.rise) < tolerance &&
                std::abs(inclination - other.inclination) < tolerance && std::abs(tip - other.tip) < tolerance &&
@@ -253,7 +253,7 @@ struct HelicalParameters {
     /**
      * @brief Convert to modern JSON format
      */
-    nlohmann::json to_json() const {
+    [[nodiscard]] nlohmann::json to_json() const {
         nlohmann::json j;
         j["x_displacement"] = x_displacement;
         j["y_displacement"] = y_displacement;
@@ -270,7 +270,7 @@ struct HelicalParameters {
     /**
      * @brief Create from modern JSON format
      */
-    static HelicalParameters from_json(const nlohmann::json& j) {
+    [[nodiscard]] static HelicalParameters from_json(const nlohmann::json& j) {
         HelicalParameters params;
         params.x_displacement = j.value("x_displacement", 0.0);
         params.y_displacement = j.value("y_displacement", 0.0);
@@ -290,7 +290,7 @@ struct HelicalParameters {
      *          "params": [x_displacement, y_displacement, rise, inclination, tip, twist],
      *          "mst_orgH": [...], "mst_orienH": [[...], [...], [...]]}
      */
-    nlohmann::json to_json_legacy(size_t bp_idx1 = 0, size_t bp_idx2 = 0) const {
+    [[nodiscard]] nlohmann::json to_json_legacy(size_t bp_idx1 = 0, size_t bp_idx2 = 0) const {
         nlohmann::json j;
         j["type"] = "helical_params";
         j["bp_idx1"] = static_cast<long>(bp_idx1);
@@ -308,7 +308,7 @@ struct HelicalParameters {
     /**
      * @brief Create from legacy JSON format (helical_params record)
      */
-    static HelicalParameters from_json_legacy(const nlohmann::json& j) {
+    [[nodiscard]] static HelicalParameters from_json_legacy(const nlohmann::json& j) {
         HelicalParameters params;
 
         if (j.contains("params") && j["params"].is_array() && j["params"].size() >= 6) {

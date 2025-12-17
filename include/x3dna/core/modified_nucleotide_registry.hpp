@@ -32,35 +32,35 @@ public:
      * @param residue_name Three-letter residue name (e.g., "ATP", "SAM")
      * @return NucleotideInfo if found, nullopt otherwise
      */
-    static std::optional<NucleotideInfo> get_info(const std::string& residue_name);
+    [[nodiscard]] static std::optional<NucleotideInfo> get_info(const std::string& residue_name);
 
     /**
      * @brief Get one-letter code for a residue name
      * @param residue_name Three-letter residue name
      * @return One-letter code if found, '?' otherwise
      */
-    static char get_one_letter_code(const std::string& residue_name);
+    [[nodiscard]] static char get_one_letter_code(const std::string& residue_name);
 
     /**
      * @brief Get base type for a modified nucleotide
      * @param residue_name Three-letter residue name
      * @return ResidueType if found, nullopt otherwise
      */
-    static std::optional<ResidueType> get_base_type(const std::string& residue_name);
+    [[nodiscard]] static std::optional<ResidueType> get_base_type(const std::string& residue_name);
 
     /**
      * @brief Check if a residue is a purine derivative
      * @param residue_name Three-letter residue name
      * @return true if purine, false if pyrimidine, nullopt if not found
      */
-    static std::optional<bool> is_purine(const std::string& residue_name);
+    [[nodiscard]] static std::optional<bool> is_purine(const std::string& residue_name);
 
     /**
      * @brief Check if a residue is in the registry
      * @param residue_name Three-letter residue name
      * @return true if residue is known/registered, false otherwise
      */
-    static bool contains(const std::string& residue_name);
+    [[nodiscard]] static bool contains(const std::string& residue_name);
 
 private:
     // The central registry - lazy-loaded on first access via get_registry()
