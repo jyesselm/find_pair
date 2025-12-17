@@ -88,22 +88,13 @@ public:
         return reference_frame_;
     }
 
-    // Setters
-    void set_name(const std::string& name) {
-        name_ = name;
-    }
-    void set_seq_num(int seq_num) {
-        seq_num_ = seq_num;
-    }
-    void set_chain_id(char chain_id) {
-        chain_id_ = chain_id;
-    }
-    void set_insertion(char insertion) {
-        insertion_ = insertion;
-    }
+    // Modification methods (kept for essential post-construction updates)
 
     /**
      * @brief Set reference frame for this residue
+     *
+     * Reference frames are calculated after construction, so this setter
+     * is retained for the frame calculation workflow.
      */
     void set_reference_frame(const ReferenceFrame& frame) {
         reference_frame_ = frame;
@@ -111,6 +102,9 @@ public:
 
     /**
      * @brief Add an atom to this residue
+     *
+     * Atoms are typically added one at a time during PDB parsing,
+     * so this method is retained for the parsing workflow.
      */
     void add_atom(const Atom& atom) {
         atoms_.push_back(atom);
