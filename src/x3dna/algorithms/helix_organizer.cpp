@@ -578,35 +578,45 @@ DirectionCounts HelixOrganizer::check_direction(
         helix.has_break = true;
     }
 
-    // Anti-parallel case: strand1 forward, strand2 reverse
-    if (dir.strand1_forward && !dir.strand1_reverse) {
-        if (!dir.strand2_forward && dir.strand2_reverse) {
-            // Normal anti-parallel
-            if (debug) {
-                std::cerr << "[check_direction] ANTI-PARALLEL: first.s1=" << res_first.strand1
-                          << " last.s2=" << res_last.strand2 << " check=" << (res_first.strand1 > res_last.strand2 ? "YES" : "NO") << std::endl;
-            }
-            if (res_first.strand1 > res_last.strand2) {
-                if (debug) std::cerr << "[check_direction] -> Flipping all swaps and reversing" << std::endl;
-                // Flip all swapped values in helix AND reverse order
-                for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
-                    size_t idx = pair_order[pos];
-                    swapped[idx] = !swapped[idx];
-                }
-                // Reverse helix order
-                std::reverse(pair_order.begin() + helix.start_idx,
-                             pair_order.begin() + helix.end_idx + 1);
-            }
-        } else if (dir.strand2_forward && !dir.strand2_reverse) {
-            // Parallel case
-            helix.is_parallel = true;
-            if (res_first.strand1 > res_first.strand2) {
-                // Flip all swapped values in helix
-                for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
-                    size_t idx = pair_order[pos];
-                    swapped[idx] = !swapped[idx];
-                }
-            }
+    // Check strand1 direction pattern
+    const bool is_strand1_forward_only = dir.strand1_forward && !dir.strand1_reverse;
+    if (!is_strand1_forward_only) {
+        return dir;
+    }
+
+    // Determine helix orientation type
+    const bool is_anti_parallel = !dir.strand2_forward && dir.strand2_reverse;
+    const bool is_parallel = dir.strand2_forward && !dir.strand2_reverse;
+
+    // Helper to flip all swapped values in helix
+    auto flip_helix_swaps = [&]() {
+        for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
+            size_t idx = pair_order[pos];
+            swapped[idx] = !swapped[idx];
+        }
+    };
+
+    if (is_anti_parallel) {
+        const bool needs_flip_and_reverse = res_first.strand1 > res_last.strand2;
+        if (debug) {
+            std::cerr << "[check_direction] ANTI-PARALLEL: first.s1=" << res_first.strand1
+                      << " last.s2=" << res_last.strand2
+                      << " check=" << (needs_flip_and_reverse ? "YES" : "NO") << std::endl;
+        }
+        if (needs_flip_and_reverse) {
+            if (debug) std::cerr << "[check_direction] -> Flipping all swaps and reversing" << std::endl;
+            flip_helix_swaps();
+            std::reverse(pair_order.begin() + helix.start_idx,
+                         pair_order.begin() + helix.end_idx + 1);
+        }
+        return dir;
+    }
+
+    if (is_parallel) {
+        helix.is_parallel = true;
+        const bool needs_flip = res_first.strand1 > res_first.strand2;
+        if (needs_flip) {
+            flip_helix_swaps();
         }
     }
 
