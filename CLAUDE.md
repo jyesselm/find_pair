@@ -96,7 +96,7 @@ python3 scripts/rebuild_json.py regenerate 1EHZ 2BNA                       # Spe
 | 8: H-bond List | 46% (46/100) | Known issue: modern uses stricter H-bond criteria |
 | 9: Base Pair | 100% (100/100) | All pass |
 | 10: Bestpair Selection | 100% (100/100) | All pass |
-| 11-12: Steps | 99% (99/100) | 1 failure: 8RUJ (five2three strand swap algorithmic difference) |
+| 11-12: Steps | 100% (100/100) | All pass |
 
 **Note**: Step ordering (`bp_idx`) now matches legacy 100% when helices match. Fixes implemented:
 - Fixed `helix_break` cutoff: 7.5 → 7.8 (matches legacy `misc_3dna.par` config)
@@ -114,10 +114,6 @@ python3 scripts/rebuild_json.py regenerate 1EHZ 2BNA                       # Spe
 - Fixed `check_others` to compare SPECIFIC frame pairs instead of sum totals (matches legacy lines 1342-1349)
 - **Fixed `has_positive_bpid` to use rotation matrix ROWS not COLUMNS for direction calculation** (legacy uses `&orien[i][0]` which is row 0, not column 0)
 - **Fixed atoms JSON output to include insertion codes** (PDB column 27, e.g., "520A" has insertion='A')
-
-**Remaining 1 failure** (8RUJ) has algorithmic differences in five2three strand swap logic for one "outlier" pair:
-- bp_idx 148 (helix 11, pos 143): legacy=swapped=false, modern=swapped=true
-This is a non-sequential pair (347,348 A-A) inserted in helix 11. The helix ordering matches exactly, but strand assignment differs due to complex cross-strand connectivity. Affects steps 142-143, 143-144 (2 mismatches).
 
 **Tolerance settings**: Step comparison uses 5e-4 tolerance in `step_comparison.py` to account for floating point variations. Verbose reporter uses 1e-4 tolerance for display.
 
