@@ -81,6 +81,16 @@ public:
         return atoms_.size();
     }
 
+    // Container-like interface for atoms
+    [[nodiscard]] auto begin() const { return atoms_.begin(); }
+    [[nodiscard]] auto end() const { return atoms_.end(); }
+    [[nodiscard]] auto begin() { return atoms_.begin(); }
+    [[nodiscard]] auto end() { return atoms_.end(); }
+    [[nodiscard]] size_t size() const { return atoms_.size(); }
+    [[nodiscard]] bool empty() const { return atoms_.empty(); }
+    [[nodiscard]] const Atom& operator[](size_t idx) const { return atoms_[idx]; }
+    [[nodiscard]] Atom& operator[](size_t idx) { return atoms_[idx]; }
+
     /**
      * @brief Get reference frame (if set)
      */

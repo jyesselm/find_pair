@@ -51,6 +51,16 @@ public:
         return chains_.size();
     }
 
+    // Container-like interface for chains
+    [[nodiscard]] auto begin() const { return chains_.begin(); }
+    [[nodiscard]] auto end() const { return chains_.end(); }
+    [[nodiscard]] auto begin() { return chains_.begin(); }
+    [[nodiscard]] auto end() { return chains_.end(); }
+    [[nodiscard]] size_t size() const { return chains_.size(); }
+    [[nodiscard]] bool empty() const { return chains_.empty(); }
+    [[nodiscard]] const Chain& operator[](size_t idx) const { return chains_[idx]; }
+    [[nodiscard]] Chain& operator[](size_t idx) { return chains_[idx]; }
+
     /**
      * @brief Get total number of residues in all chains
      */

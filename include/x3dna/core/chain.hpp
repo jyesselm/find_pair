@@ -44,6 +44,16 @@ public:
         return residues_.size();
     }
 
+    // Container-like interface
+    [[nodiscard]] auto begin() const { return residues_.begin(); }
+    [[nodiscard]] auto end() const { return residues_.end(); }
+    [[nodiscard]] auto begin() { return residues_.begin(); }
+    [[nodiscard]] auto end() { return residues_.end(); }
+    [[nodiscard]] size_t size() const { return residues_.size(); }
+    [[nodiscard]] bool empty() const { return residues_.empty(); }
+    [[nodiscard]] const Residue& operator[](size_t idx) const { return residues_[idx]; }
+    [[nodiscard]] Residue& operator[](size_t idx) { return residues_[idx]; }
+
     /**
      * @brief Get total number of atoms in this chain
      */
