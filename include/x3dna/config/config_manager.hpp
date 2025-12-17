@@ -12,6 +12,35 @@ namespace x3dna {
 namespace config {
 
 /**
+ * @struct DebugConfig
+ * @brief Debug settings for various subsystems
+ *
+ * Centralizes debug configuration instead of scattered getenv() calls.
+ * Each setting can be initialized from environment variables on first use.
+ */
+struct DebugConfig {
+    // Pair validation debugging
+    bool debug_pairs = false;           // Enable pair validation debugging
+    std::string debug_pairs_filter;     // PDB:pair filter (e.g., "1EHZ:1,72")
+
+    // Helix organization debugging
+    bool debug_five2three = false;      // Enable five2three helix debugging
+
+    // General debugging
+    bool verbose = false;               // Enable verbose output
+
+    /**
+     * @brief Initialize debug settings from environment variables
+     *
+     * Reads environment variables and sets corresponding debug flags:
+     * - X3DNA_DEBUG_PAIRS: Enables pair debugging
+     * - DEBUG_MODERN_FIVE2THREE: Enables five2three debugging
+     * - X3DNA_VERBOSE: Enables verbose output
+     */
+    static DebugConfig from_environment();
+};
+
+/**
  * @struct ParameterThresholds
  * @brief Validation and algorithm parameters (matches legacy miscPars)
  */
@@ -106,6 +135,26 @@ public:
         legacy_mode_ = value;
     }
 
+    // Debug configuration
+    const DebugConfig& debug_config() const {
+        return debug_config_;
+    }
+    DebugConfig& debug_config() {
+        return debug_config_;
+    }
+    void set_debug_config(const DebugConfig& config) {
+        debug_config_ = config;
+    }
+
+    /**
+     * @brief Initialize debug settings from environment variables
+     *
+     * Convenience method that calls DebugConfig::from_environment()
+     * and stores the result. Called automatically on first use if not
+     * explicitly initialized.
+     */
+    void init_debug_from_environment();
+
     // Delete copy and move
     ConfigManager(const ConfigManager&) = delete;
     ConfigManager& operator=(const ConfigManager&) = delete;
@@ -117,10 +166,12 @@ private:
     ~ConfigManager() = default;
 
     ParameterThresholds thresholds_;
+    DebugConfig debug_config_;
     std::filesystem::path x3dna_home_;
     bool include_hetatm_ = false;
     bool include_waters_ = false;
-    bool legacy_mode_ = false; // Enable legacy compatibility mode
+    bool legacy_mode_ = false;            // Enable legacy compatibility mode
+    bool debug_initialized_ = false;      // Track if debug config has been initialized
 };
 
 } // namespace config

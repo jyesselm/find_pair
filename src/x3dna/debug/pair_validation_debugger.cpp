@@ -4,6 +4,7 @@
  */
 
 #include <x3dna/debug/pair_validation_debugger.hpp>
+#include <x3dna/config/config_manager.hpp>
 #include <cmath>
 #include <iomanip>
 #include <algorithm>
@@ -209,23 +210,27 @@ PairValidationDebugger& PairValidationDebugger::instance() {
 }
 
 void PairValidationDebugger::parse_env_config() {
-    const char* env = std::getenv("X3DNA_DEBUG_PAIRS");
-    if (!env || std::string(env).empty()) {
+    // Use ConfigManager to get debug settings (which reads from env vars)
+    auto& cfg = config::ConfigManager::instance();
+    cfg.init_debug_from_environment();
+    const auto& debug_cfg = cfg.debug_config();
+
+    if (!debug_cfg.debug_pairs) {
         enabled_ = false;
         return;
     }
 
     enabled_ = true;
-    std::string config(env);
+    std::string config = debug_cfg.debug_pairs_filter;
 
-    // Parse format: "1" or "PDB_ID" or "PDB_ID:i,j" or "PDB_ID:i,j;i2,j2"
-    if (config == "1" || config == "true" || config == "all") {
-        // Debug all pairs
+    // If no filter, debug all pairs
+    if (config.empty()) {
         filter_pdb_.clear();
         filter_pairs_.clear();
         return;
     }
 
+    // Parse format: "PDB_ID" or "PDB_ID:i,j" or "PDB_ID:i,j;i2,j2"
     // Check for colon separator (PDB:pairs format)
     size_t colon_pos = config.find(':');
     if (colon_pos != std::string::npos) {

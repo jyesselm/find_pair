@@ -7,9 +7,9 @@
  */
 
 #include <x3dna/algorithms/helix_organizer.hpp>
+#include <x3dna/config/config_manager.hpp>
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
 #include <iostream>
 #include <limits>
 #include <numeric>
@@ -19,6 +19,25 @@ namespace x3dna::algorithms {
 
 namespace {
     constexpr double PI = 3.14159265358979323846;
+
+    /**
+     * @brief Check if five2three debugging is enabled
+     *
+     * Uses ConfigManager for debug settings, which reads from environment
+     * variables on first access. This centralizes the debug configuration.
+     */
+    bool is_five2three_debug_enabled() {
+        static bool initialized = false;
+        static bool debug_enabled = false;
+        if (!initialized) {
+            // Initialize from ConfigManager (which reads env vars)
+            auto& cfg = config::ConfigManager::instance();
+            cfg.init_debug_from_environment();
+            debug_enabled = cfg.debug_config().debug_five2three;
+            initialized = true;
+        }
+        return debug_enabled;
+    }
 
     // Convert dot product to angle in degrees
     double dot2ang(double d) {
@@ -39,7 +58,7 @@ namespace {
      * The wc_bporien check requires base_pairs[m][3] > 0 && base_pairs[n][3] > 0.
      */
     bool has_positive_bpid(const x3dna::core::BasePair& pair) {
-        static bool debug = std::getenv("DEBUG_MODERN_FIVE2THREE") != nullptr;
+        bool debug = is_five2three_debug_enabled();
 
         // Legacy check: base_pairs[m][3] > 0 requires both:
         // 1. Pair is WC or wobble type (check_wc_wobble_pair only sets bpid for these)
@@ -252,7 +271,7 @@ void HelixOrganizer::first_step(const std::vector<core::BasePair>& pairs,
                                 std::vector<size_t>& pair_order,
                                 const HelixSegment& helix,
                                 std::vector<bool>& swapped) const {
-    static bool debug = std::getenv("DEBUG_MODERN_FIVE2THREE") != nullptr;
+    bool debug = is_five2three_debug_enabled();
 
     // For single-pair helices, nothing to do
     if (helix.end_idx <= helix.start_idx) {
@@ -333,7 +352,7 @@ bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePa
     //
     // The wc_bporien check requires: base_pairs[m][3] > 0 && base_pairs[n][3] > 0
     // So we need to check the geometric condition, not just the bp_type string.
-    static bool debug = std::getenv("DEBUG_MODERN_FIVE2THREE") != nullptr;
+    bool debug = is_five2three_debug_enabled();
 
     if (!has_positive_bpid(pair_m) || !has_positive_bpid(pair_n)) {
         if (debug) {
@@ -509,7 +528,7 @@ DirectionCounts HelixOrganizer::check_direction(
     HelixSegment& helix,
     std::vector<bool>& swapped) const {
 
-    static bool debug = std::getenv("DEBUG_MODERN_FIVE2THREE") != nullptr;
+    bool debug = is_five2three_debug_enabled();
 
     DirectionCounts dir;
 
@@ -797,7 +816,7 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
 std::vector<size_t> HelixOrganizer::find_endpoints(
     const std::vector<PairContext>& context) const {
 
-    static bool debug = std::getenv("DEBUG_MODERN_FIVE2THREE") != nullptr;
+    bool debug = is_five2three_debug_enabled();
 
     std::vector<size_t> endpoints;
 
@@ -834,7 +853,7 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
     const BackboneData& backbone,
     size_t num_pairs) const {
 
-    static bool debug = std::getenv("DEBUG_MODERN_FIVE2THREE") != nullptr;
+    bool debug = is_five2three_debug_enabled();
 
     std::vector<size_t> pair_order;
     std::vector<HelixSegment> helices;
@@ -990,7 +1009,7 @@ void HelixOrganizer::ensure_five_to_three(
     std::vector<HelixSegment>& helices,
     std::vector<bool>& swapped) const {
 
-    static bool debug = std::getenv("DEBUG_MODERN_FIVE2THREE") != nullptr;
+    bool debug = is_five2three_debug_enabled();
 
     swapped.resize(pairs.size(), false);
 

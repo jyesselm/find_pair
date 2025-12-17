@@ -7,6 +7,7 @@
 #include <x3dna/config/resource_locator.hpp>
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
 
 namespace x3dna {
 namespace config {
@@ -115,6 +116,40 @@ std::filesystem::path ConfigManager::standard_base_path() const {
     }
     // Last resort - may not exist
     return std::filesystem::path("data/templates");
+}
+
+void ConfigManager::init_debug_from_environment() {
+    if (!debug_initialized_) {
+        debug_config_ = DebugConfig::from_environment();
+        debug_initialized_ = true;
+    }
+}
+
+DebugConfig DebugConfig::from_environment() {
+    DebugConfig config;
+
+    // X3DNA_DEBUG_PAIRS: "1", "true", "all", or "PDB:i,j" filter
+    if (const char* env = std::getenv("X3DNA_DEBUG_PAIRS")) {
+        std::string value(env);
+        if (!value.empty()) {
+            config.debug_pairs = true;
+            if (value != "1" && value != "true" && value != "all") {
+                config.debug_pairs_filter = value;
+            }
+        }
+    }
+
+    // DEBUG_MODERN_FIVE2THREE: any non-empty value enables
+    if (const char* env = std::getenv("DEBUG_MODERN_FIVE2THREE")) {
+        config.debug_five2three = (env != nullptr && std::string(env).length() > 0);
+    }
+
+    // X3DNA_VERBOSE: any non-empty value enables
+    if (const char* env = std::getenv("X3DNA_VERBOSE")) {
+        config.verbose = (env != nullptr && std::string(env).length() > 0);
+    }
+
+    return config;
 }
 
 } // namespace config

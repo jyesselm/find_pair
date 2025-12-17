@@ -17,7 +17,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <cstdlib>
 #include <nlohmann/json.hpp>
 
 namespace x3dna {
