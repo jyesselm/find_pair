@@ -1299,10 +1299,10 @@
         "description": "Inosine monophosphate (fixed: should be purine)"
       },
       "DI": {
-        "code": "I",
-        "type": "INOSINE",
+        "code": "g",
+        "type": "GUANINE",
         "is_purine": true,
-        "description": "2'-deoxyinosine"
+        "description": "2'-deoxyinosine (treated as modified guanine in legacy X3DNA)"
       },
       "I": {
         "code": "I",

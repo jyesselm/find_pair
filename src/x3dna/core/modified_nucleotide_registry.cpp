@@ -158,7 +158,7 @@ static const std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> F
 
     // ========== INOSINES ==========
     {"I", {'I', ResidueType::INOSINE, true, "Inosine"}},
-    {"DI", {'I', ResidueType::INOSINE, true, "2'-deoxyinosine"}},
+    {"DI", {'g', ResidueType::GUANINE, true, "2'-deoxyinosine (treated as modified guanine)"}},
     {"IMP", {'I', ResidueType::INOSINE, true, "Inosine monophosphate"}},
 
     // ========== MODIFIED CYTOSINES ==========
