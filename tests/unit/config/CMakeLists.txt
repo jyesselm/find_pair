@@ -22,3 +22,17 @@ target_link_libraries(test_resource_locator
 
 gtest_discover_tests(test_resource_locator)
 
+add_executable(test_init_api
+    test_init_api.cpp
+)
+
+target_link_libraries(test_init_api
+    x3dna
+    gtest_main
+)
+
+target_compile_definitions(test_init_api PRIVATE
+    X3DNA_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
+gtest_discover_tests(test_init_api)

@@ -74,27 +74,30 @@ cmake -DCMAKE_PREFIX_PATH=/path/to/install ..
 
 ## Initialization
 
-Before using x3dna functionality, initialize the ResourceLocator in your main():
+Before using x3dna functionality, call `x3dna::init()` in your main():
 
 ```cpp
-#include <x3dna/config/resource_locator.hpp>
+#include <x3dna/x3dna.hpp>
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/protocols/find_pair_protocol.hpp>
 
 int main() {
-    // Option 1: Explicit path (most portable)
-    x3dna::config::ResourceLocator::initialize("/path/to/x3dna/resources");
-
-    // Option 2: Auto-detect from environment or relative paths
+    // Option 1: Auto-detect from environment or relative paths
     // Searches: "resources", "../resources", etc.
     // Falls back to X3DNA_HOMEDIR environment variable
-    x3dna::config::ResourceLocator::initialize_from_environment();
+    if (!x3dna::init()) {
+        std::cerr << "Failed to initialize x3dna\n";
+        return 1;
+    }
+
+    // Option 2: Explicit path (most portable)
+    x3dna::init("/path/to/x3dna/resources");
 
     // Option 3: Use CMake-provided path (when using find_package)
     // In CMake: target_compile_definitions(your_app PRIVATE
     //           X3DNA_RESOURCES="${X3DNA_RESOURCES_DIR}")
     // Then in code:
-    // x3dna::config::ResourceLocator::initialize(X3DNA_RESOURCES);
+    // x3dna::init(X3DNA_RESOURCES);
 
     // Now you can use x3dna
     x3dna::io::PdbParser parser;
@@ -110,7 +113,7 @@ int main() {
 ## Minimal Example
 
 ```cpp
-#include <x3dna/config/resource_locator.hpp>
+#include <x3dna/x3dna.hpp>
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/protocols/find_pair_protocol.hpp>
 #include <x3dna/io/json_writer.hpp>
@@ -123,7 +126,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize resources (auto-detect)
-    if (!x3dna::config::ResourceLocator::initialize_from_environment()) {
+    if (!x3dna::init()) {
         std::cerr << "Could not find x3dna resources\n";
         return 1;
     }
