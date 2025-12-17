@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cctype>
+#include <mutex>
 
 using json = nlohmann::json;
 
@@ -31,55 +32,77 @@ static ResidueType string_to_residue_type(const std::string& type_str) {
     throw std::runtime_error("Unknown residue type: " + type_str);
 }
 
-// Lazy-loaded registry singleton
+// Standard nucleotides - always available, no file loading needed
+static const std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> STANDARD_NUCLEOTIDES = {
+    // RNA nucleotides
+    {"A",   {'A', ResidueType::ADENINE, true, "Adenosine"}},
+    {"ADE", {'A', ResidueType::ADENINE, true, "Adenosine"}},
+    {"C",   {'C', ResidueType::CYTOSINE, false, "Cytidine"}},
+    {"CYT", {'C', ResidueType::CYTOSINE, false, "Cytidine"}},
+    {"G",   {'G', ResidueType::GUANINE, true, "Guanosine"}},
+    {"GUA", {'G', ResidueType::GUANINE, true, "Guanosine"}},
+    {"U",   {'U', ResidueType::URACIL, false, "Uridine"}},
+    {"URA", {'U', ResidueType::URACIL, false, "Uridine"}},
+    // DNA nucleotides
+    {"DA",  {'A', ResidueType::ADENINE, true, "Deoxyadenosine"}},
+    {"DC",  {'C', ResidueType::CYTOSINE, false, "Deoxycytidine"}},
+    {"DG",  {'G', ResidueType::GUANINE, true, "Deoxyguanosine"}},
+    {"DT",  {'T', ResidueType::THYMINE, false, "Deoxythymidine"}},
+    {"T",   {'T', ResidueType::THYMINE, false, "Thymidine"}},
+    {"THY", {'T', ResidueType::THYMINE, false, "Thymidine"}},
+    {"DU",  {'U', ResidueType::URACIL, false, "Deoxyuridine"}},
+    // Special nucleotides
+    {"I",   {'I', ResidueType::INOSINE, true, "Inosine"}},
+    {"INO", {'I', ResidueType::INOSINE, true, "Inosine"}},
+    {"P",   {'P', ResidueType::PSEUDOURIDINE, false, "Pseudouridine"}},
+    {"PSU", {'P', ResidueType::PSEUDOURIDINE, false, "Pseudouridine"}},
+};
+
+// Thread-safe lazy-loaded registry singleton
 static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo>& get_registry() {
     static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> registry;
-    static bool loaded = false;
+    static std::once_flag init_flag;
 
-    if (loaded) {
-        return registry;
-    }
+    std::call_once(init_flag, []() {
+        // Start with standard nucleotides
+        registry = STANDARD_NUCLEOTIDES;
 
-    // Use ResourceLocator for centralized path management
-    std::filesystem::path config_file;
-    try {
-        config_file = config::ResourceLocator::config_file("modified_nucleotides.json");
-    } catch (const std::runtime_error&) {
-        // ResourceLocator not initialized - use fallback
-        std::cerr << "WARNING: ResourceLocator not initialized, cannot load modified_nucleotides.json\n";
-        loaded = true;
-        return registry;
-    }
-
-    std::ifstream file(config_file);
-    if (!file.is_open()) {
-        std::cerr << "WARNING: Could not open " << config_file << ", using empty registry\n";
-        loaded = true;
-        return registry;
-    }
-
-    try {
-        json j = json::parse(file);
-
-        // Load all categories
-        for (const auto& [category, nucleotides] : j["modified_nucleotides"].items()) {
-            for (const auto& [name, info] : nucleotides.items()) {
-                ModifiedNucleotideRegistry::NucleotideInfo nucinfo;
-
-                std::string code_str = info["code"].get<std::string>();
-                nucinfo.one_letter_code = code_str.empty() ? '?' : code_str[0];
-                nucinfo.base_type = string_to_residue_type(info["type"].get<std::string>());
-                nucinfo.is_purine = info["is_purine"].get<bool>();
-                nucinfo.description = info["description"].get<std::string>();
-
-                registry[name] = nucinfo;
-            }
+        // Load modified nucleotides from JSON
+        std::filesystem::path config_file;
+        try {
+            config_file = config::ResourceLocator::config_file("modified_nucleotides.json");
+        } catch (const std::runtime_error&) {
+            // ResourceLocator not initialized - use only standard nucleotides
+            return;
         }
-    } catch (const std::exception& e) {
-        std::cerr << "ERROR loading modified_nucleotides.json: " << e.what() << "\n";
-    }
 
-    loaded = true;
+        std::ifstream file(config_file);
+        if (!file.is_open()) {
+            return;
+        }
+
+        try {
+            json j = json::parse(file);
+
+            // Load all categories
+            for (const auto& [category, nucleotides] : j["modified_nucleotides"].items()) {
+                for (const auto& [name, info] : nucleotides.items()) {
+                    ModifiedNucleotideRegistry::NucleotideInfo nucinfo;
+
+                    std::string code_str = info["code"].get<std::string>();
+                    nucinfo.one_letter_code = code_str.empty() ? '?' : code_str[0];
+                    nucinfo.base_type = string_to_residue_type(info["type"].get<std::string>());
+                    nucinfo.is_purine = info["is_purine"].get<bool>();
+                    nucinfo.description = info["description"].get<std::string>();
+
+                    registry[name] = nucinfo;
+                }
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "ERROR loading modified_nucleotides.json: " << e.what() << "\n";
+        }
+    });
+
     return registry;
 }
 

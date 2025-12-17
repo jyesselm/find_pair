@@ -33,70 +33,20 @@ Residue ResidueFactory::create(const std::string& name, int sequence_number, cha
 }
 
 char ResidueFactory::determine_one_letter_code(const std::string& name) {
-    std::string trimmed = trim(name);
-
-    // Standard nucleotides - uppercase
-    if (trimmed == "A" || trimmed == "ADE" || trimmed == "DA")
-        return 'A';
-    if (trimmed == "C" || trimmed == "CYT" || trimmed == "DC")
-        return 'C';
-    if (trimmed == "G" || trimmed == "GUA" || trimmed == "DG")
-        return 'G';
-    if (trimmed == "T" || trimmed == "THY" || trimmed == "DT")
-        return 'T';
-    if (trimmed == "U" || trimmed == "URA" || trimmed == "DU")
-        return 'U';
-    if (trimmed == "I" || trimmed == "INO")
-        return 'I';
-    if (trimmed == "P" || trimmed == "PSU")
-        return 'P';
-
-    // Check modified nucleotide registry
-    char code = ModifiedNucleotideRegistry::get_one_letter_code(trimmed);
-    if (code != '?') {
-        return code;
-    }
-
-    return '?';
+    // Delegate to the centralized registry (handles both standard and modified nucleotides)
+    return ModifiedNucleotideRegistry::get_one_letter_code(trim(name));
 }
 
-ResidueType ResidueFactory::determine_type(const std::string& name, char one_letter_code) {
-    // Standard nucleotides
-    if (one_letter_code == 'A')
-        return ResidueType::ADENINE;
-    if (one_letter_code == 'C')
-        return ResidueType::CYTOSINE;
-    if (one_letter_code == 'G')
-        return ResidueType::GUANINE;
-    if (one_letter_code == 'T')
-        return ResidueType::THYMINE;
-    if (one_letter_code == 'U')
-        return ResidueType::URACIL;
-    if (one_letter_code == 'I')
-        return ResidueType::INOSINE;
-    if (one_letter_code == 'P')
-        return ResidueType::PSEUDOURIDINE;
+ResidueType ResidueFactory::determine_type(const std::string& name, char /* one_letter_code */) {
+    std::string trimmed = trim(name);
 
-    // Modified nucleotides (lowercase) - map to parent type
-    if (one_letter_code == 'a')
-        return ResidueType::ADENINE;
-    if (one_letter_code == 'c')
-        return ResidueType::CYTOSINE;
-    if (one_letter_code == 'g')
-        return ResidueType::GUANINE;
-    if (one_letter_code == 't')
-        return ResidueType::THYMINE;
-    if (one_letter_code == 'u')
-        return ResidueType::URACIL;
-
-    // Check registry for additional info
-    auto type_opt = ModifiedNucleotideRegistry::get_base_type(trim(name));
+    // Check registry first (handles both standard and modified nucleotides)
+    auto type_opt = ModifiedNucleotideRegistry::get_base_type(trimmed);
     if (type_opt.has_value()) {
         return type_opt.value();
     }
 
     // Check for water
-    std::string trimmed = trim(name);
     if (trimmed == "HOH" || trimmed == "WAT") {
         return ResidueType::WATER;
     }
@@ -113,13 +63,13 @@ ResidueType ResidueFactory::determine_type(const std::string& name, char one_let
 }
 
 bool ResidueFactory::determine_is_purine(const std::string& name, ResidueType type) {
-    // Check registry first
+    // Check registry first (handles both standard and modified nucleotides)
     auto is_purine_opt = ModifiedNucleotideRegistry::is_purine(trim(name));
     if (is_purine_opt.has_value()) {
         return is_purine_opt.value();
     }
 
-    // Fallback to type-based determination
+    // Fallback to type-based determination for unknown residues
     return (type == ResidueType::ADENINE || type == ResidueType::GUANINE || type == ResidueType::INOSINE);
 }
 
