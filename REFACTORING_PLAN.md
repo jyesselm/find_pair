@@ -24,6 +24,7 @@
 - **Strong Encapsulation** - data is PRIVATE by default
 - Extract complex conditionals into named booleans or functions
 - Reduce getters/setters but keep data private (use builder patterns, factory methods)
+- **Avoid `std::optional` for required members** - If data is always expected to exist after construction, don't make it optional. Optional types should only be used for truly optional data.
 
 ---
 
@@ -336,11 +337,18 @@ private:
 - `hydrogen_bond` struct embedded
 - Frame logic mixed in (`get_step_frame()`)
 - Dual JSON formats duplicated
+- **Frames are `std::optional` but always required** - Code calls `.value()` assuming frames exist, but API suggests they're optional. This is confusing and error-prone.
 
 **Extract to new files**:
 1. `core/hydrogen_bond.hpp` - Immutable H-bond class
 2. `core/base_pair.hpp` - Core class with Builder
 3. `io/base_pair_serializer.hpp` - JSON serialization (both formats)
+
+**Key change: Make frames REQUIRED**:
+- Current: `std::optional<ReferenceFrame> frame1_, frame2_`
+- Problem: Every call site does `frame1_.value()` or `if (frame1_.has_value())` followed by `.value()`
+- Precondition (base_pair_finder.hpp:59): "residues must have frames calculated"
+- Solution: Pass frames to constructor, store as `ReferenceFrame` not `std::optional<ReferenceFrame>`
 
 ```cpp
 // core/hydrogen_bond.hpp
@@ -364,27 +372,36 @@ private:
 // core/base_pair.hpp
 class BasePair {
 public:
-    class Builder;
+    // Constructor requires frames - they're not optional!
+    BasePair(size_t idx1, size_t idx2,
+             const ReferenceFrame& frame1, const ReferenceFrame& frame2,
+             BasePairType type = BasePairType::UNKNOWN);
 
     // Core identity (immutable)
     [[nodiscard]] size_t residue_idx1() const;
     [[nodiscard]] size_t residue_idx2() const;
     [[nodiscard]] BasePairType type() const;
 
-    // Validation metrics (read-only)
+    // Frames - REQUIRED, not optional
+    [[nodiscard]] const ReferenceFrame& frame1() const { return frame1_; }
+    [[nodiscard]] const ReferenceFrame& frame2() const { return frame2_; }
+
+    // Validation metrics (computed from frames)
     [[nodiscard]] double origin_distance() const;
     [[nodiscard]] double plane_angle() const;
-    [[nodiscard]] double d_v() const;
-    [[nodiscard]] const std::vector<HydrogenBond>& hydrogen_bonds() const;
+    [[nodiscard]] double direction_dot_product() const;
 
-    // Frames (set after construction by calculator)
-    [[nodiscard]] std::optional<ReferenceFrame> frame1() const;
-    [[nodiscard]] std::optional<ReferenceFrame> frame2() const;
-    void set_frames(ReferenceFrame f1, ReferenceFrame f2);
+    // H-bonds (can be set after construction)
+    [[nodiscard]] const std::vector<HydrogenBond>& hydrogen_bonds() const;
+    void set_hydrogen_bonds(std::vector<HydrogenBond> hbonds);
 
 private:
-    friend class Builder;
-    // ... private data
+    size_t residue_idx1_;
+    size_t residue_idx2_;
+    ReferenceFrame frame1_;  // NOT optional - always required
+    ReferenceFrame frame2_;  // NOT optional - always required
+    BasePairType type_;
+    std::vector<HydrogenBond> hbonds_;
 };
 ```
 
