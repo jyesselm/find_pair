@@ -159,7 +159,11 @@ public:
         return use_larger_index_frame ? frame2_ : frame1_;
     }
 
-    // Setters
+    // Modification methods
+    // BasePair is constructed incrementally during pair finding workflow.
+    // Data comes from multiple sources (validation, frame calculation, H-bond detection)
+    // so setters are required for the incremental construction pattern.
+
     void set_residue_idx1(size_t idx) {
         residue_idx1_ = idx;
     }
@@ -176,39 +180,18 @@ public:
     void set_basepair_idx(size_t idx) {
         basepair_idx_ = idx;
     }
-
-    /**
-     * @brief Set finding order swapped flag
-     * @param swapped True if pair was found in (j,i) order but stored as (i,j) where i < j
-     */
     void set_finding_order_swapped(bool swapped) {
         finding_order_swapped_ = swapped;
     }
-
-    /**
-     * @brief Set reference frame for first residue
-     */
     void set_frame1(const ReferenceFrame& frame) {
         frame1_ = frame;
     }
-
-    /**
-     * @brief Set reference frame for second residue
-     */
     void set_frame2(const ReferenceFrame& frame) {
         frame2_ = frame;
     }
-
-    /**
-     * @brief Add a hydrogen bond
-     */
     void add_hydrogen_bond(const hydrogen_bond& hbond) {
         hbonds_.push_back(hbond);
     }
-
-    /**
-     * @brief Set all hydrogen bonds at once
-     */
     void set_hydrogen_bonds(const std::vector<hydrogen_bond>& hbonds) {
         hbonds_ = hbonds;
     }
