@@ -659,10 +659,12 @@ void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs,
         }
     } else {
         // Mixed direction case - more complex handling
-        bool anti_p = (direction.strand1_forward > direction.strand1_reverse) &&
-                     (direction.strand2_forward < direction.strand2_reverse);
-        bool parallel = (direction.strand1_forward > direction.strand1_reverse) &&
-                       (direction.strand2_forward > direction.strand2_reverse);
+        const bool anti_p =
+            (direction.strand1_forward > direction.strand1_reverse) &&
+            (direction.strand2_forward < direction.strand2_reverse);
+        const bool parallel =
+            (direction.strand1_forward > direction.strand1_reverse) &&
+            (direction.strand2_forward > direction.strand2_reverse);
 
         helix.is_parallel = parallel;
 
@@ -676,25 +678,44 @@ void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs,
             auto res_m = get_strand_residues(pair_m, swapped[idx_m]);
             auto res_n = get_strand_residues(pair_n, swapped[idx_n]);
 
-            auto link_strand2 = check_linkage(res_m.strand2, res_n.strand2, backbone);
-            if (check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
-                ((anti_p && link_strand2 == LinkDirection::Forward) ||
-                 (parallel && link_strand2 == LinkDirection::Reverse))) {
+            // Check for strand2 linkage requiring swap
+            const auto link_strand1 = check_linkage(res_m.strand1, res_n.strand1, backbone);
+            const auto link_strand2 = check_linkage(res_m.strand2, res_n.strand2, backbone);
+
+            const bool no_strand1_link = (link_strand1 == LinkDirection::None);
+            const bool needs_strand2_swap =
+                (anti_p && link_strand2 == LinkDirection::Forward) ||
+                (parallel && link_strand2 == LinkDirection::Reverse);
+
+            if (no_strand1_link && needs_strand2_swap) {
                 swapped[idx_n] = !swapped[idx_n];
             }
 
             // Re-get residues after potential swap
             res_n = get_strand_residues(pair_n, swapped[idx_n]);
 
-            if (check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
-                check_linkage(res_m.strand2, res_n.strand2, backbone) == LinkDirection::None) {
-                if ((anti_p && check_linkage(res_m.strand2, res_n.strand1, backbone) == LinkDirection::Forward) ||
-                    (parallel && check_linkage(res_m.strand1, res_n.strand2, backbone) == LinkDirection::Reverse)) {
-                    swapped[idx_m] = !swapped[idx_m];
-                } else if ((anti_p && check_linkage(res_m.strand1, res_n.strand2, backbone) == LinkDirection::Forward) ||
-                           (parallel && check_linkage(res_m.strand2, res_n.strand1, backbone) == LinkDirection::Reverse)) {
-                    swapped[idx_n] = !swapped[idx_n];
-                }
+            // Check for cross-strand swaps
+            const bool no_same_strand_links =
+                check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
+                check_linkage(res_m.strand2, res_n.strand2, backbone) == LinkDirection::None;
+
+            if (!no_same_strand_links) {
+                continue;
+            }
+
+            // Determine which pair needs swapping based on cross-strand linkage
+            const bool should_swap_m =
+                (anti_p && check_linkage(res_m.strand2, res_n.strand1, backbone) == LinkDirection::Forward) ||
+                (parallel && check_linkage(res_m.strand1, res_n.strand2, backbone) == LinkDirection::Reverse);
+
+            const bool should_swap_n =
+                (anti_p && check_linkage(res_m.strand1, res_n.strand2, backbone) == LinkDirection::Forward) ||
+                (parallel && check_linkage(res_m.strand2, res_n.strand1, backbone) == LinkDirection::Reverse);
+
+            if (should_swap_m) {
+                swapped[idx_m] = !swapped[idx_m];
+            } else if (should_swap_n) {
+                swapped[idx_n] = !swapped[idx_n];
             }
         }
     }
