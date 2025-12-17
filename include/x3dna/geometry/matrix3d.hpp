@@ -45,7 +45,7 @@ public:
     /**
      * @brief Get element at row i, column j (0-indexed)
      */
-    double at(size_t i, size_t j) const {
+    [[nodiscard]] double at(size_t i, size_t j) const {
         if (i >= 3 || j >= 3) {
             throw std::out_of_range("Matrix index out of range");
         }
@@ -65,7 +65,7 @@ public:
     /**
      * @brief Get row i (0-indexed)
      */
-    Vector3D row(size_t i) const {
+    [[nodiscard]] Vector3D row(size_t i) const {
         if (i >= 3) {
             throw std::out_of_range("Row index out of range");
         }
@@ -75,7 +75,7 @@ public:
     /**
      * @brief Get column j (0-indexed)
      */
-    Vector3D column(size_t j) const {
+    [[nodiscard]] Vector3D column(size_t j) const {
         if (j >= 3) {
             throw std::out_of_range("Column index out of range");
         }
@@ -109,7 +109,7 @@ public:
     /**
      * @brief Matrix-vector multiplication
      */
-    Vector3D operator*(const Vector3D& vec) const {
+    [[nodiscard]] Vector3D operator*(const Vector3D& vec) const {
         return Vector3D(data_[0] * vec.x() + data_[1] * vec.y() + data_[2] * vec.z(),
                         data_[3] * vec.x() + data_[4] * vec.y() + data_[5] * vec.z(),
                         data_[6] * vec.x() + data_[7] * vec.y() + data_[8] * vec.z());
@@ -118,7 +118,7 @@ public:
     /**
      * @brief Matrix-matrix multiplication
      */
-    Matrix3D operator*(const Matrix3D& other) const {
+    [[nodiscard]] Matrix3D operator*(const Matrix3D& other) const {
         Matrix3D result;
         for (size_t i = 0; i < 3; ++i) {
             for (size_t j = 0; j < 3; ++j) {
@@ -135,7 +135,7 @@ public:
     /**
      * @brief Matrix addition
      */
-    Matrix3D operator+(const Matrix3D& other) const {
+    [[nodiscard]] Matrix3D operator+(const Matrix3D& other) const {
         Matrix3D result;
         for (size_t i = 0; i < 9; ++i) {
             result.data_[i] = data_[i] + other.data_[i];
@@ -146,7 +146,7 @@ public:
     /**
      * @brief Matrix subtraction
      */
-    Matrix3D operator-(const Matrix3D& other) const {
+    [[nodiscard]] Matrix3D operator-(const Matrix3D& other) const {
         Matrix3D result;
         for (size_t i = 0; i < 9; ++i) {
             result.data_[i] = data_[i] - other.data_[i];
@@ -157,7 +157,7 @@ public:
     /**
      * @brief Scalar multiplication
      */
-    Matrix3D operator*(double scalar) const {
+    [[nodiscard]] Matrix3D operator*(double scalar) const {
         Matrix3D result;
         for (size_t i = 0; i < 9; ++i) {
             result.data_[i] = data_[i] * scalar;
@@ -168,14 +168,14 @@ public:
     /**
      * @brief Scalar division
      */
-    Matrix3D operator/(double scalar) const {
+    [[nodiscard]] Matrix3D operator/(double scalar) const {
         return *this * (1.0 / scalar);
     }
 
     /**
      * @brief Transpose matrix
      */
-    Matrix3D transpose() const {
+    [[nodiscard]] Matrix3D transpose() const {
         Matrix3D result;
         for (size_t i = 0; i < 3; ++i) {
             for (size_t j = 0; j < 3; ++j) {
@@ -188,7 +188,7 @@ public:
     /**
      * @brief Calculate determinant
      */
-    double determinant() const {
+    [[nodiscard]] double determinant() const {
         return data_[0] * (data_[4] * data_[8] - data_[5] * data_[7]) -
                data_[1] * (data_[3] * data_[8] - data_[5] * data_[6]) +
                data_[2] * (data_[3] * data_[7] - data_[4] * data_[6]);
@@ -198,7 +198,7 @@ public:
      * @brief Calculate inverse matrix
      * @throws std::runtime_error if matrix is singular (determinant == 0)
      */
-    Matrix3D inverse() const {
+    [[nodiscard]] Matrix3D inverse() const {
         double det = determinant();
         if (std::abs(det) < 1e-9) {
             throw std::runtime_error("Matrix is singular (determinant is zero)");
@@ -224,7 +224,7 @@ public:
     /**
      * @brief Check if matrix is approximately equal to another
      */
-    bool approximately_equals(const Matrix3D& other, double tolerance = 1e-6) const {
+    [[nodiscard]] bool approximately_equals(const Matrix3D& other, double tolerance = 1e-6) const {
         for (size_t i = 0; i < 9; ++i) {
             if (std::abs(data_[i] - other.data_[i]) >= tolerance) {
                 return false;
@@ -236,14 +236,14 @@ public:
     /**
      * @brief Convert to array (row-major order)
      */
-    std::array<double, 9> as_array() const {
+    [[nodiscard]] std::array<double, 9> as_array() const {
         return data_;
     }
 
     /**
      * @brief Convert to JSON array (row-major: [r11, r12, r13, r21, r22, r23, r31, r32, r33])
      */
-    nlohmann::json to_json() const {
+    [[nodiscard]] nlohmann::json to_json() const {
         nlohmann::json result = nlohmann::json::array();
         for (double val : data_) {
             result.push_back(val);
@@ -255,7 +255,7 @@ public:
      * @brief Convert to legacy JSON format (3x3 nested array: [[r11, r12, r13], [r21, r22, r23],
      * [r31, r32, r33]])
      */
-    nlohmann::json to_json_legacy() const {
+    [[nodiscard]] nlohmann::json to_json_legacy() const {
         nlohmann::json result = nlohmann::json::array();
         for (size_t i = 0; i < 3; ++i) {
             nlohmann::json row = nlohmann::json::array();
@@ -270,7 +270,7 @@ public:
     /**
      * @brief Create from JSON array (row-major)
      */
-    static Matrix3D from_json(const nlohmann::json& json) {
+    [[nodiscard]] static Matrix3D from_json(const nlohmann::json& json) {
         if (!json.is_array() || json.size() != 9) {
             throw std::invalid_argument("JSON must be array of 9 numbers");
         }
@@ -284,7 +284,7 @@ public:
     /**
      * @brief Create from legacy JSON format (3x3 nested array)
      */
-    static Matrix3D from_json_legacy(const nlohmann::json& json) {
+    [[nodiscard]] static Matrix3D from_json_legacy(const nlohmann::json& json) {
         if (!json.is_array() || json.size() != 3) {
             throw std::invalid_argument("JSON must be array of 3 arrays");
         }
@@ -303,14 +303,14 @@ public:
     /**
      * @brief Create identity matrix
      */
-    static Matrix3D identity() {
+    [[nodiscard]] static Matrix3D identity() {
         return Matrix3D();
     }
 
     /**
      * @brief Create rotation matrix around X axis (in radians)
      */
-    static Matrix3D rotation_x(double angle) {
+    [[nodiscard]] static Matrix3D rotation_x(double angle) {
         double c = std::cos(angle);
         double s = std::sin(angle);
         return Matrix3D(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
@@ -319,7 +319,7 @@ public:
     /**
      * @brief Create rotation matrix around Y axis (in radians)
      */
-    static Matrix3D rotation_y(double angle) {
+    [[nodiscard]] static Matrix3D rotation_y(double angle) {
         double c = std::cos(angle);
         double s = std::sin(angle);
         return Matrix3D(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
@@ -328,7 +328,7 @@ public:
     /**
      * @brief Create rotation matrix around Z axis (in radians)
      */
-    static Matrix3D rotation_z(double angle) {
+    [[nodiscard]] static Matrix3D rotation_z(double angle) {
         double c = std::cos(angle);
         double s = std::sin(angle);
         return Matrix3D(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);

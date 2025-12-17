@@ -47,7 +47,7 @@ TEST_F(Matrix3DTest, AtAndSet) {
     m.set(1, 2, 5.0);
     EXPECT_DOUBLE_EQ(m.at(1, 2), 5.0);
 
-    EXPECT_THROW(m.at(3, 0), std::out_of_range);
+    EXPECT_THROW((void)m.at(3, 0), std::out_of_range);
     EXPECT_THROW(m.set(0, 3, 1.0), std::out_of_range);
 }
 
@@ -174,7 +174,7 @@ TEST_F(Matrix3DTest, Inverse) {
 TEST_F(Matrix3DTest, InverseSingularMatrix) {
     // Matrix with zero determinant
     Matrix3D singular(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0);
-    EXPECT_THROW(singular.inverse(), std::runtime_error);
+    EXPECT_THROW((void)singular.inverse(), std::runtime_error);
 }
 
 // Rotation matrices
