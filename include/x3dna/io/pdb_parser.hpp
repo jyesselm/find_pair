@@ -14,11 +14,11 @@
 #include <memory>
 #include <stdexcept>
 #include <map>
-#include <tuple>
 #include <vector>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/geometry/vector3d.hpp>
+#include <x3dna/io/residue_key.hpp>
 
 // Forward declare GEMMI types to avoid header inclusion
 namespace gemmi {
@@ -212,19 +212,7 @@ private:
      */
     core::Structure build_structure_from_residues(
         const std::string& pdb_id,
-        const std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms) const;
-
-    // Deprecated legacy methods - kept for API compatibility
-    core::Atom parse_atom_line(const std::string& line, size_t line_number);
-    core::Atom parse_hetatm_line(const std::string& line, size_t line_number);
-    std::string parse_atom_name(const std::string& line);
-    std::string parse_residue_name(const std::string& line);
-    char parse_chain_id(const std::string& line);
-    char parse_alt_loc(const std::string& line);
-    char parse_insertion(const std::string& line);
-    double parse_occupancy(const std::string& line);
-    int parse_residue_seq(const std::string& line);
-    geometry::Vector3D parse_coordinates(const std::string& line);
+        const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const;
 };
 
 } // namespace io

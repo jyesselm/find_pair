@@ -13,11 +13,11 @@
 #include <string>
 #include <stdexcept>
 #include <map>
-#include <tuple>
 #include <vector>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/geometry/vector3d.hpp>
+#include <x3dna/io/residue_key.hpp>
 
 // Forward declare GEMMI types to avoid header inclusion
 namespace gemmi {
@@ -211,7 +211,7 @@ private:
      */
     core::Structure build_structure_from_residues(
         const std::string& pdb_id,
-        const std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms) const;
+        const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const;
 };
 
 } // namespace io

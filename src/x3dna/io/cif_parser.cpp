@@ -82,12 +82,11 @@ core::Structure CifParser::parse_string(const std::string& content) {
 // Convert GEMMI Structure to our Structure
 core::Structure CifParser::convert_gemmi_structure(const gemmi::Structure& gemmi_struct,
                                                     const std::string& pdb_id) {
-    // Key: (residue_name, chain_id, residue_seq, insertion_code)
-    std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>> residue_atoms;
+    std::map<ResidueKey, std::vector<core::Atom>> residue_atoms;
 
     // Legacy indices: assign sequentially as atoms are encountered (1-based)
     int legacy_atom_idx = 1;
-    std::map<std::tuple<std::string, char, int, char>, int> legacy_residue_idx_map;
+    std::map<ResidueKey, int> legacy_residue_idx_map;
     int legacy_residue_idx = 1;
 
     // Process only the first model (consistent with legacy behavior)
@@ -171,14 +170,14 @@ core::Structure CifParser::convert_gemmi_structure(const gemmi::Structure& gemmi
                 atom.set_legacy_atom_idx(legacy_atom_idx++);
 
                 // Assign legacy residue index
-                auto residue_key = std::make_tuple(residue_name, chain_id, residue_seq, insertion);
-                if (legacy_residue_idx_map.find(residue_key) == legacy_residue_idx_map.end()) {
-                    legacy_residue_idx_map[residue_key] = legacy_residue_idx++;
+                ResidueKey key{residue_name, chain_id, residue_seq, insertion};
+                if (legacy_residue_idx_map.find(key) == legacy_residue_idx_map.end()) {
+                    legacy_residue_idx_map[key] = legacy_residue_idx++;
                 }
-                atom.set_legacy_residue_idx(legacy_residue_idx_map[residue_key]);
+                atom.set_legacy_residue_idx(legacy_residue_idx_map[key]);
 
                 // Add to residue group
-                residue_atoms[residue_key].push_back(atom);
+                residue_atoms[key].push_back(atom);
             }
         }
     }
@@ -329,7 +328,7 @@ std::string CifParser::normalize_residue_name(const std::string& name) const {
 
 core::Structure CifParser::build_structure_from_residues(
     const std::string& pdb_id,
-    const std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms) const {
+    const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const {
 
     core::Structure structure(pdb_id);
     std::map<char, core::Chain> chains;
@@ -339,12 +338,10 @@ core::Structure CifParser::build_structure_from_residues(
             continue;
         }
 
-        auto [residue_name, chain_id, residue_seq, insertion_code] = key;
-
         core::Residue residue = core::Residue::create_from_atoms(
-            residue_name, residue_seq, chain_id, insertion_code, atoms);
+            key.residue_name, key.residue_seq, key.chain_id, key.insertion_code, atoms);
 
-        auto [it, inserted] = chains.try_emplace(chain_id, chain_id);
+        auto [it, inserted] = chains.try_emplace(key.chain_id, key.chain_id);
         it->second.add_residue(residue);
     }
 
