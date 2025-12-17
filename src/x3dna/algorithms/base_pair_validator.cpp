@@ -280,106 +280,13 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
                                                  const Vector3D& zave) const {
     // Match legacy get_oarea() logic (org/src/ana_fncs.c lines 3327-3358)
     // Steps:
-    // 1. Get ring atoms for both residues
-    // 2. Translate coordinates relative to oave
-    // 3. Align to z-axis (project to plane perpendicular to zave)
-    // 4. Calculate polygon intersection area
+    // 1. Get ring atoms for both residues (with exocyclic atoms)
+    // 2. Align to z-axis (project to plane perpendicular to zave)
+    // 3. Calculate polygon intersection area
 
-    // Step 1: Get ring atoms and exocyclic atoms (only_ring = 0 means include exocyclic atoms)
-    // Legacy: ratom_xyz(ring_atom[r1], only_ring=0, xyz, oave, oxyz1)
-    // When only_ring=0, legacy uses ring_atom[10+i] = exocyclic atoms (one per ring atom)
-    // get_cntatom() finds ONE exocyclic atom per ring atom (or ring atom itself if none found)
-    // We need to match this exactly: exactly n atoms (one per ring atom)
-
-    std::vector<Vector3D> ring_coords1, ring_coords2;
-
-    // RA_LIST: " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "
-    // For pyrimidines: 6 atoms (C4, N3, C2, N1, C6, C5)
-    // For purines: 9 atoms (C4, N3, C2, N1, C6, C5, N7, C8, N9)
-    static const std::vector<std::string> RING_ATOMS_ALL = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
-                                                            " C5 ", " N7 ", " C8 ", " N9 "};
-
-    // Find ring atoms and their exocyclic atoms for res1
-    std::vector<const Atom*> ring_atoms1;
-    for (const auto& ring_name : RING_ATOMS_ALL) {
-        for (const auto& atom : res1.atoms()) {
-            if (atom.name() == ring_name) {
-                ring_atoms1.push_back(&atom);
-                break;
-            }
-        }
-    }
-
-    // For each ring atom, find ONE exocyclic atom (connected atom that's not a ring atom)
-    std::set<std::string> ring_atom_names1;
-    for (const auto* ring_atom : ring_atoms1) {
-        ring_atom_names1.insert(ring_atom->name());
-    }
-
-    for (const auto* ring_atom : ring_atoms1) {
-        const Atom* exocyclic_atom = nullptr;
-        double min_dist = validation_constants::BOND_DISTANCE;
-
-        // Find closest connected atom that's not a ring atom
-        // Legacy: skips hydrogen atoms (idx[ic] == 3 in get_cntatom)
-        for (const auto& atom : res1.atoms()) {
-            if (ring_atom_names1.find(atom.name()) != ring_atom_names1.end()) {
-                continue; // Skip ring atoms
-            }
-            // Skip hydrogen atoms (matches legacy get_cntatom which skips idx==3)
-            if (atom.name().size() >= 2 && atom.name()[1] == 'H') {
-                continue;
-            }
-            double dist = (atom.position() - ring_atom->position()).length();
-            if (dist < min_dist && dist > validation_constants::MIN_ATOM_DISTANCE) {
-                min_dist = dist;
-                exocyclic_atom = &atom;
-            }
-        }
-
-        // Use exocyclic atom if found, otherwise use ring atom itself (matches legacy)
-        const Atom* atom_to_use = (exocyclic_atom != nullptr) ? exocyclic_atom : ring_atom;
-        ring_coords1.push_back(atom_to_use->position() - oave);
-    }
-
-    // Same for res2
-    std::vector<const Atom*> ring_atoms2;
-    for (const auto& ring_name : RING_ATOMS_ALL) {
-        for (const auto& atom : res2.atoms()) {
-            if (atom.name() == ring_name) {
-                ring_atoms2.push_back(&atom);
-                break;
-            }
-        }
-    }
-
-    std::set<std::string> ring_atom_names2;
-    for (const auto* ring_atom : ring_atoms2) {
-        ring_atom_names2.insert(ring_atom->name());
-    }
-
-    for (const auto* ring_atom : ring_atoms2) {
-        const Atom* exocyclic_atom = nullptr;
-        double min_dist = validation_constants::BOND_DISTANCE;
-
-        for (const auto& atom : res2.atoms()) {
-            if (ring_atom_names2.find(atom.name()) != ring_atom_names2.end()) {
-                continue;
-            }
-            // Skip hydrogen atoms (matches legacy get_cntatom which skips idx==3)
-            if (atom.name().size() >= 2 && atom.name()[1] == 'H') {
-                continue;
-            }
-            double dist = (atom.position() - ring_atom->position()).length();
-            if (dist < min_dist && dist > validation_constants::MIN_ATOM_DISTANCE) {
-                min_dist = dist;
-                exocyclic_atom = &atom;
-            }
-        }
-
-        const Atom* atom_to_use = (exocyclic_atom != nullptr) ? exocyclic_atom : ring_atom;
-        ring_coords2.push_back(atom_to_use->position() - oave);
-    }
+    // Step 1: Get ring coordinates with exocyclic atoms for both residues
+    std::vector<Vector3D> ring_coords1 = get_ring_coordinates_with_exocyclic(res1, oave);
+    std::vector<Vector3D> ring_coords2 = get_ring_coordinates_with_exocyclic(res2, oave);
 
     // Need at least 3 points to form a polygon
     if (ring_coords1.size() < 3 || ring_coords2.size() < 3) {
@@ -882,6 +789,60 @@ bool BasePairValidator::is_base_atom(const std::string& atom_name) {
     }
 
     return false;
+}
+
+std::vector<Vector3D> BasePairValidator::get_ring_coordinates_with_exocyclic(
+    const Residue& residue, const Vector3D& oave) {
+
+    std::vector<Vector3D> ring_coords;
+
+    // Ring atoms: C4, N3, C2, N1, C6, C5, N7, C8, N9
+    // Pyrimidines use 6 atoms, purines use 9
+    static const std::vector<std::string> RING_ATOMS_ALL = {
+        " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "
+    };
+
+    // Find ring atoms in residue
+    std::vector<const Atom*> ring_atoms;
+    std::set<std::string> ring_atom_names;
+
+    for (const auto& ring_name : RING_ATOMS_ALL) {
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == ring_name) {
+                ring_atoms.push_back(&atom);
+                ring_atom_names.insert(atom.name());
+                break;
+            }
+        }
+    }
+
+    // For each ring atom, find ONE exocyclic atom (connected non-ring, non-hydrogen atom)
+    for (const auto* ring_atom : ring_atoms) {
+        const Atom* exocyclic_atom = nullptr;
+        double min_dist = validation_constants::BOND_DISTANCE;
+
+        for (const auto& atom : residue.atoms()) {
+            // Skip ring atoms
+            if (ring_atom_names.find(atom.name()) != ring_atom_names.end()) {
+                continue;
+            }
+            // Skip hydrogen atoms (matches legacy get_cntatom which skips idx==3)
+            if (atom.name().size() >= 2 && atom.name()[1] == 'H') {
+                continue;
+            }
+            double dist = (atom.position() - ring_atom->position()).length();
+            if (dist < min_dist && dist > validation_constants::MIN_ATOM_DISTANCE) {
+                min_dist = dist;
+                exocyclic_atom = &atom;
+            }
+        }
+
+        // Use exocyclic atom if found, otherwise use ring atom itself (matches legacy)
+        const Atom* atom_to_use = (exocyclic_atom != nullptr) ? exocyclic_atom : ring_atom;
+        ring_coords.push_back(atom_to_use->position() - oave);
+    }
+
+    return ring_coords;
 }
 
 } // namespace algorithms
