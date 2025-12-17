@@ -1,0 +1,263 @@
+[
+  {
+    "best_partner_for_res1": 69,
+    "best_partner_for_res2": 1,
+    "is_mutual": 1,
+    "res1": 1,
+    "res2": 69,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 68,
+    "best_partner_for_res2": 2,
+    "is_mutual": 1,
+    "res1": 2,
+    "res2": 68,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 67,
+    "best_partner_for_res2": 3,
+    "is_mutual": 1,
+    "res1": 3,
+    "res2": 67,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 66,
+    "best_partner_for_res2": 4,
+    "is_mutual": 1,
+    "res1": 4,
+    "res2": 66,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 65,
+    "best_partner_for_res2": 5,
+    "is_mutual": 1,
+    "res1": 5,
+    "res2": 65,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 64,
+    "best_partner_for_res2": 6,
+    "is_mutual": 1,
+    "res1": 6,
+    "res2": 64,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 13,
+    "best_partner_for_res2": 7,
+    "is_mutual": 1,
+    "res1": 7,
+    "res2": 13,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 21,
+    "best_partner_for_res2": 11,
+    "is_mutual": 0,
+    "res1": 8,
+    "res2": 21,
+    "type": "mutual_best_decision",
+    "was_selected": 0
+  },
+  {
+    "best_partner_for_res1": 23,
+    "best_partner_for_res2": 9,
+    "is_mutual": 1,
+    "res1": 9,
+    "res2": 23,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 22,
+    "best_partner_for_res2": 10,
+    "is_mutual": 1,
+    "res1": 10,
+    "res2": 22,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 21,
+    "best_partner_for_res2": 11,
+    "is_mutual": 1,
+    "res1": 11,
+    "res2": 21,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 43,
+    "best_partner_for_res2": 12,
+    "is_mutual": 1,
+    "res1": 12,
+    "res2": 43,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 46,
+    "best_partner_for_res2": 14,
+    "is_mutual": 1,
+    "res1": 14,
+    "res2": 46,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 53,
+    "best_partner_for_res2": 16,
+    "is_mutual": 1,
+    "res1": 16,
+    "res2": 53,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 54,
+    "best_partner_for_res2": 17,
+    "is_mutual": 1,
+    "res1": 17,
+    "res2": 54,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 42,
+    "best_partner_for_res2": 24,
+    "is_mutual": 1,
+    "res1": 24,
+    "res2": 42,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 41,
+    "best_partner_for_res2": 25,
+    "is_mutual": 1,
+    "res1": 25,
+    "res2": 41,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 40,
+    "best_partner_for_res2": 26,
+    "is_mutual": 1,
+    "res1": 26,
+    "res2": 40,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 39,
+    "best_partner_for_res2": 27,
+    "is_mutual": 1,
+    "res1": 27,
+    "res2": 39,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 38,
+    "best_partner_for_res2": 28,
+    "is_mutual": 1,
+    "res1": 28,
+    "res2": 38,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 37,
+    "best_partner_for_res2": 29,
+    "is_mutual": 1,
+    "res1": 29,
+    "res2": 37,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 36,
+    "best_partner_for_res2": 30,
+    "is_mutual": 1,
+    "res1": 30,
+    "res2": 36,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 35,
+    "best_partner_for_res2": 31,
+    "is_mutual": 1,
+    "res1": 31,
+    "res2": 35,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 63,
+    "best_partner_for_res2": 47,
+    "is_mutual": 1,
+    "res1": 47,
+    "res2": 63,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 62,
+    "best_partner_for_res2": 48,
+    "is_mutual": 1,
+    "res1": 48,
+    "res2": 62,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 61,
+    "best_partner_for_res2": 49,
+    "is_mutual": 1,
+    "res1": 49,
+    "res2": 61,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 60,
+    "best_partner_for_res2": 50,
+    "is_mutual": 1,
+    "res1": 50,
+    "res2": 60,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 59,
+    "best_partner_for_res2": 51,
+    "is_mutual": 1,
+    "res1": 51,
+    "res2": 59,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  },
+  {
+    "best_partner_for_res1": 56,
+    "best_partner_for_res2": 52,
+    "is_mutual": 1,
+    "res1": 52,
+    "res2": 56,
+    "type": "mutual_best_decision",
+    "was_selected": 1
+  }
+]

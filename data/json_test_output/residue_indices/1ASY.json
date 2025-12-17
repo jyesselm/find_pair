@@ -1,0 +1,5658 @@
+[
+  {
+    "num_residue": 1130,
+    "seidx": [
+      {
+        "end_atom": 21,
+        "residue_idx": 1,
+        "start_atom": 1
+      },
+      {
+        "end_atom": 41,
+        "residue_idx": 2,
+        "start_atom": 22
+      },
+      {
+        "end_atom": 61,
+        "residue_idx": 3,
+        "start_atom": 42
+      },
+      {
+        "end_atom": 84,
+        "residue_idx": 4,
+        "start_atom": 62
+      },
+      {
+        "end_atom": 104,
+        "residue_idx": 5,
+        "start_atom": 85
+      },
+      {
+        "end_atom": 127,
+        "residue_idx": 6,
+        "start_atom": 105
+      },
+      {
+        "end_atom": 149,
+        "residue_idx": 7,
+        "start_atom": 128
+      },
+      {
+        "end_atom": 169,
+        "residue_idx": 8,
+        "start_atom": 150
+      },
+      {
+        "end_atom": 191,
+        "residue_idx": 9,
+        "start_atom": 170
+      },
+      {
+        "end_atom": 214,
+        "residue_idx": 10,
+        "start_atom": 192
+      },
+      {
+        "end_atom": 234,
+        "residue_idx": 11,
+        "start_atom": 215
+      },
+      {
+        "end_atom": 254,
+        "residue_idx": 12,
+        "start_atom": 235
+      },
+      {
+        "end_atom": 274,
+        "residue_idx": 13,
+        "start_atom": 255
+      },
+      {
+        "end_atom": 296,
+        "residue_idx": 14,
+        "start_atom": 275
+      },
+      {
+        "end_atom": 318,
+        "residue_idx": 15,
+        "start_atom": 297
+      },
+      {
+        "end_atom": 338,
+        "residue_idx": 16,
+        "start_atom": 319
+      },
+      {
+        "end_atom": 361,
+        "residue_idx": 17,
+        "start_atom": 339
+      },
+      {
+        "end_atom": 384,
+        "residue_idx": 18,
+        "start_atom": 362
+      },
+      {
+        "end_atom": 404,
+        "residue_idx": 19,
+        "start_atom": 385
+      },
+      {
+        "end_atom": 424,
+        "residue_idx": 20,
+        "start_atom": 405
+      },
+      {
+        "end_atom": 446,
+        "residue_idx": 21,
+        "start_atom": 425
+      },
+      {
+        "end_atom": 469,
+        "residue_idx": 22,
+        "start_atom": 447
+      },
+      {
+        "end_atom": 491,
+        "residue_idx": 23,
+        "start_atom": 470
+      },
+      {
+        "end_atom": 513,
+        "residue_idx": 24,
+        "start_atom": 492
+      },
+      {
+        "end_atom": 533,
+        "residue_idx": 25,
+        "start_atom": 514
+      },
+      {
+        "end_atom": 556,
+        "residue_idx": 26,
+        "start_atom": 534
+      },
+      {
+        "end_atom": 579,
+        "residue_idx": 27,
+        "start_atom": 557
+      },
+      {
+        "end_atom": 602,
+        "residue_idx": 28,
+        "start_atom": 580
+      },
+      {
+        "end_atom": 622,
+        "residue_idx": 29,
+        "start_atom": 603
+      },
+      {
+        "end_atom": 645,
+        "residue_idx": 30,
+        "start_atom": 623
+      },
+      {
+        "end_atom": 665,
+        "residue_idx": 31,
+        "start_atom": 646
+      },
+      {
+        "end_atom": 685,
+        "residue_idx": 32,
+        "start_atom": 666
+      },
+      {
+        "end_atom": 705,
+        "residue_idx": 33,
+        "start_atom": 686
+      },
+      {
+        "end_atom": 728,
+        "residue_idx": 34,
+        "start_atom": 706
+      },
+      {
+        "end_atom": 748,
+        "residue_idx": 35,
+        "start_atom": 729
+      },
+      {
+        "end_atom": 768,
+        "residue_idx": 36,
+        "start_atom": 749
+      },
+      {
+        "end_atom": 792,
+        "residue_idx": 37,
+        "start_atom": 769
+      },
+      {
+        "end_atom": 812,
+        "residue_idx": 38,
+        "start_atom": 793
+      },
+      {
+        "end_atom": 835,
+        "residue_idx": 39,
+        "start_atom": 813
+      },
+      {
+        "end_atom": 855,
+        "residue_idx": 40,
+        "start_atom": 836
+      },
+      {
+        "end_atom": 878,
+        "residue_idx": 41,
+        "start_atom": 856
+      },
+      {
+        "end_atom": 898,
+        "residue_idx": 42,
+        "start_atom": 879
+      },
+      {
+        "end_atom": 918,
+        "residue_idx": 43,
+        "start_atom": 899
+      },
+      {
+        "end_atom": 940,
+        "residue_idx": 44,
+        "start_atom": 919
+      },
+      {
+        "end_atom": 963,
+        "residue_idx": 45,
+        "start_atom": 941
+      },
+      {
+        "end_atom": 985,
+        "residue_idx": 46,
+        "start_atom": 964
+      },
+      {
+        "end_atom": 1005,
+        "residue_idx": 47,
+        "start_atom": 986
+      },
+      {
+        "end_atom": 1026,
+        "residue_idx": 48,
+        "start_atom": 1006
+      },
+      {
+        "end_atom": 1049,
+        "residue_idx": 49,
+        "start_atom": 1027
+      },
+      {
+        "end_atom": 1072,
+        "residue_idx": 50,
+        "start_atom": 1050
+      },
+      {
+        "end_atom": 1095,
+        "residue_idx": 51,
+        "start_atom": 1073
+      },
+      {
+        "end_atom": 1118,
+        "residue_idx": 52,
+        "start_atom": 1096
+      },
+      {
+        "end_atom": 1139,
+        "residue_idx": 53,
+        "start_atom": 1119
+      },
+      {
+        "end_atom": 1159,
+        "residue_idx": 54,
+        "start_atom": 1140
+      },
+      {
+        "end_atom": 1179,
+        "residue_idx": 55,
+        "start_atom": 1160
+      },
+      {
+        "end_atom": 1201,
+        "residue_idx": 56,
+        "start_atom": 1180
+      },
+      {
+        "end_atom": 1223,
+        "residue_idx": 57,
+        "start_atom": 1202
+      },
+      {
+        "end_atom": 1243,
+        "residue_idx": 58,
+        "start_atom": 1224
+      },
+      {
+        "end_atom": 1263,
+        "residue_idx": 59,
+        "start_atom": 1244
+      },
+      {
+        "end_atom": 1283,
+        "residue_idx": 60,
+        "start_atom": 1264
+      },
+      {
+        "end_atom": 1303,
+        "residue_idx": 61,
+        "start_atom": 1284
+      },
+      {
+        "end_atom": 1323,
+        "residue_idx": 62,
+        "start_atom": 1304
+      },
+      {
+        "end_atom": 1343,
+        "residue_idx": 63,
+        "start_atom": 1324
+      },
+      {
+        "end_atom": 1366,
+        "residue_idx": 64,
+        "start_atom": 1344
+      },
+      {
+        "end_atom": 1386,
+        "residue_idx": 65,
+        "start_atom": 1367
+      },
+      {
+        "end_atom": 1406,
+        "residue_idx": 66,
+        "start_atom": 1387
+      },
+      {
+        "end_atom": 1429,
+        "residue_idx": 67,
+        "start_atom": 1407
+      },
+      {
+        "end_atom": 1449,
+        "residue_idx": 68,
+        "start_atom": 1430
+      },
+      {
+        "end_atom": 1472,
+        "residue_idx": 69,
+        "start_atom": 1450
+      },
+      {
+        "end_atom": 1495,
+        "residue_idx": 70,
+        "start_atom": 1473
+      },
+      {
+        "end_atom": 1517,
+        "residue_idx": 71,
+        "start_atom": 1496
+      },
+      {
+        "end_atom": 1540,
+        "residue_idx": 72,
+        "start_atom": 1518
+      },
+      {
+        "end_atom": 1560,
+        "residue_idx": 73,
+        "start_atom": 1541
+      },
+      {
+        "end_atom": 1580,
+        "residue_idx": 74,
+        "start_atom": 1561
+      },
+      {
+        "end_atom": 1602,
+        "residue_idx": 75,
+        "start_atom": 1581
+      },
+      {
+        "end_atom": 1623,
+        "residue_idx": 76,
+        "start_atom": 1603
+      },
+      {
+        "end_atom": 1643,
+        "residue_idx": 77,
+        "start_atom": 1624
+      },
+      {
+        "end_atom": 1663,
+        "residue_idx": 78,
+        "start_atom": 1644
+      },
+      {
+        "end_atom": 1686,
+        "residue_idx": 79,
+        "start_atom": 1664
+      },
+      {
+        "end_atom": 1706,
+        "residue_idx": 80,
+        "start_atom": 1687
+      },
+      {
+        "end_atom": 1729,
+        "residue_idx": 81,
+        "start_atom": 1707
+      },
+      {
+        "end_atom": 1751,
+        "residue_idx": 82,
+        "start_atom": 1730
+      },
+      {
+        "end_atom": 1771,
+        "residue_idx": 83,
+        "start_atom": 1752
+      },
+      {
+        "end_atom": 1793,
+        "residue_idx": 84,
+        "start_atom": 1772
+      },
+      {
+        "end_atom": 1816,
+        "residue_idx": 85,
+        "start_atom": 1794
+      },
+      {
+        "end_atom": 1836,
+        "residue_idx": 86,
+        "start_atom": 1817
+      },
+      {
+        "end_atom": 1856,
+        "residue_idx": 87,
+        "start_atom": 1837
+      },
+      {
+        "end_atom": 1876,
+        "residue_idx": 88,
+        "start_atom": 1857
+      },
+      {
+        "end_atom": 1898,
+        "residue_idx": 89,
+        "start_atom": 1877
+      },
+      {
+        "end_atom": 1920,
+        "residue_idx": 90,
+        "start_atom": 1899
+      },
+      {
+        "end_atom": 1940,
+        "residue_idx": 91,
+        "start_atom": 1921
+      },
+      {
+        "end_atom": 1963,
+        "residue_idx": 92,
+        "start_atom": 1941
+      },
+      {
+        "end_atom": 1986,
+        "residue_idx": 93,
+        "start_atom": 1964
+      },
+      {
+        "end_atom": 2006,
+        "residue_idx": 94,
+        "start_atom": 1987
+      },
+      {
+        "end_atom": 2026,
+        "residue_idx": 95,
+        "start_atom": 2007
+      },
+      {
+        "end_atom": 2048,
+        "residue_idx": 96,
+        "start_atom": 2027
+      },
+      {
+        "end_atom": 2071,
+        "residue_idx": 97,
+        "start_atom": 2049
+      },
+      {
+        "end_atom": 2093,
+        "residue_idx": 98,
+        "start_atom": 2072
+      },
+      {
+        "end_atom": 2115,
+        "residue_idx": 99,
+        "start_atom": 2094
+      },
+      {
+        "end_atom": 2135,
+        "residue_idx": 100,
+        "start_atom": 2116
+      },
+      {
+        "end_atom": 2158,
+        "residue_idx": 101,
+        "start_atom": 2136
+      },
+      {
+        "end_atom": 2181,
+        "residue_idx": 102,
+        "start_atom": 2159
+      },
+      {
+        "end_atom": 2204,
+        "residue_idx": 103,
+        "start_atom": 2182
+      },
+      {
+        "end_atom": 2224,
+        "residue_idx": 104,
+        "start_atom": 2205
+      },
+      {
+        "end_atom": 2247,
+        "residue_idx": 105,
+        "start_atom": 2225
+      },
+      {
+        "end_atom": 2267,
+        "residue_idx": 106,
+        "start_atom": 2248
+      },
+      {
+        "end_atom": 2287,
+        "residue_idx": 107,
+        "start_atom": 2268
+      },
+      {
+        "end_atom": 2307,
+        "residue_idx": 108,
+        "start_atom": 2288
+      },
+      {
+        "end_atom": 2330,
+        "residue_idx": 109,
+        "start_atom": 2308
+      },
+      {
+        "end_atom": 2350,
+        "residue_idx": 110,
+        "start_atom": 2331
+      },
+      {
+        "end_atom": 2370,
+        "residue_idx": 111,
+        "start_atom": 2351
+      },
+      {
+        "end_atom": 2394,
+        "residue_idx": 112,
+        "start_atom": 2371
+      },
+      {
+        "end_atom": 2414,
+        "residue_idx": 113,
+        "start_atom": 2395
+      },
+      {
+        "end_atom": 2437,
+        "residue_idx": 114,
+        "start_atom": 2415
+      },
+      {
+        "end_atom": 2457,
+        "residue_idx": 115,
+        "start_atom": 2438
+      },
+      {
+        "end_atom": 2480,
+        "residue_idx": 116,
+        "start_atom": 2458
+      },
+      {
+        "end_atom": 2500,
+        "residue_idx": 117,
+        "start_atom": 2481
+      },
+      {
+        "end_atom": 2520,
+        "residue_idx": 118,
+        "start_atom": 2501
+      },
+      {
+        "end_atom": 2542,
+        "residue_idx": 119,
+        "start_atom": 2521
+      },
+      {
+        "end_atom": 2565,
+        "residue_idx": 120,
+        "start_atom": 2543
+      },
+      {
+        "end_atom": 2587,
+        "residue_idx": 121,
+        "start_atom": 2566
+      },
+      {
+        "end_atom": 2607,
+        "residue_idx": 122,
+        "start_atom": 2588
+      },
+      {
+        "end_atom": 2628,
+        "residue_idx": 123,
+        "start_atom": 2608
+      },
+      {
+        "end_atom": 2651,
+        "residue_idx": 124,
+        "start_atom": 2629
+      },
+      {
+        "end_atom": 2674,
+        "residue_idx": 125,
+        "start_atom": 2652
+      },
+      {
+        "end_atom": 2697,
+        "residue_idx": 126,
+        "start_atom": 2675
+      },
+      {
+        "end_atom": 2720,
+        "residue_idx": 127,
+        "start_atom": 2698
+      },
+      {
+        "end_atom": 2741,
+        "residue_idx": 128,
+        "start_atom": 2721
+      },
+      {
+        "end_atom": 2761,
+        "residue_idx": 129,
+        "start_atom": 2742
+      },
+      {
+        "end_atom": 2781,
+        "residue_idx": 130,
+        "start_atom": 2762
+      },
+      {
+        "end_atom": 2803,
+        "residue_idx": 131,
+        "start_atom": 2782
+      },
+      {
+        "end_atom": 2825,
+        "residue_idx": 132,
+        "start_atom": 2804
+      },
+      {
+        "end_atom": 2845,
+        "residue_idx": 133,
+        "start_atom": 2826
+      },
+      {
+        "end_atom": 2865,
+        "residue_idx": 134,
+        "start_atom": 2846
+      },
+      {
+        "end_atom": 2885,
+        "residue_idx": 135,
+        "start_atom": 2866
+      },
+      {
+        "end_atom": 2905,
+        "residue_idx": 136,
+        "start_atom": 2886
+      },
+      {
+        "end_atom": 2925,
+        "residue_idx": 137,
+        "start_atom": 2906
+      },
+      {
+        "end_atom": 2945,
+        "residue_idx": 138,
+        "start_atom": 2926
+      },
+      {
+        "end_atom": 2968,
+        "residue_idx": 139,
+        "start_atom": 2946
+      },
+      {
+        "end_atom": 2988,
+        "residue_idx": 140,
+        "start_atom": 2969
+      },
+      {
+        "end_atom": 3008,
+        "residue_idx": 141,
+        "start_atom": 2989
+      },
+      {
+        "end_atom": 3031,
+        "residue_idx": 142,
+        "start_atom": 3009
+      },
+      {
+        "end_atom": 3051,
+        "residue_idx": 143,
+        "start_atom": 3032
+      },
+      {
+        "end_atom": 3074,
+        "residue_idx": 144,
+        "start_atom": 3052
+      },
+      {
+        "end_atom": 3097,
+        "residue_idx": 145,
+        "start_atom": 3075
+      },
+      {
+        "end_atom": 3119,
+        "residue_idx": 146,
+        "start_atom": 3098
+      },
+      {
+        "end_atom": 3142,
+        "residue_idx": 147,
+        "start_atom": 3120
+      },
+      {
+        "end_atom": 3162,
+        "residue_idx": 148,
+        "start_atom": 3143
+      },
+      {
+        "end_atom": 3182,
+        "residue_idx": 149,
+        "start_atom": 3163
+      },
+      {
+        "end_atom": 3204,
+        "residue_idx": 150,
+        "start_atom": 3183
+      },
+      {
+        "end_atom": 3213,
+        "residue_idx": 151,
+        "start_atom": 3205
+      },
+      {
+        "end_atom": 3221,
+        "residue_idx": 152,
+        "start_atom": 3214
+      },
+      {
+        "end_atom": 3228,
+        "residue_idx": 153,
+        "start_atom": 3222
+      },
+      {
+        "end_atom": 3233,
+        "residue_idx": 154,
+        "start_atom": 3229
+      },
+      {
+        "end_atom": 3242,
+        "residue_idx": 155,
+        "start_atom": 3234
+      },
+      {
+        "end_atom": 3250,
+        "residue_idx": 156,
+        "start_atom": 3243
+      },
+      {
+        "end_atom": 3258,
+        "residue_idx": 157,
+        "start_atom": 3251
+      },
+      {
+        "end_atom": 3270,
+        "residue_idx": 158,
+        "start_atom": 3259
+      },
+      {
+        "end_atom": 3274,
+        "residue_idx": 159,
+        "start_atom": 3271
+      },
+      {
+        "end_atom": 3283,
+        "residue_idx": 160,
+        "start_atom": 3275
+      },
+      {
+        "end_atom": 3291,
+        "residue_idx": 161,
+        "start_atom": 3284
+      },
+      {
+        "end_atom": 3298,
+        "residue_idx": 162,
+        "start_atom": 3292
+      },
+      {
+        "end_atom": 3306,
+        "residue_idx": 163,
+        "start_atom": 3299
+      },
+      {
+        "end_atom": 3314,
+        "residue_idx": 164,
+        "start_atom": 3307
+      },
+      {
+        "end_atom": 3323,
+        "residue_idx": 165,
+        "start_atom": 3315
+      },
+      {
+        "end_atom": 3329,
+        "residue_idx": 166,
+        "start_atom": 3324
+      },
+      {
+        "end_atom": 3340,
+        "residue_idx": 167,
+        "start_atom": 3330
+      },
+      {
+        "end_atom": 3348,
+        "residue_idx": 168,
+        "start_atom": 3341
+      },
+      {
+        "end_atom": 3354,
+        "residue_idx": 169,
+        "start_atom": 3349
+      },
+      {
+        "end_atom": 3362,
+        "residue_idx": 170,
+        "start_atom": 3355
+      },
+      {
+        "end_atom": 3373,
+        "residue_idx": 171,
+        "start_atom": 3363
+      },
+      {
+        "end_atom": 3380,
+        "residue_idx": 172,
+        "start_atom": 3374
+      },
+      {
+        "end_atom": 3384,
+        "residue_idx": 173,
+        "start_atom": 3381
+      },
+      {
+        "end_atom": 3393,
+        "residue_idx": 174,
+        "start_atom": 3385
+      },
+      {
+        "end_atom": 3402,
+        "residue_idx": 175,
+        "start_atom": 3394
+      },
+      {
+        "end_atom": 3413,
+        "residue_idx": 176,
+        "start_atom": 3403
+      },
+      {
+        "end_atom": 3420,
+        "residue_idx": 177,
+        "start_atom": 3414
+      },
+      {
+        "end_atom": 3429,
+        "residue_idx": 178,
+        "start_atom": 3421
+      },
+      {
+        "end_atom": 3440,
+        "residue_idx": 179,
+        "start_atom": 3430
+      },
+      {
+        "end_atom": 3447,
+        "residue_idx": 180,
+        "start_atom": 3441
+      },
+      {
+        "end_atom": 3455,
+        "residue_idx": 181,
+        "start_atom": 3448
+      },
+      {
+        "end_atom": 3463,
+        "residue_idx": 182,
+        "start_atom": 3456
+      },
+      {
+        "end_atom": 3471,
+        "residue_idx": 183,
+        "start_atom": 3464
+      },
+      {
+        "end_atom": 3480,
+        "residue_idx": 184,
+        "start_atom": 3472
+      },
+      {
+        "end_atom": 3485,
+        "residue_idx": 185,
+        "start_atom": 3481
+      },
+      {
+        "end_atom": 3494,
+        "residue_idx": 186,
+        "start_atom": 3486
+      },
+      {
+        "end_atom": 3502,
+        "residue_idx": 187,
+        "start_atom": 3495
+      },
+      {
+        "end_atom": 3508,
+        "residue_idx": 188,
+        "start_atom": 3503
+      },
+      {
+        "end_atom": 3516,
+        "residue_idx": 189,
+        "start_atom": 3509
+      },
+      {
+        "end_atom": 3525,
+        "residue_idx": 190,
+        "start_atom": 3517
+      },
+      {
+        "end_atom": 3534,
+        "residue_idx": 191,
+        "start_atom": 3526
+      },
+      {
+        "end_atom": 3541,
+        "residue_idx": 192,
+        "start_atom": 3535
+      },
+      {
+        "end_atom": 3549,
+        "residue_idx": 193,
+        "start_atom": 3542
+      },
+      {
+        "end_atom": 3560,
+        "residue_idx": 194,
+        "start_atom": 3550
+      },
+      {
+        "end_atom": 3571,
+        "residue_idx": 195,
+        "start_atom": 3561
+      },
+      {
+        "end_atom": 3576,
+        "residue_idx": 196,
+        "start_atom": 3572
+      },
+      {
+        "end_atom": 3587,
+        "residue_idx": 197,
+        "start_atom": 3577
+      },
+      {
+        "end_atom": 3594,
+        "residue_idx": 198,
+        "start_atom": 3588
+      },
+      {
+        "end_atom": 3604,
+        "residue_idx": 199,
+        "start_atom": 3595
+      },
+      {
+        "end_atom": 3612,
+        "residue_idx": 200,
+        "start_atom": 3605
+      },
+      {
+        "end_atom": 3619,
+        "residue_idx": 201,
+        "start_atom": 3613
+      },
+      {
+        "end_atom": 3630,
+        "residue_idx": 202,
+        "start_atom": 3620
+      },
+      {
+        "end_atom": 3639,
+        "residue_idx": 203,
+        "start_atom": 3631
+      },
+      {
+        "end_atom": 3648,
+        "residue_idx": 204,
+        "start_atom": 3640
+      },
+      {
+        "end_atom": 3652,
+        "residue_idx": 205,
+        "start_atom": 3649
+      },
+      {
+        "end_atom": 3657,
+        "residue_idx": 206,
+        "start_atom": 3653
+      },
+      {
+        "end_atom": 3664,
+        "residue_idx": 207,
+        "start_atom": 3658
+      },
+      {
+        "end_atom": 3672,
+        "residue_idx": 208,
+        "start_atom": 3665
+      },
+      {
+        "end_atom": 3677,
+        "residue_idx": 209,
+        "start_atom": 3673
+      },
+      {
+        "end_atom": 3688,
+        "residue_idx": 210,
+        "start_atom": 3678
+      },
+      {
+        "end_atom": 3696,
+        "residue_idx": 211,
+        "start_atom": 3689
+      },
+      {
+        "end_atom": 3703,
+        "residue_idx": 212,
+        "start_atom": 3697
+      },
+      {
+        "end_atom": 3711,
+        "residue_idx": 213,
+        "start_atom": 3704
+      },
+      {
+        "end_atom": 3722,
+        "residue_idx": 214,
+        "start_atom": 3712
+      },
+      {
+        "end_atom": 3731,
+        "residue_idx": 215,
+        "start_atom": 3723
+      },
+      {
+        "end_atom": 3740,
+        "residue_idx": 216,
+        "start_atom": 3732
+      },
+      {
+        "end_atom": 3745,
+        "residue_idx": 217,
+        "start_atom": 3741
+      },
+      {
+        "end_atom": 3751,
+        "residue_idx": 218,
+        "start_atom": 3746
+      },
+      {
+        "end_atom": 3759,
+        "residue_idx": 219,
+        "start_atom": 3752
+      },
+      {
+        "end_atom": 3767,
+        "residue_idx": 220,
+        "start_atom": 3760
+      },
+      {
+        "end_atom": 3776,
+        "residue_idx": 221,
+        "start_atom": 3768
+      },
+      {
+        "end_atom": 3780,
+        "residue_idx": 222,
+        "start_atom": 3777
+      },
+      {
+        "end_atom": 3788,
+        "residue_idx": 223,
+        "start_atom": 3781
+      },
+      {
+        "end_atom": 3795,
+        "residue_idx": 224,
+        "start_atom": 3789
+      },
+      {
+        "end_atom": 3804,
+        "residue_idx": 225,
+        "start_atom": 3796
+      },
+      {
+        "end_atom": 3809,
+        "residue_idx": 226,
+        "start_atom": 3805
+      },
+      {
+        "end_atom": 3817,
+        "residue_idx": 227,
+        "start_atom": 3810
+      },
+      {
+        "end_atom": 3826,
+        "residue_idx": 228,
+        "start_atom": 3818
+      },
+      {
+        "end_atom": 3835,
+        "residue_idx": 229,
+        "start_atom": 3827
+      },
+      {
+        "end_atom": 3839,
+        "residue_idx": 230,
+        "start_atom": 3836
+      },
+      {
+        "end_atom": 3846,
+        "residue_idx": 231,
+        "start_atom": 3840
+      },
+      {
+        "end_atom": 3854,
+        "residue_idx": 232,
+        "start_atom": 3847
+      },
+      {
+        "end_atom": 3860,
+        "residue_idx": 233,
+        "start_atom": 3855
+      },
+      {
+        "end_atom": 3869,
+        "residue_idx": 234,
+        "start_atom": 3861
+      },
+      {
+        "end_atom": 3877,
+        "residue_idx": 235,
+        "start_atom": 3870
+      },
+      {
+        "end_atom": 3885,
+        "residue_idx": 236,
+        "start_atom": 3878
+      },
+      {
+        "end_atom": 3892,
+        "residue_idx": 237,
+        "start_atom": 3886
+      },
+      {
+        "end_atom": 3901,
+        "residue_idx": 238,
+        "start_atom": 3893
+      },
+      {
+        "end_atom": 3915,
+        "residue_idx": 239,
+        "start_atom": 3902
+      },
+      {
+        "end_atom": 3920,
+        "residue_idx": 240,
+        "start_atom": 3916
+      },
+      {
+        "end_atom": 3924,
+        "residue_idx": 241,
+        "start_atom": 3921
+      },
+      {
+        "end_atom": 3930,
+        "residue_idx": 242,
+        "start_atom": 3925
+      },
+      {
+        "end_atom": 3938,
+        "residue_idx": 243,
+        "start_atom": 3931
+      },
+      {
+        "end_atom": 3946,
+        "residue_idx": 244,
+        "start_atom": 3939
+      },
+      {
+        "end_atom": 3954,
+        "residue_idx": 245,
+        "start_atom": 3947
+      },
+      {
+        "end_atom": 3963,
+        "residue_idx": 246,
+        "start_atom": 3955
+      },
+      {
+        "end_atom": 3969,
+        "residue_idx": 247,
+        "start_atom": 3964
+      },
+      {
+        "end_atom": 3977,
+        "residue_idx": 248,
+        "start_atom": 3970
+      },
+      {
+        "end_atom": 3984,
+        "residue_idx": 249,
+        "start_atom": 3978
+      },
+      {
+        "end_atom": 3992,
+        "residue_idx": 250,
+        "start_atom": 3985
+      },
+      {
+        "end_atom": 3999,
+        "residue_idx": 251,
+        "start_atom": 3993
+      },
+      {
+        "end_atom": 4010,
+        "residue_idx": 252,
+        "start_atom": 4000
+      },
+      {
+        "end_atom": 4014,
+        "residue_idx": 253,
+        "start_atom": 4011
+      },
+      {
+        "end_atom": 4022,
+        "residue_idx": 254,
+        "start_atom": 4015
+      },
+      {
+        "end_atom": 4029,
+        "residue_idx": 255,
+        "start_atom": 4023
+      },
+      {
+        "end_atom": 4038,
+        "residue_idx": 256,
+        "start_atom": 4030
+      },
+      {
+        "end_atom": 4047,
+        "residue_idx": 257,
+        "start_atom": 4039
+      },
+      {
+        "end_atom": 4054,
+        "residue_idx": 258,
+        "start_atom": 4048
+      },
+      {
+        "end_atom": 4062,
+        "residue_idx": 259,
+        "start_atom": 4055
+      },
+      {
+        "end_atom": 4071,
+        "residue_idx": 260,
+        "start_atom": 4063
+      },
+      {
+        "end_atom": 4078,
+        "residue_idx": 261,
+        "start_atom": 4072
+      },
+      {
+        "end_atom": 4086,
+        "residue_idx": 262,
+        "start_atom": 4079
+      },
+      {
+        "end_atom": 4095,
+        "residue_idx": 263,
+        "start_atom": 4087
+      },
+      {
+        "end_atom": 4101,
+        "residue_idx": 264,
+        "start_atom": 4096
+      },
+      {
+        "end_atom": 4106,
+        "residue_idx": 265,
+        "start_atom": 4102
+      },
+      {
+        "end_atom": 4113,
+        "residue_idx": 266,
+        "start_atom": 4107
+      },
+      {
+        "end_atom": 4120,
+        "residue_idx": 267,
+        "start_atom": 4114
+      },
+      {
+        "end_atom": 4129,
+        "residue_idx": 268,
+        "start_atom": 4121
+      },
+      {
+        "end_atom": 4137,
+        "residue_idx": 269,
+        "start_atom": 4130
+      },
+      {
+        "end_atom": 4145,
+        "residue_idx": 270,
+        "start_atom": 4138
+      },
+      {
+        "end_atom": 4154,
+        "residue_idx": 271,
+        "start_atom": 4146
+      },
+      {
+        "end_atom": 4162,
+        "residue_idx": 272,
+        "start_atom": 4155
+      },
+      {
+        "end_atom": 4172,
+        "residue_idx": 273,
+        "start_atom": 4163
+      },
+      {
+        "end_atom": 4180,
+        "residue_idx": 274,
+        "start_atom": 4173
+      },
+      {
+        "end_atom": 4187,
+        "residue_idx": 275,
+        "start_atom": 4181
+      },
+      {
+        "end_atom": 4196,
+        "residue_idx": 276,
+        "start_atom": 4188
+      },
+      {
+        "end_atom": 4204,
+        "residue_idx": 277,
+        "start_atom": 4197
+      },
+      {
+        "end_atom": 4216,
+        "residue_idx": 278,
+        "start_atom": 4205
+      },
+      {
+        "end_atom": 4223,
+        "residue_idx": 279,
+        "start_atom": 4217
+      },
+      {
+        "end_atom": 4231,
+        "residue_idx": 280,
+        "start_atom": 4224
+      },
+      {
+        "end_atom": 4237,
+        "residue_idx": 281,
+        "start_atom": 4232
+      },
+      {
+        "end_atom": 4246,
+        "residue_idx": 282,
+        "start_atom": 4238
+      },
+      {
+        "end_atom": 4253,
+        "residue_idx": 283,
+        "start_atom": 4247
+      },
+      {
+        "end_atom": 4260,
+        "residue_idx": 284,
+        "start_atom": 4254
+      },
+      {
+        "end_atom": 4269,
+        "residue_idx": 285,
+        "start_atom": 4261
+      },
+      {
+        "end_atom": 4274,
+        "residue_idx": 286,
+        "start_atom": 4270
+      },
+      {
+        "end_atom": 4282,
+        "residue_idx": 287,
+        "start_atom": 4275
+      },
+      {
+        "end_atom": 4289,
+        "residue_idx": 288,
+        "start_atom": 4283
+      },
+      {
+        "end_atom": 4297,
+        "residue_idx": 289,
+        "start_atom": 4290
+      },
+      {
+        "end_atom": 4305,
+        "residue_idx": 290,
+        "start_atom": 4298
+      },
+      {
+        "end_atom": 4313,
+        "residue_idx": 291,
+        "start_atom": 4306
+      },
+      {
+        "end_atom": 4322,
+        "residue_idx": 292,
+        "start_atom": 4314
+      },
+      {
+        "end_atom": 4330,
+        "residue_idx": 293,
+        "start_atom": 4323
+      },
+      {
+        "end_atom": 4335,
+        "residue_idx": 294,
+        "start_atom": 4331
+      },
+      {
+        "end_atom": 4341,
+        "residue_idx": 295,
+        "start_atom": 4336
+      },
+      {
+        "end_atom": 4352,
+        "residue_idx": 296,
+        "start_atom": 4342
+      },
+      {
+        "end_atom": 4358,
+        "residue_idx": 297,
+        "start_atom": 4353
+      },
+      {
+        "end_atom": 4367,
+        "residue_idx": 298,
+        "start_atom": 4359
+      },
+      {
+        "end_atom": 4372,
+        "residue_idx": 299,
+        "start_atom": 4368
+      },
+      {
+        "end_atom": 4381,
+        "residue_idx": 300,
+        "start_atom": 4373
+      },
+      {
+        "end_atom": 4386,
+        "residue_idx": 301,
+        "start_atom": 4382
+      },
+      {
+        "end_atom": 4395,
+        "residue_idx": 302,
+        "start_atom": 4387
+      },
+      {
+        "end_atom": 4400,
+        "residue_idx": 303,
+        "start_atom": 4396
+      },
+      {
+        "end_atom": 4405,
+        "residue_idx": 304,
+        "start_atom": 4401
+      },
+      {
+        "end_atom": 4409,
+        "residue_idx": 305,
+        "start_atom": 4406
+      },
+      {
+        "end_atom": 4417,
+        "residue_idx": 306,
+        "start_atom": 4410
+      },
+      {
+        "end_atom": 4424,
+        "residue_idx": 307,
+        "start_atom": 4418
+      },
+      {
+        "end_atom": 4431,
+        "residue_idx": 308,
+        "start_atom": 4425
+      },
+      {
+        "end_atom": 4438,
+        "residue_idx": 309,
+        "start_atom": 4432
+      },
+      {
+        "end_atom": 4446,
+        "residue_idx": 310,
+        "start_atom": 4439
+      },
+      {
+        "end_atom": 4454,
+        "residue_idx": 311,
+        "start_atom": 4447
+      },
+      {
+        "end_atom": 4462,
+        "residue_idx": 312,
+        "start_atom": 4455
+      },
+      {
+        "end_atom": 4469,
+        "residue_idx": 313,
+        "start_atom": 4463
+      },
+      {
+        "end_atom": 4480,
+        "residue_idx": 314,
+        "start_atom": 4470
+      },
+      {
+        "end_atom": 4488,
+        "residue_idx": 315,
+        "start_atom": 4481
+      },
+      {
+        "end_atom": 4496,
+        "residue_idx": 316,
+        "start_atom": 4489
+      },
+      {
+        "end_atom": 4508,
+        "residue_idx": 317,
+        "start_atom": 4497
+      },
+      {
+        "end_atom": 4519,
+        "residue_idx": 318,
+        "start_atom": 4509
+      },
+      {
+        "end_atom": 4526,
+        "residue_idx": 319,
+        "start_atom": 4520
+      },
+      {
+        "end_atom": 4534,
+        "residue_idx": 320,
+        "start_atom": 4527
+      },
+      {
+        "end_atom": 4542,
+        "residue_idx": 321,
+        "start_atom": 4535
+      },
+      {
+        "end_atom": 4550,
+        "residue_idx": 322,
+        "start_atom": 4543
+      },
+      {
+        "end_atom": 4561,
+        "residue_idx": 323,
+        "start_atom": 4551
+      },
+      {
+        "end_atom": 4568,
+        "residue_idx": 324,
+        "start_atom": 4562
+      },
+      {
+        "end_atom": 4575,
+        "residue_idx": 325,
+        "start_atom": 4569
+      },
+      {
+        "end_atom": 4582,
+        "residue_idx": 326,
+        "start_atom": 4576
+      },
+      {
+        "end_atom": 4590,
+        "residue_idx": 327,
+        "start_atom": 4583
+      },
+      {
+        "end_atom": 4599,
+        "residue_idx": 328,
+        "start_atom": 4591
+      },
+      {
+        "end_atom": 4604,
+        "residue_idx": 329,
+        "start_atom": 4600
+      },
+      {
+        "end_atom": 4612,
+        "residue_idx": 330,
+        "start_atom": 4605
+      },
+      {
+        "end_atom": 4623,
+        "residue_idx": 331,
+        "start_atom": 4613
+      },
+      {
+        "end_atom": 4634,
+        "residue_idx": 332,
+        "start_atom": 4624
+      },
+      {
+        "end_atom": 4642,
+        "residue_idx": 333,
+        "start_atom": 4635
+      },
+      {
+        "end_atom": 4651,
+        "residue_idx": 334,
+        "start_atom": 4643
+      },
+      {
+        "end_atom": 4656,
+        "residue_idx": 335,
+        "start_atom": 4652
+      },
+      {
+        "end_atom": 4660,
+        "residue_idx": 336,
+        "start_atom": 4657
+      },
+      {
+        "end_atom": 4667,
+        "residue_idx": 337,
+        "start_atom": 4661
+      },
+      {
+        "end_atom": 4673,
+        "residue_idx": 338,
+        "start_atom": 4668
+      },
+      {
+        "end_atom": 4682,
+        "residue_idx": 339,
+        "start_atom": 4674
+      },
+      {
+        "end_atom": 4690,
+        "residue_idx": 340,
+        "start_atom": 4683
+      },
+      {
+        "end_atom": 4701,
+        "residue_idx": 341,
+        "start_atom": 4691
+      },
+      {
+        "end_atom": 4712,
+        "residue_idx": 342,
+        "start_atom": 4702
+      },
+      {
+        "end_atom": 4721,
+        "residue_idx": 343,
+        "start_atom": 4713
+      },
+      {
+        "end_atom": 4733,
+        "residue_idx": 344,
+        "start_atom": 4722
+      },
+      {
+        "end_atom": 4741,
+        "residue_idx": 345,
+        "start_atom": 4734
+      },
+      {
+        "end_atom": 4746,
+        "residue_idx": 346,
+        "start_atom": 4742
+      },
+      {
+        "end_atom": 4753,
+        "residue_idx": 347,
+        "start_atom": 4747
+      },
+      {
+        "end_atom": 4762,
+        "residue_idx": 348,
+        "start_atom": 4754
+      },
+      {
+        "end_atom": 4771,
+        "residue_idx": 349,
+        "start_atom": 4763
+      },
+      {
+        "end_atom": 4782,
+        "residue_idx": 350,
+        "start_atom": 4772
+      },
+      {
+        "end_atom": 4789,
+        "residue_idx": 351,
+        "start_atom": 4783
+      },
+      {
+        "end_atom": 4798,
+        "residue_idx": 352,
+        "start_atom": 4790
+      },
+      {
+        "end_atom": 4805,
+        "residue_idx": 353,
+        "start_atom": 4799
+      },
+      {
+        "end_atom": 4815,
+        "residue_idx": 354,
+        "start_atom": 4806
+      },
+      {
+        "end_atom": 4822,
+        "residue_idx": 355,
+        "start_atom": 4816
+      },
+      {
+        "end_atom": 4829,
+        "residue_idx": 356,
+        "start_atom": 4823
+      },
+      {
+        "end_atom": 4838,
+        "residue_idx": 357,
+        "start_atom": 4830
+      },
+      {
+        "end_atom": 4846,
+        "residue_idx": 358,
+        "start_atom": 4839
+      },
+      {
+        "end_atom": 4854,
+        "residue_idx": 359,
+        "start_atom": 4847
+      },
+      {
+        "end_atom": 4858,
+        "residue_idx": 360,
+        "start_atom": 4855
+      },
+      {
+        "end_atom": 4863,
+        "residue_idx": 361,
+        "start_atom": 4859
+      },
+      {
+        "end_atom": 4870,
+        "residue_idx": 362,
+        "start_atom": 4864
+      },
+      {
+        "end_atom": 4876,
+        "residue_idx": 363,
+        "start_atom": 4871
+      },
+      {
+        "end_atom": 4885,
+        "residue_idx": 364,
+        "start_atom": 4877
+      },
+      {
+        "end_atom": 4889,
+        "residue_idx": 365,
+        "start_atom": 4886
+      },
+      {
+        "end_atom": 4893,
+        "residue_idx": 366,
+        "start_atom": 4890
+      },
+      {
+        "end_atom": 4899,
+        "residue_idx": 367,
+        "start_atom": 4894
+      },
+      {
+        "end_atom": 4905,
+        "residue_idx": 368,
+        "start_atom": 4900
+      },
+      {
+        "end_atom": 4912,
+        "residue_idx": 369,
+        "start_atom": 4906
+      },
+      {
+        "end_atom": 4923,
+        "residue_idx": 370,
+        "start_atom": 4913
+      },
+      {
+        "end_atom": 4932,
+        "residue_idx": 371,
+        "start_atom": 4924
+      },
+      {
+        "end_atom": 4939,
+        "residue_idx": 372,
+        "start_atom": 4933
+      },
+      {
+        "end_atom": 4946,
+        "residue_idx": 373,
+        "start_atom": 4940
+      },
+      {
+        "end_atom": 4958,
+        "residue_idx": 374,
+        "start_atom": 4947
+      },
+      {
+        "end_atom": 4969,
+        "residue_idx": 375,
+        "start_atom": 4959
+      },
+      {
+        "end_atom": 4978,
+        "residue_idx": 376,
+        "start_atom": 4970
+      },
+      {
+        "end_atom": 4982,
+        "residue_idx": 377,
+        "start_atom": 4979
+      },
+      {
+        "end_atom": 4991,
+        "residue_idx": 378,
+        "start_atom": 4983
+      },
+      {
+        "end_atom": 4996,
+        "residue_idx": 379,
+        "start_atom": 4992
+      },
+      {
+        "end_atom": 5008,
+        "residue_idx": 380,
+        "start_atom": 4997
+      },
+      {
+        "end_atom": 5016,
+        "residue_idx": 381,
+        "start_atom": 5009
+      },
+      {
+        "end_atom": 5021,
+        "residue_idx": 382,
+        "start_atom": 5017
+      },
+      {
+        "end_atom": 5030,
+        "residue_idx": 383,
+        "start_atom": 5022
+      },
+      {
+        "end_atom": 5036,
+        "residue_idx": 384,
+        "start_atom": 5031
+      },
+      {
+        "end_atom": 5043,
+        "residue_idx": 385,
+        "start_atom": 5037
+      },
+      {
+        "end_atom": 5052,
+        "residue_idx": 386,
+        "start_atom": 5044
+      },
+      {
+        "end_atom": 5063,
+        "residue_idx": 387,
+        "start_atom": 5053
+      },
+      {
+        "end_atom": 5071,
+        "residue_idx": 388,
+        "start_atom": 5064
+      },
+      {
+        "end_atom": 5080,
+        "residue_idx": 389,
+        "start_atom": 5072
+      },
+      {
+        "end_atom": 5089,
+        "residue_idx": 390,
+        "start_atom": 5081
+      },
+      {
+        "end_atom": 5098,
+        "residue_idx": 391,
+        "start_atom": 5090
+      },
+      {
+        "end_atom": 5106,
+        "residue_idx": 392,
+        "start_atom": 5099
+      },
+      {
+        "end_atom": 5114,
+        "residue_idx": 393,
+        "start_atom": 5107
+      },
+      {
+        "end_atom": 5121,
+        "residue_idx": 394,
+        "start_atom": 5115
+      },
+      {
+        "end_atom": 5126,
+        "residue_idx": 395,
+        "start_atom": 5122
+      },
+      {
+        "end_atom": 5134,
+        "residue_idx": 396,
+        "start_atom": 5127
+      },
+      {
+        "end_atom": 5145,
+        "residue_idx": 397,
+        "start_atom": 5135
+      },
+      {
+        "end_atom": 5154,
+        "residue_idx": 398,
+        "start_atom": 5146
+      },
+      {
+        "end_atom": 5165,
+        "residue_idx": 399,
+        "start_atom": 5155
+      },
+      {
+        "end_atom": 5172,
+        "residue_idx": 400,
+        "start_atom": 5166
+      },
+      {
+        "end_atom": 5184,
+        "residue_idx": 401,
+        "start_atom": 5173
+      },
+      {
+        "end_atom": 5193,
+        "residue_idx": 402,
+        "start_atom": 5185
+      },
+      {
+        "end_atom": 5201,
+        "residue_idx": 403,
+        "start_atom": 5194
+      },
+      {
+        "end_atom": 5205,
+        "residue_idx": 404,
+        "start_atom": 5202
+      },
+      {
+        "end_atom": 5212,
+        "residue_idx": 405,
+        "start_atom": 5206
+      },
+      {
+        "end_atom": 5219,
+        "residue_idx": 406,
+        "start_atom": 5213
+      },
+      {
+        "end_atom": 5230,
+        "residue_idx": 407,
+        "start_atom": 5220
+      },
+      {
+        "end_atom": 5241,
+        "residue_idx": 408,
+        "start_atom": 5231
+      },
+      {
+        "end_atom": 5246,
+        "residue_idx": 409,
+        "start_atom": 5242
+      },
+      {
+        "end_atom": 5255,
+        "residue_idx": 410,
+        "start_atom": 5247
+      },
+      {
+        "end_atom": 5263,
+        "residue_idx": 411,
+        "start_atom": 5256
+      },
+      {
+        "end_atom": 5269,
+        "residue_idx": 412,
+        "start_atom": 5264
+      },
+      {
+        "end_atom": 5277,
+        "residue_idx": 413,
+        "start_atom": 5270
+      },
+      {
+        "end_atom": 5284,
+        "residue_idx": 414,
+        "start_atom": 5278
+      },
+      {
+        "end_atom": 5294,
+        "residue_idx": 415,
+        "start_atom": 5285
+      },
+      {
+        "end_atom": 5305,
+        "residue_idx": 416,
+        "start_atom": 5295
+      },
+      {
+        "end_atom": 5315,
+        "residue_idx": 417,
+        "start_atom": 5306
+      },
+      {
+        "end_atom": 5323,
+        "residue_idx": 418,
+        "start_atom": 5316
+      },
+      {
+        "end_atom": 5330,
+        "residue_idx": 419,
+        "start_atom": 5324
+      },
+      {
+        "end_atom": 5339,
+        "residue_idx": 420,
+        "start_atom": 5331
+      },
+      {
+        "end_atom": 5350,
+        "residue_idx": 421,
+        "start_atom": 5340
+      },
+      {
+        "end_atom": 5357,
+        "residue_idx": 422,
+        "start_atom": 5351
+      },
+      {
+        "end_atom": 5361,
+        "residue_idx": 423,
+        "start_atom": 5358
+      },
+      {
+        "end_atom": 5369,
+        "residue_idx": 424,
+        "start_atom": 5362
+      },
+      {
+        "end_atom": 5377,
+        "residue_idx": 425,
+        "start_atom": 5370
+      },
+      {
+        "end_atom": 5385,
+        "residue_idx": 426,
+        "start_atom": 5378
+      },
+      {
+        "end_atom": 5394,
+        "residue_idx": 427,
+        "start_atom": 5386
+      },
+      {
+        "end_atom": 5402,
+        "residue_idx": 428,
+        "start_atom": 5395
+      },
+      {
+        "end_atom": 5407,
+        "residue_idx": 429,
+        "start_atom": 5403
+      },
+      {
+        "end_atom": 5418,
+        "residue_idx": 430,
+        "start_atom": 5408
+      },
+      {
+        "end_atom": 5427,
+        "residue_idx": 431,
+        "start_atom": 5419
+      },
+      {
+        "end_atom": 5436,
+        "residue_idx": 432,
+        "start_atom": 5428
+      },
+      {
+        "end_atom": 5446,
+        "residue_idx": 433,
+        "start_atom": 5437
+      },
+      {
+        "end_atom": 5458,
+        "residue_idx": 434,
+        "start_atom": 5447
+      },
+      {
+        "end_atom": 5468,
+        "residue_idx": 435,
+        "start_atom": 5459
+      },
+      {
+        "end_atom": 5477,
+        "residue_idx": 436,
+        "start_atom": 5469
+      },
+      {
+        "end_atom": 5484,
+        "residue_idx": 437,
+        "start_atom": 5478
+      },
+      {
+        "end_atom": 5492,
+        "residue_idx": 438,
+        "start_atom": 5485
+      },
+      {
+        "end_atom": 5500,
+        "residue_idx": 439,
+        "start_atom": 5493
+      },
+      {
+        "end_atom": 5507,
+        "residue_idx": 440,
+        "start_atom": 5501
+      },
+      {
+        "end_atom": 5515,
+        "residue_idx": 441,
+        "start_atom": 5508
+      },
+      {
+        "end_atom": 5521,
+        "residue_idx": 442,
+        "start_atom": 5516
+      },
+      {
+        "end_atom": 5530,
+        "residue_idx": 443,
+        "start_atom": 5522
+      },
+      {
+        "end_atom": 5538,
+        "residue_idx": 444,
+        "start_atom": 5531
+      },
+      {
+        "end_atom": 5549,
+        "residue_idx": 445,
+        "start_atom": 5539
+      },
+      {
+        "end_atom": 5556,
+        "residue_idx": 446,
+        "start_atom": 5550
+      },
+      {
+        "end_atom": 5567,
+        "residue_idx": 447,
+        "start_atom": 5557
+      },
+      {
+        "end_atom": 5575,
+        "residue_idx": 448,
+        "start_atom": 5568
+      },
+      {
+        "end_atom": 5586,
+        "residue_idx": 449,
+        "start_atom": 5576
+      },
+      {
+        "end_atom": 5592,
+        "residue_idx": 450,
+        "start_atom": 5587
+      },
+      {
+        "end_atom": 5601,
+        "residue_idx": 451,
+        "start_atom": 5593
+      },
+      {
+        "end_atom": 5609,
+        "residue_idx": 452,
+        "start_atom": 5602
+      },
+      {
+        "end_atom": 5616,
+        "residue_idx": 453,
+        "start_atom": 5610
+      },
+      {
+        "end_atom": 5625,
+        "residue_idx": 454,
+        "start_atom": 5617
+      },
+      {
+        "end_atom": 5636,
+        "residue_idx": 455,
+        "start_atom": 5626
+      },
+      {
+        "end_atom": 5647,
+        "residue_idx": 456,
+        "start_atom": 5637
+      },
+      {
+        "end_atom": 5652,
+        "residue_idx": 457,
+        "start_atom": 5648
+      },
+      {
+        "end_atom": 5662,
+        "residue_idx": 458,
+        "start_atom": 5653
+      },
+      {
+        "end_atom": 5671,
+        "residue_idx": 459,
+        "start_atom": 5663
+      },
+      {
+        "end_atom": 5679,
+        "residue_idx": 460,
+        "start_atom": 5672
+      },
+      {
+        "end_atom": 5688,
+        "residue_idx": 461,
+        "start_atom": 5680
+      },
+      {
+        "end_atom": 5696,
+        "residue_idx": 462,
+        "start_atom": 5689
+      },
+      {
+        "end_atom": 5703,
+        "residue_idx": 463,
+        "start_atom": 5697
+      },
+      {
+        "end_atom": 5714,
+        "residue_idx": 464,
+        "start_atom": 5704
+      },
+      {
+        "end_atom": 5723,
+        "residue_idx": 465,
+        "start_atom": 5715
+      },
+      {
+        "end_atom": 5732,
+        "residue_idx": 466,
+        "start_atom": 5724
+      },
+      {
+        "end_atom": 5744,
+        "residue_idx": 467,
+        "start_atom": 5733
+      },
+      {
+        "end_atom": 5751,
+        "residue_idx": 468,
+        "start_atom": 5745
+      },
+      {
+        "end_atom": 5758,
+        "residue_idx": 469,
+        "start_atom": 5752
+      },
+      {
+        "end_atom": 5767,
+        "residue_idx": 470,
+        "start_atom": 5759
+      },
+      {
+        "end_atom": 5776,
+        "residue_idx": 471,
+        "start_atom": 5768
+      },
+      {
+        "end_atom": 5787,
+        "residue_idx": 472,
+        "start_atom": 5777
+      },
+      {
+        "end_atom": 5796,
+        "residue_idx": 473,
+        "start_atom": 5788
+      },
+      {
+        "end_atom": 5804,
+        "residue_idx": 474,
+        "start_atom": 5797
+      },
+      {
+        "end_atom": 5811,
+        "residue_idx": 475,
+        "start_atom": 5805
+      },
+      {
+        "end_atom": 5820,
+        "residue_idx": 476,
+        "start_atom": 5812
+      },
+      {
+        "end_atom": 5828,
+        "residue_idx": 477,
+        "start_atom": 5821
+      },
+      {
+        "end_atom": 5832,
+        "residue_idx": 478,
+        "start_atom": 5829
+      },
+      {
+        "end_atom": 5841,
+        "residue_idx": 479,
+        "start_atom": 5833
+      },
+      {
+        "end_atom": 5849,
+        "residue_idx": 480,
+        "start_atom": 5842
+      },
+      {
+        "end_atom": 5856,
+        "residue_idx": 481,
+        "start_atom": 5850
+      },
+      {
+        "end_atom": 5867,
+        "residue_idx": 482,
+        "start_atom": 5857
+      },
+      {
+        "end_atom": 5875,
+        "residue_idx": 483,
+        "start_atom": 5868
+      },
+      {
+        "end_atom": 5882,
+        "residue_idx": 484,
+        "start_atom": 5876
+      },
+      {
+        "end_atom": 5894,
+        "residue_idx": 485,
+        "start_atom": 5883
+      },
+      {
+        "end_atom": 5903,
+        "residue_idx": 486,
+        "start_atom": 5895
+      },
+      {
+        "end_atom": 5912,
+        "residue_idx": 487,
+        "start_atom": 5904
+      },
+      {
+        "end_atom": 5916,
+        "residue_idx": 488,
+        "start_atom": 5913
+      },
+      {
+        "end_atom": 5924,
+        "residue_idx": 489,
+        "start_atom": 5917
+      },
+      {
+        "end_atom": 5933,
+        "residue_idx": 490,
+        "start_atom": 5925
+      },
+      {
+        "end_atom": 5941,
+        "residue_idx": 491,
+        "start_atom": 5934
+      },
+      {
+        "end_atom": 5949,
+        "residue_idx": 492,
+        "start_atom": 5942
+      },
+      {
+        "end_atom": 5960,
+        "residue_idx": 493,
+        "start_atom": 5950
+      },
+      {
+        "end_atom": 5965,
+        "residue_idx": 494,
+        "start_atom": 5961
+      },
+      {
+        "end_atom": 5970,
+        "residue_idx": 495,
+        "start_atom": 5966
+      },
+      {
+        "end_atom": 5974,
+        "residue_idx": 496,
+        "start_atom": 5971
+      },
+      {
+        "end_atom": 5983,
+        "residue_idx": 497,
+        "start_atom": 5975
+      },
+      {
+        "end_atom": 5992,
+        "residue_idx": 498,
+        "start_atom": 5984
+      },
+      {
+        "end_atom": 6000,
+        "residue_idx": 499,
+        "start_atom": 5993
+      },
+      {
+        "end_atom": 6004,
+        "residue_idx": 500,
+        "start_atom": 6001
+      },
+      {
+        "end_atom": 6012,
+        "residue_idx": 501,
+        "start_atom": 6005
+      },
+      {
+        "end_atom": 6023,
+        "residue_idx": 502,
+        "start_atom": 6013
+      },
+      {
+        "end_atom": 6032,
+        "residue_idx": 503,
+        "start_atom": 6024
+      },
+      {
+        "end_atom": 6040,
+        "residue_idx": 504,
+        "start_atom": 6033
+      },
+      {
+        "end_atom": 6048,
+        "residue_idx": 505,
+        "start_atom": 6041
+      },
+      {
+        "end_atom": 6054,
+        "residue_idx": 506,
+        "start_atom": 6049
+      },
+      {
+        "end_atom": 6061,
+        "residue_idx": 507,
+        "start_atom": 6055
+      },
+      {
+        "end_atom": 6070,
+        "residue_idx": 508,
+        "start_atom": 6062
+      },
+      {
+        "end_atom": 6078,
+        "residue_idx": 509,
+        "start_atom": 6071
+      },
+      {
+        "end_atom": 6087,
+        "residue_idx": 510,
+        "start_atom": 6079
+      },
+      {
+        "end_atom": 6096,
+        "residue_idx": 511,
+        "start_atom": 6088
+      },
+      {
+        "end_atom": 6107,
+        "residue_idx": 512,
+        "start_atom": 6097
+      },
+      {
+        "end_atom": 6115,
+        "residue_idx": 513,
+        "start_atom": 6108
+      },
+      {
+        "end_atom": 6119,
+        "residue_idx": 514,
+        "start_atom": 6116
+      },
+      {
+        "end_atom": 6128,
+        "residue_idx": 515,
+        "start_atom": 6120
+      },
+      {
+        "end_atom": 6136,
+        "residue_idx": 516,
+        "start_atom": 6129
+      },
+      {
+        "end_atom": 6143,
+        "residue_idx": 517,
+        "start_atom": 6137
+      },
+      {
+        "end_atom": 6154,
+        "residue_idx": 518,
+        "start_atom": 6144
+      },
+      {
+        "end_atom": 6162,
+        "residue_idx": 519,
+        "start_atom": 6155
+      },
+      {
+        "end_atom": 6171,
+        "residue_idx": 520,
+        "start_atom": 6163
+      },
+      {
+        "end_atom": 6183,
+        "residue_idx": 521,
+        "start_atom": 6172
+      },
+      {
+        "end_atom": 6191,
+        "residue_idx": 522,
+        "start_atom": 6184
+      },
+      {
+        "end_atom": 6198,
+        "residue_idx": 523,
+        "start_atom": 6192
+      },
+      {
+        "end_atom": 6206,
+        "residue_idx": 524,
+        "start_atom": 6199
+      },
+      {
+        "end_atom": 6217,
+        "residue_idx": 525,
+        "start_atom": 6207
+      },
+      {
+        "end_atom": 6229,
+        "residue_idx": 526,
+        "start_atom": 6218
+      },
+      {
+        "end_atom": 6237,
+        "residue_idx": 527,
+        "start_atom": 6230
+      },
+      {
+        "end_atom": 6245,
+        "residue_idx": 528,
+        "start_atom": 6238
+      },
+      {
+        "end_atom": 6253,
+        "residue_idx": 529,
+        "start_atom": 6246
+      },
+      {
+        "end_atom": 6262,
+        "residue_idx": 530,
+        "start_atom": 6254
+      },
+      {
+        "end_atom": 6273,
+        "residue_idx": 531,
+        "start_atom": 6263
+      },
+      {
+        "end_atom": 6280,
+        "residue_idx": 532,
+        "start_atom": 6274
+      },
+      {
+        "end_atom": 6288,
+        "residue_idx": 533,
+        "start_atom": 6281
+      },
+      {
+        "end_atom": 6297,
+        "residue_idx": 534,
+        "start_atom": 6289
+      },
+      {
+        "end_atom": 6305,
+        "residue_idx": 535,
+        "start_atom": 6298
+      },
+      {
+        "end_atom": 6316,
+        "residue_idx": 536,
+        "start_atom": 6306
+      },
+      {
+        "end_atom": 6323,
+        "residue_idx": 537,
+        "start_atom": 6317
+      },
+      {
+        "end_atom": 6334,
+        "residue_idx": 538,
+        "start_atom": 6324
+      },
+      {
+        "end_atom": 6346,
+        "residue_idx": 539,
+        "start_atom": 6335
+      },
+      {
+        "end_atom": 6353,
+        "residue_idx": 540,
+        "start_atom": 6347
+      },
+      {
+        "end_atom": 6361,
+        "residue_idx": 541,
+        "start_atom": 6354
+      },
+      {
+        "end_atom": 6368,
+        "residue_idx": 542,
+        "start_atom": 6362
+      },
+      {
+        "end_atom": 6376,
+        "residue_idx": 543,
+        "start_atom": 6369
+      },
+      {
+        "end_atom": 6383,
+        "residue_idx": 544,
+        "start_atom": 6377
+      },
+      {
+        "end_atom": 6388,
+        "residue_idx": 545,
+        "start_atom": 6384
+      },
+      {
+        "end_atom": 6396,
+        "residue_idx": 546,
+        "start_atom": 6389
+      },
+      {
+        "end_atom": 6403,
+        "residue_idx": 547,
+        "start_atom": 6397
+      },
+      {
+        "end_atom": 6412,
+        "residue_idx": 548,
+        "start_atom": 6404
+      },
+      {
+        "end_atom": 6424,
+        "residue_idx": 549,
+        "start_atom": 6413
+      },
+      {
+        "end_atom": 6430,
+        "residue_idx": 550,
+        "start_atom": 6425
+      },
+      {
+        "end_atom": 6438,
+        "residue_idx": 551,
+        "start_atom": 6431
+      },
+      {
+        "end_atom": 6444,
+        "residue_idx": 552,
+        "start_atom": 6439
+      },
+      {
+        "end_atom": 6456,
+        "residue_idx": 553,
+        "start_atom": 6445
+      },
+      {
+        "end_atom": 6464,
+        "residue_idx": 554,
+        "start_atom": 6457
+      },
+      {
+        "end_atom": 6475,
+        "residue_idx": 555,
+        "start_atom": 6465
+      },
+      {
+        "end_atom": 6486,
+        "residue_idx": 556,
+        "start_atom": 6476
+      },
+      {
+        "end_atom": 6494,
+        "residue_idx": 557,
+        "start_atom": 6487
+      },
+      {
+        "end_atom": 6505,
+        "residue_idx": 558,
+        "start_atom": 6495
+      },
+      {
+        "end_atom": 6509,
+        "residue_idx": 559,
+        "start_atom": 6506
+      },
+      {
+        "end_atom": 6518,
+        "residue_idx": 560,
+        "start_atom": 6510
+      },
+      {
+        "end_atom": 6527,
+        "residue_idx": 561,
+        "start_atom": 6519
+      },
+      {
+        "end_atom": 6535,
+        "residue_idx": 562,
+        "start_atom": 6528
+      },
+      {
+        "end_atom": 6543,
+        "residue_idx": 563,
+        "start_atom": 6536
+      },
+      {
+        "end_atom": 6549,
+        "residue_idx": 564,
+        "start_atom": 6544
+      },
+      {
+        "end_atom": 6553,
+        "residue_idx": 565,
+        "start_atom": 6550
+      },
+      {
+        "end_atom": 6558,
+        "residue_idx": 566,
+        "start_atom": 6554
+      },
+      {
+        "end_atom": 6567,
+        "residue_idx": 567,
+        "start_atom": 6559
+      },
+      {
+        "end_atom": 6578,
+        "residue_idx": 568,
+        "start_atom": 6568
+      },
+      {
+        "end_atom": 6586,
+        "residue_idx": 569,
+        "start_atom": 6579
+      },
+      {
+        "end_atom": 6596,
+        "residue_idx": 570,
+        "start_atom": 6587
+      },
+      {
+        "end_atom": 6604,
+        "residue_idx": 571,
+        "start_atom": 6597
+      },
+      {
+        "end_atom": 6614,
+        "residue_idx": 572,
+        "start_atom": 6605
+      },
+      {
+        "end_atom": 6619,
+        "residue_idx": 573,
+        "start_atom": 6615
+      },
+      {
+        "end_atom": 6627,
+        "residue_idx": 574,
+        "start_atom": 6620
+      },
+      {
+        "end_atom": 6635,
+        "residue_idx": 575,
+        "start_atom": 6628
+      },
+      {
+        "end_atom": 6644,
+        "residue_idx": 576,
+        "start_atom": 6636
+      },
+      {
+        "end_atom": 6653,
+        "residue_idx": 577,
+        "start_atom": 6645
+      },
+      {
+        "end_atom": 6664,
+        "residue_idx": 578,
+        "start_atom": 6654
+      },
+      {
+        "end_atom": 6672,
+        "residue_idx": 579,
+        "start_atom": 6665
+      },
+      {
+        "end_atom": 6681,
+        "residue_idx": 580,
+        "start_atom": 6673
+      },
+      {
+        "end_atom": 6686,
+        "residue_idx": 581,
+        "start_atom": 6682
+      },
+      {
+        "end_atom": 6696,
+        "residue_idx": 582,
+        "start_atom": 6687
+      },
+      {
+        "end_atom": 6700,
+        "residue_idx": 583,
+        "start_atom": 6697
+      },
+      {
+        "end_atom": 6708,
+        "residue_idx": 584,
+        "start_atom": 6701
+      },
+      {
+        "end_atom": 6714,
+        "residue_idx": 585,
+        "start_atom": 6709
+      },
+      {
+        "end_atom": 6721,
+        "residue_idx": 586,
+        "start_atom": 6715
+      },
+      {
+        "end_atom": 6730,
+        "residue_idx": 587,
+        "start_atom": 6722
+      },
+      {
+        "end_atom": 6738,
+        "residue_idx": 588,
+        "start_atom": 6731
+      },
+      {
+        "end_atom": 6745,
+        "residue_idx": 589,
+        "start_atom": 6739
+      },
+      {
+        "end_atom": 6749,
+        "residue_idx": 590,
+        "start_atom": 6746
+      },
+      {
+        "end_atom": 6757,
+        "residue_idx": 591,
+        "start_atom": 6750
+      },
+      {
+        "end_atom": 6766,
+        "residue_idx": 592,
+        "start_atom": 6758
+      },
+      {
+        "end_atom": 6774,
+        "residue_idx": 593,
+        "start_atom": 6767
+      },
+      {
+        "end_atom": 6786,
+        "residue_idx": 594,
+        "start_atom": 6775
+      },
+      {
+        "end_atom": 6792,
+        "residue_idx": 595,
+        "start_atom": 6787
+      },
+      {
+        "end_atom": 6800,
+        "residue_idx": 596,
+        "start_atom": 6793
+      },
+      {
+        "end_atom": 6804,
+        "residue_idx": 597,
+        "start_atom": 6801
+      },
+      {
+        "end_atom": 6815,
+        "residue_idx": 598,
+        "start_atom": 6805
+      },
+      {
+        "end_atom": 6821,
+        "residue_idx": 599,
+        "start_atom": 6816
+      },
+      {
+        "end_atom": 6833,
+        "residue_idx": 600,
+        "start_atom": 6822
+      },
+      {
+        "end_atom": 6837,
+        "residue_idx": 601,
+        "start_atom": 6834
+      },
+      {
+        "end_atom": 6843,
+        "residue_idx": 602,
+        "start_atom": 6838
+      },
+      {
+        "end_atom": 6850,
+        "residue_idx": 603,
+        "start_atom": 6844
+      },
+      {
+        "end_atom": 6857,
+        "residue_idx": 604,
+        "start_atom": 6851
+      },
+      {
+        "end_atom": 6867,
+        "residue_idx": 605,
+        "start_atom": 6858
+      },
+      {
+        "end_atom": 6872,
+        "residue_idx": 606,
+        "start_atom": 6868
+      },
+      {
+        "end_atom": 6876,
+        "residue_idx": 607,
+        "start_atom": 6873
+      },
+      {
+        "end_atom": 6880,
+        "residue_idx": 608,
+        "start_atom": 6877
+      },
+      {
+        "end_atom": 6884,
+        "residue_idx": 609,
+        "start_atom": 6881
+      },
+      {
+        "end_atom": 6892,
+        "residue_idx": 610,
+        "start_atom": 6885
+      },
+      {
+        "end_atom": 6896,
+        "residue_idx": 611,
+        "start_atom": 6893
+      },
+      {
+        "end_atom": 6904,
+        "residue_idx": 612,
+        "start_atom": 6897
+      },
+      {
+        "end_atom": 6913,
+        "residue_idx": 613,
+        "start_atom": 6905
+      },
+      {
+        "end_atom": 6924,
+        "residue_idx": 614,
+        "start_atom": 6914
+      },
+      {
+        "end_atom": 6931,
+        "residue_idx": 615,
+        "start_atom": 6925
+      },
+      {
+        "end_atom": 6938,
+        "residue_idx": 616,
+        "start_atom": 6932
+      },
+      {
+        "end_atom": 6946,
+        "residue_idx": 617,
+        "start_atom": 6939
+      },
+      {
+        "end_atom": 6957,
+        "residue_idx": 618,
+        "start_atom": 6947
+      },
+      {
+        "end_atom": 6969,
+        "residue_idx": 619,
+        "start_atom": 6958
+      },
+      {
+        "end_atom": 6977,
+        "residue_idx": 620,
+        "start_atom": 6970
+      },
+      {
+        "end_atom": 6985,
+        "residue_idx": 621,
+        "start_atom": 6978
+      },
+      {
+        "end_atom": 6993,
+        "residue_idx": 622,
+        "start_atom": 6986
+      },
+      {
+        "end_atom": 7002,
+        "residue_idx": 623,
+        "start_atom": 6994
+      },
+      {
+        "end_atom": 7010,
+        "residue_idx": 624,
+        "start_atom": 7003
+      },
+      {
+        "end_atom": 7018,
+        "residue_idx": 625,
+        "start_atom": 7011
+      },
+      {
+        "end_atom": 7029,
+        "residue_idx": 626,
+        "start_atom": 7019
+      },
+      {
+        "end_atom": 7040,
+        "residue_idx": 627,
+        "start_atom": 7030
+      },
+      {
+        "end_atom": 7045,
+        "residue_idx": 628,
+        "start_atom": 7041
+      },
+      {
+        "end_atom": 7051,
+        "residue_idx": 629,
+        "start_atom": 7046
+      },
+      {
+        "end_atom": 7059,
+        "residue_idx": 630,
+        "start_atom": 7052
+      },
+      {
+        "end_atom": 7070,
+        "residue_idx": 631,
+        "start_atom": 7060
+      },
+      {
+        "end_atom": 7077,
+        "residue_idx": 632,
+        "start_atom": 7071
+      },
+      {
+        "end_atom": 7088,
+        "residue_idx": 633,
+        "start_atom": 7078
+      },
+      {
+        "end_atom": 7096,
+        "residue_idx": 634,
+        "start_atom": 7089
+      },
+      {
+        "end_atom": 7103,
+        "residue_idx": 635,
+        "start_atom": 7097
+      },
+      {
+        "end_atom": 7112,
+        "residue_idx": 636,
+        "start_atom": 7104
+      },
+      {
+        "end_atom": 7123,
+        "residue_idx": 637,
+        "start_atom": 7113
+      },
+      {
+        "end_atom": 7131,
+        "residue_idx": 638,
+        "start_atom": 7124
+      },
+      {
+        "end_atom": 7142,
+        "residue_idx": 639,
+        "start_atom": 7132
+      },
+      {
+        "end_atom": 7150,
+        "residue_idx": 640,
+        "start_atom": 7143
+      },
+      {
+        "end_atom": 7159,
+        "residue_idx": 641,
+        "start_atom": 7151
+      },
+      {
+        "end_atom": 7167,
+        "residue_idx": 642,
+        "start_atom": 7160
+      },
+      {
+        "end_atom": 7174,
+        "residue_idx": 643,
+        "start_atom": 7168
+      },
+      {
+        "end_atom": 7179,
+        "residue_idx": 644,
+        "start_atom": 7175
+      },
+      {
+        "end_atom": 7188,
+        "residue_idx": 645,
+        "start_atom": 7180
+      },
+      {
+        "end_atom": 7196,
+        "residue_idx": 646,
+        "start_atom": 7189
+      },
+      {
+        "end_atom": 7204,
+        "residue_idx": 647,
+        "start_atom": 7197
+      },
+      {
+        "end_atom": 7216,
+        "residue_idx": 648,
+        "start_atom": 7205
+      },
+      {
+        "end_atom": 7220,
+        "residue_idx": 649,
+        "start_atom": 7217
+      },
+      {
+        "end_atom": 7229,
+        "residue_idx": 650,
+        "start_atom": 7221
+      },
+      {
+        "end_atom": 7237,
+        "residue_idx": 651,
+        "start_atom": 7230
+      },
+      {
+        "end_atom": 7244,
+        "residue_idx": 652,
+        "start_atom": 7238
+      },
+      {
+        "end_atom": 7252,
+        "residue_idx": 653,
+        "start_atom": 7245
+      },
+      {
+        "end_atom": 7260,
+        "residue_idx": 654,
+        "start_atom": 7253
+      },
+      {
+        "end_atom": 7269,
+        "residue_idx": 655,
+        "start_atom": 7261
+      },
+      {
+        "end_atom": 7275,
+        "residue_idx": 656,
+        "start_atom": 7270
+      },
+      {
+        "end_atom": 7286,
+        "residue_idx": 657,
+        "start_atom": 7276
+      },
+      {
+        "end_atom": 7294,
+        "residue_idx": 658,
+        "start_atom": 7287
+      },
+      {
+        "end_atom": 7300,
+        "residue_idx": 659,
+        "start_atom": 7295
+      },
+      {
+        "end_atom": 7308,
+        "residue_idx": 660,
+        "start_atom": 7301
+      },
+      {
+        "end_atom": 7319,
+        "residue_idx": 661,
+        "start_atom": 7309
+      },
+      {
+        "end_atom": 7326,
+        "residue_idx": 662,
+        "start_atom": 7320
+      },
+      {
+        "end_atom": 7330,
+        "residue_idx": 663,
+        "start_atom": 7327
+      },
+      {
+        "end_atom": 7339,
+        "residue_idx": 664,
+        "start_atom": 7331
+      },
+      {
+        "end_atom": 7348,
+        "residue_idx": 665,
+        "start_atom": 7340
+      },
+      {
+        "end_atom": 7359,
+        "residue_idx": 666,
+        "start_atom": 7349
+      },
+      {
+        "end_atom": 7366,
+        "residue_idx": 667,
+        "start_atom": 7360
+      },
+      {
+        "end_atom": 7375,
+        "residue_idx": 668,
+        "start_atom": 7367
+      },
+      {
+        "end_atom": 7386,
+        "residue_idx": 669,
+        "start_atom": 7376
+      },
+      {
+        "end_atom": 7393,
+        "residue_idx": 670,
+        "start_atom": 7387
+      },
+      {
+        "end_atom": 7401,
+        "residue_idx": 671,
+        "start_atom": 7394
+      },
+      {
+        "end_atom": 7409,
+        "residue_idx": 672,
+        "start_atom": 7402
+      },
+      {
+        "end_atom": 7417,
+        "residue_idx": 673,
+        "start_atom": 7410
+      },
+      {
+        "end_atom": 7426,
+        "residue_idx": 674,
+        "start_atom": 7418
+      },
+      {
+        "end_atom": 7431,
+        "residue_idx": 675,
+        "start_atom": 7427
+      },
+      {
+        "end_atom": 7440,
+        "residue_idx": 676,
+        "start_atom": 7432
+      },
+      {
+        "end_atom": 7448,
+        "residue_idx": 677,
+        "start_atom": 7441
+      },
+      {
+        "end_atom": 7454,
+        "residue_idx": 678,
+        "start_atom": 7449
+      },
+      {
+        "end_atom": 7462,
+        "residue_idx": 679,
+        "start_atom": 7455
+      },
+      {
+        "end_atom": 7471,
+        "residue_idx": 680,
+        "start_atom": 7463
+      },
+      {
+        "end_atom": 7480,
+        "residue_idx": 681,
+        "start_atom": 7472
+      },
+      {
+        "end_atom": 7487,
+        "residue_idx": 682,
+        "start_atom": 7481
+      },
+      {
+        "end_atom": 7495,
+        "residue_idx": 683,
+        "start_atom": 7488
+      },
+      {
+        "end_atom": 7506,
+        "residue_idx": 684,
+        "start_atom": 7496
+      },
+      {
+        "end_atom": 7517,
+        "residue_idx": 685,
+        "start_atom": 7507
+      },
+      {
+        "end_atom": 7522,
+        "residue_idx": 686,
+        "start_atom": 7518
+      },
+      {
+        "end_atom": 7533,
+        "residue_idx": 687,
+        "start_atom": 7523
+      },
+      {
+        "end_atom": 7540,
+        "residue_idx": 688,
+        "start_atom": 7534
+      },
+      {
+        "end_atom": 7550,
+        "residue_idx": 689,
+        "start_atom": 7541
+      },
+      {
+        "end_atom": 7558,
+        "residue_idx": 690,
+        "start_atom": 7551
+      },
+      {
+        "end_atom": 7565,
+        "residue_idx": 691,
+        "start_atom": 7559
+      },
+      {
+        "end_atom": 7576,
+        "residue_idx": 692,
+        "start_atom": 7566
+      },
+      {
+        "end_atom": 7585,
+        "residue_idx": 693,
+        "start_atom": 7577
+      },
+      {
+        "end_atom": 7594,
+        "residue_idx": 694,
+        "start_atom": 7586
+      },
+      {
+        "end_atom": 7598,
+        "residue_idx": 695,
+        "start_atom": 7595
+      },
+      {
+        "end_atom": 7603,
+        "residue_idx": 696,
+        "start_atom": 7599
+      },
+      {
+        "end_atom": 7610,
+        "residue_idx": 697,
+        "start_atom": 7604
+      },
+      {
+        "end_atom": 7618,
+        "residue_idx": 698,
+        "start_atom": 7611
+      },
+      {
+        "end_atom": 7623,
+        "residue_idx": 699,
+        "start_atom": 7619
+      },
+      {
+        "end_atom": 7634,
+        "residue_idx": 700,
+        "start_atom": 7624
+      },
+      {
+        "end_atom": 7642,
+        "residue_idx": 701,
+        "start_atom": 7635
+      },
+      {
+        "end_atom": 7649,
+        "residue_idx": 702,
+        "start_atom": 7643
+      },
+      {
+        "end_atom": 7657,
+        "residue_idx": 703,
+        "start_atom": 7650
+      },
+      {
+        "end_atom": 7668,
+        "residue_idx": 704,
+        "start_atom": 7658
+      },
+      {
+        "end_atom": 7677,
+        "residue_idx": 705,
+        "start_atom": 7669
+      },
+      {
+        "end_atom": 7686,
+        "residue_idx": 706,
+        "start_atom": 7678
+      },
+      {
+        "end_atom": 7691,
+        "residue_idx": 707,
+        "start_atom": 7687
+      },
+      {
+        "end_atom": 7697,
+        "residue_idx": 708,
+        "start_atom": 7692
+      },
+      {
+        "end_atom": 7705,
+        "residue_idx": 709,
+        "start_atom": 7698
+      },
+      {
+        "end_atom": 7713,
+        "residue_idx": 710,
+        "start_atom": 7706
+      },
+      {
+        "end_atom": 7722,
+        "residue_idx": 711,
+        "start_atom": 7714
+      },
+      {
+        "end_atom": 7726,
+        "residue_idx": 712,
+        "start_atom": 7723
+      },
+      {
+        "end_atom": 7734,
+        "residue_idx": 713,
+        "start_atom": 7727
+      },
+      {
+        "end_atom": 7741,
+        "residue_idx": 714,
+        "start_atom": 7735
+      },
+      {
+        "end_atom": 7750,
+        "residue_idx": 715,
+        "start_atom": 7742
+      },
+      {
+        "end_atom": 7755,
+        "residue_idx": 716,
+        "start_atom": 7751
+      },
+      {
+        "end_atom": 7763,
+        "residue_idx": 717,
+        "start_atom": 7756
+      },
+      {
+        "end_atom": 7772,
+        "residue_idx": 718,
+        "start_atom": 7764
+      },
+      {
+        "end_atom": 7781,
+        "residue_idx": 719,
+        "start_atom": 7773
+      },
+      {
+        "end_atom": 7785,
+        "residue_idx": 720,
+        "start_atom": 7782
+      },
+      {
+        "end_atom": 7792,
+        "residue_idx": 721,
+        "start_atom": 7786
+      },
+      {
+        "end_atom": 7800,
+        "residue_idx": 722,
+        "start_atom": 7793
+      },
+      {
+        "end_atom": 7806,
+        "residue_idx": 723,
+        "start_atom": 7801
+      },
+      {
+        "end_atom": 7815,
+        "residue_idx": 724,
+        "start_atom": 7807
+      },
+      {
+        "end_atom": 7823,
+        "residue_idx": 725,
+        "start_atom": 7816
+      },
+      {
+        "end_atom": 7831,
+        "residue_idx": 726,
+        "start_atom": 7824
+      },
+      {
+        "end_atom": 7838,
+        "residue_idx": 727,
+        "start_atom": 7832
+      },
+      {
+        "end_atom": 7847,
+        "residue_idx": 728,
+        "start_atom": 7839
+      },
+      {
+        "end_atom": 7861,
+        "residue_idx": 729,
+        "start_atom": 7848
+      },
+      {
+        "end_atom": 7866,
+        "residue_idx": 730,
+        "start_atom": 7862
+      },
+      {
+        "end_atom": 7870,
+        "residue_idx": 731,
+        "start_atom": 7867
+      },
+      {
+        "end_atom": 7876,
+        "residue_idx": 732,
+        "start_atom": 7871
+      },
+      {
+        "end_atom": 7884,
+        "residue_idx": 733,
+        "start_atom": 7877
+      },
+      {
+        "end_atom": 7892,
+        "residue_idx": 734,
+        "start_atom": 7885
+      },
+      {
+        "end_atom": 7900,
+        "residue_idx": 735,
+        "start_atom": 7893
+      },
+      {
+        "end_atom": 7909,
+        "residue_idx": 736,
+        "start_atom": 7901
+      },
+      {
+        "end_atom": 7915,
+        "residue_idx": 737,
+        "start_atom": 7910
+      },
+      {
+        "end_atom": 7923,
+        "residue_idx": 738,
+        "start_atom": 7916
+      },
+      {
+        "end_atom": 7930,
+        "residue_idx": 739,
+        "start_atom": 7924
+      },
+      {
+        "end_atom": 7938,
+        "residue_idx": 740,
+        "start_atom": 7931
+      },
+      {
+        "end_atom": 7945,
+        "residue_idx": 741,
+        "start_atom": 7939
+      },
+      {
+        "end_atom": 7956,
+        "residue_idx": 742,
+        "start_atom": 7946
+      },
+      {
+        "end_atom": 7960,
+        "residue_idx": 743,
+        "start_atom": 7957
+      },
+      {
+        "end_atom": 7968,
+        "residue_idx": 744,
+        "start_atom": 7961
+      },
+      {
+        "end_atom": 7975,
+        "residue_idx": 745,
+        "start_atom": 7969
+      },
+      {
+        "end_atom": 7984,
+        "residue_idx": 746,
+        "start_atom": 7976
+      },
+      {
+        "end_atom": 7993,
+        "residue_idx": 747,
+        "start_atom": 7985
+      },
+      {
+        "end_atom": 8000,
+        "residue_idx": 748,
+        "start_atom": 7994
+      },
+      {
+        "end_atom": 8008,
+        "residue_idx": 749,
+        "start_atom": 8001
+      },
+      {
+        "end_atom": 8017,
+        "residue_idx": 750,
+        "start_atom": 8009
+      },
+      {
+        "end_atom": 8024,
+        "residue_idx": 751,
+        "start_atom": 8018
+      },
+      {
+        "end_atom": 8032,
+        "residue_idx": 752,
+        "start_atom": 8025
+      },
+      {
+        "end_atom": 8041,
+        "residue_idx": 753,
+        "start_atom": 8033
+      },
+      {
+        "end_atom": 8047,
+        "residue_idx": 754,
+        "start_atom": 8042
+      },
+      {
+        "end_atom": 8052,
+        "residue_idx": 755,
+        "start_atom": 8048
+      },
+      {
+        "end_atom": 8059,
+        "residue_idx": 756,
+        "start_atom": 8053
+      },
+      {
+        "end_atom": 8066,
+        "residue_idx": 757,
+        "start_atom": 8060
+      },
+      {
+        "end_atom": 8075,
+        "residue_idx": 758,
+        "start_atom": 8067
+      },
+      {
+        "end_atom": 8083,
+        "residue_idx": 759,
+        "start_atom": 8076
+      },
+      {
+        "end_atom": 8091,
+        "residue_idx": 760,
+        "start_atom": 8084
+      },
+      {
+        "end_atom": 8100,
+        "residue_idx": 761,
+        "start_atom": 8092
+      },
+      {
+        "end_atom": 8108,
+        "residue_idx": 762,
+        "start_atom": 8101
+      },
+      {
+        "end_atom": 8118,
+        "residue_idx": 763,
+        "start_atom": 8109
+      },
+      {
+        "end_atom": 8126,
+        "residue_idx": 764,
+        "start_atom": 8119
+      },
+      {
+        "end_atom": 8133,
+        "residue_idx": 765,
+        "start_atom": 8127
+      },
+      {
+        "end_atom": 8142,
+        "residue_idx": 766,
+        "start_atom": 8134
+      },
+      {
+        "end_atom": 8150,
+        "residue_idx": 767,
+        "start_atom": 8143
+      },
+      {
+        "end_atom": 8162,
+        "residue_idx": 768,
+        "start_atom": 8151
+      },
+      {
+        "end_atom": 8169,
+        "residue_idx": 769,
+        "start_atom": 8163
+      },
+      {
+        "end_atom": 8177,
+        "residue_idx": 770,
+        "start_atom": 8170
+      },
+      {
+        "end_atom": 8183,
+        "residue_idx": 771,
+        "start_atom": 8178
+      },
+      {
+        "end_atom": 8192,
+        "residue_idx": 772,
+        "start_atom": 8184
+      },
+      {
+        "end_atom": 8199,
+        "residue_idx": 773,
+        "start_atom": 8193
+      },
+      {
+        "end_atom": 8206,
+        "residue_idx": 774,
+        "start_atom": 8200
+      },
+      {
+        "end_atom": 8215,
+        "residue_idx": 775,
+        "start_atom": 8207
+      },
+      {
+        "end_atom": 8220,
+        "residue_idx": 776,
+        "start_atom": 8216
+      },
+      {
+        "end_atom": 8228,
+        "residue_idx": 777,
+        "start_atom": 8221
+      },
+      {
+        "end_atom": 8235,
+        "residue_idx": 778,
+        "start_atom": 8229
+      },
+      {
+        "end_atom": 8243,
+        "residue_idx": 779,
+        "start_atom": 8236
+      },
+      {
+        "end_atom": 8251,
+        "residue_idx": 780,
+        "start_atom": 8244
+      },
+      {
+        "end_atom": 8259,
+        "residue_idx": 781,
+        "start_atom": 8252
+      },
+      {
+        "end_atom": 8268,
+        "residue_idx": 782,
+        "start_atom": 8260
+      },
+      {
+        "end_atom": 8276,
+        "residue_idx": 783,
+        "start_atom": 8269
+      },
+      {
+        "end_atom": 8281,
+        "residue_idx": 784,
+        "start_atom": 8277
+      },
+      {
+        "end_atom": 8287,
+        "residue_idx": 785,
+        "start_atom": 8282
+      },
+      {
+        "end_atom": 8298,
+        "residue_idx": 786,
+        "start_atom": 8288
+      },
+      {
+        "end_atom": 8304,
+        "residue_idx": 787,
+        "start_atom": 8299
+      },
+      {
+        "end_atom": 8313,
+        "residue_idx": 788,
+        "start_atom": 8305
+      },
+      {
+        "end_atom": 8318,
+        "residue_idx": 789,
+        "start_atom": 8314
+      },
+      {
+        "end_atom": 8327,
+        "residue_idx": 790,
+        "start_atom": 8319
+      },
+      {
+        "end_atom": 8332,
+        "residue_idx": 791,
+        "start_atom": 8328
+      },
+      {
+        "end_atom": 8341,
+        "residue_idx": 792,
+        "start_atom": 8333
+      },
+      {
+        "end_atom": 8346,
+        "residue_idx": 793,
+        "start_atom": 8342
+      },
+      {
+        "end_atom": 8351,
+        "residue_idx": 794,
+        "start_atom": 8347
+      },
+      {
+        "end_atom": 8355,
+        "residue_idx": 795,
+        "start_atom": 8352
+      },
+      {
+        "end_atom": 8363,
+        "residue_idx": 796,
+        "start_atom": 8356
+      },
+      {
+        "end_atom": 8370,
+        "residue_idx": 797,
+        "start_atom": 8364
+      },
+      {
+        "end_atom": 8377,
+        "residue_idx": 798,
+        "start_atom": 8371
+      },
+      {
+        "end_atom": 8384,
+        "residue_idx": 799,
+        "start_atom": 8378
+      },
+      {
+        "end_atom": 8392,
+        "residue_idx": 800,
+        "start_atom": 8385
+      },
+      {
+        "end_atom": 8400,
+        "residue_idx": 801,
+        "start_atom": 8393
+      },
+      {
+        "end_atom": 8408,
+        "residue_idx": 802,
+        "start_atom": 8401
+      },
+      {
+        "end_atom": 8415,
+        "residue_idx": 803,
+        "start_atom": 8409
+      },
+      {
+        "end_atom": 8426,
+        "residue_idx": 804,
+        "start_atom": 8416
+      },
+      {
+        "end_atom": 8434,
+        "residue_idx": 805,
+        "start_atom": 8427
+      },
+      {
+        "end_atom": 8442,
+        "residue_idx": 806,
+        "start_atom": 8435
+      },
+      {
+        "end_atom": 8454,
+        "residue_idx": 807,
+        "start_atom": 8443
+      },
+      {
+        "end_atom": 8465,
+        "residue_idx": 808,
+        "start_atom": 8455
+      },
+      {
+        "end_atom": 8472,
+        "residue_idx": 809,
+        "start_atom": 8466
+      },
+      {
+        "end_atom": 8480,
+        "residue_idx": 810,
+        "start_atom": 8473
+      },
+      {
+        "end_atom": 8488,
+        "residue_idx": 811,
+        "start_atom": 8481
+      },
+      {
+        "end_atom": 8496,
+        "residue_idx": 812,
+        "start_atom": 8489
+      },
+      {
+        "end_atom": 8507,
+        "residue_idx": 813,
+        "start_atom": 8497
+      },
+      {
+        "end_atom": 8514,
+        "residue_idx": 814,
+        "start_atom": 8508
+      },
+      {
+        "end_atom": 8521,
+        "residue_idx": 815,
+        "start_atom": 8515
+      },
+      {
+        "end_atom": 8528,
+        "residue_idx": 816,
+        "start_atom": 8522
+      },
+      {
+        "end_atom": 8536,
+        "residue_idx": 817,
+        "start_atom": 8529
+      },
+      {
+        "end_atom": 8545,
+        "residue_idx": 818,
+        "start_atom": 8537
+      },
+      {
+        "end_atom": 8550,
+        "residue_idx": 819,
+        "start_atom": 8546
+      },
+      {
+        "end_atom": 8558,
+        "residue_idx": 820,
+        "start_atom": 8551
+      },
+      {
+        "end_atom": 8569,
+        "residue_idx": 821,
+        "start_atom": 8559
+      },
+      {
+        "end_atom": 8580,
+        "residue_idx": 822,
+        "start_atom": 8570
+      },
+      {
+        "end_atom": 8588,
+        "residue_idx": 823,
+        "start_atom": 8581
+      },
+      {
+        "end_atom": 8597,
+        "residue_idx": 824,
+        "start_atom": 8589
+      },
+      {
+        "end_atom": 8602,
+        "residue_idx": 825,
+        "start_atom": 8598
+      },
+      {
+        "end_atom": 8606,
+        "residue_idx": 826,
+        "start_atom": 8603
+      },
+      {
+        "end_atom": 8613,
+        "residue_idx": 827,
+        "start_atom": 8607
+      },
+      {
+        "end_atom": 8619,
+        "residue_idx": 828,
+        "start_atom": 8614
+      },
+      {
+        "end_atom": 8628,
+        "residue_idx": 829,
+        "start_atom": 8620
+      },
+      {
+        "end_atom": 8636,
+        "residue_idx": 830,
+        "start_atom": 8629
+      },
+      {
+        "end_atom": 8647,
+        "residue_idx": 831,
+        "start_atom": 8637
+      },
+      {
+        "end_atom": 8658,
+        "residue_idx": 832,
+        "start_atom": 8648
+      },
+      {
+        "end_atom": 8667,
+        "residue_idx": 833,
+        "start_atom": 8659
+      },
+      {
+        "end_atom": 8679,
+        "residue_idx": 834,
+        "start_atom": 8668
+      },
+      {
+        "end_atom": 8687,
+        "residue_idx": 835,
+        "start_atom": 8680
+      },
+      {
+        "end_atom": 8692,
+        "residue_idx": 836,
+        "start_atom": 8688
+      },
+      {
+        "end_atom": 8699,
+        "residue_idx": 837,
+        "start_atom": 8693
+      },
+      {
+        "end_atom": 8708,
+        "residue_idx": 838,
+        "start_atom": 8700
+      },
+      {
+        "end_atom": 8717,
+        "residue_idx": 839,
+        "start_atom": 8709
+      },
+      {
+        "end_atom": 8728,
+        "residue_idx": 840,
+        "start_atom": 8718
+      },
+      {
+        "end_atom": 8735,
+        "residue_idx": 841,
+        "start_atom": 8729
+      },
+      {
+        "end_atom": 8744,
+        "residue_idx": 842,
+        "start_atom": 8736
+      },
+      {
+        "end_atom": 8751,
+        "residue_idx": 843,
+        "start_atom": 8745
+      },
+      {
+        "end_atom": 8761,
+        "residue_idx": 844,
+        "start_atom": 8752
+      },
+      {
+        "end_atom": 8768,
+        "residue_idx": 845,
+        "start_atom": 8762
+      },
+      {
+        "end_atom": 8775,
+        "residue_idx": 846,
+        "start_atom": 8769
+      },
+      {
+        "end_atom": 8784,
+        "residue_idx": 847,
+        "start_atom": 8776
+      },
+      {
+        "end_atom": 8792,
+        "residue_idx": 848,
+        "start_atom": 8785
+      },
+      {
+        "end_atom": 8800,
+        "residue_idx": 849,
+        "start_atom": 8793
+      },
+      {
+        "end_atom": 8804,
+        "residue_idx": 850,
+        "start_atom": 8801
+      },
+      {
+        "end_atom": 8809,
+        "residue_idx": 851,
+        "start_atom": 8805
+      },
+      {
+        "end_atom": 8816,
+        "residue_idx": 852,
+        "start_atom": 8810
+      },
+      {
+        "end_atom": 8822,
+        "residue_idx": 853,
+        "start_atom": 8817
+      },
+      {
+        "end_atom": 8831,
+        "residue_idx": 854,
+        "start_atom": 8823
+      },
+      {
+        "end_atom": 8835,
+        "residue_idx": 855,
+        "start_atom": 8832
+      },
+      {
+        "end_atom": 8839,
+        "residue_idx": 856,
+        "start_atom": 8836
+      },
+      {
+        "end_atom": 8845,
+        "residue_idx": 857,
+        "start_atom": 8840
+      },
+      {
+        "end_atom": 8851,
+        "residue_idx": 858,
+        "start_atom": 8846
+      },
+      {
+        "end_atom": 8858,
+        "residue_idx": 859,
+        "start_atom": 8852
+      },
+      {
+        "end_atom": 8869,
+        "residue_idx": 860,
+        "start_atom": 8859
+      },
+      {
+        "end_atom": 8878,
+        "residue_idx": 861,
+        "start_atom": 8870
+      },
+      {
+        "end_atom": 8885,
+        "residue_idx": 862,
+        "start_atom": 8879
+      },
+      {
+        "end_atom": 8892,
+        "residue_idx": 863,
+        "start_atom": 8886
+      },
+      {
+        "end_atom": 8904,
+        "residue_idx": 864,
+        "start_atom": 8893
+      },
+      {
+        "end_atom": 8915,
+        "residue_idx": 865,
+        "start_atom": 8905
+      },
+      {
+        "end_atom": 8924,
+        "residue_idx": 866,
+        "start_atom": 8916
+      },
+      {
+        "end_atom": 8928,
+        "residue_idx": 867,
+        "start_atom": 8925
+      },
+      {
+        "end_atom": 8937,
+        "residue_idx": 868,
+        "start_atom": 8929
+      },
+      {
+        "end_atom": 8942,
+        "residue_idx": 869,
+        "start_atom": 8938
+      },
+      {
+        "end_atom": 8954,
+        "residue_idx": 870,
+        "start_atom": 8943
+      },
+      {
+        "end_atom": 8962,
+        "residue_idx": 871,
+        "start_atom": 8955
+      },
+      {
+        "end_atom": 8967,
+        "residue_idx": 872,
+        "start_atom": 8963
+      },
+      {
+        "end_atom": 8976,
+        "residue_idx": 873,
+        "start_atom": 8968
+      },
+      {
+        "end_atom": 8982,
+        "residue_idx": 874,
+        "start_atom": 8977
+      },
+      {
+        "end_atom": 8989,
+        "residue_idx": 875,
+        "start_atom": 8983
+      },
+      {
+        "end_atom": 8998,
+        "residue_idx": 876,
+        "start_atom": 8990
+      },
+      {
+        "end_atom": 9009,
+        "residue_idx": 877,
+        "start_atom": 8999
+      },
+      {
+        "end_atom": 9017,
+        "residue_idx": 878,
+        "start_atom": 9010
+      },
+      {
+        "end_atom": 9026,
+        "residue_idx": 879,
+        "start_atom": 9018
+      },
+      {
+        "end_atom": 9035,
+        "residue_idx": 880,
+        "start_atom": 9027
+      },
+      {
+        "end_atom": 9044,
+        "residue_idx": 881,
+        "start_atom": 9036
+      },
+      {
+        "end_atom": 9052,
+        "residue_idx": 882,
+        "start_atom": 9045
+      },
+      {
+        "end_atom": 9060,
+        "residue_idx": 883,
+        "start_atom": 9053
+      },
+      {
+        "end_atom": 9067,
+        "residue_idx": 884,
+        "start_atom": 9061
+      },
+      {
+        "end_atom": 9072,
+        "residue_idx": 885,
+        "start_atom": 9068
+      },
+      {
+        "end_atom": 9080,
+        "residue_idx": 886,
+        "start_atom": 9073
+      },
+      {
+        "end_atom": 9091,
+        "residue_idx": 887,
+        "start_atom": 9081
+      },
+      {
+        "end_atom": 9100,
+        "residue_idx": 888,
+        "start_atom": 9092
+      },
+      {
+        "end_atom": 9111,
+        "residue_idx": 889,
+        "start_atom": 9101
+      },
+      {
+        "end_atom": 9118,
+        "residue_idx": 890,
+        "start_atom": 9112
+      },
+      {
+        "end_atom": 9130,
+        "residue_idx": 891,
+        "start_atom": 9119
+      },
+      {
+        "end_atom": 9139,
+        "residue_idx": 892,
+        "start_atom": 9131
+      },
+      {
+        "end_atom": 9147,
+        "residue_idx": 893,
+        "start_atom": 9140
+      },
+      {
+        "end_atom": 9151,
+        "residue_idx": 894,
+        "start_atom": 9148
+      },
+      {
+        "end_atom": 9158,
+        "residue_idx": 895,
+        "start_atom": 9152
+      },
+      {
+        "end_atom": 9165,
+        "residue_idx": 896,
+        "start_atom": 9159
+      },
+      {
+        "end_atom": 9176,
+        "residue_idx": 897,
+        "start_atom": 9166
+      },
+      {
+        "end_atom": 9187,
+        "residue_idx": 898,
+        "start_atom": 9177
+      },
+      {
+        "end_atom": 9192,
+        "residue_idx": 899,
+        "start_atom": 9188
+      },
+      {
+        "end_atom": 9201,
+        "residue_idx": 900,
+        "start_atom": 9193
+      },
+      {
+        "end_atom": 9209,
+        "residue_idx": 901,
+        "start_atom": 9202
+      },
+      {
+        "end_atom": 9215,
+        "residue_idx": 902,
+        "start_atom": 9210
+      },
+      {
+        "end_atom": 9223,
+        "residue_idx": 903,
+        "start_atom": 9216
+      },
+      {
+        "end_atom": 9230,
+        "residue_idx": 904,
+        "start_atom": 9224
+      },
+      {
+        "end_atom": 9240,
+        "residue_idx": 905,
+        "start_atom": 9231
+      },
+      {
+        "end_atom": 9251,
+        "residue_idx": 906,
+        "start_atom": 9241
+      },
+      {
+        "end_atom": 9261,
+        "residue_idx": 907,
+        "start_atom": 9252
+      },
+      {
+        "end_atom": 9269,
+        "residue_idx": 908,
+        "start_atom": 9262
+      },
+      {
+        "end_atom": 9276,
+        "residue_idx": 909,
+        "start_atom": 9270
+      },
+      {
+        "end_atom": 9285,
+        "residue_idx": 910,
+        "start_atom": 9277
+      },
+      {
+        "end_atom": 9296,
+        "residue_idx": 911,
+        "start_atom": 9286
+      },
+      {
+        "end_atom": 9303,
+        "residue_idx": 912,
+        "start_atom": 9297
+      },
+      {
+        "end_atom": 9307,
+        "residue_idx": 913,
+        "start_atom": 9304
+      },
+      {
+        "end_atom": 9315,
+        "residue_idx": 914,
+        "start_atom": 9308
+      },
+      {
+        "end_atom": 9323,
+        "residue_idx": 915,
+        "start_atom": 9316
+      },
+      {
+        "end_atom": 9331,
+        "residue_idx": 916,
+        "start_atom": 9324
+      },
+      {
+        "end_atom": 9340,
+        "residue_idx": 917,
+        "start_atom": 9332
+      },
+      {
+        "end_atom": 9348,
+        "residue_idx": 918,
+        "start_atom": 9341
+      },
+      {
+        "end_atom": 9353,
+        "residue_idx": 919,
+        "start_atom": 9349
+      },
+      {
+        "end_atom": 9364,
+        "residue_idx": 920,
+        "start_atom": 9354
+      },
+      {
+        "end_atom": 9373,
+        "residue_idx": 921,
+        "start_atom": 9365
+      },
+      {
+        "end_atom": 9382,
+        "residue_idx": 922,
+        "start_atom": 9374
+      },
+      {
+        "end_atom": 9392,
+        "residue_idx": 923,
+        "start_atom": 9383
+      },
+      {
+        "end_atom": 9404,
+        "residue_idx": 924,
+        "start_atom": 9393
+      },
+      {
+        "end_atom": 9414,
+        "residue_idx": 925,
+        "start_atom": 9405
+      },
+      {
+        "end_atom": 9423,
+        "residue_idx": 926,
+        "start_atom": 9415
+      },
+      {
+        "end_atom": 9430,
+        "residue_idx": 927,
+        "start_atom": 9424
+      },
+      {
+        "end_atom": 9438,
+        "residue_idx": 928,
+        "start_atom": 9431
+      },
+      {
+        "end_atom": 9446,
+        "residue_idx": 929,
+        "start_atom": 9439
+      },
+      {
+        "end_atom": 9453,
+        "residue_idx": 930,
+        "start_atom": 9447
+      },
+      {
+        "end_atom": 9461,
+        "residue_idx": 931,
+        "start_atom": 9454
+      },
+      {
+        "end_atom": 9467,
+        "residue_idx": 932,
+        "start_atom": 9462
+      },
+      {
+        "end_atom": 9476,
+        "residue_idx": 933,
+        "start_atom": 9468
+      },
+      {
+        "end_atom": 9484,
+        "residue_idx": 934,
+        "start_atom": 9477
+      },
+      {
+        "end_atom": 9495,
+        "residue_idx": 935,
+        "start_atom": 9485
+      },
+      {
+        "end_atom": 9502,
+        "residue_idx": 936,
+        "start_atom": 9496
+      },
+      {
+        "end_atom": 9513,
+        "residue_idx": 937,
+        "start_atom": 9503
+      },
+      {
+        "end_atom": 9521,
+        "residue_idx": 938,
+        "start_atom": 9514
+      },
+      {
+        "end_atom": 9532,
+        "residue_idx": 939,
+        "start_atom": 9522
+      },
+      {
+        "end_atom": 9538,
+        "residue_idx": 940,
+        "start_atom": 9533
+      },
+      {
+        "end_atom": 9547,
+        "residue_idx": 941,
+        "start_atom": 9539
+      },
+      {
+        "end_atom": 9555,
+        "residue_idx": 942,
+        "start_atom": 9548
+      },
+      {
+        "end_atom": 9562,
+        "residue_idx": 943,
+        "start_atom": 9556
+      },
+      {
+        "end_atom": 9571,
+        "residue_idx": 944,
+        "start_atom": 9563
+      },
+      {
+        "end_atom": 9582,
+        "residue_idx": 945,
+        "start_atom": 9572
+      },
+      {
+        "end_atom": 9593,
+        "residue_idx": 946,
+        "start_atom": 9583
+      },
+      {
+        "end_atom": 9598,
+        "residue_idx": 947,
+        "start_atom": 9594
+      },
+      {
+        "end_atom": 9608,
+        "residue_idx": 948,
+        "start_atom": 9599
+      },
+      {
+        "end_atom": 9617,
+        "residue_idx": 949,
+        "start_atom": 9609
+      },
+      {
+        "end_atom": 9625,
+        "residue_idx": 950,
+        "start_atom": 9618
+      },
+      {
+        "end_atom": 9634,
+        "residue_idx": 951,
+        "start_atom": 9626
+      },
+      {
+        "end_atom": 9642,
+        "residue_idx": 952,
+        "start_atom": 9635
+      },
+      {
+        "end_atom": 9649,
+        "residue_idx": 953,
+        "start_atom": 9643
+      },
+      {
+        "end_atom": 9660,
+        "residue_idx": 954,
+        "start_atom": 9650
+      },
+      {
+        "end_atom": 9669,
+        "residue_idx": 955,
+        "start_atom": 9661
+      },
+      {
+        "end_atom": 9678,
+        "residue_idx": 956,
+        "start_atom": 9670
+      },
+      {
+        "end_atom": 9690,
+        "residue_idx": 957,
+        "start_atom": 9679
+      },
+      {
+        "end_atom": 9697,
+        "residue_idx": 958,
+        "start_atom": 9691
+      },
+      {
+        "end_atom": 9704,
+        "residue_idx": 959,
+        "start_atom": 9698
+      },
+      {
+        "end_atom": 9713,
+        "residue_idx": 960,
+        "start_atom": 9705
+      },
+      {
+        "end_atom": 9722,
+        "residue_idx": 961,
+        "start_atom": 9714
+      },
+      {
+        "end_atom": 9733,
+        "residue_idx": 962,
+        "start_atom": 9723
+      },
+      {
+        "end_atom": 9742,
+        "residue_idx": 963,
+        "start_atom": 9734
+      },
+      {
+        "end_atom": 9750,
+        "residue_idx": 964,
+        "start_atom": 9743
+      },
+      {
+        "end_atom": 9757,
+        "residue_idx": 965,
+        "start_atom": 9751
+      },
+      {
+        "end_atom": 9766,
+        "residue_idx": 966,
+        "start_atom": 9758
+      },
+      {
+        "end_atom": 9774,
+        "residue_idx": 967,
+        "start_atom": 9767
+      },
+      {
+        "end_atom": 9778,
+        "residue_idx": 968,
+        "start_atom": 9775
+      },
+      {
+        "end_atom": 9787,
+        "residue_idx": 969,
+        "start_atom": 9779
+      },
+      {
+        "end_atom": 9795,
+        "residue_idx": 970,
+        "start_atom": 9788
+      },
+      {
+        "end_atom": 9802,
+        "residue_idx": 971,
+        "start_atom": 9796
+      },
+      {
+        "end_atom": 9813,
+        "residue_idx": 972,
+        "start_atom": 9803
+      },
+      {
+        "end_atom": 9821,
+        "residue_idx": 973,
+        "start_atom": 9814
+      },
+      {
+        "end_atom": 9828,
+        "residue_idx": 974,
+        "start_atom": 9822
+      },
+      {
+        "end_atom": 9840,
+        "residue_idx": 975,
+        "start_atom": 9829
+      },
+      {
+        "end_atom": 9849,
+        "residue_idx": 976,
+        "start_atom": 9841
+      },
+      {
+        "end_atom": 9858,
+        "residue_idx": 977,
+        "start_atom": 9850
+      },
+      {
+        "end_atom": 9862,
+        "residue_idx": 978,
+        "start_atom": 9859
+      },
+      {
+        "end_atom": 9870,
+        "residue_idx": 979,
+        "start_atom": 9863
+      },
+      {
+        "end_atom": 9879,
+        "residue_idx": 980,
+        "start_atom": 9871
+      },
+      {
+        "end_atom": 9887,
+        "residue_idx": 981,
+        "start_atom": 9880
+      },
+      {
+        "end_atom": 9895,
+        "residue_idx": 982,
+        "start_atom": 9888
+      },
+      {
+        "end_atom": 9906,
+        "residue_idx": 983,
+        "start_atom": 9896
+      },
+      {
+        "end_atom": 9911,
+        "residue_idx": 984,
+        "start_atom": 9907
+      },
+      {
+        "end_atom": 9916,
+        "residue_idx": 985,
+        "start_atom": 9912
+      },
+      {
+        "end_atom": 9920,
+        "residue_idx": 986,
+        "start_atom": 9917
+      },
+      {
+        "end_atom": 9929,
+        "residue_idx": 987,
+        "start_atom": 9921
+      },
+      {
+        "end_atom": 9938,
+        "residue_idx": 988,
+        "start_atom": 9930
+      },
+      {
+        "end_atom": 9946,
+        "residue_idx": 989,
+        "start_atom": 9939
+      },
+      {
+        "end_atom": 9950,
+        "residue_idx": 990,
+        "start_atom": 9947
+      },
+      {
+        "end_atom": 9958,
+        "residue_idx": 991,
+        "start_atom": 9951
+      },
+      {
+        "end_atom": 9969,
+        "residue_idx": 992,
+        "start_atom": 9959
+      },
+      {
+        "end_atom": 9978,
+        "residue_idx": 993,
+        "start_atom": 9970
+      },
+      {
+        "end_atom": 9986,
+        "residue_idx": 994,
+        "start_atom": 9979
+      },
+      {
+        "end_atom": 9994,
+        "residue_idx": 995,
+        "start_atom": 9987
+      },
+      {
+        "end_atom": 10000,
+        "residue_idx": 996,
+        "start_atom": 9995
+      },
+      {
+        "end_atom": 10007,
+        "residue_idx": 997,
+        "start_atom": 10001
+      },
+      {
+        "end_atom": 10016,
+        "residue_idx": 998,
+        "start_atom": 10008
+      },
+      {
+        "end_atom": 10024,
+        "residue_idx": 999,
+        "start_atom": 10017
+      },
+      {
+        "end_atom": 10033,
+        "residue_idx": 1000,
+        "start_atom": 10025
+      },
+      {
+        "end_atom": 10042,
+        "residue_idx": 1001,
+        "start_atom": 10034
+      },
+      {
+        "end_atom": 10053,
+        "residue_idx": 1002,
+        "start_atom": 10043
+      },
+      {
+        "end_atom": 10061,
+        "residue_idx": 1003,
+        "start_atom": 10054
+      },
+      {
+        "end_atom": 10065,
+        "residue_idx": 1004,
+        "start_atom": 10062
+      },
+      {
+        "end_atom": 10074,
+        "residue_idx": 1005,
+        "start_atom": 10066
+      },
+      {
+        "end_atom": 10082,
+        "residue_idx": 1006,
+        "start_atom": 10075
+      },
+      {
+        "end_atom": 10089,
+        "residue_idx": 1007,
+        "start_atom": 10083
+      },
+      {
+        "end_atom": 10100,
+        "residue_idx": 1008,
+        "start_atom": 10090
+      },
+      {
+        "end_atom": 10108,
+        "residue_idx": 1009,
+        "start_atom": 10101
+      },
+      {
+        "end_atom": 10117,
+        "residue_idx": 1010,
+        "start_atom": 10109
+      },
+      {
+        "end_atom": 10129,
+        "residue_idx": 1011,
+        "start_atom": 10118
+      },
+      {
+        "end_atom": 10137,
+        "residue_idx": 1012,
+        "start_atom": 10130
+      },
+      {
+        "end_atom": 10144,
+        "residue_idx": 1013,
+        "start_atom": 10138
+      },
+      {
+        "end_atom": 10152,
+        "residue_idx": 1014,
+        "start_atom": 10145
+      },
+      {
+        "end_atom": 10163,
+        "residue_idx": 1015,
+        "start_atom": 10153
+      },
+      {
+        "end_atom": 10175,
+        "residue_idx": 1016,
+        "start_atom": 10164
+      },
+      {
+        "end_atom": 10183,
+        "residue_idx": 1017,
+        "start_atom": 10176
+      },
+      {
+        "end_atom": 10191,
+        "residue_idx": 1018,
+        "start_atom": 10184
+      },
+      {
+        "end_atom": 10199,
+        "residue_idx": 1019,
+        "start_atom": 10192
+      },
+      {
+        "end_atom": 10208,
+        "residue_idx": 1020,
+        "start_atom": 10200
+      },
+      {
+        "end_atom": 10219,
+        "residue_idx": 1021,
+        "start_atom": 10209
+      },
+      {
+        "end_atom": 10226,
+        "residue_idx": 1022,
+        "start_atom": 10220
+      },
+      {
+        "end_atom": 10234,
+        "residue_idx": 1023,
+        "start_atom": 10227
+      },
+      {
+        "end_atom": 10243,
+        "residue_idx": 1024,
+        "start_atom": 10235
+      },
+      {
+        "end_atom": 10251,
+        "residue_idx": 1025,
+        "start_atom": 10244
+      },
+      {
+        "end_atom": 10262,
+        "residue_idx": 1026,
+        "start_atom": 10252
+      },
+      {
+        "end_atom": 10269,
+        "residue_idx": 1027,
+        "start_atom": 10263
+      },
+      {
+        "end_atom": 10280,
+        "residue_idx": 1028,
+        "start_atom": 10270
+      },
+      {
+        "end_atom": 10292,
+        "residue_idx": 1029,
+        "start_atom": 10281
+      },
+      {
+        "end_atom": 10299,
+        "residue_idx": 1030,
+        "start_atom": 10293
+      },
+      {
+        "end_atom": 10307,
+        "residue_idx": 1031,
+        "start_atom": 10300
+      },
+      {
+        "end_atom": 10314,
+        "residue_idx": 1032,
+        "start_atom": 10308
+      },
+      {
+        "end_atom": 10322,
+        "residue_idx": 1033,
+        "start_atom": 10315
+      },
+      {
+        "end_atom": 10329,
+        "residue_idx": 1034,
+        "start_atom": 10323
+      },
+      {
+        "end_atom": 10334,
+        "residue_idx": 1035,
+        "start_atom": 10330
+      },
+      {
+        "end_atom": 10342,
+        "residue_idx": 1036,
+        "start_atom": 10335
+      },
+      {
+        "end_atom": 10349,
+        "residue_idx": 1037,
+        "start_atom": 10343
+      },
+      {
+        "end_atom": 10358,
+        "residue_idx": 1038,
+        "start_atom": 10350
+      },
+      {
+        "end_atom": 10370,
+        "residue_idx": 1039,
+        "start_atom": 10359
+      },
+      {
+        "end_atom": 10376,
+        "residue_idx": 1040,
+        "start_atom": 10371
+      },
+      {
+        "end_atom": 10384,
+        "residue_idx": 1041,
+        "start_atom": 10377
+      },
+      {
+        "end_atom": 10390,
+        "residue_idx": 1042,
+        "start_atom": 10385
+      },
+      {
+        "end_atom": 10402,
+        "residue_idx": 1043,
+        "start_atom": 10391
+      },
+      {
+        "end_atom": 10410,
+        "residue_idx": 1044,
+        "start_atom": 10403
+      },
+      {
+        "end_atom": 10421,
+        "residue_idx": 1045,
+        "start_atom": 10411
+      },
+      {
+        "end_atom": 10432,
+        "residue_idx": 1046,
+        "start_atom": 10422
+      },
+      {
+        "end_atom": 10440,
+        "residue_idx": 1047,
+        "start_atom": 10433
+      },
+      {
+        "end_atom": 10451,
+        "residue_idx": 1048,
+        "start_atom": 10441
+      },
+      {
+        "end_atom": 10455,
+        "residue_idx": 1049,
+        "start_atom": 10452
+      },
+      {
+        "end_atom": 10464,
+        "residue_idx": 1050,
+        "start_atom": 10456
+      },
+      {
+        "end_atom": 10473,
+        "residue_idx": 1051,
+        "start_atom": 10465
+      },
+      {
+        "end_atom": 10481,
+        "residue_idx": 1052,
+        "start_atom": 10474
+      },
+      {
+        "end_atom": 10489,
+        "residue_idx": 1053,
+        "start_atom": 10482
+      },
+      {
+        "end_atom": 10495,
+        "residue_idx": 1054,
+        "start_atom": 10490
+      },
+      {
+        "end_atom": 10499,
+        "residue_idx": 1055,
+        "start_atom": 10496
+      },
+      {
+        "end_atom": 10504,
+        "residue_idx": 1056,
+        "start_atom": 10500
+      },
+      {
+        "end_atom": 10513,
+        "residue_idx": 1057,
+        "start_atom": 10505
+      },
+      {
+        "end_atom": 10524,
+        "residue_idx": 1058,
+        "start_atom": 10514
+      },
+      {
+        "end_atom": 10532,
+        "residue_idx": 1059,
+        "start_atom": 10525
+      },
+      {
+        "end_atom": 10542,
+        "residue_idx": 1060,
+        "start_atom": 10533
+      },
+      {
+        "end_atom": 10550,
+        "residue_idx": 1061,
+        "start_atom": 10543
+      },
+      {
+        "end_atom": 10560,
+        "residue_idx": 1062,
+        "start_atom": 10551
+      },
+      {
+        "end_atom": 10565,
+        "residue_idx": 1063,
+        "start_atom": 10561
+      },
+      {
+        "end_atom": 10573,
+        "residue_idx": 1064,
+        "start_atom": 10566
+      },
+      {
+        "end_atom": 10581,
+        "residue_idx": 1065,
+        "start_atom": 10574
+      },
+      {
+        "end_atom": 10590,
+        "residue_idx": 1066,
+        "start_atom": 10582
+      },
+      {
+        "end_atom": 10599,
+        "residue_idx": 1067,
+        "start_atom": 10591
+      },
+      {
+        "end_atom": 10610,
+        "residue_idx": 1068,
+        "start_atom": 10600
+      },
+      {
+        "end_atom": 10618,
+        "residue_idx": 1069,
+        "start_atom": 10611
+      },
+      {
+        "end_atom": 10627,
+        "residue_idx": 1070,
+        "start_atom": 10619
+      },
+      {
+        "end_atom": 10632,
+        "residue_idx": 1071,
+        "start_atom": 10628
+      },
+      {
+        "end_atom": 10642,
+        "residue_idx": 1072,
+        "start_atom": 10633
+      },
+      {
+        "end_atom": 10646,
+        "residue_idx": 1073,
+        "start_atom": 10643
+      },
+      {
+        "end_atom": 10654,
+        "residue_idx": 1074,
+        "start_atom": 10647
+      },
+      {
+        "end_atom": 10660,
+        "residue_idx": 1075,
+        "start_atom": 10655
+      },
+      {
+        "end_atom": 10667,
+        "residue_idx": 1076,
+        "start_atom": 10661
+      },
+      {
+        "end_atom": 10676,
+        "residue_idx": 1077,
+        "start_atom": 10668
+      },
+      {
+        "end_atom": 10684,
+        "residue_idx": 1078,
+        "start_atom": 10677
+      },
+      {
+        "end_atom": 10691,
+        "residue_idx": 1079,
+        "start_atom": 10685
+      },
+      {
+        "end_atom": 10695,
+        "residue_idx": 1080,
+        "start_atom": 10692
+      },
+      {
+        "end_atom": 10703,
+        "residue_idx": 1081,
+        "start_atom": 10696
+      },
+      {
+        "end_atom": 10712,
+        "residue_idx": 1082,
+        "start_atom": 10704
+      },
+      {
+        "end_atom": 10720,
+        "residue_idx": 1083,
+        "start_atom": 10713
+      },
+      {
+        "end_atom": 10732,
+        "residue_idx": 1084,
+        "start_atom": 10721
+      },
+      {
+        "end_atom": 10738,
+        "residue_idx": 1085,
+        "start_atom": 10733
+      },
+      {
+        "end_atom": 10746,
+        "residue_idx": 1086,
+        "start_atom": 10739
+      },
+      {
+        "end_atom": 10750,
+        "residue_idx": 1087,
+        "start_atom": 10747
+      },
+      {
+        "end_atom": 10761,
+        "residue_idx": 1088,
+        "start_atom": 10751
+      },
+      {
+        "end_atom": 10767,
+        "residue_idx": 1089,
+        "start_atom": 10762
+      },
+      {
+        "end_atom": 10779,
+        "residue_idx": 1090,
+        "start_atom": 10768
+      },
+      {
+        "end_atom": 10783,
+        "residue_idx": 1091,
+        "start_atom": 10780
+      },
+      {
+        "end_atom": 10789,
+        "residue_idx": 1092,
+        "start_atom": 10784
+      },
+      {
+        "end_atom": 10796,
+        "residue_idx": 1093,
+        "start_atom": 10790
+      },
+      {
+        "end_atom": 10803,
+        "residue_idx": 1094,
+        "start_atom": 10797
+      },
+      {
+        "end_atom": 10813,
+        "residue_idx": 1095,
+        "start_atom": 10804
+      },
+      {
+        "end_atom": 10818,
+        "residue_idx": 1096,
+        "start_atom": 10814
+      },
+      {
+        "end_atom": 10822,
+        "residue_idx": 1097,
+        "start_atom": 10819
+      },
+      {
+        "end_atom": 10826,
+        "residue_idx": 1098,
+        "start_atom": 10823
+      },
+      {
+        "end_atom": 10830,
+        "residue_idx": 1099,
+        "start_atom": 10827
+      },
+      {
+        "end_atom": 10838,
+        "residue_idx": 1100,
+        "start_atom": 10831
+      },
+      {
+        "end_atom": 10842,
+        "residue_idx": 1101,
+        "start_atom": 10839
+      },
+      {
+        "end_atom": 10850,
+        "residue_idx": 1102,
+        "start_atom": 10843
+      },
+      {
+        "end_atom": 10859,
+        "residue_idx": 1103,
+        "start_atom": 10851
+      },
+      {
+        "end_atom": 10870,
+        "residue_idx": 1104,
+        "start_atom": 10860
+      },
+      {
+        "end_atom": 10877,
+        "residue_idx": 1105,
+        "start_atom": 10871
+      },
+      {
+        "end_atom": 10884,
+        "residue_idx": 1106,
+        "start_atom": 10878
+      },
+      {
+        "end_atom": 10892,
+        "residue_idx": 1107,
+        "start_atom": 10885
+      },
+      {
+        "end_atom": 10903,
+        "residue_idx": 1108,
+        "start_atom": 10893
+      },
+      {
+        "end_atom": 10915,
+        "residue_idx": 1109,
+        "start_atom": 10904
+      },
+      {
+        "end_atom": 10923,
+        "residue_idx": 1110,
+        "start_atom": 10916
+      },
+      {
+        "end_atom": 10931,
+        "residue_idx": 1111,
+        "start_atom": 10924
+      },
+      {
+        "end_atom": 10939,
+        "residue_idx": 1112,
+        "start_atom": 10932
+      },
+      {
+        "end_atom": 10948,
+        "residue_idx": 1113,
+        "start_atom": 10940
+      },
+      {
+        "end_atom": 10956,
+        "residue_idx": 1114,
+        "start_atom": 10949
+      },
+      {
+        "end_atom": 10964,
+        "residue_idx": 1115,
+        "start_atom": 10957
+      },
+      {
+        "end_atom": 10975,
+        "residue_idx": 1116,
+        "start_atom": 10965
+      },
+      {
+        "end_atom": 10986,
+        "residue_idx": 1117,
+        "start_atom": 10976
+      },
+      {
+        "end_atom": 10991,
+        "residue_idx": 1118,
+        "start_atom": 10987
+      },
+      {
+        "end_atom": 10997,
+        "residue_idx": 1119,
+        "start_atom": 10992
+      },
+      {
+        "end_atom": 11005,
+        "residue_idx": 1120,
+        "start_atom": 10998
+      },
+      {
+        "end_atom": 11016,
+        "residue_idx": 1121,
+        "start_atom": 11006
+      },
+      {
+        "end_atom": 11023,
+        "residue_idx": 1122,
+        "start_atom": 11017
+      },
+      {
+        "end_atom": 11034,
+        "residue_idx": 1123,
+        "start_atom": 11024
+      },
+      {
+        "end_atom": 11042,
+        "residue_idx": 1124,
+        "start_atom": 11035
+      },
+      {
+        "end_atom": 11049,
+        "residue_idx": 1125,
+        "start_atom": 11043
+      },
+      {
+        "end_atom": 11058,
+        "residue_idx": 1126,
+        "start_atom": 11050
+      },
+      {
+        "end_atom": 11069,
+        "residue_idx": 1127,
+        "start_atom": 11059
+      },
+      {
+        "end_atom": 11077,
+        "residue_idx": 1128,
+        "start_atom": 11070
+      },
+      {
+        "end_atom": 11088,
+        "residue_idx": 1129,
+        "start_atom": 11078
+      },
+      {
+        "end_atom": 11096,
+        "residue_idx": 1130,
+        "start_atom": 11089
+      }
+    ],
+    "type": "residue_indices"
+  }
+]

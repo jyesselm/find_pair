@@ -187,13 +187,6 @@ private:
      */
     [[nodiscard]] static size_t get_residue_index(const core::Structure& structure, const core::Residue& residue);
 
-    /**
-     * @brief Get base letter from ResidueType (matches legacy bseq character)
-     * @param type ResidueType enum value
-     * @return One-letter code (A, C, G, T, U) or '?' if unknown
-     */
-    [[nodiscard]] static char get_base_letter_from_type(core::ResidueType type);
-
     // Phase 1 and Phase 2 helper structures and methods
 
     /**

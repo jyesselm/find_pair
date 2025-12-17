@@ -538,11 +538,6 @@ int BasePairFinder::calculate_bp_type_id(const Residue* res1, const Residue* res
     return quality_calculator_.calculate_bp_type_id(*res1, *res2, result);
 }
 
-char BasePairFinder::get_base_letter_from_type(core::ResidueType type) {
-    // Delegate to QualityScoreCalculator
-    return QualityScoreCalculator::get_base_letter(type);
-}
-
 namespace {
 // Standard nucleotide ring geometry (from legacy xyz_ring array)
 // Matches RA_LIST order: " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "

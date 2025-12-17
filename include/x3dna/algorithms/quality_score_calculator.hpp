@@ -101,16 +101,6 @@ public:
     [[nodiscard]] int calculate_bp_type_id(const core::Residue& res1, const core::Residue& res2,
                              const ValidationResult& result) const;
 
-    /**
-     * @brief Get base letter from ResidueType
-     *
-     * Converts ResidueType enum to one-letter code (matches legacy bseq character).
-     *
-     * @param type ResidueType enum value
-     * @return One-letter code (A, C, G, T, U, I, P) or '?' if unknown
-     */
-    [[nodiscard]] static char get_base_letter(core::ResidueType type);
-
 private:
     ParameterCalculator param_calculator_;
 

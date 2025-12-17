@@ -151,10 +151,10 @@ int QualityScoreCalculator::calculate_bp_type_id(
     double opening = params.twist; // Correct
 
     // Get base pair type string (e.g., "AT", "GC")
-    // CRITICAL: Use ResidueType to get base letter (more reliable than one_letter_code)
     // Legacy uses: sprintf(bpi, "%c%c", toupper((int) bseq[i]), toupper((int) bseq[j]));
-    char base1 = get_base_letter(res1.residue_type());
-    char base2 = get_base_letter(res2.residue_type());
+    // Use one_letter_code() which is already set by ResidueFactory
+    char base1 = static_cast<char>(std::toupper(static_cast<unsigned char>(res1.one_letter_code())));
+    char base2 = static_cast<char>(std::toupper(static_cast<unsigned char>(res2.one_letter_code())));
     std::string bp_type = std::string(1, base1) + std::string(1, base2);
 
     // Check stretch and opening thresholds (matches legacy: fabs(stretch) > 2.0 ||
@@ -193,29 +193,6 @@ int QualityScoreCalculator::calculate_bp_type_id(
     }
 
     return bp_type_id;
-}
-
-char QualityScoreCalculator::get_base_letter(core::ResidueType type) {
-    // Convert ResidueType to one-letter code (matches legacy bseq character)
-    switch (type) {
-        case core::ResidueType::ADENINE:
-            return 'A';
-        case core::ResidueType::CYTOSINE:
-            return 'C';
-        case core::ResidueType::GUANINE:
-            return 'G';
-        case core::ResidueType::THYMINE:
-            return 'T';
-        case core::ResidueType::URACIL:
-            return 'U';
-        case core::ResidueType::INOSINE:
-            return 'I';
-        case core::ResidueType::PSEUDOURIDINE:
-            return 'P';
-        default:
-            // For modified nucleotides or unknown, try one_letter_code as fallback
-            return '?';
-    }
 }
 
 }  // namespace algorithms

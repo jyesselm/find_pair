@@ -1,0 +1,1192 @@
+[
+  {
+    "base_i": 1,
+    "base_j": 69,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 9.053101,
+      "d_v": 0.133868,
+      "dorg": 0.295645,
+      "plane_angle": 18.079875,
+      "quality_score": -3.532625
+    },
+    "direction_vectors": {
+      "dir_x": 0.995537,
+      "dir_y": -0.951103,
+      "dir_z": -0.950625
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 2,
+    "base_j": 68,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.738437,
+      "d_v": 0.313993,
+      "dorg": 0.76834,
+      "plane_angle": 9.551775,
+      "quality_score": -3.126084
+    },
+    "direction_vectors": {
+      "dir_x": 0.987729,
+      "dir_y": -0.997407,
+      "dir_z": -0.986136
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 3,
+    "base_j": 67,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.861205,
+      "d_v": 0.044682,
+      "dorg": 0.280878,
+      "plane_angle": 12.339298,
+      "quality_score": -4.012794
+    },
+    "direction_vectors": {
+      "dir_x": 0.98125,
+      "dir_y": -0.995599,
+      "dir_z": -0.976899
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 4,
+    "base_j": 66,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.838836,
+      "d_v": 0.119485,
+      "dorg": 0.462009,
+      "plane_angle": 22.758052,
+      "quality_score": -3.161118
+    },
+    "direction_vectors": {
+      "dir_x": 0.961185,
+      "dir_y": -0.959367,
+      "dir_z": -0.922147
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 5,
+    "base_j": 65,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.612256,
+      "d_v": 0.058263,
+      "dorg": 0.148308,
+      "plane_angle": 17.98752,
+      "quality_score": -3.835789
+    },
+    "direction_vectors": {
+      "dir_x": 0.961051,
+      "dir_y": -0.967814,
+      "dir_z": -0.951124
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 6,
+    "base_j": 64,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 9.003308,
+      "d_v": 0.15686,
+      "dorg": 0.348053,
+      "plane_angle": 2.901901,
+      "quality_score": -4.193133
+    },
+    "direction_vectors": {
+      "dir_x": 0.996167,
+      "dir_y": -0.995278,
+      "dir_z": -0.998718
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 7,
+    "base_j": 13,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 7.151764,
+      "d_v": 1.008116,
+      "dorg": 4.753519,
+      "plane_angle": 11.468306,
+      "quality_score": 4.343167
+    },
+    "direction_vectors": {
+      "dir_x": 0.008772,
+      "dir_y": -0.025165,
+      "dir_z": -0.980035
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 7,
+    "base_j": 19,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 8.068609,
+      "d_v": 0.100485,
+      "dorg": 8.019128,
+      "plane_angle": 24.665696,
+      "quality_score": 8.453383
+    },
+    "direction_vectors": {
+      "dir_x": -0.732467,
+      "dir_y": -0.660174,
+      "dir_z": 0.908758
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 7,
+    "base_j": 43,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 8.208642,
+      "d_v": 2.369737,
+      "dorg": 5.472756,
+      "plane_angle": 17.190203,
+      "quality_score": 10.07174
+    },
+    "direction_vectors": {
+      "dir_x": 0.194583,
+      "dir_y": -0.227131,
+      "dir_z": -0.955329
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 13,
+    "base_j": 19,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 9.189543,
+      "d_v": 0.654737,
+      "dorg": 6.554476,
+      "plane_angle": 15.067283,
+      "quality_score": 7.617313
+    },
+    "direction_vectors": {
+      "dir_x": 0.656365,
+      "dir_y": -0.689679,
+      "dir_z": -0.965621
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 8,
+    "base_j": 21,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 9.781668,
+      "d_v": 0.649091,
+      "dorg": 7.005138,
+      "plane_angle": 36.343841,
+      "quality_score": 9.120512
+    },
+    "direction_vectors": {
+      "dir_x": -0.829652,
+      "dir_y": -0.975409,
+      "dir_z": 0.805475
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 9,
+    "base_j": 23,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.797326,
+      "d_v": 0.117181,
+      "dorg": 0.561527,
+      "plane_angle": 3.145375,
+      "quality_score": -4.046842
+    },
+    "direction_vectors": {
+      "dir_x": 0.998601,
+      "dir_y": -0.999163,
+      "dir_z": -0.998494
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 10,
+    "base_j": 22,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.997421,
+      "d_v": 0.266412,
+      "dorg": 0.353593,
+      "plane_angle": 7.522063,
+      "quality_score": -3.73748
+    },
+    "direction_vectors": {
+      "dir_x": 0.995432,
+      "dir_y": -0.995957,
+      "dir_z": -0.991395
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 11,
+    "base_j": 21,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.812784,
+      "d_v": 0.268342,
+      "dorg": 0.522081,
+      "plane_angle": 12.624678,
+      "quality_score": -3.310001
+    },
+    "direction_vectors": {
+      "dir_x": 0.984625,
+      "dir_y": -0.989706,
+      "dir_z": -0.975823
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 12,
+    "base_j": 20,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 7.964212,
+      "d_v": 0.139841,
+      "dorg": 7.666874,
+      "plane_angle": 6.923891,
+      "quality_score": 8.292751
+    },
+    "direction_vectors": {
+      "dir_x": 0.976046,
+      "dir_y": -0.980657,
+      "dir_z": -0.992707
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 12,
+    "base_j": 43,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 11.037506,
+      "d_v": 0.097503,
+      "dorg": 1.985219,
+      "plane_angle": 17.452343,
+      "quality_score": 0.052841
+    },
+    "direction_vectors": {
+      "dir_x": -0.983028,
+      "dir_y": -0.955114,
+      "dir_z": 0.953967
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 14,
+    "base_j": 46,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 8.753064,
+      "d_v": 0.101465,
+      "dorg": 4.179917,
+      "plane_angle": 26.58152,
+      "quality_score": 2.711923
+    },
+    "direction_vectors": {
+      "dir_x": -0.932059,
+      "dir_y": -0.843329,
+      "dir_z": 0.894299
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 16,
+    "base_j": 53,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 8.199268,
+      "d_v": 0.466731,
+      "dorg": 5.674145,
+      "plane_angle": 21.821376,
+      "quality_score": 6.698676
+    },
+    "direction_vectors": {
+      "dir_x": 0.061627,
+      "dir_y": -9.7e-05,
+      "dir_z": 0.928347
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 17,
+    "base_j": 18,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 6.043158,
+      "d_v": 1.627864,
+      "dorg": 5.954214,
+      "plane_angle": 63.290003,
+      "quality_score": 11.374442
+    },
+    "direction_vectors": {
+      "dir_x": 0.538771,
+      "dir_y": 0.910048,
+      "dir_z": 0.449475
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 17,
+    "base_j": 54,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.585291,
+      "d_v": 0.528513,
+      "dorg": 0.712064,
+      "plane_angle": 21.081249,
+      "quality_score": -2.176849
+    },
+    "direction_vectors": {
+      "dir_x": 0.960786,
+      "dir_y": -0.972285,
+      "dir_z": -0.933071
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 24,
+    "base_j": 42,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 9.205722,
+      "d_v": 0.027468,
+      "dorg": 3.586216,
+      "plane_angle": 11.318709,
+      "quality_score": 3.207087
+    },
+    "direction_vectors": {
+      "dir_x": 0.988241,
+      "dir_y": -0.990518,
+      "dir_z": -0.980551
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 25,
+    "base_j": 41,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.566108,
+      "d_v": 0.019039,
+      "dorg": 0.571465,
+      "plane_angle": 20.064827,
+      "quality_score": -3.387216
+    },
+    "direction_vectors": {
+      "dir_x": 0.955008,
+      "dir_y": -0.981144,
+      "dir_z": -0.939305
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 26,
+    "base_j": 40,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.823534,
+      "d_v": 0.180557,
+      "dorg": 0.313212,
+      "plane_angle": 14.041152,
+      "quality_score": -3.623617
+    },
+    "direction_vectors": {
+      "dir_x": 0.987391,
+      "dir_y": -0.982731,
+      "dir_z": -0.970122
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 27,
+    "base_j": 39,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.505179,
+      "d_v": 0.170467,
+      "dorg": 1.583054,
+      "plane_angle": 10.768692,
+      "quality_score": -0.537579
+    },
+    "direction_vectors": {
+      "dir_x": 0.979785,
+      "dir_y": -0.997056,
+      "dir_z": -0.982389
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 28,
+    "base_j": 38,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.727089,
+      "d_v": 0.559652,
+      "dorg": 0.890421,
+      "plane_angle": 14.711123,
+      "quality_score": -2.254719
+    },
+    "direction_vectors": {
+      "dir_x": 0.993114,
+      "dir_y": -0.961765,
+      "dir_z": -0.967218
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 29,
+    "base_j": 37,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 9.302792,
+      "d_v": 0.96178,
+      "dorg": 1.081169,
+      "plane_angle": 20.735489,
+      "quality_score": 1.041504
+    },
+    "direction_vectors": {
+      "dir_x": 0.947915,
+      "dir_y": -0.971448,
+      "dir_z": -0.935225
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 30,
+    "base_j": 36,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 9.281919,
+      "d_v": 0.691626,
+      "dorg": 3.455612,
+      "plane_angle": 11.384742,
+      "quality_score": 4.408101
+    },
+    "direction_vectors": {
+      "dir_x": 0.847684,
+      "dir_y": -0.834127,
+      "dir_z": -0.980324
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 31,
+    "base_j": 35,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 8.076141,
+      "d_v": 1.352376,
+      "dorg": 8.661286,
+      "plane_angle": 35.102634,
+      "quality_score": 13.12117
+    },
+    "direction_vectors": {
+      "dir_x": 0.699044,
+      "dir_y": -0.880911,
+      "dir_z": -0.818123
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 47,
+    "base_j": 63,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.604807,
+      "d_v": 0.200234,
+      "dorg": 1.057315,
+      "plane_angle": 13.919185,
+      "quality_score": -2.846258
+    },
+    "direction_vectors": {
+      "dir_x": 0.979061,
+      "dir_y": -0.988071,
+      "dir_z": -0.970636
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 48,
+    "base_j": 62,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.774026,
+      "d_v": 0.251932,
+      "dorg": 0.688138,
+      "plane_angle": 6.064303,
+      "quality_score": -3.504783
+    },
+    "direction_vectors": {
+      "dir_x": 0.979582,
+      "dir_y": -0.985075,
+      "dir_z": -0.994404
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 49,
+    "base_j": 61,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.51597,
+      "d_v": 0.030082,
+      "dorg": 0.588643,
+      "plane_angle": 17.89225,
+      "quality_score": -0.45658
+    },
+    "direction_vectors": {
+      "dir_x": 0.957541,
+      "dir_y": -0.993042,
+      "dir_z": -0.951636
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 50,
+    "base_j": 60,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.889574,
+      "d_v": 0.056428,
+      "dorg": 0.564217,
+      "plane_angle": 13.682808,
+      "quality_score": -3.638786
+    },
+    "direction_vectors": {
+      "dir_x": 0.979274,
+      "dir_y": -0.98951,
+      "dir_z": -0.97162
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 51,
+    "base_j": 59,
+    "bp_type_id": 2,
+    "calculated_values": {
+      "dNN": 8.716594,
+      "d_v": 0.025221,
+      "dorg": 0.612366,
+      "plane_angle": 10.718814,
+      "quality_score": -3.801252
+    },
+    "direction_vectors": {
+      "dir_x": 0.99659,
+      "dir_y": -0.980326,
+      "dir_z": -0.982552
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  },
+  {
+    "base_i": 52,
+    "base_j": 56,
+    "bp_type_id": -1,
+    "calculated_values": {
+      "dNN": 7.202493,
+      "d_v": 0.046456,
+      "dorg": 4.754161,
+      "plane_angle": 12.289636,
+      "quality_score": 2.461554
+    },
+    "direction_vectors": {
+      "dir_x": -0.094029,
+      "dir_y": 0.08019,
+      "dir_z": -0.977084
+    },
+    "is_valid": 1,
+    "thresholds": {
+      "max_dNN": 1e+18,
+      "max_dorg": 15.0,
+      "max_dv": 2.5,
+      "max_plane_angle": 65.0,
+      "min_dNN": 4.5,
+      "min_dorg": null,
+      "min_dv": null,
+      "min_plane_angle": null
+    },
+    "type": "pair_validation",
+    "validation_checks": {
+      "dNN_check": true,
+      "d_v_check": true,
+      "distance_check": true,
+      "plane_angle_check": true
+    }
+  }
+]

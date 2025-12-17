@@ -1,0 +1,818 @@
+[
+  {
+    "base_i": 1,
+    "base_j": 69,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.053101,
+      "d_v": 0.133868,
+      "dorg": 0.295645,
+      "overlap_area": 0.0,
+      "plane_angle": 18.079875
+    }
+  },
+  {
+    "base_i": 69,
+    "base_j": 1,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.053101,
+      "d_v": 0.133868,
+      "dorg": 0.295645,
+      "overlap_area": 0.0,
+      "plane_angle": 18.079875
+    }
+  },
+  {
+    "base_i": 2,
+    "base_j": 68,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.738437,
+      "d_v": 0.313993,
+      "dorg": 0.76834,
+      "overlap_area": 0.0,
+      "plane_angle": 9.551775
+    }
+  },
+  {
+    "base_i": 68,
+    "base_j": 2,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.738437,
+      "d_v": 0.313993,
+      "dorg": 0.76834,
+      "overlap_area": 0.0,
+      "plane_angle": 9.551775
+    }
+  },
+  {
+    "base_i": 3,
+    "base_j": 67,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.861205,
+      "d_v": 0.044682,
+      "dorg": 0.280878,
+      "overlap_area": 0.0,
+      "plane_angle": 12.339298
+    }
+  },
+  {
+    "base_i": 67,
+    "base_j": 3,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.861205,
+      "d_v": 0.044682,
+      "dorg": 0.280878,
+      "overlap_area": 0.0,
+      "plane_angle": 12.339298
+    }
+  },
+  {
+    "base_i": 4,
+    "base_j": 66,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.838836,
+      "d_v": 0.119485,
+      "dorg": 0.462009,
+      "overlap_area": 0.0,
+      "plane_angle": 22.758052
+    }
+  },
+  {
+    "base_i": 66,
+    "base_j": 4,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.838836,
+      "d_v": 0.119485,
+      "dorg": 0.462009,
+      "overlap_area": 0.0,
+      "plane_angle": 22.758052
+    }
+  },
+  {
+    "base_i": 5,
+    "base_j": 65,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.612256,
+      "d_v": 0.058263,
+      "dorg": 0.148308,
+      "overlap_area": 0.0,
+      "plane_angle": 17.98752
+    }
+  },
+  {
+    "base_i": 65,
+    "base_j": 5,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.612256,
+      "d_v": 0.058263,
+      "dorg": 0.148308,
+      "overlap_area": 0.0,
+      "plane_angle": 17.98752
+    }
+  },
+  {
+    "base_i": 6,
+    "base_j": 64,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.003308,
+      "d_v": 0.15686,
+      "dorg": 0.348053,
+      "overlap_area": 0.0,
+      "plane_angle": 2.901901
+    }
+  },
+  {
+    "base_i": 64,
+    "base_j": 6,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.003308,
+      "d_v": 0.15686,
+      "dorg": 0.348053,
+      "overlap_area": 0.0,
+      "plane_angle": 2.901901
+    }
+  },
+  {
+    "base_i": 7,
+    "base_j": 13,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 7.151764,
+      "d_v": 1.008116,
+      "dorg": 4.753519,
+      "overlap_area": 0.0,
+      "plane_angle": 11.468306
+    }
+  },
+  {
+    "base_i": 13,
+    "base_j": 7,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 7.151764,
+      "d_v": 1.008116,
+      "dorg": 4.753519,
+      "overlap_area": 0.0,
+      "plane_angle": 11.468306
+    }
+  },
+  {
+    "base_i": 7,
+    "base_j": 19,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.068609,
+      "d_v": 0.100485,
+      "dorg": 8.019128,
+      "overlap_area": 0.0,
+      "plane_angle": 24.665696
+    }
+  },
+  {
+    "base_i": 19,
+    "base_j": 7,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.068609,
+      "d_v": 0.100485,
+      "dorg": 8.019128,
+      "overlap_area": 0.0,
+      "plane_angle": 24.665696
+    }
+  },
+  {
+    "base_i": 7,
+    "base_j": 43,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.208642,
+      "d_v": 2.369737,
+      "dorg": 5.472756,
+      "overlap_area": 0.0,
+      "plane_angle": 17.190203
+    }
+  },
+  {
+    "base_i": 43,
+    "base_j": 7,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.208642,
+      "d_v": 2.369737,
+      "dorg": 5.472756,
+      "overlap_area": 0.0,
+      "plane_angle": 17.190203
+    }
+  },
+  {
+    "base_i": 13,
+    "base_j": 19,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.189543,
+      "d_v": 0.654737,
+      "dorg": 6.554476,
+      "overlap_area": 0.0,
+      "plane_angle": 15.067283
+    }
+  },
+  {
+    "base_i": 19,
+    "base_j": 13,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.189543,
+      "d_v": 0.654737,
+      "dorg": 6.554476,
+      "overlap_area": 0.0,
+      "plane_angle": 15.067283
+    }
+  },
+  {
+    "base_i": 8,
+    "base_j": 21,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.781668,
+      "d_v": 0.649091,
+      "dorg": 7.005138,
+      "overlap_area": 0.0,
+      "plane_angle": 36.343841
+    }
+  },
+  {
+    "base_i": 21,
+    "base_j": 8,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.781668,
+      "d_v": 0.649091,
+      "dorg": 7.005138,
+      "overlap_area": 0.0,
+      "plane_angle": 36.343841
+    }
+  },
+  {
+    "base_i": 9,
+    "base_j": 23,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.797326,
+      "d_v": 0.117181,
+      "dorg": 0.561527,
+      "overlap_area": 0.0,
+      "plane_angle": 3.145375
+    }
+  },
+  {
+    "base_i": 23,
+    "base_j": 9,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.797326,
+      "d_v": 0.117181,
+      "dorg": 0.561527,
+      "overlap_area": 0.0,
+      "plane_angle": 3.145375
+    }
+  },
+  {
+    "base_i": 10,
+    "base_j": 22,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.997421,
+      "d_v": 0.266412,
+      "dorg": 0.353593,
+      "overlap_area": 0.0,
+      "plane_angle": 7.522063
+    }
+  },
+  {
+    "base_i": 22,
+    "base_j": 10,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.997421,
+      "d_v": 0.266412,
+      "dorg": 0.353593,
+      "overlap_area": 0.0,
+      "plane_angle": 7.522063
+    }
+  },
+  {
+    "base_i": 11,
+    "base_j": 21,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.812784,
+      "d_v": 0.268342,
+      "dorg": 0.522081,
+      "overlap_area": 0.0,
+      "plane_angle": 12.624678
+    }
+  },
+  {
+    "base_i": 21,
+    "base_j": 11,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.812784,
+      "d_v": 0.268342,
+      "dorg": 0.522081,
+      "overlap_area": 0.0,
+      "plane_angle": 12.624678
+    }
+  },
+  {
+    "base_i": 12,
+    "base_j": 20,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 7.964212,
+      "d_v": 0.139841,
+      "dorg": 7.666874,
+      "overlap_area": 0.0,
+      "plane_angle": 6.923891
+    }
+  },
+  {
+    "base_i": 20,
+    "base_j": 12,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 7.964212,
+      "d_v": 0.139841,
+      "dorg": 7.666874,
+      "overlap_area": 0.0,
+      "plane_angle": 6.923891
+    }
+  },
+  {
+    "base_i": 12,
+    "base_j": 43,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 11.037506,
+      "d_v": 0.097503,
+      "dorg": 1.985219,
+      "overlap_area": 0.0,
+      "plane_angle": 17.452343
+    }
+  },
+  {
+    "base_i": 43,
+    "base_j": 12,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 11.037506,
+      "d_v": 0.097503,
+      "dorg": 1.985219,
+      "overlap_area": 0.0,
+      "plane_angle": 17.452343
+    }
+  },
+  {
+    "base_i": 14,
+    "base_j": 46,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.753064,
+      "d_v": 0.101465,
+      "dorg": 4.179917,
+      "overlap_area": 0.0,
+      "plane_angle": 26.58152
+    }
+  },
+  {
+    "base_i": 46,
+    "base_j": 14,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.753064,
+      "d_v": 0.101465,
+      "dorg": 4.179917,
+      "overlap_area": 0.0,
+      "plane_angle": 26.58152
+    }
+  },
+  {
+    "base_i": 16,
+    "base_j": 53,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.199268,
+      "d_v": 0.466731,
+      "dorg": 5.674145,
+      "overlap_area": 0.0,
+      "plane_angle": 21.821376
+    }
+  },
+  {
+    "base_i": 53,
+    "base_j": 16,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.199268,
+      "d_v": 0.466731,
+      "dorg": 5.674145,
+      "overlap_area": 0.0,
+      "plane_angle": 21.821376
+    }
+  },
+  {
+    "base_i": 17,
+    "base_j": 18,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 6.043158,
+      "d_v": 1.627864,
+      "dorg": 5.954214,
+      "overlap_area": 0.0,
+      "plane_angle": 63.290003
+    }
+  },
+  {
+    "base_i": 18,
+    "base_j": 17,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 6.043158,
+      "d_v": 1.627864,
+      "dorg": 5.954214,
+      "overlap_area": 0.0,
+      "plane_angle": 63.290003
+    }
+  },
+  {
+    "base_i": 17,
+    "base_j": 54,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.585291,
+      "d_v": 0.528513,
+      "dorg": 0.712064,
+      "overlap_area": 0.0,
+      "plane_angle": 21.081249
+    }
+  },
+  {
+    "base_i": 54,
+    "base_j": 17,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.585291,
+      "d_v": 0.528513,
+      "dorg": 0.712064,
+      "overlap_area": 0.0,
+      "plane_angle": 21.081249
+    }
+  },
+  {
+    "base_i": 24,
+    "base_j": 42,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.205722,
+      "d_v": 0.027468,
+      "dorg": 3.586216,
+      "overlap_area": 0.0,
+      "plane_angle": 11.318709
+    }
+  },
+  {
+    "base_i": 42,
+    "base_j": 24,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.205722,
+      "d_v": 0.027468,
+      "dorg": 3.586216,
+      "overlap_area": 0.0,
+      "plane_angle": 11.318709
+    }
+  },
+  {
+    "base_i": 25,
+    "base_j": 41,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.566108,
+      "d_v": 0.019039,
+      "dorg": 0.571465,
+      "overlap_area": 0.0,
+      "plane_angle": 20.064827
+    }
+  },
+  {
+    "base_i": 41,
+    "base_j": 25,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.566108,
+      "d_v": 0.019039,
+      "dorg": 0.571465,
+      "overlap_area": 0.0,
+      "plane_angle": 20.064827
+    }
+  },
+  {
+    "base_i": 26,
+    "base_j": 40,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.823534,
+      "d_v": 0.180557,
+      "dorg": 0.313212,
+      "overlap_area": 0.0,
+      "plane_angle": 14.041152
+    }
+  },
+  {
+    "base_i": 40,
+    "base_j": 26,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.823534,
+      "d_v": 0.180557,
+      "dorg": 0.313212,
+      "overlap_area": 0.0,
+      "plane_angle": 14.041152
+    }
+  },
+  {
+    "base_i": 27,
+    "base_j": 39,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.505179,
+      "d_v": 0.170467,
+      "dorg": 1.583054,
+      "overlap_area": 0.0,
+      "plane_angle": 10.768692
+    }
+  },
+  {
+    "base_i": 39,
+    "base_j": 27,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.505179,
+      "d_v": 0.170467,
+      "dorg": 1.583054,
+      "overlap_area": 0.0,
+      "plane_angle": 10.768692
+    }
+  },
+  {
+    "base_i": 28,
+    "base_j": 38,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.727089,
+      "d_v": 0.559652,
+      "dorg": 0.890421,
+      "overlap_area": 0.0,
+      "plane_angle": 14.711123
+    }
+  },
+  {
+    "base_i": 38,
+    "base_j": 28,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.727089,
+      "d_v": 0.559652,
+      "dorg": 0.890421,
+      "overlap_area": 0.0,
+      "plane_angle": 14.711123
+    }
+  },
+  {
+    "base_i": 29,
+    "base_j": 37,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.302792,
+      "d_v": 0.96178,
+      "dorg": 1.081169,
+      "overlap_area": 0.0,
+      "plane_angle": 20.735489
+    }
+  },
+  {
+    "base_i": 37,
+    "base_j": 29,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.302792,
+      "d_v": 0.96178,
+      "dorg": 1.081169,
+      "overlap_area": 0.0,
+      "plane_angle": 20.735489
+    }
+  },
+  {
+    "base_i": 30,
+    "base_j": 36,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.281919,
+      "d_v": 0.691626,
+      "dorg": 3.455612,
+      "overlap_area": 0.0,
+      "plane_angle": 11.384742
+    }
+  },
+  {
+    "base_i": 36,
+    "base_j": 30,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 9.281919,
+      "d_v": 0.691626,
+      "dorg": 3.455612,
+      "overlap_area": 0.0,
+      "plane_angle": 11.384742
+    }
+  },
+  {
+    "base_i": 31,
+    "base_j": 35,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.076141,
+      "d_v": 1.352376,
+      "dorg": 8.661286,
+      "overlap_area": 0.0,
+      "plane_angle": 35.102634
+    }
+  },
+  {
+    "base_i": 35,
+    "base_j": 31,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.076141,
+      "d_v": 1.352376,
+      "dorg": 8.661286,
+      "overlap_area": 0.0,
+      "plane_angle": 35.102634
+    }
+  },
+  {
+    "base_i": 47,
+    "base_j": 63,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.604807,
+      "d_v": 0.200234,
+      "dorg": 1.057315,
+      "overlap_area": 0.0,
+      "plane_angle": 13.919185
+    }
+  },
+  {
+    "base_i": 63,
+    "base_j": 47,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.604807,
+      "d_v": 0.200234,
+      "dorg": 1.057315,
+      "overlap_area": 0.0,
+      "plane_angle": 13.919185
+    }
+  },
+  {
+    "base_i": 48,
+    "base_j": 62,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.774026,
+      "d_v": 0.251932,
+      "dorg": 0.688138,
+      "overlap_area": 0.0,
+      "plane_angle": 6.064303
+    }
+  },
+  {
+    "base_i": 62,
+    "base_j": 48,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.774026,
+      "d_v": 0.251932,
+      "dorg": 0.688138,
+      "overlap_area": 0.0,
+      "plane_angle": 6.064303
+    }
+  },
+  {
+    "base_i": 49,
+    "base_j": 61,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.51597,
+      "d_v": 0.030082,
+      "dorg": 0.588643,
+      "overlap_area": 0.0,
+      "plane_angle": 17.89225
+    }
+  },
+  {
+    "base_i": 61,
+    "base_j": 49,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.51597,
+      "d_v": 0.030082,
+      "dorg": 0.588643,
+      "overlap_area": 0.0,
+      "plane_angle": 17.89225
+    }
+  },
+  {
+    "base_i": 50,
+    "base_j": 60,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.889574,
+      "d_v": 0.056428,
+      "dorg": 0.564217,
+      "overlap_area": 0.0,
+      "plane_angle": 13.682808
+    }
+  },
+  {
+    "base_i": 60,
+    "base_j": 50,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.889574,
+      "d_v": 0.056428,
+      "dorg": 0.564217,
+      "overlap_area": 0.0,
+      "plane_angle": 13.682808
+    }
+  },
+  {
+    "base_i": 51,
+    "base_j": 59,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.716594,
+      "d_v": 0.025221,
+      "dorg": 0.612366,
+      "overlap_area": 0.0,
+      "plane_angle": 10.718814
+    }
+  },
+  {
+    "base_i": 59,
+    "base_j": 51,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 8.716594,
+      "d_v": 0.025221,
+      "dorg": 0.612366,
+      "overlap_area": 0.0,
+      "plane_angle": 10.718814
+    }
+  },
+  {
+    "base_i": 52,
+    "base_j": 56,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 7.202493,
+      "d_v": 0.046456,
+      "dorg": 4.754161,
+      "overlap_area": 0.0,
+      "plane_angle": 12.289636
+    }
+  },
+  {
+    "base_i": 56,
+    "base_j": 52,
+    "type": "distance_checks",
+    "values": {
+      "dNN": 7.202493,
+      "d_v": 0.046456,
+      "dorg": 4.754161,
+      "overlap_area": 0.0,
+      "plane_angle": 12.289636
+    }
+  }
+]

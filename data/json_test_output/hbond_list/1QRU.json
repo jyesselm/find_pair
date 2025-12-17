@@ -1,0 +1,1611 @@
+[
+  {
+    "base_i": 1,
+    "base_j": 69,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.60459,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 2.897612,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.796127,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.050201,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.865221,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.075933,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.853315,
+        "donor_atom": " N2 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 2,
+    "base_j": 68,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.312645,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 2.912098,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.281966,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.822368,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.966506,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.630541,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.774507,
+        "donor_atom": " N2 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 3,
+    "base_j": 67,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.557098,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 2.82807,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.609433,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.800518,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.667036,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.729784,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.531374,
+        "donor_atom": " N2 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 4,
+    "base_j": 66,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.518706,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 2.972172,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.514715,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.88452,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.867429,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.762615,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.71235,
+        "donor_atom": " N2 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 5,
+    "base_j": 65,
+    "hbonds": [
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.491767,
+        "donor_atom": " O2 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.822383,
+        "donor_atom": " N3 ",
+        "hbond_idx": 2,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 2.729822,
+        "donor_atom": " N3 ",
+        "hbond_idx": 3,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.139242,
+        "donor_atom": " O4 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.554094,
+        "donor_atom": " O4 ",
+        "hbond_idx": 5,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 5,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 6,
+    "base_j": 64,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.846373,
+        "donor_atom": " N6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 2.801829,
+        "donor_atom": " N6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.835983,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.903644,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 3.452689,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 5,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 7,
+    "base_j": 13,
+    "hbonds": [
+      {
+        "acceptor_atom": " N7 ",
+        "distance": 3.651343,
+        "donor_atom": " O2 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 2.499434,
+        "donor_atom": " O2 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N7 ",
+        "distance": 2.847245,
+        "donor_atom": " N3 ",
+        "hbond_idx": 3,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.864631,
+        "donor_atom": " N3 ",
+        "hbond_idx": 4,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2P",
+        "distance": 3.695374,
+        "donor_atom": " O4 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N7 ",
+        "distance": 3.545562,
+        "donor_atom": " O4 ",
+        "hbond_idx": 6,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 6,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 7,
+    "base_j": 19,
+    "hbonds": [
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.727531,
+        "donor_atom": " O2'",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 2.512422,
+        "donor_atom": " O2'",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.987162,
+        "donor_atom": " O2 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.779937,
+        "donor_atom": " O2 ",
+        "hbond_idx": 4,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.303788,
+        "donor_atom": "HO2'",
+        "hbond_idx": 5,
+        "type": "*"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.586194,
+        "donor_atom": "HO2'",
+        "hbond_idx": 6,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 6,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 7,
+    "base_j": 43,
+    "hbonds": [
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.17993,
+        "donor_atom": " O2'",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.487317,
+        "donor_atom": " O2'",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.586595,
+        "donor_atom": " O2 ",
+        "hbond_idx": 3,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.768964,
+        "donor_atom": " O2 ",
+        "hbond_idx": 4,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 2.950271,
+        "donor_atom": "HO2'",
+        "hbond_idx": 5,
+        "type": "*"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.367748,
+        "donor_atom": "HO2'",
+        "hbond_idx": 6,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 6,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 13,
+    "base_j": 19,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.074945,
+        "donor_atom": " N6 ",
+        "hbond_idx": 1,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": "HO2'",
+        "distance": 3.365224,
+        "donor_atom": " N6 ",
+        "hbond_idx": 2,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2'",
+        "distance": 2.994852,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": "HO2'",
+        "distance": 2.234024,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "*"
+      }
+    ],
+    "num_hbonds": 4,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 8,
+    "base_j": 21,
+    "hbonds": [
+      {
+        "acceptor_atom": " N7 ",
+        "distance": 3.8134,
+        "donor_atom": " N4 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 2.842671,
+        "donor_atom": " N4 ",
+        "hbond_idx": 2,
+        "type": "-"
+      }
+    ],
+    "num_hbonds": 2,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 9,
+    "base_j": 23,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.463097,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 2.95032,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.409494,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.827382,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.907369,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.65386,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.735429,
+        "donor_atom": " N2 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 10,
+    "base_j": 22,
+    "hbonds": [
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.695744,
+        "donor_atom": " O2 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N2 ",
+        "distance": 2.857314,
+        "donor_atom": " O2 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 3.627894,
+        "donor_atom": " N3 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 2.978157,
+        "donor_atom": " N3 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N2 ",
+        "distance": 3.673739,
+        "donor_atom": " N3 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 2.963288,
+        "donor_atom": " N4 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.828029,
+        "donor_atom": " N4 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 11,
+    "base_j": 21,
+    "hbonds": [
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.505121,
+        "donor_atom": " O2 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N2 ",
+        "distance": 2.782812,
+        "donor_atom": " O2 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 3.366979,
+        "donor_atom": " N3 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 2.770956,
+        "donor_atom": " N3 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N2 ",
+        "distance": 3.654804,
+        "donor_atom": " N3 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 2.71792,
+        "donor_atom": " N4 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.73497,
+        "donor_atom": " N4 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 12,
+    "base_j": 20,
+    "hbonds": [
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 2.89666,
+        "donor_atom": " O2'",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.947615,
+        "donor_atom": " O2'",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.91494,
+        "donor_atom": " N9 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N7 ",
+        "distance": 3.571627,
+        "donor_atom": " N3 ",
+        "hbond_idx": 4,
+        "type": "*"
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 2.784543,
+        "donor_atom": " N3 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 1.99906,
+        "donor_atom": "HO2'",
+        "hbond_idx": 6,
+        "type": "*"
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.122465,
+        "donor_atom": "HO2'",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 12,
+    "base_j": 43,
+    "hbonds": [
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.734928,
+        "donor_atom": " N6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.044923,
+        "donor_atom": " N6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 2.76223,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.670386,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 4,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 14,
+    "base_j": 46,
+    "hbonds": [
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.828128,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.806784,
+        "donor_atom": " N1 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.942949,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.215419,
+        "donor_atom": " N2 ",
+        "hbond_idx": 4,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.787243,
+        "donor_atom": " N2 ",
+        "hbond_idx": 5,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.965445,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 6,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 16,
+    "base_j": 53,
+    "hbonds": [
+      {
+        "acceptor_atom": " O4'",
+        "distance": 3.635519,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2'",
+        "distance": 3.97579,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": " "
+      },
+      {
+        "acceptor_atom": "HO2'",
+        "distance": 3.679575,
+        "donor_atom": " O6 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.803146,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": "HO2'",
+        "distance": 3.893314,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.036294,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 6,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 17,
+    "base_j": 18,
+    "hbonds": [
+      {
+        "acceptor_atom": " O2P",
+        "distance": 2.579112,
+        "donor_atom": " O2'",
+        "hbond_idx": 1,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O5'",
+        "distance": 3.948537,
+        "donor_atom": " O2'",
+        "hbond_idx": 2,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.816327,
+        "donor_atom": " O2'",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 3.964766,
+        "donor_atom": " O2'",
+        "hbond_idx": 4,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 3.131447,
+        "donor_atom": " N2 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 2.975393,
+        "donor_atom": " N3 ",
+        "hbond_idx": 6,
+        "type": "*"
+      },
+      {
+        "acceptor_atom": " O2P",
+        "distance": 3.179246,
+        "donor_atom": "HO2'",
+        "hbond_idx": 7,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 3.468151,
+        "donor_atom": "HO2'",
+        "hbond_idx": 8,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 8,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 17,
+    "base_j": 54,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.663324,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 2.709425,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.643854,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.595623,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.298553,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.459575,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.131373,
+        "donor_atom": " N2 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 24,
+    "base_j": 42,
+    "hbonds": [
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.091894,
+        "donor_atom": " N6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.068053,
+        "donor_atom": " N6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.175433,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": "*"
+      }
+    ],
+    "num_hbonds": 3,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 25,
+    "base_j": 41,
+    "hbonds": [
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.279003,
+        "donor_atom": " O2 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N2 ",
+        "distance": 2.442386,
+        "donor_atom": " O2 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 3.335377,
+        "donor_atom": " N3 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 2.610457,
+        "donor_atom": " N3 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N2 ",
+        "distance": 3.46159,
+        "donor_atom": " N3 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 2.788765,
+        "donor_atom": " N4 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.667439,
+        "donor_atom": " N4 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 26,
+    "base_j": 40,
+    "hbonds": [
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.610153,
+        "donor_atom": " O2 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N2 ",
+        "distance": 2.673526,
+        "donor_atom": " O2 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 3.566442,
+        "donor_atom": " N3 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 2.768333,
+        "donor_atom": " N3 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N2 ",
+        "distance": 3.487105,
+        "donor_atom": " N3 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 2.764031,
+        "donor_atom": " N4 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.600287,
+        "donor_atom": " N4 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 27,
+    "base_j": 39,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.790979,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": "*"
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.048562,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.705429,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.89624,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.711979,
+        "donor_atom": " N2 ",
+        "hbond_idx": 5,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 5,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 28,
+    "base_j": 38,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.433259,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.120949,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.259769,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.857774,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.493861,
+        "donor_atom": " N2 ",
+        "hbond_idx": 5,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.749244,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 6,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 29,
+    "base_j": 37,
+    "hbonds": [
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 3.627472,
+        "donor_atom": " N6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.38921,
+        "donor_atom": " N1 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 3.79262,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 3,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 30,
+    "base_j": 36,
+    "hbonds": [
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 3.473711,
+        "donor_atom": " N3 ",
+        "hbond_idx": 1,
+        "type": "-"
+      }
+    ],
+    "num_hbonds": 1,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 31,
+    "base_j": 35,
+    "hbonds": [
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.902388,
+        "donor_atom": " O2'",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N7 ",
+        "distance": 3.873405,
+        "donor_atom": " O2 ",
+        "hbond_idx": 2,
+        "type": "*"
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.967485,
+        "donor_atom": " O2 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 3.088596,
+        "donor_atom": "HO2'",
+        "hbond_idx": 4,
+        "type": "*"
+      }
+    ],
+    "num_hbonds": 4,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 47,
+    "base_j": 63,
+    "hbonds": [
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 3.069351,
+        "donor_atom": " O2 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N2 ",
+        "distance": 2.799842,
+        "donor_atom": " O2 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 2.898345,
+        "donor_atom": " N3 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N1 ",
+        "distance": 2.728766,
+        "donor_atom": " N3 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O6 ",
+        "distance": 2.631514,
+        "donor_atom": " N4 ",
+        "hbond_idx": 5,
+        "type": "-"
+      }
+    ],
+    "num_hbonds": 5,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 48,
+    "base_j": 62,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.606431,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.31562,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.31552,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.915033,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.408897,
+        "donor_atom": " N2 ",
+        "hbond_idx": 5,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.659394,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 6,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 49,
+    "base_j": 61,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.530746,
+        "donor_atom": " N6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 2.492601,
+        "donor_atom": " N6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.42748,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.427946,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O4 ",
+        "distance": 3.121743,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 5,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 50,
+    "base_j": 60,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.512501,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.079889,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.454365,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.932309,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.994431,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.709143,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.773121,
+        "donor_atom": " N2 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 51,
+    "base_j": 59,
+    "hbonds": [
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.396992,
+        "donor_atom": " O6 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 2.967585,
+        "donor_atom": " O6 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 3.301652,
+        "donor_atom": " N1 ",
+        "hbond_idx": 3,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 2.810167,
+        "donor_atom": " N1 ",
+        "hbond_idx": 4,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N4 ",
+        "distance": 3.936624,
+        "donor_atom": " N1 ",
+        "hbond_idx": 5,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " O2 ",
+        "distance": 2.543923,
+        "donor_atom": " N2 ",
+        "hbond_idx": 6,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N3 ",
+        "distance": 3.722323,
+        "donor_atom": " N2 ",
+        "hbond_idx": 7,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 7,
+    "type": "hbond_list"
+  },
+  {
+    "base_i": 52,
+    "base_j": 56,
+    "hbonds": [
+      {
+        "acceptor_atom": " N7 ",
+        "distance": 3.667465,
+        "donor_atom": " O2 ",
+        "hbond_idx": 1,
+        "type": " "
+      },
+      {
+        "acceptor_atom": " N6 ",
+        "distance": 2.873486,
+        "donor_atom": " O2 ",
+        "hbond_idx": 2,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N7 ",
+        "distance": 2.948229,
+        "donor_atom": " N3 ",
+        "hbond_idx": 3,
+        "type": "-"
+      },
+      {
+        "acceptor_atom": " N7 ",
+        "distance": 3.656851,
+        "donor_atom": " O4 ",
+        "hbond_idx": 4,
+        "type": " "
+      }
+    ],
+    "num_hbonds": 4,
+    "type": "hbond_list"
+  }
+]
