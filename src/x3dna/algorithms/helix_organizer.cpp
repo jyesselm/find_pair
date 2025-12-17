@@ -95,6 +95,16 @@ namespace {
     }
 
     /**
+     * @brief Check if two z-distances are on opposite sides of origin
+     * @param d1 First z-distance
+     * @param d2 Second z-distance
+     * @return true if d1 and d2 have opposite signs
+     */
+    bool are_on_opposite_z_sides(double d1, double d2) {
+        return d1 * d2 < 0;
+    }
+
+    /**
      * @brief Check if a pair has positive bpid (WC-like geometry)
      *
      * Legacy code in calculate_more_bppars sets bpid = -1 by default,
@@ -812,8 +822,9 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
             double d3 = z_i.dot(v3);
 
             // Both on opposite z-side from n1, and 2nd has larger |z-dist|
-            if (d1 * d2 < 0 && d1 * d3 < 0 && std::abs(d2) > std::abs(d3)) {
-                // Swap 2nd and 3rd
+            const bool both_opposite_from_n1 = are_on_opposite_z_sides(d1, d2) && are_on_opposite_z_sides(d1, d3);
+            const bool second_has_larger_z_dist = std::abs(d2) > std::abs(d3);
+            if (both_opposite_from_n1 && second_has_larger_z_dist) {
                 std::swap(neighbors[1], neighbors[2]);
             }
         }
@@ -824,7 +835,7 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
             auto vk = get_pair_origin(pairs[neighbors[k].second]) - org_i;
             double dk = z_i.dot(vk);
 
-            if (d1 * dk < 0) {
+            if (are_on_opposite_z_sides(d1, dk)) {
                 context[i].neighbor2 = neighbors[k].second;
                 context[i].dist2 = neighbors[k].first;
                 // Check backbone connectivity to neighbor2
@@ -851,7 +862,7 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
                 double d2 = z_i.dot(v_n2_n1);
 
                 // If n2->n1 is on opposite z-side from i->n1 AND within helix_break
-                if (d1 * d2 < 0 && dist_n1_n2 <= config_.helix_break) {
+                if (are_on_opposite_z_sides(d1, d2) && dist_n1_n2 <= config_.helix_break) {
                     context[i].neighbor2 = n2_idx;
                     context[i].dist2 = neighbors[1].first;
                     context[i].has_backbone_link2 = are_pairs_backbone_connected(
