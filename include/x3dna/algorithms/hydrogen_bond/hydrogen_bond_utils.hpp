@@ -31,12 +31,12 @@ public:
      * @param atom_name Atom name (e.g., " N1 ")
      * @return Atom type index (0=UNK, 1=C, 2=O, 3=H, 4=N, 5=S, 6=P, ...)
      */
-    static int get_atom_idx(const std::string& atom_name);
+    [[nodiscard]] static int get_atom_idx(const std::string& atom_name);
 
     /**
      * @brief Check if atom list is loaded
      */
-    static bool is_loaded() {
+    [[nodiscard]] static bool is_loaded() {
         return atom_list_loaded_;
     }
 
@@ -50,7 +50,7 @@ private:
  * @param atom_name Atom name
  * @return True if base atom
  */
-bool is_base_atom(const std::string& atom_name);
+[[nodiscard]] bool is_base_atom(const std::string& atom_name);
 
 /**
  * @brief Check if two atoms can form a hydrogen bond (matches legacy good_hbatoms)
@@ -59,7 +59,7 @@ bool is_base_atom(const std::string& atom_name);
  * @param hb_atoms H-bond atom list (default ".O.N")
  * @return True if atoms can form H-bond
  */
-bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std::string& hb_atoms);
+[[nodiscard]] bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std::string& hb_atoms);
 
 } // namespace hydrogen_bond
 } // namespace algorithms

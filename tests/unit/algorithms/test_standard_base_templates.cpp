@@ -68,7 +68,7 @@ TEST_F(StandardBaseTemplatesTest, LoadTemplate) {
 // Cache tests
 TEST_F(StandardBaseTemplatesTest, ClearCache) {
     if (templates_->template_exists(ResidueType::ADENINE)) {
-        templates_->load_template(ResidueType::ADENINE);
+        (void)templates_->load_template(ResidueType::ADENINE);
         templates_->clear_cache();
         // Should still be able to load after clearing
         EXPECT_NO_THROW({
@@ -80,5 +80,5 @@ TEST_F(StandardBaseTemplatesTest, ClearCache) {
 
 // Error handling tests
 TEST_F(StandardBaseTemplatesTest, InvalidResidueType) {
-    EXPECT_THROW({ templates_->load_template(ResidueType::AMINO_ACID); }, std::invalid_argument);
+    EXPECT_THROW({ (void)templates_->load_template(ResidueType::AMINO_ACID); }, std::invalid_argument);
 }

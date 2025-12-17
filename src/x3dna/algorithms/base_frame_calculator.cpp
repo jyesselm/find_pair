@@ -422,7 +422,8 @@ void BaseFrameCalculator::calculate_all_frames(core::Structure& structure) {
         if (residue->residue_type() == core::ResidueType::AMINO_ACID) {
             continue;
         }
-        calculate_frame(*residue);
+        // Frame is stored in residue as side effect; result intentionally discarded
+        (void)calculate_frame(*residue);
     }
 }
 

@@ -55,12 +55,12 @@ public:
     /**
      * @brief Check if mapping is empty
      */
-    bool empty() const { return by_legacy_.empty(); }
+    [[nodiscard]] bool empty() const { return by_legacy_.empty(); }
 
     /**
      * @brief Get number of mapped residues
      */
-    size_t size() const { return by_legacy_.size(); }
+    [[nodiscard]] size_t size() const { return by_legacy_.size(); }
 
     // ==================== Lookups ====================
 
@@ -69,24 +69,24 @@ public:
      * @param legacy_idx Legacy index (from atom.legacy_residue_idx())
      * @return Pointer to residue, or nullptr if not found
      */
-    const core::Residue* get_by_legacy_idx(int legacy_idx) const;
+    [[nodiscard]] const core::Residue* get_by_legacy_idx(int legacy_idx) const;
 
     /**
      * @brief Get residue by modern 0-based index
      * @param modern_idx Modern index (position in structure)
      * @return Pointer to residue, or nullptr if not found
      */
-    const core::Residue* get_by_modern_idx(size_t modern_idx) const;
+    [[nodiscard]] const core::Residue* get_by_modern_idx(size_t modern_idx) const;
 
     /**
      * @brief Check if legacy index exists in map
      */
-    bool has_legacy_idx(int legacy_idx) const;
+    [[nodiscard]] bool has_legacy_idx(int legacy_idx) const;
 
     /**
      * @brief Check if modern index exists in map
      */
-    bool has_modern_idx(size_t modern_idx) const;
+    [[nodiscard]] bool has_modern_idx(size_t modern_idx) const;
 
     // ==================== Conversions ====================
 
@@ -95,26 +95,26 @@ public:
      * @param legacy_idx Legacy index
      * @return Modern index, or nullopt if not found
      */
-    std::optional<size_t> to_modern(int legacy_idx) const;
+    [[nodiscard]] std::optional<size_t> to_modern(int legacy_idx) const;
 
     /**
      * @brief Convert modern 0-based index to legacy 1-based index
      * @param modern_idx Modern index
      * @return Legacy index, or nullopt if not found
      */
-    std::optional<int> to_legacy(size_t modern_idx) const;
+    [[nodiscard]] std::optional<int> to_legacy(size_t modern_idx) const;
 
     // ==================== Range Info ====================
 
     /**
      * @brief Get maximum legacy index
      */
-    int max_legacy_idx() const { return max_legacy_idx_; }
+    [[nodiscard]] int max_legacy_idx() const { return max_legacy_idx_; }
 
     /**
      * @brief Get minimum legacy index (usually 1)
      */
-    int min_legacy_idx() const { return min_legacy_idx_; }
+    [[nodiscard]] int min_legacy_idx() const { return min_legacy_idx_; }
 
     // ==================== Iteration ====================
 
@@ -122,7 +122,7 @@ public:
      * @brief Get all legacy indices in ascending order
      * @return Vector of legacy indices
      */
-    std::vector<int> legacy_indices() const;
+    [[nodiscard]] std::vector<int> legacy_indices() const;
 
     /**
      * @brief Get all legacy indices of nucleotide residues
@@ -130,7 +130,7 @@ public:
      * @return Vector of legacy indices for nucleotides only
      */
     template <typename NucleotideChecker>
-    std::vector<int> nucleotide_legacy_indices(NucleotideChecker&& checker) const {
+    [[nodiscard]] std::vector<int> nucleotide_legacy_indices(NucleotideChecker&& checker) const {
         std::vector<int> result;
         for (const auto& [legacy_idx, residue] : by_legacy_) {
             if (residue && checker(*residue)) {
@@ -143,7 +143,7 @@ public:
     /**
      * @brief Iterate over all (legacy_idx, residue) pairs
      */
-    const std::map<int, const core::Residue*>& all() const { return by_legacy_; }
+    [[nodiscard]] const std::map<int, const core::Residue*>& all() const { return by_legacy_; }
 
 private:
     std::map<int, const core::Residue*> by_legacy_;

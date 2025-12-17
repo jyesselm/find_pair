@@ -120,12 +120,12 @@ public:
     
     /**
      * @brief Organize base pairs by helical continuity
-     * 
+     *
      * @param pairs Vector of base pairs (in selection order)
      * @param backbone Optional backbone data for 5'→3' direction checking
      * @return HelixOrdering with reordered indices and helix boundaries
      */
-    HelixOrdering organize(const std::vector<core::BasePair>& pairs,
+    [[nodiscard]] HelixOrdering organize(const std::vector<core::BasePair>& pairs,
                           const BackboneData& backbone = {}) const;
     
 private:
@@ -145,19 +145,19 @@ private:
     };
     
     // Context calculation
-    std::vector<PairContext> calculate_context(
+    [[nodiscard]] std::vector<PairContext> calculate_context(
         const std::vector<core::BasePair>& pairs,
         const BackboneData& backbone) const;
-    std::vector<size_t> find_endpoints(
+    [[nodiscard]] std::vector<size_t> find_endpoints(
         const std::vector<PairContext>& context) const;
-    std::pair<std::vector<size_t>, std::vector<HelixSegment>> locate_helices(
+    [[nodiscard]] std::pair<std::vector<size_t>, std::vector<HelixSegment>> locate_helices(
         const std::vector<PairContext>& context,
         const std::vector<size_t>& endpoints,
         const BackboneData& backbone,
         size_t num_pairs) const;
 
     /** @brief Check if two pairs are backbone-connected (either strand) */
-    bool are_pairs_backbone_connected(
+    [[nodiscard]] bool are_pairs_backbone_connected(
         const core::BasePair& pair1, const core::BasePair& pair2,
         const BackboneData& backbone) const;
     
@@ -183,27 +183,27 @@ private:
                    std::vector<bool>& swapped) const;
     
     /** @brief Check Watson-Crick base pair z-direction alignment */
-    bool wc_bporien(const core::BasePair& pair_m, const core::BasePair& pair_n,
+    [[nodiscard]] bool wc_bporien(const core::BasePair& pair_m, const core::BasePair& pair_n,
                     bool swap_m, bool swap_n,
                     const BackboneData& backbone) const;
-    
+
     /** @brief Check O3' distance patterns for swap indication */
-    bool check_o3dist(const core::BasePair& pair_m, const core::BasePair& pair_n,
+    [[nodiscard]] bool check_o3dist(const core::BasePair& pair_m, const core::BasePair& pair_n,
                       bool swap_m, bool swap_n,
                       const BackboneData& backbone) const;
-    
+
     /** @brief Check strand chain connectivity for swap indication */
-    bool check_schain(const core::BasePair& pair_m, const core::BasePair& pair_n,
+    [[nodiscard]] bool check_schain(const core::BasePair& pair_m, const core::BasePair& pair_n,
                       bool swap_m, bool swap_n,
                       const BackboneData& backbone) const;
-    
+
     /** @brief Check frame orientation alignment for swap indication */
-    bool check_others(const core::BasePair& pair_m, const core::BasePair& pair_n,
+    [[nodiscard]] bool check_others(const core::BasePair& pair_m, const core::BasePair& pair_n,
                       bool swap_m, bool swap_n,
                       const BackboneData& backbone) const;
-    
+
     /** @brief Ensure strand 1 direction is consistent */
-    bool chain1dir(const core::BasePair& pair_m, const core::BasePair& pair_n,
+    [[nodiscard]] bool chain1dir(const core::BasePair& pair_m, const core::BasePair& pair_n,
                    bool swap_m, bool swap_n,
                    const BackboneData& backbone) const;
     
@@ -228,20 +228,20 @@ private:
         size_t res_i, size_t res_j, const BackboneData& backbone) const;
     
     /** @brief Get O3'-O3' distance between residues */
-    double o3_distance(size_t i, size_t j, const BackboneData& backbone) const;
-    
+    [[nodiscard]] double o3_distance(size_t i, size_t j, const BackboneData& backbone) const;
+
     // Geometry helpers
-    geometry::Vector3D get_pair_z_axis(const core::BasePair& pair) const;
-    geometry::Vector3D get_pair_origin(const core::BasePair& pair) const;
-    
+    [[nodiscard]] geometry::Vector3D get_pair_z_axis(const core::BasePair& pair) const;
+    [[nodiscard]] geometry::Vector3D get_pair_origin(const core::BasePair& pair) const;
+
     /** @brief Get frame z-direction based on swap status */
-    geometry::Vector3D get_frame_z(const core::BasePair& pair, bool swapped) const;
-    
+    [[nodiscard]] geometry::Vector3D get_frame_z(const core::BasePair& pair, bool swapped) const;
+
     /** @brief Calculate angle between x-axes of two pair frames */
-    double wcbp_xang(const core::BasePair& pair_m, const core::BasePair& pair_n) const;
-    
+    [[nodiscard]] double wcbp_xang(const core::BasePair& pair_m, const core::BasePair& pair_n) const;
+
     /** @brief Calculate z-direction dot product for WC pairs */
-    double wcbp_zdir(const core::BasePair& pair_m, const core::BasePair& pair_n,
+    [[nodiscard]] double wcbp_zdir(const core::BasePair& pair_m, const core::BasePair& pair_n,
                      bool swap_m, bool swap_n) const;
 };
 

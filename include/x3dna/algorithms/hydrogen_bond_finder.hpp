@@ -67,7 +67,7 @@ public:
      * 3. Validate H-bonds (validate_hbonds)
      * 4. Return only H-bonds with type != ' '
      */
-    static std::vector<HydrogenBondResult> find_hydrogen_bonds(const core::Residue& res1, const core::Residue& res2,
+    [[nodiscard]] static std::vector<HydrogenBondResult> find_hydrogen_bonds(const core::Residue& res1, const core::Residue& res2,
                                                                double hb_lower, double hb_dist1);
 
     /**
@@ -78,7 +78,7 @@ public:
      * @param hb_dist1 Upper distance limit
      * @return Detailed results including all steps
      */
-    static DetailedHBondResult find_hydrogen_bonds_detailed(const core::Residue& res1, const core::Residue& res2,
+    [[nodiscard]] static DetailedHBondResult find_hydrogen_bonds_detailed(const core::Residue& res1, const core::Residue& res2,
                                                             double hb_lower, double hb_dist1, double hb_dist2 = 4.5);
 
 private:
@@ -103,7 +103,7 @@ private:
      * Matches legacy behavior: uses one_letter_code() if available, otherwise uses residue_type()
      * For modified nucleotides, returns appropriate base type (A, C, G, T, U)
      */
-    static char get_base_type_for_hbond(const core::Residue& residue);
+    [[nodiscard]] static char get_base_type_for_hbond(const core::Residue& residue);
 };
 
 } // namespace algorithms

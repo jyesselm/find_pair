@@ -26,7 +26,7 @@ struct CandidateInfo {
     int bp_type_id;
     double adjusted_quality_score;
 
-    bool is_valid() const { return validation.is_valid; }
+    [[nodiscard]] bool is_valid() const { return validation.is_valid; }
 };
 
 /**
@@ -79,17 +79,17 @@ public:
     /**
      * @brief Check if cache is empty
      */
-    bool empty() const { return cache_.empty(); }
+    [[nodiscard]] bool empty() const { return cache_.empty(); }
 
     /**
      * @brief Get number of cached pairs
      */
-    size_t size() const { return cache_.size(); }
+    [[nodiscard]] size_t size() const { return cache_.size(); }
 
     /**
      * @brief Get number of valid pairs
      */
-    size_t valid_count() const;
+    [[nodiscard]] size_t valid_count() const;
 
     // ==================== Lookups ====================
 
@@ -99,31 +99,31 @@ public:
      * @param legacy_idx2 Second residue legacy index
      * @return CandidateInfo or nullopt if pair wasn't cached
      */
-    std::optional<CandidateInfo> get(int legacy_idx1, int legacy_idx2) const;
+    [[nodiscard]] std::optional<CandidateInfo> get(int legacy_idx1, int legacy_idx2) const;
 
     /**
      * @brief Check if pair exists in cache
      */
-    bool contains(int legacy_idx1, int legacy_idx2) const;
+    [[nodiscard]] bool contains(int legacy_idx1, int legacy_idx2) const;
 
     /**
      * @brief Get all valid partner indices for a residue
      * @param legacy_idx Residue legacy index
      * @return Vector of legacy indices that form valid pairs with this residue
      */
-    std::vector<int> valid_partners_for(int legacy_idx) const;
+    [[nodiscard]] std::vector<int> valid_partners_for(int legacy_idx) const;
 
     /**
      * @brief Get all candidates (valid or not) for a residue
      */
-    std::vector<std::pair<int, CandidateInfo>> all_candidates_for(int legacy_idx) const;
+    [[nodiscard]] std::vector<std::pair<int, CandidateInfo>> all_candidates_for(int legacy_idx) const;
 
     // ==================== Iteration ====================
 
     /**
      * @brief Get all cached pairs (for iteration)
      */
-    const std::map<std::pair<int, int>, CandidateInfo>& all() const { return cache_; }
+    [[nodiscard]] const std::map<std::pair<int, int>, CandidateInfo>& all() const { return cache_; }
 
     /**
      * @brief Iterate over all valid pairs
@@ -136,18 +136,18 @@ public:
     /**
      * @brief Get the residue index map used during build
      */
-    const ResidueIndexMap& index_map() const { return index_map_; }
+    [[nodiscard]] const ResidueIndexMap& index_map() const { return index_map_; }
 
     /**
      * @brief Get maximum legacy index
      */
-    int max_legacy_idx() const { return index_map_.max_legacy_idx(); }
+    [[nodiscard]] int max_legacy_idx() const { return index_map_.max_legacy_idx(); }
 
 private:
     /**
      * @brief Normalize pair key (smaller index first)
      */
-    static std::pair<int, int> normalize(int i, int j) {
+    [[nodiscard]] static std::pair<int, int> normalize(int i, int j) {
         return (i < j) ? std::make_pair(i, j) : std::make_pair(j, i);
     }
 

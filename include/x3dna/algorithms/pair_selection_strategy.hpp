@@ -42,7 +42,7 @@ public:
      * @param observer Observer for recording selection events (may be null)
      * @return Selected pairs as (legacy_idx1, legacy_idx2) with additional info
      */
-    virtual std::vector<std::pair<int, int>> select(
+    [[nodiscard]] virtual std::vector<std::pair<int, int>> select(
         SelectionContext& context,
         IPairFindingObserver* observer
     ) = 0;
@@ -50,7 +50,7 @@ public:
     /**
      * @brief Get the name of this strategy (for logging/debugging)
      */
-    virtual std::string name() const = 0;
+    [[nodiscard]] virtual std::string name() const = 0;
 };
 
 /**
@@ -65,12 +65,12 @@ public:
  */
 class MutualBestStrategy : public IPairSelectionStrategy {
 public:
-    std::vector<std::pair<int, int>> select(
+    [[nodiscard]] std::vector<std::pair<int, int>> select(
         SelectionContext& context,
         IPairFindingObserver* observer
     ) override;
 
-    std::string name() const override { return "MutualBest"; }
+    [[nodiscard]] std::string name() const override { return "MutualBest"; }
 
 private:
     /**
@@ -80,7 +80,7 @@ private:
      * @param observer Observer for recording candidates
      * @return (partner_idx, adjusted_score) or nullopt if no valid partner
      */
-    std::optional<std::pair<int, double>> find_best_partner(
+    [[nodiscard]] std::optional<std::pair<int, double>> find_best_partner(
         int legacy_idx,
         const SelectionContext& context,
         IPairFindingObserver* observer

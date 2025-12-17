@@ -50,7 +50,7 @@ struct ValidationParameters {
     /**
      * @brief Set default values (matches set_default_misc_pars)
      */
-    static ValidationParameters defaults() {
+    [[nodiscard]] static ValidationParameters defaults() {
         return ValidationParameters{};
     }
 };
@@ -113,7 +113,7 @@ public:
      * @param res2 Second residue
      * @return ValidationResult with all validation details
      */
-    ValidationResult validate(const core::Residue& res1, const core::Residue& res2) const;
+    [[nodiscard]] ValidationResult validate(const core::Residue& res1, const core::Residue& res2) const;
 
     /**
      * @brief Set validation parameters
@@ -125,7 +125,7 @@ public:
     /**
      * @brief Get validation parameters
      */
-    const ValidationParameters& parameters() const {
+    [[nodiscard]] const ValidationParameters& parameters() const {
         return params_;
     }
 
@@ -137,7 +137,7 @@ public:
      * @param zave Average z-axis
      * @return Overlap area in Angstrom²
      */
-    double calculate_overlap_area(const core::Residue& res1, const core::Residue& res2, const geometry::Vector3D& oave,
+    [[nodiscard]] double calculate_overlap_area(const core::Residue& res1, const core::Residue& res2, const geometry::Vector3D& oave,
                                   const geometry::Vector3D& zave) const;
 
     /**
@@ -149,7 +149,7 @@ public:
      * @param atom2 Second atom name
      * @return '-' if valid standard H-bond, '*' otherwise
      */
-    static char donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2);
+    [[nodiscard]] static char donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2);
 
 private:
     ValidationParameters params_;
@@ -169,7 +169,7 @@ private:
      * @brief Pattern match function (matches legacy str_pmatch)
      * Checks if pattern matches string (where '.' in pattern matches any char)
      */
-    static bool pattern_match(const std::string& str, const std::string& pattern);
+    [[nodiscard]] static bool pattern_match(const std::string& str, const std::string& pattern);
 
     /**
      * @brief Calculate direction vectors (dir_x, dir_y, dir_z)
@@ -186,25 +186,25 @@ private:
     /**
      * @brief Calculate angle between two z-axes (0-90 degrees)
      */
-    static double z1_z2_angle_in_0_to_90(const geometry::Vector3D& z1, const geometry::Vector3D& z2);
+    [[nodiscard]] static double z1_z2_angle_in_0_to_90(const geometry::Vector3D& z1, const geometry::Vector3D& z2);
 
     /**
      * @brief Check if value is in range
      */
-    static bool in_range(double value, double min_val, double max_val) {
+    [[nodiscard]] static bool in_range(double value, double min_val, double max_val) {
         return value >= min_val && value <= max_val;
     }
 
     /**
      * @brief Find N1/N9 atoms for dNN calculation
      */
-    static std::optional<geometry::Vector3D> find_n1_n9_position(const core::Residue& residue);
+    [[nodiscard]] static std::optional<geometry::Vector3D> find_n1_n9_position(const core::Residue& residue);
 
     /**
      * @brief Find hydrogen bonds between two residues (with validation)
      * Used for adjust_pairQuality - matches hb_numlist behavior
      */
-    std::vector<core::hydrogen_bond> find_hydrogen_bonds(const core::Residue& res1, const core::Residue& res2) const;
+    [[nodiscard]] std::vector<core::hydrogen_bond> find_hydrogen_bonds(const core::Residue& res1, const core::Residue& res2) const;
 
     /**
      * @brief Count hydrogen bonds simply (before validation) - matches legacy check_pair behavior
@@ -215,7 +215,7 @@ private:
     /**
      * @brief Check if atom is a base atom (matches legacy is_baseatom)
      */
-    static bool is_base_atom(const std::string& atom_name);
+    [[nodiscard]] static bool is_base_atom(const std::string& atom_name);
 
 };
 

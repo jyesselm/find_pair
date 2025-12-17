@@ -61,14 +61,14 @@ public:
      * @param residue Residue to calculate frame for (will be modified to store frame)
      * @return FrameCalculationResult with frame and metrics
      */
-    FrameCalculationResult calculate_frame(core::Residue& residue);
+    [[nodiscard]] FrameCalculationResult calculate_frame(core::Residue& residue);
 
     /**
      * @brief Calculate frame without modifying residue
      * @param residue Residue to calculate frame for
      * @return FrameCalculationResult with frame and metrics
      */
-    FrameCalculationResult calculate_frame_const(const core::Residue& residue) const;
+    [[nodiscard]] FrameCalculationResult calculate_frame_const(const core::Residue& residue) const;
 
     /**
      * @brief Calculate frames for all residues in a structure
@@ -86,7 +86,7 @@ public:
      * @brief Get template path
      * @return Current template path
      */
-    std::filesystem::path template_path() const {
+    [[nodiscard]] std::filesystem::path template_path() const {
         return templates_.template_path();
     }
 
@@ -102,7 +102,7 @@ public:
      * @brief Get RNA flag
      * @return True if processing RNA
      */
-    bool is_rna() const {
+    [[nodiscard]] bool is_rna() const {
         return is_rna_;
     }
 
@@ -119,7 +119,7 @@ public:
      * @brief Get legacy compatibility mode
      * @return True if legacy mode is enabled (C4 excluded)
      */
-    bool legacy_mode() const {
+    [[nodiscard]] bool legacy_mode() const {
         return legacy_mode_;
     }
 
@@ -128,7 +128,7 @@ public:
      * @param structure Structure to check
      * @return True if RNA detected (O2' atoms found), false if DNA
      */
-    static bool detect_rna(const core::Structure& structure);
+    [[nodiscard]] static bool detect_rna(const core::Structure& structure);
 
 private:
     mutable StandardBaseTemplates templates_; // Mutable for caching (doesn't affect logical constness)
@@ -140,7 +140,7 @@ private:
      * @param residue Residue to calculate frame for
      * @return FrameCalculationResult
      */
-    FrameCalculationResult calculate_frame_impl(const core::Residue& residue) const;
+    [[nodiscard]] FrameCalculationResult calculate_frame_impl(const core::Residue& residue) const;
 };
 
 } // namespace algorithms

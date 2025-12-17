@@ -76,14 +76,14 @@ public:
      * @param pairs Vector of base pairs
      * @return Vector of detected helices
      */
-    std::vector<Helix> detect_helices(const std::vector<core::BasePair>& pairs);
+    [[nodiscard]] std::vector<Helix> detect_helices(const std::vector<core::BasePair>& pairs);
 
     /**
      * @brief Detect helices from structure (uses structure's base pairs)
      * @param structure Structure with base pairs
      * @return Vector of detected helices
      */
-    std::vector<Helix> detect_helices(const core::Structure& structure);
+    [[nodiscard]] std::vector<Helix> detect_helices(const core::Structure& structure);
 
     /**
      * @brief Reorder base pairs to ensure 5'→3' orientation
@@ -108,7 +108,7 @@ public:
     /**
      * @brief Get helix break distance threshold
      */
-    double helix_break_distance() const {
+    [[nodiscard]] double helix_break_distance() const {
         return helix_break_distance_;
     }
 
@@ -119,7 +119,7 @@ private:
      * @param pair2 Second base pair
      * @return Distance between pair origins (Angstroms)
      */
-    double calculate_pair_distance(const core::BasePair& pair1, const core::BasePair& pair2) const;
+    [[nodiscard]] double calculate_pair_distance(const core::BasePair& pair1, const core::BasePair& pair2) const;
 
     /**
      * @brief Check if two base pairs are neighbors (within helix_break distance)
@@ -127,7 +127,7 @@ private:
      * @param pair2 Second base pair
      * @return True if pairs are neighbors
      */
-    bool are_neighbors(const core::BasePair& pair1, const core::BasePair& pair2) const;
+    [[nodiscard]] bool are_neighbors(const core::BasePair& pair1, const core::BasePair& pair2) const;
 
     /**
      * @brief Check if helix is circular (first and last pairs are neighbors)
@@ -135,7 +135,7 @@ private:
      * @param helix Helix to check
      * @return True if helix is circular
      */
-    bool is_circular(const std::vector<core::BasePair>& pairs, const Helix& helix) const;
+    [[nodiscard]] bool is_circular(const std::vector<core::BasePair>& pairs, const Helix& helix) const;
 
     /**
      * @brief Analyze base pair context to find neighbors
@@ -143,7 +143,7 @@ private:
      * @param pair_index Index of pair to analyze
      * @return Vector of neighbor indices (within helix_break distance)
      */
-    std::vector<size_t> find_neighbors(const std::vector<core::BasePair>& pairs, size_t pair_index) const;
+    [[nodiscard]] std::vector<size_t> find_neighbors(const std::vector<core::BasePair>& pairs, size_t pair_index) const;
 
     double helix_break_distance_; // Distance threshold for helix breaks (Angstroms)
 };

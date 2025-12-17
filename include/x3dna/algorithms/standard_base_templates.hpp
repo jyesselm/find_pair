@@ -46,14 +46,14 @@ public:
      * @return Structure containing the standard base atoms
      * @throws std::runtime_error if template file cannot be found or loaded
      */
-    core::Structure load_template(core::ResidueType type, bool is_modified);
+    [[nodiscard]] core::Structure load_template(core::ResidueType type, bool is_modified);
 
     /**
      * @brief Load standard base template for a residue type (standard nucleotide)
      * @param type Residue type
      * @return Structure containing the standard base atoms
      */
-    core::Structure load_template(core::ResidueType type);
+    [[nodiscard]] core::Structure load_template(core::ResidueType type);
 
     /**
      * @brief Get template file path for a residue type
@@ -61,14 +61,14 @@ public:
      * @param is_modified If true, use lowercase template (Atomic.x.pdb) for modified nucleotides
      * @return Path to template file
      */
-    std::filesystem::path get_template_path(core::ResidueType type, bool is_modified) const;
+    [[nodiscard]] std::filesystem::path get_template_path(core::ResidueType type, bool is_modified) const;
 
     /**
      * @brief Get template file path for a residue type (standard nucleotide)
      * @param type Residue type
      * @return Path to template file
      */
-    std::filesystem::path get_template_path(core::ResidueType type) const;
+    [[nodiscard]] std::filesystem::path get_template_path(core::ResidueType type) const;
 
     /**
      * @brief Set base template directory path
@@ -80,7 +80,7 @@ public:
      * @brief Get current template path
      * @return Current template base path
      */
-    std::filesystem::path template_path() const {
+    [[nodiscard]] std::filesystem::path template_path() const {
         return template_path_;
     }
 
@@ -94,7 +94,7 @@ public:
      * @param type Residue type
      * @return true if template file exists
      */
-    bool template_exists(core::ResidueType type) const;
+    [[nodiscard]] bool template_exists(core::ResidueType type) const;
 
 private:
     std::filesystem::path template_path_;
@@ -107,21 +107,21 @@ private:
      * @param is_modified If true, use lowercase template (Atomic.x.pdb) for modified nucleotides
      * @return Template filename (e.g., "Atomic_A.pdb" or "Atomic.a.pdb")
      */
-    static std::string type_to_filename(core::ResidueType type, bool is_modified);
+    [[nodiscard]] static std::string type_to_filename(core::ResidueType type, bool is_modified);
 
     /**
      * @brief Convert ResidueType to template filename (standard nucleotide)
      * @param type Residue type
      * @return Template filename (e.g., "Atomic_A.pdb")
      */
-    static std::string type_to_filename(core::ResidueType type);
+    [[nodiscard]] static std::string type_to_filename(core::ResidueType type);
 
     /**
      * @brief Check if a file exists
      * @param path File path
      * @return true if file exists
      */
-    static bool file_exists(const std::filesystem::path& path);
+    [[nodiscard]] static bool file_exists(const std::filesystem::path& path);
 };
 
 } // namespace algorithms

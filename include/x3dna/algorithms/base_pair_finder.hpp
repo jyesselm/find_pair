@@ -59,12 +59,12 @@ public:
      * @param structure Structure to search (residues must have frames calculated)
      * @return Vector of found base pairs
      */
-    std::vector<core::BasePair> find_pairs(core::Structure& structure);
+    [[nodiscard]] std::vector<core::BasePair> find_pairs(core::Structure& structure);
 
     /**
      * @brief Find base pairs (const version)
      */
-    std::vector<core::BasePair> find_pairs(const core::Structure& structure) const;
+    [[nodiscard]] std::vector<core::BasePair> find_pairs(const core::Structure& structure) const;
 
     /**
      * @brief Find base pairs and record validation results to JSON
@@ -72,7 +72,7 @@ public:
      * @param writer JsonWriter to record validation results (can be nullptr to skip recording)
      * @return Vector of found base pairs
      */
-    std::vector<core::BasePair> find_pairs_with_recording(core::Structure& structure,
+    [[nodiscard]] std::vector<core::BasePair> find_pairs_with_recording(core::Structure& structure,
                                                           io::JsonWriter* writer = nullptr) const;
 
     /**
@@ -85,7 +85,7 @@ public:
     /**
      * @brief Get finding strategy
      */
-    PairFindingStrategy strategy() const {
+    [[nodiscard]] PairFindingStrategy strategy() const {
         return strategy_;
     }
 
@@ -99,7 +99,7 @@ public:
     /**
      * @brief Get validation parameters
      */
-    const ValidationParameters& parameters() const {
+    [[nodiscard]] const ValidationParameters& parameters() const {
         return validator_.parameters();
     }
 
@@ -108,7 +108,7 @@ public:
      * @param residue Residue to check
      * @return True if residue is a nucleotide (standard or modified)
      */
-    static bool is_nucleotide(const core::Residue& residue);
+    [[nodiscard]] static bool is_nucleotide(const core::Residue& residue);
 
 private:
     // Core components
@@ -123,12 +123,12 @@ private:
      * @brief Find best pairs using greedy mutual best match (legacy find_bestpair)
      * @param writer Optional JsonWriter to record validation results
      */
-    std::vector<core::BasePair> find_best_pairs(core::Structure& structure, io::JsonWriter* writer = nullptr) const;
+    [[nodiscard]] std::vector<core::BasePair> find_best_pairs(core::Structure& structure, io::JsonWriter* writer = nullptr) const;
 
     /**
      * @brief Find all valid pairs (exhaustive search)
      */
-    std::vector<core::BasePair> find_all_pairs(const core::Structure& structure) const;
+    [[nodiscard]] std::vector<core::BasePair> find_all_pairs(const core::Structure& structure) const;
 
     /**
      * @brief Find best partner for a residue
@@ -138,7 +138,7 @@ private:
      * @param writer Optional JsonWriter to record validation results
      * @return Best partner index and validation result, or nullopt if none found
      */
-    std::optional<std::pair<int, ValidationResult>> find_best_partner(
+    [[nodiscard]] std::optional<std::pair<int, ValidationResult>> find_best_partner(
         int legacy_idx1, // Legacy 1-based residue index (from atom.legacy_residue_idx() set during
                          // PDB parsing)
         const core::Structure& structure, const std::vector<bool>& matched_indices,
@@ -152,7 +152,7 @@ private:
      * @param hbonds Vector of hydrogen bonds
      * @return Adjustment value to add to quality_score (negative value)
      */
-    double adjust_pair_quality(const std::vector<core::hydrogen_bond>& hbonds) const;
+    [[nodiscard]] double adjust_pair_quality(const std::vector<core::hydrogen_bond>& hbonds) const;
 
     /**
      * @brief Record validation results for a pair (matches legacy check_pair ->
@@ -179,20 +179,20 @@ private:
      * Note: Full implementation requires bpstep_par (shear, stretch, opening) from Stage 6.
      * This is a simplified version that uses base pair type and direction vectors.
      */
-    int calculate_bp_type_id(const core::Residue* res1, const core::Residue* res2, const ValidationResult& result,
+    [[nodiscard]] int calculate_bp_type_id(const core::Residue* res1, const core::Residue* res2, const ValidationResult& result,
                              double quality_score) const;
 
     /**
      * @brief Get residue index in structure (0-based, counting all residues)
      */
-    static size_t get_residue_index(const core::Structure& structure, const core::Residue& residue);
+    [[nodiscard]] static size_t get_residue_index(const core::Structure& structure, const core::Residue& residue);
 
     /**
      * @brief Get base letter from ResidueType (matches legacy bseq character)
      * @param type ResidueType enum value
      * @return One-letter code (A, C, G, T, U) or '?' if unknown
      */
-    static char get_base_letter_from_type(core::ResidueType type);
+    [[nodiscard]] static char get_base_letter_from_type(core::ResidueType type);
 };
 
 } // namespace algorithms

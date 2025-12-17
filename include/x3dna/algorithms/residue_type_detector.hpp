@@ -57,14 +57,14 @@ public:
      * This performs least-squares fitting of ring atoms to standard geometry
      * to detect whether residue is a purine or pyrimidine.
      */
-    static RmsdCheckResult check_by_rmsd(const core::Residue& residue);
+    [[nodiscard]] static RmsdCheckResult check_by_rmsd(const core::Residue& residue);
 
     /**
      * @brief Detect residue type using full detection logic
      * @param residue Residue to detect type for
      * @return TypeDetectionResult with detected type and method used
      */
-    static TypeDetectionResult detect_type(const core::Residue& residue);
+    [[nodiscard]] static TypeDetectionResult detect_type(const core::Residue& residue);
 
 private:
     /**
@@ -72,14 +72,14 @@ private:
      * @param res_name Residue name
      * @return true if in NT_LIST
      */
-    static bool is_in_nt_list(const std::string& res_name);
+    [[nodiscard]] static bool is_in_nt_list(const std::string& res_name);
 
     /**
      * @brief Check if residue type is a purine
      * @param type Residue type
      * @return true if purine (A or G)
      */
-    static bool is_purine(core::ResidueType type);
+    [[nodiscard]] static bool is_purine(core::ResidueType type);
 };
 
 } // namespace algorithms

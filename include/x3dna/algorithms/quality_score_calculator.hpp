@@ -40,7 +40,7 @@ public:
      * @param res2 Second residue (for bp_type calculation)
      * @return Adjusted score (lower is better)
      */
-    double calculate_selection_score(const ValidationResult& result, const core::Residue& res1,
+    [[nodiscard]] double calculate_selection_score(const ValidationResult& result, const core::Residue& res1,
                                      const core::Residue& res2) const;
 
     /**
@@ -55,7 +55,7 @@ public:
      * @param hbonds Vector of hydrogen bonds
      * @return Adjustment value (negative, to be added to quality_score)
      */
-    double adjust_pair_quality(const std::vector<core::hydrogen_bond>& hbonds) const;
+    [[nodiscard]] double adjust_pair_quality(const std::vector<core::hydrogen_bond>& hbonds) const;
 
     /**
      * @brief Calculate bp_type_id (matches legacy check_wc_wobble_pair)
@@ -71,7 +71,7 @@ public:
      * @param result Validation result (for direction vectors and validity)
      * @return bp_type_id (-1, 0, 1, or 2)
      */
-    int calculate_bp_type_id(const core::Residue& res1, const core::Residue& res2,
+    [[nodiscard]] int calculate_bp_type_id(const core::Residue& res1, const core::Residue& res2,
                              const ValidationResult& result) const;
 
     /**
@@ -82,7 +82,7 @@ public:
      * @param type ResidueType enum value
      * @return One-letter code (A, C, G, T, U, I, P) or '?' if unknown
      */
-    static char get_base_letter(core::ResidueType type);
+    [[nodiscard]] static char get_base_letter(core::ResidueType type);
 
 private:
     ParameterCalculator param_calculator_;
