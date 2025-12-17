@@ -245,7 +245,7 @@ PdbParser::atom_metadata PdbParser::parse_atom_metadata(const std::string& line,
     return metadata;
 }
 
-// Build atom from parsed data
+// Build atom from parsed data using Builder pattern
 core::Atom PdbParser::build_atom_from_parsed_data(const std::string& line, size_t line_number, char atom_type) {
     std::string atom_name = parse_atom_name(line);
     std::string residue_name = parse_residue_name(line);
@@ -258,20 +258,25 @@ core::Atom PdbParser::build_atom_from_parsed_data(const std::string& line, size_
 
     atom_metadata metadata = parse_atom_metadata(line, line_number);
 
-    core::Atom atom(atom_name, coords, residue_name, chain_id, residue_seq, atom_type);
-    atom.set_alt_loc(alt_loc);
-    atom.set_insertion(insertion);
-    atom.set_occupancy(occupancy);
-    atom.set_atom_serial(metadata.atom_serial);
-    atom.set_line_number(line_number);
-    atom.set_b_factor(metadata.b_factor);
-    if (!metadata.element.empty()) {
-        atom.set_element(metadata.element);
-    }
-    atom.set_original_atom_name(metadata.original_atom_name);
-    atom.set_original_residue_name(metadata.original_residue_name);
+    auto builder = core::Atom::create(atom_name, coords)
+        .residue_name(residue_name)
+        .chain_id(chain_id)
+        .residue_seq(residue_seq)
+        .record_type(atom_type)
+        .alt_loc(alt_loc)
+        .insertion(insertion)
+        .occupancy(occupancy)
+        .atom_serial(metadata.atom_serial)
+        .line_number(line_number)
+        .b_factor(metadata.b_factor)
+        .original_atom_name(metadata.original_atom_name)
+        .original_residue_name(metadata.original_residue_name);
 
-    return atom;
+    if (!metadata.element.empty()) {
+        builder.element(metadata.element);
+    }
+
+    return builder.build();
 }
 
 core::Atom PdbParser::parse_atom_line(const std::string& line, size_t line_number) {

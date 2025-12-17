@@ -15,11 +15,17 @@ namespace core {
 /**
  * @class Atom
  * @brief Represents a single atom with name, position, and metadata
+ *
+ * Atoms are primarily constructed via the Builder pattern for clean initialization.
+ * After construction, atoms are largely immutable except for legacy index metadata
+ * which may be set during post-processing.
  */
 class Atom {
 public:
+    class Builder;  // Forward declaration
+
     /**
-     * @brief Default constructor
+     * @brief Default constructor (for container compatibility)
      */
     Atom() = default;
 
@@ -44,7 +50,15 @@ public:
         : name_(name), position_(position), residue_name_(residue_name), chain_id_(chain_id), residue_seq_(residue_seq),
           record_type_(record_type) {}
 
-    // Getters
+    /**
+     * @brief Create a Builder for fluent atom construction
+     * @param name Atom name (required)
+     * @param position 3D position (required)
+     * @return Builder instance
+     */
+    [[nodiscard]] static Builder create(const std::string& name, const geometry::Vector3D& position);
+
+    // Getters (all const, returning const references where appropriate)
     [[nodiscard]] const std::string& name() const {
         return name_;
     }
@@ -100,58 +114,27 @@ public:
         return legacy_residue_idx_;
     }
 
-    // Setters
-    void set_name(const std::string& name) {
-        name_ = name;
-    }
-    void set_position(const geometry::Vector3D& position) {
-        position_ = position;
-    }
-    void set_residue_name(const std::string& residue_name) {
-        residue_name_ = residue_name;
-    }
-    void set_chain_id(char chain_id) {
-        chain_id_ = chain_id;
-    }
-    void set_residue_seq(int residue_seq) {
-        residue_seq_ = residue_seq;
-    }
-    void set_record_type(char record_type) {
-        record_type_ = record_type;
-    }
-    void set_alt_loc(char alt_loc) {
-        alt_loc_ = alt_loc;
-    }
-    void set_insertion(char insertion) {
-        insertion_ = insertion;
-    }
-    void set_occupancy(double occupancy) {
-        occupancy_ = occupancy;
-    }
-    void set_atom_serial(int atom_serial) {
-        atom_serial_ = atom_serial;
-    }
+    // Post-construction setters for parsing workflow
+    // These are retained because the values depend on filtering/ordering decisions
+    // made after initial atom construction from PDB line data.
+
+    /**
+     * @brief Set model number (from MODEL record, set after parsing atom line)
+     */
     void set_model_number(int model_number) {
         model_number_ = model_number;
     }
-    void set_line_number(size_t line_number) {
-        line_number_ = line_number;
-    }
-    void set_b_factor(double b_factor) {
-        b_factor_ = b_factor;
-    }
-    void set_element(const std::string& element) {
-        element_ = element;
-    }
-    void set_original_atom_name(const std::string& name) {
-        original_atom_name_ = name;
-    }
-    void set_original_residue_name(const std::string& name) {
-        original_residue_name_ = name;
-    }
+
+    /**
+     * @brief Set legacy atom index (set after filtering decision)
+     */
     void set_legacy_atom_idx(int legacy_atom_idx) {
         legacy_atom_idx_ = legacy_atom_idx;
     }
+
+    /**
+     * @brief Set legacy residue index (for post-construction index fixing)
+     */
     void set_legacy_residue_idx(int legacy_residue_idx) {
         legacy_residue_idx_ = legacy_residue_idx;
     }
@@ -338,6 +321,8 @@ public:
     }
 
 private:
+    friend class Builder;
+
     std::string name_;                  // Atom name (e.g., " C1'", " N3 ")
     geometry::Vector3D position_;       // 3D coordinates
     std::string residue_name_;          // Residue name (e.g., "  C", "  G")
@@ -368,6 +353,126 @@ private:
         return trimmed;
     }
 };
+
+/**
+ * @class Atom::Builder
+ * @brief Fluent builder for constructing Atom objects
+ *
+ * Usage:
+ *   auto atom = Atom::create("CA", position)
+ *       .residue_name("ALA")
+ *       .chain_id('A')
+ *       .residue_seq(42)
+ *       .build();
+ */
+class Atom::Builder {
+public:
+    /**
+     * @brief Constructor with required fields
+     * @param name Atom name
+     * @param position 3D position
+     */
+    Builder(const std::string& name, const geometry::Vector3D& position) {
+        atom_.name_ = name;
+        atom_.position_ = position;
+    }
+
+    Builder& residue_name(const std::string& name) {
+        atom_.residue_name_ = name;
+        return *this;
+    }
+
+    Builder& chain_id(char id) {
+        atom_.chain_id_ = id;
+        return *this;
+    }
+
+    Builder& residue_seq(int seq) {
+        atom_.residue_seq_ = seq;
+        return *this;
+    }
+
+    Builder& record_type(char type) {
+        atom_.record_type_ = type;
+        return *this;
+    }
+
+    Builder& alt_loc(char loc) {
+        atom_.alt_loc_ = loc;
+        return *this;
+    }
+
+    Builder& insertion(char ins) {
+        atom_.insertion_ = ins;
+        return *this;
+    }
+
+    Builder& occupancy(double occ) {
+        atom_.occupancy_ = occ;
+        return *this;
+    }
+
+    Builder& atom_serial(int serial) {
+        atom_.atom_serial_ = serial;
+        return *this;
+    }
+
+    Builder& model_number(int num) {
+        atom_.model_number_ = num;
+        return *this;
+    }
+
+    Builder& line_number(size_t num) {
+        atom_.line_number_ = num;
+        return *this;
+    }
+
+    Builder& b_factor(double bf) {
+        atom_.b_factor_ = bf;
+        return *this;
+    }
+
+    Builder& element(const std::string& elem) {
+        atom_.element_ = elem;
+        return *this;
+    }
+
+    Builder& original_atom_name(const std::string& name) {
+        atom_.original_atom_name_ = name;
+        return *this;
+    }
+
+    Builder& original_residue_name(const std::string& name) {
+        atom_.original_residue_name_ = name;
+        return *this;
+    }
+
+    Builder& legacy_atom_idx(int idx) {
+        atom_.legacy_atom_idx_ = idx;
+        return *this;
+    }
+
+    Builder& legacy_residue_idx(int idx) {
+        atom_.legacy_residue_idx_ = idx;
+        return *this;
+    }
+
+    /**
+     * @brief Build and return the constructed Atom
+     * @return Constructed Atom object
+     */
+    [[nodiscard]] Atom build() const {
+        return atom_;
+    }
+
+private:
+    Atom atom_;
+};
+
+// Inline implementation of create()
+inline Atom::Builder Atom::create(const std::string& name, const geometry::Vector3D& position) {
+    return Builder(name, position);
+}
 
 } // namespace core
 } // namespace x3dna

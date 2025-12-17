@@ -50,15 +50,14 @@ TEST_F(AtomTest, FullConstructor) {
     EXPECT_EQ(atom1_.record_type(), 'A');
 }
 
-// Getter/Setter tests
-TEST_F(AtomTest, Setters) {
-    Atom atom;
-    atom.set_name(" N1 ");
-    atom.set_position(Vector3D(5.0, 6.0, 7.0));
-    atom.set_residue_name("  A");
-    atom.set_chain_id('B');
-    atom.set_residue_seq(10);
-    atom.set_record_type('H');
+// Builder pattern tests
+TEST_F(AtomTest, BuilderBasic) {
+    auto atom = Atom::create(" N1 ", Vector3D(5.0, 6.0, 7.0))
+        .residue_name("  A")
+        .chain_id('B')
+        .residue_seq(10)
+        .record_type('H')
+        .build();
 
     EXPECT_EQ(atom.name(), " N1 ");
     EXPECT_EQ(atom.position(), Vector3D(5.0, 6.0, 7.0));
@@ -66,6 +65,56 @@ TEST_F(AtomTest, Setters) {
     EXPECT_EQ(atom.chain_id(), 'B');
     EXPECT_EQ(atom.residue_seq(), 10);
     EXPECT_EQ(atom.record_type(), 'H');
+}
+
+TEST_F(AtomTest, BuilderAllFields) {
+    auto atom = Atom::create(" CA ", Vector3D(1.0, 2.0, 3.0))
+        .residue_name("ALA")
+        .chain_id('A')
+        .residue_seq(42)
+        .record_type('A')
+        .alt_loc('A')
+        .insertion('B')
+        .occupancy(0.75)
+        .atom_serial(100)
+        .model_number(1)
+        .line_number(500)
+        .b_factor(25.5)
+        .element("C")
+        .original_atom_name(" CA ")
+        .original_residue_name("ALA")
+        .legacy_atom_idx(50)
+        .legacy_residue_idx(10)
+        .build();
+
+    EXPECT_EQ(atom.name(), " CA ");
+    EXPECT_EQ(atom.residue_name(), "ALA");
+    EXPECT_EQ(atom.chain_id(), 'A');
+    EXPECT_EQ(atom.residue_seq(), 42);
+    EXPECT_EQ(atom.alt_loc(), 'A');
+    EXPECT_EQ(atom.insertion(), 'B');
+    EXPECT_NEAR(atom.occupancy(), 0.75, 1e-9);
+    EXPECT_EQ(atom.atom_serial(), 100);
+    EXPECT_EQ(atom.model_number(), 1);
+    EXPECT_EQ(atom.line_number(), 500u);
+    EXPECT_NEAR(atom.b_factor(), 25.5, 1e-9);
+    EXPECT_EQ(atom.element(), "C");
+    EXPECT_EQ(atom.legacy_atom_idx(), 50);
+    EXPECT_EQ(atom.legacy_residue_idx(), 10);
+}
+
+// Post-construction setters (for parsing workflow)
+TEST_F(AtomTest, PostConstructionSetters) {
+    auto atom = Atom::create(" C1'", Vector3D(1.0, 2.0, 3.0)).build();
+
+    // These are the only setters retained for parsing workflow
+    atom.set_model_number(2);
+    atom.set_legacy_atom_idx(100);
+    atom.set_legacy_residue_idx(25);
+
+    EXPECT_EQ(atom.model_number(), 2);
+    EXPECT_EQ(atom.legacy_atom_idx(), 100);
+    EXPECT_EQ(atom.legacy_residue_idx(), 25);
 }
 
 // Distance calculation tests
