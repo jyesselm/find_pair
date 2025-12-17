@@ -2,7 +2,48 @@
 
 **Branch**: `refactor/clean-code-principles`
 **Scope**: ALL modern code (57 files, ~20,000 lines)
-**Validation baseline**: 100% pass rate on core stages
+**Validation baseline**: 100% pass rate on core stages (100-PDB set), 99.1% on fast set
+
+---
+
+## Progress Summary
+
+**Last Updated**: December 2024
+
+| Phase | Status | Key Accomplishments |
+|-------|--------|---------------------|
+| 0 | ⬜ Not Started | Portability foundation |
+| 1 | ✅ Mostly Done | Named constants, [[nodiscard]] added to most headers |
+| 2 | ⬜ Not Started | Builder patterns for core data structures |
+| 3 | 🔶 Partial | OverlapCalculator extracted, helix_organizer helpers added |
+| 4 | ✅ Mostly Done | GEMMI parser refactoring, ResidueKey struct |
+| 5 | ⬜ Not Started | Protocol configuration consolidation |
+| 6 | ✅ Done | Early returns, named booleans applied |
+| 7 | ⬜ Not Started | Final cleanup |
+
+### Completed Commits (Recent)
+
+| Commit | Description |
+|--------|-------------|
+| `d4fb211` | Add update_direction_count helper in helix_organizer.cpp |
+| `2e6b306` | Refactor helix_organizer.cpp with FrameAlignment helper |
+| `a157efb` | Fix GEMMI parser compatibility issues |
+| `29c76f8` | Extract OverlapCalculator from base_pair_validator.cpp |
+| `42be9d4` | Refactor parsers: add ResidueKey struct, remove deprecated methods |
+| `fb2e91c` | Remove ResidueFactory and RingAtomRegistry classes |
+| `b5a9d2d` | Consolidate modified nucleotide lookups to ModifiedNucleotideRegistry |
+| `8c2c434` | Refactor PDB/CIF parsers to use GEMMI library |
+| `c262bc8` | Add named constants for magic numbers |
+| `b4c63bf` | Flatten nesting with early returns and named booleans |
+
+### File Size Improvements
+
+| File | Before | After | Change |
+|------|--------|-------|--------|
+| `base_pair_validator.cpp` | 911 lines | 496 lines | -46% |
+| `pdb_parser.cpp` | 751 lines | 340 lines | -55% |
+
+---
 
 ## Key Goals
 
@@ -182,32 +223,35 @@ void initialize(const InitOptions& options);
 
 Apply across ALL files. Each step is one commit.
 
-### Step 1.1: Add `[[nodiscard]]` Everywhere
+### Step 1.1: Add `[[nodiscard]]` Everywhere ✅ MOSTLY DONE
 **Files**: All 50 headers
 **Scope**: ~60 methods that return values that shouldn't be ignored
+**Status**: Most geometry and algorithm headers already have [[nodiscard]] on key methods.
 **Key targets**:
-- `geometry/vector3d.hpp`: `length()`, `dot()`, `cross()`, `angle_to()`
-- `geometry/matrix3d.hpp`: `operator*()`, `transpose()`, `determinant()`, `inverse()`
-- `core/residue.hpp`: `find_atom()`, `is_nucleotide()`, `ry_classification()`
-- `algorithms/*.hpp`: All `validate()`, `calculate_*()`, `find_*()` methods
+- `geometry/vector3d.hpp`: ✅ All methods annotated
+- `geometry/matrix3d.hpp`: ✅ All methods annotated
+- `core/residue.hpp`: ✅ Most methods annotated
+- `algorithms/*.hpp`: ✅ Most methods annotated (15+ headers have [[nodiscard]])
 
 ### Step 1.2: Const Correctness Pass
 **Files**: All source files
 **Scope**: Parameters, member functions, local variables
+**Status**: Ongoing - applied during other refactoring
 **Focus areas**:
 - Non-const references returned (e.g., `residue.hpp:77 atoms()`)
 - Mutable members in const-marked classes
 
-### Step 1.3: Extract Magic Numbers to Named Constants
+### Step 1.3: Extract Magic Numbers to Named Constants ✅ DONE
 **Files**:
 - `base_pair_validator.cpp`: `BOND_DISTANCE=2.0`, `XBIG=1e18`, `GAMUT=5e8`
 - `pdb_parser.cpp`: Column indices (12, 16, 21, 26, 55-60, 77-78)
 - `helix_organizer.cpp`: Threshold values
-**Create**: `include/x3dna/core/constants.hpp`
+**Created**: `include/x3dna/core/constants.hpp`
+**Commit**: `c262bc8`
 
 ### Step 1.4: Replace Debug getenv() with Proper Logging
 **Files**: `helix_organizer.cpp` (5+ locations)
-**Create**: Simple logging utility or use existing pattern consistently
+**Status**: Uses ConfigManager for debug settings (centralized)
 
 ---
 
@@ -428,8 +472,9 @@ T from_json(const nlohmann::json& j, JsonFormat format);
 
 ## Phase 3: Algorithm Classes - Break Up Monster Functions
 
-### Step 3.1: Split `base_pair_finder.cpp` (852 lines)
+### Step 3.1: Split `base_pair_finder.cpp` (821 lines)
 **Problem**: `find_best_pairs()` is 300+ lines with 5-6 nesting levels
+**Status**: Not started - file already has good internal structure with helper methods
 
 **Extract to separate classes**:
 ```
@@ -449,16 +494,21 @@ algorithms/pairing/
 - `tests/unit/algorithms/pairing/mutual_best_matcher_test.cpp`
 - `tests/unit/algorithms/pairing/quality_scorer_test.cpp`
 
-### Step 3.2: Split `base_pair_validator.cpp` (911 lines)
+### Step 3.2: Split `base_pair_validator.cpp` ✅ PARTIAL (911→496 lines)
 **Problem**: Ring atom logic duplicated, polygon code embedded, deep nesting
+**Status**: OverlapCalculator extracted (commit `29c76f8`)
 
-**Extract**:
+**Extracted**:
 ```
 algorithms/validation/
+├── overlap_calculator.hpp/cpp ✅ DONE (~250 lines)
+│   └── All polygon intersection code
+```
+
+**Remaining**:
+```
 ├── distance_validator.hpp/cpp (~100 lines)
 ├── angle_validator.hpp/cpp (~50 lines)
-├── overlap_calculator.hpp/cpp (~250 lines)
-│   └── All polygon intersection code
 ├── ring_atom_finder.hpp/cpp (~150 lines)
 │   └── Deduplicated ring atom matching
 └── base_pair_validator.hpp/cpp (~200 lines)
@@ -471,10 +521,15 @@ algorithms/validation/
 - `tests/unit/algorithms/validation/overlap_calculator_test.cpp`
 - `tests/unit/algorithms/validation/ring_atom_finder_test.cpp`
 
-### Step 3.3: Split `helix_organizer.cpp` (1,206 lines)
+### Step 3.3: Split `helix_organizer.cpp` 🔶 PARTIAL (1,277 lines)
 **Problem**: God class with 5+ responsibilities
+**Status**: Helper structs/functions added inline:
+- `FrameAlignment` struct with `is_aligned()` and `angle_sum()` (commit `2e6b306`)
+- `compute_frame_alignment()` helper function
+- `update_direction_count()` helper function (commit `d4fb211`)
+- Early returns and named booleans applied (commits `22c9cf7`, `31e3ae4`)
 
-**Extract**:
+**Remaining extraction**:
 ```
 algorithms/helix/
 ├── backbone_linkage_checker.hpp/cpp (~80 lines)
@@ -523,42 +578,28 @@ struct PairComparisonContext {
 
 ## Phase 4: I/O Classes
 
-### Step 4.1: Refactor `pdb_parser.cpp` (751 lines)
+### Step 4.1: Refactor `pdb_parser.cpp` ✅ DONE (751→340 lines)
 **Problems**:
 - Magic column indices scattered
 - Tuple types as parameters (should be structs)
 - Deep nesting in atom processing
 
-**Extract**:
+**Completed**:
+- Refactored to use GEMMI library for parsing (commit `8c2c434`)
+- Added `ResidueKey` struct to replace tuples (commit `42be9d4`)
+- Removed deprecated methods and ResidueFactory (commit `fb2e91c`)
+- Fixed GEMMI parser compatibility (commit `a157efb`)
+
+**ResidueKey struct** (now in `io/pdb_parser.hpp`):
 ```cpp
-// New: pdb_column_parser.hpp
-struct PdbColumnDefs {
-    static constexpr int ATOM_NAME_START = 12;
-    static constexpr int ATOM_NAME_LEN = 4;
-    static constexpr int ALT_LOC = 16;
-    static constexpr int RES_NAME_START = 17;
-    // ... all column positions
-};
-
-class PdbColumnParser {
-public:
-    [[nodiscard]] static std::string parse_atom_name(const std::string& line);
-    [[nodiscard]] static char parse_alt_loc(const std::string& line);
-    // ... focused parsers
-};
-```
-
-**Replace tuple with struct**:
-```cpp
-// BEFORE
-std::tuple<std::string, char, int, char> // repeated 3+ times
-
-// AFTER
 struct ResidueKey {
-    std::string chain_id;
-    char insertion_code;
+    std::string name;
+    char chain_id;
     int seq_num;
-    char alt_loc;
+    char insertion;
+
+    bool operator==(const ResidueKey& other) const;
+    bool operator<(const ResidueKey& other) const;
 };
 ```
 
@@ -659,10 +700,17 @@ private:
 
 ---
 
-## Phase 6: Flatten Deep Nesting
+## Phase 6: Flatten Deep Nesting ✅ DONE
 
-### Step 6.1: Apply Early Return Pattern
+### Step 6.1: Apply Early Return Pattern ✅ DONE
 **Target**: All functions with 4+ nesting levels
+**Status**: Applied to key algorithm files
+
+**Commits**:
+- `b4c63bf` - Flatten nesting with early returns and named booleans (multiple files)
+- `2fd9eb2` - Refactor find_best_partner() with early returns and named booleans
+- `31e3ae4` - Refactor check_strand2() with named booleans and early continue
+- `22c9cf7` - Refactor check_direction() with named booleans and early return
 
 **Example transformation**:
 ```cpp
@@ -695,8 +743,9 @@ void process_item(const Item& item) {
 }
 ```
 
-### Step 6.2: Extract Complex Conditionals
+### Step 6.2: Extract Complex Conditionals ✅ DONE
 **Target**: All multi-clause conditionals
+**Status**: Named booleans added throughout algorithm files
 
 ```cpp
 // BEFORE
@@ -898,11 +947,29 @@ include/x3dna/
 
 ## Next Action
 
-Start with **Phase 0, Step 0.1**: Create `ResourceLocator` for portable resource path resolution.
+**Recommended next steps** (in priority order):
 
-This is the foundation for making the library embeddable.
+1. **Phase 0, Step 0.1**: Create `ResourceLocator` for portable resource path resolution
+   - Critical for embedding the library in other projects
+   - Removes hardcoded paths and X3DNA_SOURCE_DIR macro
+
+2. **Phase 3.2**: Continue extracting validators from `base_pair_validator.cpp`
+   - Already extracted: OverlapCalculator
+   - Remaining: distance_validator, angle_validator, ring_atom_finder
+
+3. **Phase 3.3**: Continue extracting from `helix_organizer.cpp` (1,277 lines)
+   - Already added: FrameAlignment, compute_frame_alignment, update_direction_count
+   - Could extract: backbone_linkage_checker, pair_geometry_helper
+
+4. **Phase 2**: Builder patterns for core data structures
+   - Atom, Residue, BasePair classes
+   - Requires careful API changes
 
 ```bash
 # After each step:
-make release && make test && fp2-validate validate core --test-set 10
+make release && make test && fp2-validate validate core --test-set 100
 ```
+
+**Current validation status**:
+- 100% pass rate on 100-PDB test set
+- 99.1% pass rate on fast set (3569/3602, 33 known failures in complex structures)
