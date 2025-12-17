@@ -11,6 +11,7 @@
 #include <optional>
 #include <nlohmann/json.hpp>
 #include <x3dna/core/reference_frame.hpp>
+#include <x3dna/core/hydrogen_bond.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
 
@@ -25,21 +26,20 @@ using geometry::Vector3D;
  */
 enum class BasePairType { WATSON_CRICK, WOBBLE, HOOGSTEEN, UNKNOWN };
 
-/**
- * @struct hydrogen_bond
- * @brief Represents a hydrogen bond in a base pair
- */
-struct hydrogen_bond {
-    std::string donor_atom;
-    std::string acceptor_atom;
-    double distance;
-    char type;                       // '-' for standard, ' ' for non-standard
-    std::optional<size_t> hbond_idx; // Optional index for tracking (assigned when recording)
-};
+// Type alias for backward compatibility with code using the old struct name
+using hydrogen_bond = HydrogenBond;
 
 /**
  * @class BasePair
  * @brief Represents a base pair between two nucleotide residues
+ *
+ * IMPORTANT: Reference frames are required for base pair operations.
+ * Use the 4-parameter constructor when frames are available (preferred):
+ *   BasePair(idx1, idx2, frame1, frame2)
+ *
+ * The 2-parameter constructor without frames is provided for JSON
+ * deserialization and incremental construction patterns, but frames
+ * must be set via set_frame1/set_frame2 before geometric operations.
  */
 class BasePair {
 private:
@@ -50,7 +50,7 @@ private:
     std::string bp_type_;                       // Base pair type string (e.g., "CG", "AT")
     std::optional<ReferenceFrame> frame1_;      // Reference frame for first residue
     std::optional<ReferenceFrame> frame2_;      // Reference frame for second residue
-    std::vector<hydrogen_bond> hbonds_;         // Hydrogen bonds
+    std::vector<HydrogenBond> hbonds_;          // Hydrogen bonds
     std::optional<size_t> basepair_idx_;        // Optional index for tracking (assigned when recording)
     bool finding_order_swapped_ = false;        // True if indices were swapped during normalization (finding order was j,i not i,j)
 
@@ -94,12 +94,25 @@ public:
     BasePair() = default;
 
     /**
-     * @brief Constructor with residue indices and type
+     * @brief Constructor with residue indices and type (frames set later)
      * @param idx1 Index of first residue
      * @param idx2 Index of second residue
      * @param type Base pair type
+     * @note Frames must be set via set_frame1/set_frame2 before geometric operations
      */
     BasePair(size_t idx1, size_t idx2, BasePairType type) : residue_idx1_(idx1), residue_idx2_(idx2), type_(type) {}
+
+    /**
+     * @brief Constructor with residue indices and required frames (preferred)
+     * @param idx1 Index of first residue
+     * @param idx2 Index of second residue
+     * @param frame1 Reference frame for first residue
+     * @param frame2 Reference frame for second residue
+     * @param type Base pair type (default: UNKNOWN)
+     */
+    BasePair(size_t idx1, size_t idx2, const ReferenceFrame& frame1, const ReferenceFrame& frame2,
+             BasePairType type = BasePairType::UNKNOWN)
+        : residue_idx1_(idx1), residue_idx2_(idx2), type_(type), frame1_(frame1), frame2_(frame2) {}
 
     // Getters
     [[nodiscard]] size_t residue_idx1() const {
@@ -141,6 +154,14 @@ public:
      */
     [[nodiscard]] std::optional<ReferenceFrame> frame2() const {
         return frame2_;
+    }
+
+    /**
+     * @brief Check if both frames are set
+     * @return True if both frame1 and frame2 have values
+     */
+    [[nodiscard]] bool has_frames() const {
+        return frame1_.has_value() && frame2_.has_value();
     }
 
     /**
