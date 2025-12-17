@@ -7,6 +7,7 @@
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/residue_factory.hpp>
+#include <x3dna/core/constants.hpp>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -50,20 +51,23 @@ core::Structure PdbParser::parse_string(const std::string& content) {
     return parse_impl(stream);
 }
 
+// Import PDB column constants for cleaner code
+using namespace x3dna::constants::pdb_columns;
+
 // Private helper methods for parsing individual fields
 std::string PdbParser::parse_atom_name(const std::string& line) {
-    if (line.length() < 16) {
+    if (line.length() < ATOM_NAME_START + ATOM_NAME_LEN) {
         return "    ";
     }
-    std::string name = line.substr(12, 4);
+    std::string name = line.substr(ATOM_NAME_START, ATOM_NAME_LEN);
     return normalize_atom_name(name);
 }
 
 std::string PdbParser::parse_residue_name(const std::string& line) {
-    if (line.length() < 20) {
+    if (line.length() < RESIDUE_NAME_START + RESIDUE_NAME_LEN) {
         return "";
     }
-    std::string name = line.substr(17, 3);
+    std::string name = line.substr(RESIDUE_NAME_START, RESIDUE_NAME_LEN);
 
     // Legacy normalization: shift left if last char is space (up to 2 times)
     for (int i = 0; i < 2; i++) {
@@ -78,35 +82,34 @@ std::string PdbParser::parse_residue_name(const std::string& line) {
 }
 
 char PdbParser::parse_chain_id(const std::string& line) {
-    if (line.length() < 22) {
+    if (line.length() <= CHAIN_ID) {
         return ' ';
     }
-    return line[21];
+    return line[CHAIN_ID];
 }
 
 char PdbParser::parse_alt_loc(const std::string& line) {
-    if (line.length() < 17) {
+    if (line.length() <= ALT_LOC) {
         return ' ';
     }
-    return line[16];
+    return line[ALT_LOC];
 }
 
 char PdbParser::parse_insertion(const std::string& line) {
-    if (line.length() < 27) {
+    if (line.length() <= INSERTION_CODE) {
         return ' ';
     }
-    return line[26];
+    return line[INSERTION_CODE];
 }
 
 double PdbParser::parse_occupancy(const std::string& line) {
-    if (line.length() < 60) {
+    if (line.length() < OCCUPANCY_START + OCCUPANCY_LEN) {
         return 1.0;
     }
 
     // Optimized: parse directly from line without substring copy
-    // Occupancy is in columns 55-60 (0-indexed: 54-60)
-    size_t start = 54;
-    size_t end = 60;
+    size_t start = OCCUPANCY_START;
+    size_t end = OCCUPANCY_START + OCCUPANCY_LEN;
 
     // Find first non-whitespace
     while (start < end && (line[start] == ' ' || line[start] == '\t')) {
