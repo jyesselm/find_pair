@@ -4,19 +4,17 @@
  */
 
 #include <x3dna/algorithms/standard_base_templates.hpp>
+#include <x3dna/config/resource_locator.hpp>
 #include <filesystem>
-#include <cstdlib>
 #include <stdexcept>
 
 namespace x3dna {
 namespace algorithms {
 
 StandardBaseTemplates::StandardBaseTemplates() {
-    template_path_ = find_template_path();
-    if (template_path_.empty()) {
-        // Default to resources/templates directory (new location)
-        template_path_ = std::filesystem::path("resources/templates");
-    }
+    // Use ResourceLocator for centralized path management
+    // ResourceLocator will auto-initialize from environment if needed
+    template_path_ = config::ResourceLocator::templates_dir();
 }
 
 StandardBaseTemplates::StandardBaseTemplates(const std::filesystem::path& template_path)
@@ -24,44 +22,6 @@ StandardBaseTemplates::StandardBaseTemplates(const std::filesystem::path& templa
     if (!std::filesystem::exists(template_path_)) {
         throw std::runtime_error("Template path does not exist: " + template_path_.string());
     }
-}
-
-std::filesystem::path StandardBaseTemplates::find_template_path() {
-    // Priority 1: Check resources/templates directory (self-contained)
-    std::vector<std::filesystem::path> search_paths = {
-        "resources/templates",
-        "../resources/templates",
-        "../../resources/templates",
-#ifdef X3DNA_SOURCE_DIR
-        std::filesystem::path(X3DNA_SOURCE_DIR) / "resources/templates",
-#endif
-    };
-
-    for (const auto& path : search_paths) {
-        if (std::filesystem::exists(path)) {
-            return path;
-        }
-    }
-
-    // Priority 2: Fall back to X3DNA environment variable
-    const char* x3dna_home = std::getenv("X3DNA_HOMEDIR");
-    if (x3dna_home) {
-        std::filesystem::path config_path = std::filesystem::path(x3dna_home) / "config";
-        if (std::filesystem::exists(config_path)) {
-            return config_path;
-        }
-    }
-
-    const char* x3dna = std::getenv("X3DNA");
-    if (x3dna) {
-        std::filesystem::path config_path = std::filesystem::path(x3dna) / "config";
-        if (std::filesystem::exists(config_path)) {
-            return config_path;
-        }
-    }
-
-    // Return empty path if not found
-    return std::filesystem::path();
 }
 
 std::string StandardBaseTemplates::type_to_filename(core::ResidueType type, bool is_modified) {

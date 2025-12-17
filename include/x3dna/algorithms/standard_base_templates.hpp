@@ -102,12 +102,6 @@ private:
     io::PdbParser parser_;
 
     /**
-     * @brief Find template path from environment or common locations
-     * @return Template path if found, empty path otherwise
-     */
-    static std::filesystem::path find_template_path();
-
-    /**
      * @brief Convert ResidueType to template filename
      * @param type Residue type
      * @param is_modified If true, use lowercase template (Atomic.x.pdb) for modified nucleotides

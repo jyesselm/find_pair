@@ -1,4 +1,5 @@
 #include <x3dna/core/modified_nucleotide_registry.hpp>
+#include <x3dna/config/resource_locator.hpp>
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
@@ -30,32 +31,30 @@ static ResidueType string_to_residue_type(const std::string& type_str) {
     throw std::runtime_error("Unknown residue type: " + type_str);
 }
 
-// Load registry from JSON file
-static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> load_registry() {
-    std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> registry;
+// Lazy-loaded registry singleton
+static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo>& get_registry() {
+    static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> registry;
+    static bool loaded = false;
 
-    // Try to find the config file - prioritize the source directory path
-    std::vector<std::string> search_paths = {
-#ifdef X3DNA_SOURCE_DIR
-        std::string(X3DNA_SOURCE_DIR) + "/resources/config/modified_nucleotides.json",
-#endif
-        "resources/config/modified_nucleotides.json",
-        "../resources/config/modified_nucleotides.json",
-        "../../resources/config/modified_nucleotides.json",
-        "../../../resources/config/modified_nucleotides.json",
-        "data/templates/../resources/config/modified_nucleotides.json"};
-
-    std::ifstream file;
-
-    for (const auto& path : search_paths) {
-        file.open(path);
-        if (file.is_open()) {
-            break;
-        }
+    if (loaded) {
+        return registry;
     }
 
+    // Use ResourceLocator for centralized path management
+    std::filesystem::path config_file;
+    try {
+        config_file = config::ResourceLocator::config_file("modified_nucleotides.json");
+    } catch (const std::runtime_error&) {
+        // ResourceLocator not initialized - use fallback
+        std::cerr << "WARNING: ResourceLocator not initialized, cannot load modified_nucleotides.json\n";
+        loaded = true;
+        return registry;
+    }
+
+    std::ifstream file(config_file);
     if (!file.is_open()) {
-        std::cerr << "WARNING: Could not find modified_nucleotides.json, using fallback empty registry\n";
+        std::cerr << "WARNING: Could not open " << config_file << ", using empty registry\n";
+        loaded = true;
         return registry;
     }
 
@@ -76,18 +75,18 @@ static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo> load_re
                 registry[name] = nucinfo;
             }
         }
-
     } catch (const std::exception& e) {
         std::cerr << "ERROR loading modified_nucleotides.json: " << e.what() << "\n";
-        std::cerr << "Using fallback empty registry\n";
     }
 
+    loaded = true;
     return registry;
 }
 
-// Central registry of all modified nucleotides - loaded from JSON
-const std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo>
-    ModifiedNucleotideRegistry::REGISTRY = load_registry();
+// For backward compatibility - REGISTRY is now a reference to lazy-loaded data
+// Note: This maintains the same interface but delays loading until first access
+const std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo>&
+    ModifiedNucleotideRegistry::REGISTRY = get_registry();
 
 // Fallback hardcoded registry (in case JSON file not found)
 // This was the old approach - now just for reference/backup

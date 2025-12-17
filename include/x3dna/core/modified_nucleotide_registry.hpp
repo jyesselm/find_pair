@@ -63,8 +63,9 @@ public:
     static bool contains(const std::string& residue_name);
 
 private:
-    // The central registry - all modified nucleotide data in one place
-    static const std::map<std::string, NucleotideInfo> REGISTRY;
+    // The central registry - lazy-loaded on first access via get_registry()
+    // This allows ResourceLocator to be initialized before the registry is loaded
+    static const std::map<std::string, NucleotideInfo>& REGISTRY;
 };
 
 } // namespace core

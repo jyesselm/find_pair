@@ -4,9 +4,9 @@
  */
 
 #include <x3dna/config/config_manager.hpp>
+#include <x3dna/config/resource_locator.hpp>
 #include <fstream>
 #include <iostream>
-#include <cstdlib>
 
 namespace x3dna {
 namespace config {
@@ -96,14 +96,8 @@ void ConfigManager::set_defaults() {
     include_waters_ = false;
     legacy_mode_ = false;
 
-    // Set x3dna_home if not already set
-    if (x3dna_home_.empty()) {
-        // Try to get from environment variable
-        const char* env_home = std::getenv("X3DNA_HOMEDIR");
-        if (env_home) {
-            x3dna_home_ = env_home;
-        }
-    }
+    // x3dna_home is now managed by ResourceLocator
+    // Keep x3dna_home_ for backward compatibility but don't auto-set from env
 }
 
 void ConfigManager::set_x3dna_home(const std::filesystem::path& path) {
@@ -111,10 +105,16 @@ void ConfigManager::set_x3dna_home(const std::filesystem::path& path) {
 }
 
 std::filesystem::path ConfigManager::standard_base_path() const {
-    if (x3dna_home_.empty()) {
-        return std::filesystem::path("data/templates");
+    // Prefer ResourceLocator if initialized
+    if (ResourceLocator::is_initialized()) {
+        return ResourceLocator::templates_dir();
     }
-    return x3dna_home_ / "templates";
+    // Fall back to x3dna_home_ if set
+    if (!x3dna_home_.empty()) {
+        return x3dna_home_ / "templates";
+    }
+    // Last resort - may not exist
+    return std::filesystem::path("data/templates");
 }
 
 } // namespace config

@@ -4,11 +4,11 @@
  */
 
 #include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.hpp>
+#include <x3dna/config/resource_locator.hpp>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 
 namespace x3dna {
 namespace algorithms {
@@ -18,44 +18,22 @@ namespace hydrogen_bond {
 std::map<std::string, std::string> AtomListUtils::atom_list_;
 bool AtomListUtils::atom_list_loaded_ = false;
 
-void AtomListUtils::load_atom_list(const std::string& x3dna_home) {
+void AtomListUtils::load_atom_list(const std::string& /*x3dna_home*/) {
     if (atom_list_loaded_) {
         return; // Already loaded
     }
 
-    // Priority 1: Check local resources/config directory (self-contained)
-    std::vector<std::string> search_paths = {
-        "resources/config/atomlist.dat",
-        "../resources/config/atomlist.dat",
-        "../../resources/config/atomlist.dat",
-#ifdef X3DNA_SOURCE_DIR
-        std::string(X3DNA_SOURCE_DIR) + "/resources/config/atomlist.dat",
-#endif
-    };
-
-    std::string atomlist_file;
-    for (const auto& path : search_paths) {
-        std::ifstream test(path);
-        if (test.good()) {
-            atomlist_file = path;
-            break;
-        }
+    // Use ResourceLocator for centralized path management
+    std::filesystem::path atomlist_path;
+    try {
+        atomlist_path = config::ResourceLocator::config_file("atomlist.dat");
+    } catch (const std::runtime_error&) {
+        // ResourceLocator not initialized - use fallback logic only
+        atom_list_loaded_ = true;
+        return;
     }
 
-    // Priority 2: Fall back to X3DNA environment variable
-    if (atomlist_file.empty()) {
-        std::string home_dir = x3dna_home;
-        if (home_dir.empty()) {
-            const char* env_home = std::getenv("X3DNA");
-            if (env_home) {
-                home_dir = env_home;
-            }
-        }
-        if (!home_dir.empty()) {
-            atomlist_file = home_dir + "/config/atomlist.dat";
-        }
-    }
-    std::ifstream file(atomlist_file);
+    std::ifstream file(atomlist_path);
     if (!file.is_open()) {
         // If file not found, use fallback logic only
         atom_list_loaded_ = true;
