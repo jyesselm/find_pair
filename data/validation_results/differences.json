@@ -1,16 +1,706 @@
 {
-  "total_differences": 1,
+  "total_differences": 32,
   "stages_tested": [
-    "steps"
+    "core"
   ],
   "differences": [
     {
-      "pdb_id": "8RUJ",
+      "pdb_id": "1FFZ",
       "status": "diff",
       "has_differences": true,
       "errors": [],
-      "atom_comparison": null,
-      "frame_comparison": null,
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 10725,
+        "total_modern": 10725,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 500,
+        "matched": 500,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "1K8W",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [
+        "Frame mismatches detected. Step parameter comparison may be unreliable since step parameters are calculated from frames. Fix frame differences first before comparing step parameters.",
+        "Step parameter comparison proceeding despite frame mismatches (1 mismatched frames, 0 missing residues). Results may be unreliable."
+      ],
+      "atom_comparison": {
+        "total_legacy": 3114,
+        "total_modern": 3114,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 22,
+        "matched": 21,
+        "missing_residues": 0,
+        "mismatched_calculations": 1
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "1NTA",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 887,
+        "total_modern": 887,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 40,
+        "matched": 40,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "1NTB",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 891,
+        "total_modern": 891,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 40,
+        "matched": 40,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "1R3E",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [
+        "Frame mismatches detected. Step parameter comparison may be unreliable since step parameters are calculated from frames. Fix frame differences first before comparing step parameters.",
+        "Step parameter comparison proceeding despite frame mismatches (1 mismatched frames, 0 missing residues). Results may be unreliable."
+      ],
+      "atom_comparison": {
+        "total_legacy": 3789,
+        "total_modern": 3789,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 51,
+        "matched": 50,
+        "missing_residues": 0,
+        "mismatched_calculations": 1
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "1ZE2",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [
+        "Frame mismatches detected. Step parameter comparison may be unreliable since step parameters are calculated from frames. Fix frame differences first before comparing step parameters.",
+        "Step parameter comparison proceeding despite frame mismatches (2 mismatched frames, 0 missing residues). Results may be unreliable."
+      ],
+      "atom_comparison": {
+        "total_legacy": 5302,
+        "total_modern": 5302,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 44,
+        "matched": 42,
+        "missing_residues": 0,
+        "mismatched_calculations": 2
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "2AB4",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [
+        "Frame mismatches detected. Step parameter comparison may be unreliable since step parameters are calculated from frames. Fix frame differences first before comparing step parameters.",
+        "Step parameter comparison proceeding despite frame mismatches (1 mismatched frames, 0 missing residues). Results may be unreliable."
+      ],
+      "atom_comparison": {
+        "total_legacy": 2921,
+        "total_modern": 2921,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 20,
+        "matched": 19,
+        "missing_residues": 0,
+        "mismatched_calculations": 1
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "2GRB",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 1160,
+        "total_modern": 1160,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 45,
+        "matched": 45,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "2XD0",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 12651,
+        "total_modern": 12651,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 216,
+        "matched": 216,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "3DH3",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [
+        "Frame mismatches detected. Step parameter comparison may be unreliable since step parameters are calculated from frames. Fix frame differences first before comparing step parameters.",
+        "Step parameter comparison proceeding despite frame mismatches (4 mismatched frames, 0 missing residues). Results may be unreliable."
+      ],
+      "atom_comparison": {
+        "total_legacy": 9550,
+        "total_modern": 9550,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 88,
+        "matched": 84,
+        "missing_residues": 0,
+        "mismatched_calculations": 4
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "3FO4",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 1638,
+        "total_modern": 1638,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 64,
+        "matched": 64,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "3G78",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 9057,
+        "total_modern": 9057,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 398,
+        "matched": 398,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "3GES",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 1604,
+        "total_modern": 1604,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 68,
+        "matched": 68,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "3HAX",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [
+        "Frame mismatches detected. Step parameter comparison may be unreliable since step parameters are calculated from frames. Fix frame differences first before comparing step parameters.",
+        "Step parameter comparison proceeding despite frame mismatches (1 mismatched frames, 0 missing residues). Results may be unreliable."
+      ],
+      "atom_comparison": {
+        "total_legacy": 5960,
+        "total_modern": 5960,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 72,
+        "matched": 71,
+        "missing_residues": 0,
+        "mismatched_calculations": 1
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "3HJW",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [
+        "Frame mismatches detected. Step parameter comparison may be unreliable since step parameters are calculated from frames. Fix frame differences first before comparing step parameters.",
+        "Step parameter comparison proceeding despite frame mismatches (1 mismatched frames, 0 missing residues). Results may be unreliable."
+      ],
+      "atom_comparison": {
+        "total_legacy": 5580,
+        "total_modern": 5580,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 71,
+        "matched": 70,
+        "missing_residues": 0,
+        "mismatched_calculations": 1
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "3IGI",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 8656,
+        "total_modern": 8656,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 395,
+        "matched": 395,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "4E8R",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 8560,
+        "total_modern": 8560,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 391,
+        "matched": 391,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "4K4T",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 8944,
+        "total_modern": 8944,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 66,
+        "matched": 66,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "4LGT",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [
+        "Frame mismatches detected. Step parameter comparison may be unreliable since step parameters are calculated from frames. Fix frame differences first before comparing step parameters.",
+        "Step parameter comparison proceeding despite frame mismatches (2 mismatched frames, 0 missing residues). Results may be unreliable."
+      ],
+      "atom_comparison": {
+        "total_legacy": 9801,
+        "total_modern": 9801,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 41,
+        "matched": 39,
+        "missing_residues": 0,
+        "mismatched_calculations": 2
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "5BJP",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 1609,
+        "total_modern": 1609,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 72,
+        "matched": 72,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "6E81",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 806,
+        "total_modern": 806,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 36,
+        "matched": 36,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "6XBU",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [
+        "Frame mismatches detected. Step parameter comparison may be unreliable since step parameters are calculated from frames. Fix frame differences first before comparing step parameters.",
+        "Step parameter comparison proceeding despite frame mismatches (1 mismatched frames, 0 missing residues). Results may be unreliable."
+      ],
+      "atom_comparison": {
+        "total_legacy": 5118,
+        "total_modern": 5118,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 16,
+        "matched": 15,
+        "missing_residues": 0,
+        "mismatched_calculations": 1
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "6XJY",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 9454,
+        "total_modern": 9454,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 116,
+        "matched": 116,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "7EQG",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 26301,
+        "total_modern": 26301,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 126,
+        "matched": 126,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "7KAB",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 10420,
+        "total_modern": 10420,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 66,
+        "matched": 66,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "7LNG",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 696,
+        "total_modern": 696,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 28,
+        "matched": 28,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "7OAV",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 4655,
+        "total_modern": 4655,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 207,
+        "matched": 207,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "7YCI",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 8474,
+        "total_modern": 8474,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 396,
+        "matched": 396,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "7YGD",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 8313,
+        "total_modern": 8313,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 389,
+        "matched": 389,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "8ANE",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 36740,
+        "total_modern": 36740,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 66,
+        "matched": 66,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "8DK7",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 8052,
+        "total_modern": 8052,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 68,
+        "matched": 68,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
+      "hbond_comparison": null
+    },
+    {
+      "pdb_id": "9ENF",
+      "status": "diff",
+      "has_differences": true,
+      "errors": [],
+      "warnings": [],
+      "atom_comparison": {
+        "total_legacy": 8235,
+        "total_modern": 8235,
+        "missing_in_modern": 0,
+        "extra_in_modern": 0,
+        "mismatched_fields": 0
+      },
+      "frame_comparison": {
+        "total_legacy": 182,
+        "matched": 182,
+        "missing_residues": 0,
+        "mismatched_calculations": 0
+      },
       "hbond_comparison": null
     }
   ]

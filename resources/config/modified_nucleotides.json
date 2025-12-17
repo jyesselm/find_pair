@@ -10,6 +10,12 @@
         "is_purine": true,
         "description": "2-methyladenosine"
       },
+      "M7A": {
+        "code": "a",
+        "type": "ADENINE",
+        "is_purine": true,
+        "description": "7-methyladenosine (legacy uses lowercase a)"
+      },
       "1MA": {
         "code": "a",
         "type": "ADENINE",
@@ -702,6 +708,12 @@
         "is_purine": true,
         "description": "O-methylguanosine"
       },
+      "GCP": {
+        "code": "g",
+        "type": "GUANINE",
+        "is_purine": true,
+        "description": "5'-cytidyl-guanosine monophosphate"
+      },
       "1MG": {
         "code": "g",
         "type": "GUANINE",
@@ -1306,6 +1318,12 @@
         "is_purine": false,
         "description": "5-methylcytidine"
       },
+      "BLS": {
+        "code": "c",
+        "type": "CYTOSINE",
+        "is_purine": false,
+        "description": "Beta-L-arabinofuranosylcytosine (blasticidin S cytosine)"
+      },
       "OMC": {
         "code": "c",
         "type": "CYTOSINE",
@@ -1886,6 +1904,12 @@
         "is_purine": false,
         "description": "5-(carboxymethoxy) uridine-5'-monophosphate"
       },
+      "MNU": {
+        "code": "u",
+        "type": "URACIL",
+        "is_purine": false,
+        "description": "2'-O-methyluridine (5'-monophosphate)"
+      },
       "JSP": {
         "code": "u",
         "type": "URACIL",
@@ -2365,14 +2389,26 @@
         "type": "URACIL",
         "is_purine": false,
         "description": "9-deazaguanine (legacy maps to u)"
+      },
+      "N": {
+        "code": "u",
+        "type": "URACIL",
+        "is_purine": false,
+        "description": "Unknown nucleotide (poly-N, often used for unresolved RNA)"
       }
     },
     "pseudouridines": {
       "B8H": {
-        "code": "P",
+        "code": "p",
         "type": "PSEUDOURIDINE",
         "is_purine": false,
-        "description": "Pseudouridine derivative"
+        "description": "Pseudouridine derivative (legacy uses lowercase p)"
+      },
+      "UY1": {
+        "code": "p",
+        "type": "PSEUDOURIDINE",
+        "is_purine": false,
+        "description": "Pseudouridine derivative (legacy uses lowercase p)"
       },
       "FHU": {
         "code": "P",
@@ -2381,28 +2417,34 @@
         "description": "5-formyl-pseudouridine"
       },
       "I2T": {
-        "code": "P",
+        "code": "p",
         "type": "PSEUDOURIDINE",
         "is_purine": false,
-        "description": "5-iodo-2-thiouridine (pseudouridine analog)"
+        "description": "5-iodo-2-thiouridine (pseudouridine analog, legacy uses lowercase p)"
       },
       "M1Y": {
-        "code": "P",
+        "code": "p",
         "type": "PSEUDOURIDINE",
         "is_purine": false,
-        "description": "1-methylpseudouridine"
+        "description": "1-methylpseudouridine (legacy uses lowercase p)"
       },
       "C4J": {
-        "code": "P",
+        "code": "p",
         "type": "PSEUDOURIDINE",
         "is_purine": false,
-        "description": "5-carboxymethyl-pseudouridine"
+        "description": "5-carboxymethyl-pseudouridine (legacy uses lowercase p)"
+      },
+      "B8N": {
+        "code": "p",
+        "type": "PSEUDOURIDINE",
+        "is_purine": false,
+        "description": "Pseudouridine derivative (legacy uses lowercase p)"
       },
       "3TD": {
-        "code": "P",
-        "type": "PSEUDOURIDINE",
+        "code": "u",
+        "type": "URACIL",
         "is_purine": false,
-        "description": "3-methylpseudouridine"
+        "description": "3-methylpseudouridine (legacy maps to u)"
       }
     }
   }
