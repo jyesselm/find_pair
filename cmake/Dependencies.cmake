@@ -1,6 +1,7 @@
 # Dependencies Configuration
 
 include(FetchContent)
+include(GNUInstallDirs)
 
 # nlohmann/json - Header-only JSON library
 # Use the single header file approach to avoid CMake version issues
@@ -9,7 +10,10 @@ file(MAKE_DIRECTORY ${JSON_SINGLE_INCLUDE_DIR})
 
 # Create interface library
 add_library(nlohmann_json INTERFACE)
-target_include_directories(nlohmann_json INTERFACE ${CMAKE_BINARY_DIR}/_deps/json-single/include)
+target_include_directories(nlohmann_json INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/_deps/json-single/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
 # Download the single header file
 file(DOWNLOAD
@@ -33,6 +37,16 @@ endif()
 if(NOT TARGET nlohmann_json::nlohmann_json)
     add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
 endif()
+
+# Install nlohmann_json header for consumers
+install(FILES ${JSON_SINGLE_INCLUDE_DIR}/json.hpp
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nlohmann
+)
+
+# Export nlohmann_json target
+install(TARGETS nlohmann_json
+    EXPORT x3dnaTargets
+)
 
 # Google Test (for testing)
 if(BUILD_TESTS)

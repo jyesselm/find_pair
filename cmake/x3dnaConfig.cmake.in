@@ -1,0 +1,27 @@
+@PACKAGE_INIT@
+
+# x3dna CMake configuration file
+#
+# This file is used by find_package(x3dna) to locate the x3dna library
+#
+# Usage in your project:
+#   find_package(x3dna REQUIRED)
+#   target_link_libraries(your_target PRIVATE x3dna::x3dna)
+#
+# This will provide:
+#   - The x3dna library
+#   - Include directories
+#   - nlohmann_json dependency (transitively linked)
+#
+# To use the library, initialize ResourceLocator in your main():
+#   x3dna::config::ResourceLocator::initialize("/path/to/resources");
+# Or use environment-based auto-detection:
+#   x3dna::config::ResourceLocator::initialize_from_environment();
+
+# Include the exported targets (includes nlohmann_json as well)
+include("${CMAKE_CURRENT_LIST_DIR}/x3dnaTargets.cmake")
+
+# Provide the installed resources path for convenience
+set(X3DNA_RESOURCES_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_DATADIR@/x3dna/resources")
+
+check_required_components(x3dna)

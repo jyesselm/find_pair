@@ -227,12 +227,55 @@ if(BUILD_DOCS)
     endif()
 endif()
 
-# Installation (optional, for packaging)
-# install(TARGETS x3dna EXPORT x3dnaTargets)
-# install(DIRECTORY include/ DESTINATION include)
-# install(EXPORT x3dnaTargets
-#     FILE x3dnaTargets.cmake
-#     NAMESPACE x3dna::
-#     DESTINATION lib/cmake/x3dna
-# )
+# Installation and CMake Package Export
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+# Install the library
+install(TARGETS x3dna
+    EXPORT x3dnaTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+# Install headers
+install(DIRECTORY include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING PATTERN "*.hpp"
+)
+
+# Install resources (templates and config files)
+install(DIRECTORY resources/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/x3dna/resources
+)
+
+# Export targets
+install(EXPORT x3dnaTargets
+    FILE x3dnaTargets.cmake
+    NAMESPACE x3dna::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/x3dna
+)
+
+# Create config file for find_package()
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/x3dnaConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/x3dnaConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/x3dna
+)
+
+# Create version file
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/x3dnaConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# Install config files
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/x3dnaConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/x3dnaConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/x3dna
+)
 
