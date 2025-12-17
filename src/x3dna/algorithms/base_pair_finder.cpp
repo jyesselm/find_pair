@@ -321,81 +321,73 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
         }
     }
 
+    // Helper lambda to record ineligible candidate and continue
+    auto record_ineligible = [&](int idx) {
+        if (collect_candidates) {
+            candidates.push_back(std::make_tuple(idx, false,
+                std::numeric_limits<double>::max(), 0));
+        }
+    };
+
     for (int legacy_idx2 = 1; legacy_idx2 <= max_legacy_idx; ++legacy_idx2) {
-        bool is_eligible = true;
         double candidate_score = std::numeric_limits<double>::max();
         int candidate_bp_type_id = 0;
 
         // Skip if same residue or already matched (matches legacy checks)
-        if (legacy_idx2 == legacy_idx1 || legacy_idx2 >= static_cast<int>(matched_indices.size()) ||
-            matched_indices[legacy_idx2]) {
-            is_eligible = false;
-            if (collect_candidates) {
-                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
-            }
+        const bool is_self_or_matched =
+            legacy_idx2 == legacy_idx1 ||
+            legacy_idx2 >= static_cast<int>(matched_indices.size()) ||
+            matched_indices[legacy_idx2];
+        if (is_self_or_matched) {
+            record_ineligible(legacy_idx2);
             continue;
         }
 
         // Check if this legacy index exists in our map
         auto it = residue_by_legacy_idx.find(legacy_idx2);
-        if (it == residue_by_legacy_idx.end() || !it->second) {
-            is_eligible = false;
-            if (collect_candidates) {
-                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
-            }
-            continue; // Skip if residue doesn't exist (equivalent to RY[j] < 0)
+        const bool residue_not_found = (it == residue_by_legacy_idx.end() || !it->second);
+        if (residue_not_found) {
+            record_ineligible(legacy_idx2);
+            continue;
         }
 
         const Residue* residue = it->second;
 
-        // Equivalent to legacy RY[j] >= 0 check: is_nucleotide (includes modified nucleotides) and
-        // has frame Use is_nucleotide() instead of residue_type() >= 0 to handle modified
-        // nucleotides
-        if (!is_nucleotide(*residue) || !residue->reference_frame().has_value()) {
-            is_eligible = false;
-            if (collect_candidates) {
-                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
-            }
-            continue; // Skip non-nucleotide residues (RY[j] < 0 equivalent)
+        // Equivalent to legacy RY[j] >= 0 check: is_nucleotide (includes modified nucleotides)
+        // and has frame. Use is_nucleotide() instead of residue_type() >= 0.
+        const bool is_invalid_nucleotide =
+            !is_nucleotide(*residue) || !residue->reference_frame().has_value();
+        if (is_invalid_nucleotide) {
+            record_ineligible(legacy_idx2);
+            continue;
         }
 
         // Validate pair - use Phase 1 validation result if available
         // This ensures consistency: if Phase 1 said pair is invalid, don't select it
-        std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2) ? std::make_pair(legacy_idx1, legacy_idx2)
-                                                                          : std::make_pair(legacy_idx2, legacy_idx1);
+        std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2)
+            ? std::make_pair(legacy_idx1, legacy_idx2)
+            : std::make_pair(legacy_idx2, legacy_idx1);
 
+        // Get or compute validation result
         ValidationResult result;
         auto phase1_it = phase1_validation_results.find(normalized_pair);
-        if (phase1_it != phase1_validation_results.end()) {
-            // Use Phase 1 validation result for consistency
-            // CRITICAL: If Phase 1 said pair is invalid, we must not select it
+        const bool has_phase1_result = (phase1_it != phase1_validation_results.end());
+
+        if (has_phase1_result) {
             result = phase1_it->second;
-            // Skip if invalid (this is the key fix - use Phase 1 result, not re-validate)
-            if (!result.is_valid) {
-                // Record eligible but invalid candidate
-                if (collect_candidates) {
-                    candidates.push_back(
-                        std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
-                }
-                continue; // Pair was invalid in Phase 1, skip it
-            }
         } else {
             // Fallback: validate on the fly (shouldn't happen if Phase 1 ran and writer was set)
-            // But if writer is nullptr, Phase 1 didn't run, so we need to validate here
-            if (legacy_idx1 < legacy_idx2) {
-                result = validator_.validate(*res1, *residue);
-            } else {
-                result = validator_.validate(*residue, *res1);
+            result = (legacy_idx1 < legacy_idx2)
+                ? validator_.validate(*res1, *residue)
+                : validator_.validate(*residue, *res1);
+        }
+
+        // Common validity check - skip invalid pairs regardless of source
+        if (!result.is_valid) {
+            if (collect_candidates) {
+                candidates.push_back(std::make_tuple(legacy_idx2, true, candidate_score, candidate_bp_type_id));
             }
-            // Still check validity
-            if (!result.is_valid) {
-                // Record eligible but invalid candidate
-                if (collect_candidates) {
-                    candidates.push_back(
-                        std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
-                }
-                continue;
-            }
+            continue;
         }
 
         // Record pair_validation during selection (matches legacy check_pair recording)
@@ -409,46 +401,37 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             record_validation_results(legacy_idx1, legacy_idx2, rec_res1, rec_res2, result, writer);
         }
 
-        // Check if valid and has better score
-        // Note: result.is_valid is already checked above (we skip invalid pairs)
-        // CRITICAL: Legacy uses rtn_val[5] which is AFTER adjust_pairQuality and bp_type_id
-        // adjustment We need to calculate the adjusted quality_score here for pair selection
-        {
-            // Apply adjust_pairQuality adjustment
-            double quality_adjustment = adjust_pair_quality(result.hbonds);
-            double adjusted_quality_score = result.quality_score + quality_adjustment;
+        // Calculate adjusted quality score for pair selection
+        // CRITICAL: Legacy uses rtn_val[5] which is AFTER adjust_pairQuality and bp_type_id adjustment
+        double quality_adjustment = adjust_pair_quality(result.hbonds);
+        double adjusted_quality_score = result.quality_score + quality_adjustment;
 
-            // Apply bp_type_id == 2 adjustment (if applicable)
-            // CRITICAL: Use bp_type_id from Phase 1 to ensure consistency
-            // Legacy recalculates in best_pair, but uses same frames, so result should be same
-            // We store Phase 1 bp_type_id to ensure exact consistency
-            int bp_type_id = -1;
-            auto bp_type_it = phase1_bp_type_ids.find(normalized_pair);
-            if (bp_type_it != phase1_bp_type_ids.end()) {
-                bp_type_id = bp_type_it->second;
-            } else {
-                // Fallback: calculate on the fly (shouldn't happen if Phase 1 ran)
-                bp_type_id = calculate_bp_type_id(res1, residue, result, adjusted_quality_score);
-            }
-            if (bp_type_id == 2) {
-                adjusted_quality_score -= 2.0;
-            }
+        // Get bp_type_id - prefer Phase 1 result for consistency
+        auto bp_type_it = phase1_bp_type_ids.find(normalized_pair);
+        const bool has_phase1_bp_type = (bp_type_it != phase1_bp_type_ids.end());
+        int bp_type_id = has_phase1_bp_type
+            ? bp_type_it->second
+            : calculate_bp_type_id(res1, residue, result, adjusted_quality_score);
 
-            // Use adjusted quality_score for pair selection (matches legacy rtn_val[5])
-            // CRITICAL: Legacy uses strict < comparison (rtn_val[5] < ddmin)
-            // This means when scores are equal, the first encountered pair is kept
-            // We must match this exactly - no tie-breaking, just strict <
-            candidate_score = adjusted_quality_score;
-            candidate_bp_type_id = bp_type_id;
+        // Apply Watson-Crick bonus
+        if (bp_type_id == 2) {
+            adjusted_quality_score -= 2.0;
+        }
 
-            if (collect_candidates) {
-                candidates.push_back(std::make_tuple(legacy_idx2, is_eligible, candidate_score, candidate_bp_type_id));
-            }
+        // Update candidate tracking
+        candidate_score = adjusted_quality_score;
+        candidate_bp_type_id = bp_type_id;
 
-            if (adjusted_quality_score < best_score) {
-                best_score = adjusted_quality_score;
-                best_result = std::make_pair(legacy_idx2, result);
-            }
+        if (collect_candidates) {
+            // At this point, candidate is eligible (passed all checks above)
+            candidates.push_back(std::make_tuple(legacy_idx2, true, candidate_score, candidate_bp_type_id));
+        }
+
+        // Update best result if this score is better
+        // CRITICAL: Legacy uses strict < comparison - when scores are equal, keep first
+        if (adjusted_quality_score < best_score) {
+            best_score = adjusted_quality_score;
+            best_result = std::make_pair(legacy_idx2, result);
         }
     }
 
