@@ -82,6 +82,19 @@ namespace {
     }
 
     /**
+     * @brief Update direction count based on linkage type
+     * @param link The linkage direction
+     * @param forward Forward count to increment
+     * @param reverse Reverse count to increment
+     * @param none None count to increment
+     */
+    void update_direction_count(LinkDirection link, int& forward, int& reverse, int& none) {
+        if (link == LinkDirection::Forward) ++forward;
+        else if (link == LinkDirection::Reverse) ++reverse;
+        else ++none;
+    }
+
+    /**
      * @brief Check if a pair has positive bpid (WC-like geometry)
      *
      * Legacy code in calculate_more_bppars sets bpid = -1 by default,
@@ -554,17 +567,11 @@ DirectionCounts HelixOrganizer::check_direction(
         auto res_m = get_strand_residues(pairs[idx_m], swapped[idx_m]);
         auto res_n = get_strand_residues(pairs[idx_n], swapped[idx_n]);
 
-        // Strand 1 direction
         auto link1 = check_linkage(res_m.strand1, res_n.strand1, backbone);
-        if (link1 == LinkDirection::Forward) dir.strand1_forward++;
-        else if (link1 == LinkDirection::Reverse) dir.strand1_reverse++;
-        else dir.strand1_none++;
-
-        // Strand 2 direction
         auto link2 = check_linkage(res_m.strand2, res_n.strand2, backbone);
-        if (link2 == LinkDirection::Forward) dir.strand2_forward++;
-        else if (link2 == LinkDirection::Reverse) dir.strand2_reverse++;
-        else dir.strand2_none++;
+
+        update_direction_count(link1, dir.strand1_forward, dir.strand1_reverse, dir.strand1_none);
+        update_direction_count(link2, dir.strand2_forward, dir.strand2_reverse, dir.strand2_none);
     }
 
     // Check for mixed direction (returns early in legacy)
