@@ -45,95 +45,22 @@ std::vector<BasePair> BasePairFinder::find_pairs_with_recording(Structure& struc
 
 std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::JsonWriter* writer) const {
     std::vector<BasePair> base_pairs;
-    std::vector<std::pair<size_t, size_t>> selected_pairs_legacy_idx; // Store legacy indices for recording
+    std::vector<std::pair<size_t, size_t>> selected_pairs_legacy_idx;
 
     // Build mapping from legacy residue index to residue pointer
-    // Use the legacy_residue_idx already stored on atoms (set during PDB parsing, NOT from JSON)
-    std::map<int, const Residue*> residue_by_legacy_idx;
-    int max_legacy_idx = 0;
-
-    // Store Phase 1 validation results: key is (min(i,j), max(i,j)) normalized pair
-    // This ensures we use the same validation result regardless of order
-    std::map<std::pair<int, int>, ValidationResult> phase1_validation_results;
-    // Store bp_type_id calculated in Phase 1 to ensure consistency during selection
-    std::map<std::pair<int, int>, int> phase1_bp_type_ids;
-
-    for (const auto& chain : structure.chains()) {
-        for (const auto& residue : chain.residues()) {
-            // Get legacy residue index from first atom in residue (set during PDB parsing)
-            if (!residue.atoms().empty()) {
-                int legacy_idx = residue.atoms()[0].legacy_residue_idx();
-                if (legacy_idx > 0) {
-                    residue_by_legacy_idx[legacy_idx] = &residue;
-                    if (legacy_idx > max_legacy_idx) {
-                        max_legacy_idx = legacy_idx;
-                    }
-                }
-            }
-        }
-    }
-
-    if (residue_by_legacy_idx.empty()) {
+    ResidueIndexMapping mapping = build_residue_index_mapping(structure);
+    if (mapping.by_legacy_idx.empty()) {
         return base_pairs;
     }
 
-    // PHASE 1: Validate ALL pairs and record base_pair for valid pairs (matches legacy check_pair
-    // loop) Legacy: for (i = 1; i < num_residue; i++) { for (j = i + 1; j <= num_residue; j++) {
-    // check_pair(i, j, ...); } } This validates all pairs BEFORE best partner selection NOTE:
-    // Legacy uses i < num_residue, which means i goes from 1 to num_residue-1 (inclusive) So we
-    // need legacy_idx1 to go from 1 to max_legacy_idx-1 (inclusive), which is < max_legacy_idx
-    // CRITICAL: Phase 1 validation must ALWAYS run to populate phase1_validation_results,
-    // even if writer is nullptr. The pair selection logic depends on these results.
-    for (int legacy_idx1 = 1; legacy_idx1 <= max_legacy_idx - 1; ++legacy_idx1) {
-        auto it1 = residue_by_legacy_idx.find(legacy_idx1);
-        if (it1 == residue_by_legacy_idx.end() || !it1->second) {
-            continue;
-        }
-        const Residue* res1 = it1->second;
-        if (!is_nucleotide(*res1) || !res1->reference_frame().has_value()) {
-            continue;
-        }
+    // Aliases for compatibility with rest of function
+    const auto& residue_by_legacy_idx = mapping.by_legacy_idx;
+    int max_legacy_idx = mapping.max_legacy_idx;
 
-        for (int legacy_idx2 = legacy_idx1 + 1; legacy_idx2 <= max_legacy_idx; ++legacy_idx2) {
-            auto it2 = residue_by_legacy_idx.find(legacy_idx2);
-            if (it2 == residue_by_legacy_idx.end() || !it2->second) {
-                continue;
-            }
-            const Residue* res2 = it2->second;
-            if (!is_nucleotide(*res2) || !res2->reference_frame().has_value()) {
-                continue;
-            }
-
-            // Validate pair (matches legacy check_pair)
-            ValidationResult result = validator_.validate(*res1, *res2);
-
-            // Store validation result for use during selection (normalized by index order)
-            // This ensures consistency between Phase 1 and selection
-            std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2)
-                                                      ? std::make_pair(legacy_idx1, legacy_idx2)
-                                                      : std::make_pair(legacy_idx2, legacy_idx1);
-            phase1_validation_results[normalized_pair] = result;
-
-            // Calculate and store bp_type_id for consistency during selection
-            // CRITICAL: Calculate bp_type_id once in Phase 1 and reuse during selection
-            // This matches legacy behavior where bp_type_id is calculated in check_pair
-            // and reused (legacy recalculates in best_pair, but uses same frames)
-            double quality_adjustment = adjust_pair_quality(result.hbonds);
-            double adjusted_quality_score = result.quality_score + quality_adjustment;
-            int bp_type_id = calculate_bp_type_id(res1, res2, result, adjusted_quality_score);
-            phase1_bp_type_ids[normalized_pair] = bp_type_id;
-
-            // NOTE: base_pair recording is now done in find_best_partner, not Phase 1
-            // Analysis showed legacy base_pair and pair_validation have IDENTICAL pairs,
-            // meaning legacy only records base_pair for pairs validated during greedy selection
-            // Phase 1 validation populates phase1_validation_results for selection decisions
-
-            // NOTE: pair_validation recording is now done in find_best_partner, not Phase 1
-            // This matches legacy behavior where check_pair records during best_pair iteration
-            // Legacy only records pairs that are actually checked during greedy selection
-            // Phase 1 validation is still needed to populate phase1_validation_results for selection
-        }
-    }
+    // PHASE 1: Validate ALL pairs (matches legacy check_pair loop)
+    Phase1Results phase1 = run_phase1_validation(mapping);
+    const auto& phase1_validation_results = phase1.validation_results;
+    const auto& phase1_bp_type_ids = phase1.bp_type_ids;
 
     // Track matched residues using legacy 1-based indices (from PDB parsing)
     std::vector<bool> matched_indices(max_legacy_idx + 1, false); // +1 for 1-based indexing
@@ -237,42 +164,7 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::
                 matched_indices[legacy_idx1] = true;
                 matched_indices[legacy_idx2] = true;
 
-                // Create BasePair object (using 0-based indices for BasePair)
-                // Convert from legacy 1-based indices to 0-based by subtracting 1
-                // ALWAYS store smaller index first for consistency with legacy behavior
-                size_t idx_small = static_cast<size_t>(std::min(legacy_idx1, legacy_idx2)) - 1;
-                size_t idx_large = static_cast<size_t>(std::max(legacy_idx1, legacy_idx2)) - 1;
-                bool swapped = (legacy_idx1 > legacy_idx2);
-
-                BasePair pair(idx_small, idx_large, result1.bp_type);
-                pair.set_finding_order_swapped(swapped);  // Track if original finding order was (j,i)
-
-                // Set frames - swap if we reordered the indices to maintain correct correspondence
-                const Residue* res_small = swapped ? res2_ptr : res1_ptr;
-                const Residue* res_large = swapped ? res1_ptr : res2_ptr;
-
-                if (res_small && res_small->reference_frame().has_value()) {
-                    pair.set_frame1(res_small->reference_frame().value());
-                }
-
-                if (res_large && res_large->reference_frame().has_value()) {
-                    pair.set_frame2(res_large->reference_frame().value());
-                }
-
-                // Set hydrogen bonds
-                pair.set_hydrogen_bonds(result1.hbonds);
-
-                // Determine bp_type string from residue names (smaller index base first)
-                std::string bp_type_str;
-                if (res_small && res_large) {
-                    char base1 = res_small->one_letter_code();
-                    char base2 = res_large->one_letter_code();
-                    if (base1 != ' ' && base2 != ' ') {
-                        bp_type_str = std::string(1, base1) + std::string(1, base2);
-                        pair.set_bp_type(bp_type_str);
-                    }
-                }
-
+                BasePair pair = create_base_pair(legacy_idx1, legacy_idx2, res1_ptr, res2_ptr, result1);
                 base_pairs.push_back(pair);
 
                 // Store legacy indices for recording (preserve original finding order to match legacy)
@@ -846,6 +738,105 @@ size_t BasePairFinder::get_residue_index(const Structure& structure, const Resid
         }
     }
     return idx;
+}
+
+BasePairFinder::ResidueIndexMapping BasePairFinder::build_residue_index_mapping(const Structure& structure) const {
+    ResidueIndexMapping mapping;
+
+    for (const auto& chain : structure.chains()) {
+        for (const auto& residue : chain.residues()) {
+            if (!residue.atoms().empty()) {
+                int legacy_idx = residue.atoms()[0].legacy_residue_idx();
+                if (legacy_idx > 0) {
+                    mapping.by_legacy_idx[legacy_idx] = &residue;
+                    if (legacy_idx > mapping.max_legacy_idx) {
+                        mapping.max_legacy_idx = legacy_idx;
+                    }
+                }
+            }
+        }
+    }
+
+    return mapping;
+}
+
+BasePairFinder::Phase1Results BasePairFinder::run_phase1_validation(const ResidueIndexMapping& mapping) const {
+    Phase1Results results;
+
+    for (int legacy_idx1 = 1; legacy_idx1 <= mapping.max_legacy_idx - 1; ++legacy_idx1) {
+        auto it1 = mapping.by_legacy_idx.find(legacy_idx1);
+        if (it1 == mapping.by_legacy_idx.end() || !it1->second) {
+            continue;
+        }
+        const Residue* res1 = it1->second;
+        if (!is_nucleotide(*res1) || !res1->reference_frame().has_value()) {
+            continue;
+        }
+
+        for (int legacy_idx2 = legacy_idx1 + 1; legacy_idx2 <= mapping.max_legacy_idx; ++legacy_idx2) {
+            auto it2 = mapping.by_legacy_idx.find(legacy_idx2);
+            if (it2 == mapping.by_legacy_idx.end() || !it2->second) {
+                continue;
+            }
+            const Residue* res2 = it2->second;
+            if (!is_nucleotide(*res2) || !res2->reference_frame().has_value()) {
+                continue;
+            }
+
+            // Validate pair
+            ValidationResult result = validator_.validate(*res1, *res2);
+
+            // Store validation result (normalized by index order)
+            std::pair<int, int> normalized_pair = std::make_pair(legacy_idx1, legacy_idx2);
+            results.validation_results[normalized_pair] = result;
+
+            // Calculate and store bp_type_id
+            double quality_adjustment = adjust_pair_quality(result.hbonds);
+            double adjusted_quality_score = result.quality_score + quality_adjustment;
+            int bp_type_id = calculate_bp_type_id(res1, res2, result, adjusted_quality_score);
+            results.bp_type_ids[normalized_pair] = bp_type_id;
+        }
+    }
+
+    return results;
+}
+
+BasePair BasePairFinder::create_base_pair(int legacy_idx1, int legacy_idx2,
+                                           const Residue* res1, const Residue* res2,
+                                           const ValidationResult& result) const {
+    // ALWAYS store smaller index first for consistency with legacy behavior
+    size_t idx_small = static_cast<size_t>(std::min(legacy_idx1, legacy_idx2)) - 1;
+    size_t idx_large = static_cast<size_t>(std::max(legacy_idx1, legacy_idx2)) - 1;
+    bool swapped = (legacy_idx1 > legacy_idx2);
+
+    BasePair pair(idx_small, idx_large, result.bp_type);
+    pair.set_finding_order_swapped(swapped);
+
+    // Set frames - swap if we reordered the indices
+    const Residue* res_small = swapped ? res2 : res1;
+    const Residue* res_large = swapped ? res1 : res2;
+
+    if (res_small && res_small->reference_frame().has_value()) {
+        pair.set_frame1(res_small->reference_frame().value());
+    }
+
+    if (res_large && res_large->reference_frame().has_value()) {
+        pair.set_frame2(res_large->reference_frame().value());
+    }
+
+    // Set hydrogen bonds
+    pair.set_hydrogen_bonds(result.hbonds);
+
+    // Determine bp_type string from residue names
+    if (res_small && res_large) {
+        char base1 = res_small->one_letter_code();
+        char base2 = res_large->one_letter_code();
+        if (base1 != ' ' && base2 != ' ') {
+            pair.set_bp_type(std::string(1, base1) + std::string(1, base2));
+        }
+    }
+
+    return pair;
 }
 
 } // namespace algorithms

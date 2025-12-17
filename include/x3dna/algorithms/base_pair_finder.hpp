@@ -193,6 +193,53 @@ private:
      * @return One-letter code (A, C, G, T, U) or '?' if unknown
      */
     [[nodiscard]] static char get_base_letter_from_type(core::ResidueType type);
+
+    // Phase 1 and Phase 2 helper structures and methods
+
+    /**
+     * @struct Phase1Results
+     * @brief Results from Phase 1 validation of all pairs
+     */
+    struct Phase1Results {
+        std::map<std::pair<int, int>, ValidationResult> validation_results;
+        std::map<std::pair<int, int>, int> bp_type_ids;
+    };
+
+    /**
+     * @struct ResidueIndexMapping
+     * @brief Mapping between legacy indices and residue pointers
+     */
+    struct ResidueIndexMapping {
+        std::map<int, const core::Residue*> by_legacy_idx;
+        int max_legacy_idx = 0;
+    };
+
+    /**
+     * @brief Build residue index mapping from structure
+     * @param structure Structure to analyze
+     * @return ResidueIndexMapping with legacy indices mapped to residue pointers
+     */
+    [[nodiscard]] ResidueIndexMapping build_residue_index_mapping(const core::Structure& structure) const;
+
+    /**
+     * @brief Run Phase 1 validation on all pairs
+     * @param mapping Residue index mapping
+     * @return Phase1Results with validation results and bp_type_ids
+     */
+    [[nodiscard]] Phase1Results run_phase1_validation(const ResidueIndexMapping& mapping) const;
+
+    /**
+     * @brief Create BasePair from validated residue pair
+     * @param legacy_idx1 First residue legacy index (1-based)
+     * @param legacy_idx2 Second residue legacy index (1-based)
+     * @param res1 First residue pointer
+     * @param res2 Second residue pointer
+     * @param result Validation result
+     * @return Constructed BasePair
+     */
+    [[nodiscard]] core::BasePair create_base_pair(int legacy_idx1, int legacy_idx2,
+                                                   const core::Residue* res1, const core::Residue* res2,
+                                                   const ValidationResult& result) const;
 };
 
 } // namespace algorithms
