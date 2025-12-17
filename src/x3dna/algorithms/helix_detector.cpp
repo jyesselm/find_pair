@@ -13,7 +13,7 @@ namespace algorithms {
 
 HelixDetector::HelixDetector(double helix_break_distance) : helix_break_distance_(helix_break_distance) {}
 
-std::vector<Helix> HelixDetector::detect_helices(const std::vector<core::BasePair>& pairs) {
+std::vector<Helix> HelixDetector::detect_helices(const std::vector<core::BasePair>& pairs) const {
     std::vector<Helix> helices;
 
     if (pairs.empty()) {
@@ -68,7 +68,7 @@ std::vector<Helix> HelixDetector::detect_helices(const std::vector<core::BasePai
     return helices;
 }
 
-std::vector<Helix> HelixDetector::detect_helices(const core::Structure& /* structure */) {
+std::vector<Helix> HelixDetector::detect_helices(const core::Structure& /* structure */) const {
     // TODO: Extract base pairs from structure and call detect_helices(vector<BasePair>)
     // For now, return empty (this would require Structure to have base pairs)
     return std::vector<Helix>();

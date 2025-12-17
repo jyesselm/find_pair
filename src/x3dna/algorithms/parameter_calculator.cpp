@@ -196,7 +196,7 @@ core::BasePairStepParameters ParameterCalculator::calculate_step_parameters(cons
     return calculate_step_parameters(pair1.frame1().value(), pair2.frame1().value());
 }
 
-core::BasePairStepParameters ParameterCalculator::calculate_step_parameters_for_pair(const core::BasePair& pair) {
+core::BasePairStepParameters ParameterCalculator::calculate_step_parameters_for_pair(const core::BasePair& pair) const {
     // For a single base pair (for bp_type_id calculation):
     // Legacy: bpstep_par(r2, org[j], r1, org[i], ...)
     // This means: frame2 (residue j) is first, frame1 (residue i) is second
@@ -208,7 +208,7 @@ core::BasePairStepParameters ParameterCalculator::calculate_step_parameters_for_
 }
 
 core::HelicalParameters ParameterCalculator::calculate_helical_parameters(const core::BasePair& pair1,
-                                                                          const core::BasePair& pair2) {
+                                                                          const core::BasePair& pair2) const {
     if (!pair1.frame1().has_value() || !pair1.frame2().has_value() || !pair2.frame1().has_value() ||
         !pair2.frame2().has_value()) {
         throw std::runtime_error("Base pairs must have reference frames for helical parameter calculation");
@@ -219,7 +219,7 @@ core::HelicalParameters ParameterCalculator::calculate_helical_parameters(const 
 }
 
 core::HelicalParameters ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFrame& frame1,
-                                                                               const core::ReferenceFrame& frame2) {
+                                                                               const core::ReferenceFrame& frame2) const {
     core::HelicalParameters params;
 
     // Get rotation matrices and origins
@@ -351,7 +351,7 @@ core::HelicalParameters ParameterCalculator::calculate_helical_parameters_impl(c
 }
 
 std::vector<core::BasePairStepParameters> ParameterCalculator::calculate_all_step_parameters(
-    const std::vector<core::BasePair>& pairs) {
+    const std::vector<core::BasePair>& pairs) const {
     std::vector<core::BasePairStepParameters> result;
     if (pairs.size() < 2) {
         return result;
@@ -365,7 +365,7 @@ std::vector<core::BasePairStepParameters> ParameterCalculator::calculate_all_ste
 }
 
 core::ReferenceFrame ParameterCalculator::calculate_midstep_frame(const core::ReferenceFrame& frame1,
-                                                                  const core::ReferenceFrame& frame2) {
+                                                                  const core::ReferenceFrame& frame2) const {
     core::BasePairStepParameters params;
     core::ReferenceFrame midstep_frame;
 
@@ -375,7 +375,7 @@ core::ReferenceFrame ParameterCalculator::calculate_midstep_frame(const core::Re
 }
 
 core::ReferenceFrame ParameterCalculator::calculate_pair_frame(const core::ReferenceFrame& frame1,
-                                                               const core::ReferenceFrame& frame2) {
+                                                               const core::ReferenceFrame& frame2) const {
     // This matches legacy cehs_average behavior for a 2-base pair
     // Legacy code:
     //   1. Start with mst = frame1

@@ -76,14 +76,14 @@ public:
      * @param pairs Vector of base pairs
      * @return Vector of detected helices
      */
-    [[nodiscard]] std::vector<Helix> detect_helices(const std::vector<core::BasePair>& pairs);
+    [[nodiscard]] std::vector<Helix> detect_helices(const std::vector<core::BasePair>& pairs) const;
 
     /**
      * @brief Detect helices from structure (uses structure's base pairs)
      * @param structure Structure with base pairs
      * @return Vector of detected helices
      */
-    [[nodiscard]] std::vector<Helix> detect_helices(const core::Structure& structure);
+    [[nodiscard]] std::vector<Helix> detect_helices(const core::Structure& structure) const;
 
     /**
      * @brief Reorder base pairs to ensure 5'→3' orientation
