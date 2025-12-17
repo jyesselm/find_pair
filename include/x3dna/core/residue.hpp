@@ -23,9 +23,16 @@ namespace core {
 /**
  * @class Residue
  * @brief Represents a single residue (nucleotide or amino acid) with atoms
+ *
+ * Residues can be constructed via:
+ * 1. Simple constructor: Residue(name, seq_num, chain_id) - for basic creation
+ * 2. Builder pattern: Residue::create(name, seq_num, chain_id).type(...).build() - for full control
+ * 3. ResidueFactory::create() - recommended for proper property initialization
  */
 class Residue {
 public:
+    class Builder;  // Forward declaration
+
     /**
      * @brief Default constructor
      */
@@ -43,20 +50,13 @@ public:
           chain_id_(chain_id), insertion_(insertion) {}
 
     /**
-     * @brief Full constructor with all properties (used by ResidueFactory)
-     * @param name Residue name
-     * @param one_letter_code One-letter code ('A', 'C', 'G', 'U', etc.)
-     * @param type Residue type
-     * @param is_purine Whether this is a purine
-     * @param seq_num Sequence number
-     * @param chain_id Chain identifier
-     * @param insertion Insertion code
-     * @param atoms Vector of atoms
+     * @brief Create a Builder for fluent residue construction
+     * @param name Residue name (required)
+     * @param seq_num Sequence number (required)
+     * @param chain_id Chain ID (required)
+     * @return Builder instance for fluent construction
      */
-    Residue(const std::string& name, char one_letter_code, ResidueType type, bool is_purine, int seq_num, char chain_id,
-            char insertion, const std::vector<Atom>& atoms)
-        : name_(name), one_letter_code_(one_letter_code), type_(type), is_purine_(is_purine), seq_num_(seq_num),
-          chain_id_(chain_id), insertion_(insertion), atoms_(atoms) {}
+    [[nodiscard]] static Builder create(const std::string& name, int seq_num, char chain_id);
 
     // Getters
     [[nodiscard]] const std::string& name() const {
@@ -325,6 +325,9 @@ public:
     }
 
 private:
+    friend class Builder;
+    friend class ResidueFactory;
+
     std::string name_;                              // Residue name (e.g., "  C", "  G")
     char one_letter_code_ = '?';                    // One-letter code (stored, not computed)
     ResidueType type_ = ResidueType::UNKNOWN;       // Residue type (stored, not computed)
@@ -345,6 +348,85 @@ private:
         return trimmed;
     }
 };
+
+/**
+ * @class Residue::Builder
+ * @brief Fluent builder for constructing Residue objects
+ *
+ * Usage:
+ *   auto residue = Residue::create("  G", 42, 'A')
+ *       .insertion(' ')
+ *       .one_letter_code('G')
+ *       .type(ResidueType::GUANINE)
+ *       .is_purine(true)
+ *       .atoms(atom_vector)
+ *       .build();
+ */
+class Residue::Builder {
+public:
+    /**
+     * @brief Constructor with required fields
+     * @param name Residue name
+     * @param seq_num Sequence number
+     * @param chain_id Chain identifier
+     */
+    Builder(const std::string& name, int seq_num, char chain_id) {
+        residue_.name_ = name;
+        residue_.seq_num_ = seq_num;
+        residue_.chain_id_ = chain_id;
+    }
+
+    Builder& insertion(char ins) {
+        residue_.insertion_ = ins;
+        return *this;
+    }
+
+    Builder& one_letter_code(char code) {
+        residue_.one_letter_code_ = code;
+        return *this;
+    }
+
+    Builder& type(ResidueType t) {
+        residue_.type_ = t;
+        return *this;
+    }
+
+    Builder& is_purine(bool purine) {
+        residue_.is_purine_ = purine;
+        return *this;
+    }
+
+    Builder& atoms(const std::vector<Atom>& atom_list) {
+        residue_.atoms_ = atom_list;
+        return *this;
+    }
+
+    Builder& atoms(std::vector<Atom>&& atom_list) {
+        residue_.atoms_ = std::move(atom_list);
+        return *this;
+    }
+
+    Builder& add_atom(const Atom& atom) {
+        residue_.atoms_.push_back(atom);
+        return *this;
+    }
+
+    /**
+     * @brief Build and return the constructed Residue
+     * @return Constructed Residue object
+     */
+    [[nodiscard]] Residue build() const {
+        return residue_;
+    }
+
+private:
+    Residue residue_;
+};
+
+// Inline implementation of create()
+inline Residue::Builder Residue::create(const std::string& name, int seq_num, char chain_id) {
+    return Builder(name, seq_num, chain_id);
+}
 
 } // namespace core
 } // namespace x3dna

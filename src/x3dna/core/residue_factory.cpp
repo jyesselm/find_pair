@@ -20,10 +20,16 @@ Residue ResidueFactory::create(const std::string& name, int sequence_number, cha
     // Determine properties using registry
     char one_letter = determine_one_letter_code(name);
     ResidueType type = determine_type(name, one_letter);
-    bool is_purine = determine_is_purine(name, type);
+    bool purine = determine_is_purine(name, type);
 
-    // Create residue with all properties set
-    return Residue(name, one_letter, type, is_purine, sequence_number, chain_id, insertion_code, atoms);
+    // Create residue using Builder pattern
+    return Residue::create(name, sequence_number, chain_id)
+        .insertion(insertion_code)
+        .one_letter_code(one_letter)
+        .type(type)
+        .is_purine(purine)
+        .atoms(atoms)
+        .build();
 }
 
 char ResidueFactory::determine_one_letter_code(const std::string& name) {
