@@ -10,6 +10,7 @@
 #include <x3dna/core/base_pair.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
+#include <x3dna/algorithms/validation_constants.hpp>
 #include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.hpp>
 #include <x3dna/algorithms/hydrogen_bond_finder.hpp>
 #include <vector>
@@ -17,26 +18,6 @@
 
 namespace x3dna {
 namespace algorithms {
-
-/**
- * @brief Named constants for base pair validation
- *
- * These constants match the legacy X3DNA code behavior.
- */
-namespace validation_constants {
-    // Quality score formula weights
-    constexpr double D_V_WEIGHT = 2.0;           // Weight for vertical distance in quality score
-    constexpr double PLANE_ANGLE_DIVISOR = 20.0; // Divisor for plane angle in quality score
-
-    // Distance thresholds
-    constexpr double DNN_FALLBACK = 1e10;        // Large fallback value when N1/N9 not found
-    constexpr double BOND_DISTANCE = 2.0;        // Max covalent bond distance (Angstroms)
-    constexpr double MIN_ATOM_DISTANCE = 0.1;    // Min distance to exclude same-atom matches
-
-    // Overlap calculation constants (from legacy x3dna.h)
-    constexpr double XBIG = 1.0e+18;             // Very large number for bounds
-    constexpr double GAMUT = 5.0e8;              // Range for numeric stability
-}  // namespace validation_constants
 
 /**
  * @struct ValidationParameters
@@ -236,18 +217,6 @@ private:
      * @brief Check if atom is a base atom (matches legacy is_baseatom)
      */
     [[nodiscard]] static bool is_base_atom(const std::string& atom_name);
-
-    /**
-     * @brief Get ring coordinates with exocyclic atoms for overlap calculation
-     * @param residue Residue to extract coordinates from
-     * @param oave Average origin (coordinates are relative to this)
-     * @return Vector of coordinates (one per ring atom, using exocyclic if available)
-     *
-     * Matches legacy ratom_xyz behavior: for each ring atom, find ONE exocyclic
-     * atom (or use ring atom itself if none found).
-     */
-    [[nodiscard]] static std::vector<geometry::Vector3D> get_ring_coordinates_with_exocyclic(
-        const core::Residue& residue, const geometry::Vector3D& oave);
 };
 
 } // namespace algorithms

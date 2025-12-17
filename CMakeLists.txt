@@ -61,6 +61,7 @@ add_library(x3dna
     src/x3dna/algorithms/pair_selection_strategy.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.cpp
+    src/x3dna/algorithms/validation/overlap_calculator.cpp
     src/x3dna/config/config_manager.cpp
     src/x3dna/config/resource_locator.cpp
     src/x3dna/protocols/find_pair_protocol.cpp
