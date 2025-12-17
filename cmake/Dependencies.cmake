@@ -48,6 +48,39 @@ install(TARGETS nlohmann_json
     EXPORT x3dnaTargets
 )
 
+# GEMMI - Structure file parsing library (for PDB/CIF/mmCIF support)
+# Build as compiled library for full functionality
+FetchContent_Declare(
+    gemmi
+    GIT_REPOSITORY https://github.com/project-gemmi/gemmi.git
+    GIT_TAG v0.6.5
+)
+
+# Configure GEMMI build options
+set(BUILD_SHARED_LIBS_SAVED ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build static library")
+
+FetchContent_GetProperties(gemmi)
+if(NOT gemmi_POPULATED)
+    FetchContent_Populate(gemmi)
+
+    # Build gemmi_cpp library (compiled GEMMI code)
+    add_subdirectory(${gemmi_SOURCE_DIR} ${gemmi_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+# Restore BUILD_SHARED_LIBS
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_SAVED})
+
+# Find ZLIB for compressed file support (optional but recommended)
+find_package(ZLIB QUIET)
+if(ZLIB_FOUND)
+    message(STATUS "GEMMI: ZLIB support enabled for compressed files")
+else()
+    message(STATUS "GEMMI: ZLIB not found, compressed files not supported")
+endif()
+
+message(STATUS "GEMMI library configured for PDB/CIF/mmCIF parsing")
+
 # Google Test (for testing)
 if(BUILD_TESTS)
     FetchContent_Declare(

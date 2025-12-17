@@ -32,6 +32,7 @@ include(cmake/Dependencies.cmake)
 # Changed to regular library to support source files (PdbParser, etc.)
 add_library(x3dna
     src/x3dna/io/pdb_parser.cpp
+    src/x3dna/io/cif_parser.cpp
     src/x3dna/io/json_writer.cpp
     src/x3dna/io/json_reader.cpp
     src/x3dna/io/pdb_writer.cpp
@@ -77,6 +78,10 @@ target_include_directories(x3dna PUBLIC
 # Link dependencies to library
 target_link_libraries(x3dna PUBLIC
     nlohmann_json::nlohmann_json
+)
+# GEMMI compiled library for PDB/CIF parsing
+target_link_libraries(x3dna PRIVATE
+    gemmi_cpp
 )
 
 # Note: ResourceLocator handles runtime path discovery - no compile-time paths needed

@@ -5,8 +5,15 @@ Compares base_pair records (original identification from find_pair phase)
 between legacy and modern JSON outputs.
 """
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 from dataclasses import dataclass, field
+
+
+def trim_string(value: Any) -> Any:
+    """Trim whitespace from string values, leave other types unchanged."""
+    if isinstance(value, str):
+        return value.strip()
+    return value
 
 
 def normalize_pair(base_i: int, base_j: int) -> Tuple[int, int]:
@@ -112,9 +119,9 @@ def compare_base_pairs(
         
         mismatches = {}
         
-        # Compare bp_type (case-insensitive - modified residues use lowercase)
-        leg_type = leg_rec.get('bp_type', '').upper()
-        mod_type = mod_rec.get('bp_type', '').upper()
+        # Compare bp_type (trim and case-insensitive - modified residues use lowercase)
+        leg_type = trim_string(leg_rec.get('bp_type', '')).upper()
+        mod_type = trim_string(mod_rec.get('bp_type', '')).upper()
         if leg_type != mod_type:
             mismatches['bp_type'] = {'legacy': leg_rec.get('bp_type', ''), 'modern': mod_rec.get('bp_type', '')}
         

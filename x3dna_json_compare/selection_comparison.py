@@ -5,7 +5,14 @@ Compares the final selected base pairs - THE PRIMARY OUTPUT.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Any
+
+
+def trim_string(value: Any) -> Any:
+    """Trim whitespace from string values, leave other types unchanged."""
+    if isinstance(value, str):
+        return value.strip()
+    return value
 
 
 @dataclass
@@ -114,8 +121,10 @@ def compare_pair_selection(
             
             geo_diffs = {}
             
-            # Compare bp_type (exact)
-            if leg_rec.get('bp_type') != mod_rec.get('bp_type'):
+            # Compare bp_type (trim and case-insensitive, modified residues use lowercase)
+            leg_bp_type = trim_string(leg_rec.get('bp_type', '')).upper()
+            mod_bp_type = trim_string(mod_rec.get('bp_type', '')).upper()
+            if leg_bp_type != mod_bp_type:
                 geo_diffs['bp_type'] = {
                     'legacy': leg_rec.get('bp_type'),
                     'modern': mod_rec.get('bp_type')

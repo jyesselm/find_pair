@@ -1,45 +1,45 @@
 /**
- * @file pdb_parser.cpp
- * @brief Implementation of PDB file parser using GEMMI library
+ * @file cif_parser.cpp
+ * @brief Implementation of CIF/mmCIF file parser using GEMMI library
  */
 
-#include <x3dna/io/pdb_parser.hpp>
+#include <x3dna/io/cif_parser.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/residue_factory.hpp>
-#include <x3dna/core/constants.hpp>
-#include <gemmi/pdb.hpp>
+#include <gemmi/cif.hpp>
+#include <gemmi/mmcif.hpp>
 #include <gemmi/mmread.hpp>
 #include <gemmi/gz.hpp>
-#include <fstream>
-#include <sstream>
 #include <algorithm>
 #include <cctype>
 #include <stdexcept>
-#include <map>
-#include <vector>
+#include <fstream>
+#include <sstream>
 
 namespace x3dna {
 namespace io {
 
 // ParseError implementation
-PdbParser::ParseError::ParseError(const std::string& message, size_t line_number)
-    : std::runtime_error(line_number > 0 ? message + " (line " + std::to_string(line_number) + ")" : message),
-      line_number_(line_number) {}
+CifParser::ParseError::ParseError(const std::string& message)
+    : std::runtime_error(message) {}
 
-// Public methods
-core::Structure PdbParser::parse_file(const std::filesystem::path& path) {
+core::Structure CifParser::parse_file(const std::filesystem::path& path) {
     if (!std::filesystem::exists(path)) {
-        throw ParseError("PDB file does not exist: " + path.string());
+        throw ParseError("CIF file does not exist: " + path.string());
     }
 
     try {
-        // Use GEMMI to read PDB file (handles .pdb and .pdb.gz)
+        // Use GEMMI to read CIF file (handles .cif and .cif.gz)
         gemmi::Structure gemmi_struct = gemmi::read_structure(gemmi::MaybeGzipped(path.string()));
 
         std::string pdb_id = path.stem().string();
         if (!gemmi_struct.name.empty()) {
             pdb_id = gemmi_struct.name;
+        }
+        // Remove .cif extension if present (for .cif.gz files)
+        if (pdb_id.size() > 4 && pdb_id.substr(pdb_id.size() - 4) == ".cif") {
+            pdb_id = pdb_id.substr(0, pdb_id.size() - 4);
         }
 
         return convert_gemmi_structure(gemmi_struct, pdb_id);
@@ -47,28 +47,23 @@ core::Structure PdbParser::parse_file(const std::filesystem::path& path) {
     } catch (const ParseError&) {
         throw;
     } catch (const std::exception& e) {
-        throw ParseError("Error parsing PDB file " + path.string() + ": " + e.what());
+        throw ParseError("Error parsing CIF file " + path.string() + ": " + e.what());
     }
 }
 
-core::Structure PdbParser::parse_stream(std::istream& stream) {
-    if (!stream.good()) {
-        throw ParseError("Input stream is not valid");
-    }
-
-    std::stringstream buffer;
-    buffer << stream.rdbuf();
-    return parse_string(buffer.str());
-}
-
-core::Structure PdbParser::parse_string(const std::string& content) {
+core::Structure CifParser::parse_string(const std::string& content) {
     try {
         if (content.empty()) {
-            throw ParseError("Empty PDB content");
+            throw ParseError("Empty CIF content");
         }
 
-        // Use GEMMI to parse PDB string
-        gemmi::Structure gemmi_struct = gemmi::read_pdb_string(content, "input");
+        // Use GEMMI to parse CIF string
+        gemmi::cif::Document doc = gemmi::cif::read_string(content);
+        if (doc.blocks.empty()) {
+            throw ParseError("No data blocks found in CIF content");
+        }
+
+        gemmi::Structure gemmi_struct = gemmi::make_structure_from_block(doc.blocks[0]);
 
         std::string pdb_id = gemmi_struct.name;
         if (pdb_id.empty()) {
@@ -80,12 +75,12 @@ core::Structure PdbParser::parse_string(const std::string& content) {
     } catch (const ParseError&) {
         throw;
     } catch (const std::exception& e) {
-        throw ParseError("Error parsing PDB content: " + std::string(e.what()));
+        throw ParseError("Error parsing CIF content: " + std::string(e.what()));
     }
 }
 
 // Convert GEMMI Structure to our Structure
-core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi_struct,
+core::Structure CifParser::convert_gemmi_structure(const gemmi::Structure& gemmi_struct,
                                                     const std::string& pdb_id) {
     // Key: (residue_name, chain_id, residue_seq, insertion_code)
     std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>> residue_atoms;
@@ -103,16 +98,16 @@ core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi
     int model_number = 1;
 
     for (const gemmi::Chain& gemmi_chain : model.chains) {
-        // Get chain ID
+        // Get chain ID (use auth_* fields for PDB compatibility)
         std::string chain_str = gemmi_chain.name;
         char chain_id = chain_str.empty() ? ' ' : chain_str[0];
 
         for (const gemmi::Residue& gemmi_residue : gemmi_chain.residues) {
             // Get residue properties
             std::string original_residue_name = gemmi_residue.name;
-            std::string residue_name = normalize_residue_name_from_gemmi(original_residue_name);
+            std::string residue_name = normalize_residue_name(original_residue_name);
 
-            // Get sequence number
+            // Get sequence number (use auth_seq_id for PDB compatibility)
             int residue_seq = gemmi_residue.seqid.num.value;
 
             // Get insertion code
@@ -125,13 +120,11 @@ core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi
             bool is_hetatm = (gemmi_residue.het_flag == 'H');
 
             // Check if we should process this residue
-            if (is_hetatm) {
-                bool is_modified_nuc = is_modified_nucleotide_name(residue_name);
-                if (!include_hetatm_ && !is_modified_nuc) {
-                    continue;
-                }
-                if (!include_waters_ && is_water(residue_name)) {
-                    continue;
+            if (!should_keep_atom(is_hetatm, ' ', residue_name)) {
+                // Check at residue level (alt_loc checked per-atom)
+                if (is_hetatm && !is_modified_nucleotide_name(residue_name)) {
+                    if (!include_hetatm_) continue;
+                    if (!include_waters_ && is_water(residue_name)) continue;
                 }
             }
 
@@ -142,14 +135,14 @@ core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi
                     alt_loc = ' ';
                 }
 
-                // Check alt_loc filter
-                if (!check_alt_loc_filter(alt_loc)) {
+                // Check if we should keep this atom
+                if (!should_keep_atom(is_hetatm, alt_loc, residue_name)) {
                     continue;
                 }
 
                 // Normalize atom name to PDB 4-character format
                 std::string original_atom_name = gemmi_atom.name;
-                std::string atom_name = normalize_atom_name_from_gemmi(original_atom_name);
+                std::string atom_name = normalize_atom_name(original_atom_name);
 
                 // Create atom using Builder pattern
                 auto builder = core::Atom::create(atom_name,
@@ -193,8 +186,80 @@ core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi
     return build_structure_from_residues(pdb_id, residue_atoms);
 }
 
-// Normalize atom name from GEMMI format to legacy PDB 4-character format
-std::string PdbParser::normalize_atom_name_from_gemmi(const std::string& name) const {
+bool CifParser::should_keep_atom(bool is_hetatm, char alt_loc, const std::string& residue_name) const {
+    // Check alt_loc filter first
+    if (!check_alt_loc_filter(alt_loc)) {
+        return false;
+    }
+
+    // For HETATM records
+    if (is_hetatm) {
+        // Auto-include modified nucleotides even without include_hetatm_ flag
+        if (is_modified_nucleotide_name(residue_name)) {
+            return true;
+        }
+
+        // Skip if HETATM not enabled
+        if (!include_hetatm_) {
+            return false;
+        }
+
+        // Skip waters if not enabled
+        if (!include_waters_ && is_water(residue_name)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool CifParser::check_alt_loc_filter(char alt_loc) const {
+    // Keep atoms with alt_loc = ' ', 'A', or '1' (same as PdbParser)
+    return (alt_loc == ' ' || alt_loc == '\0' || alt_loc == 'A' || alt_loc == '1');
+}
+
+bool CifParser::is_water(const std::string& residue_name) const {
+    std::string name = residue_name;
+    name.erase(0, name.find_first_not_of(" \t"));
+    name.erase(name.find_last_not_of(" \t") + 1);
+
+    if (name.length() != 3) {
+        return false;
+    }
+
+    std::string upper;
+    for (char c : name) {
+        upper += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+    }
+
+    return (upper == "HOH" || upper == "WAT" || upper == "H2O" ||
+            upper == "OH2" || upper == "SOL");
+}
+
+bool CifParser::is_modified_nucleotide_name(const std::string& residue_name) const {
+    std::string trimmed = residue_name;
+    trimmed.erase(0, trimmed.find_first_not_of(" \t"));
+    trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
+
+    static const std::vector<std::string> modified_nucleotides = {
+        "PSU", "P5P", "PU",
+        "A2M", "1MA", "2MA", "6MA", "OMA", "MIA", "I6A", "T6A", "M6A", "A23", "DA",
+        "5MC", "OMC", "S4C", "5IC", "5FC", "CBR", "CVC", "CM0",
+        "OMG", "1MG", "2MG", "7MG", "M2G", "YYG", "YG", "QUO",
+        "5MU", "H2U", "DHU", "OMU", "4SU", "S4U", "5BU", "2MU", "UR3", "RT", "70U", "2YR",
+        "I", "DI", "EPE", "J48", "KIR", "NCA", "NF2", "NMN", "NNR", "WVQ"
+    };
+
+    for (const auto& mod : modified_nucleotides) {
+        if (trimmed == mod) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+std::string CifParser::normalize_atom_name(const std::string& name) const {
     if (name.empty()) {
         return "    ";
     }
@@ -226,72 +291,12 @@ std::string PdbParser::normalize_atom_name_from_gemmi(const std::string& name) c
     return ensure_atom_name_length(normalized);
 }
 
-// Normalize residue name from GEMMI
-std::string PdbParser::normalize_residue_name_from_gemmi(const std::string& name) const {
-    if (name.empty()) {
-        return "";
-    }
-
-    // Trim whitespace
-    size_t start = name.find_first_not_of(" \t");
-    if (start == std::string::npos) {
-        return "";
-    }
-    size_t end = name.find_last_not_of(" \t");
-    return name.substr(start, end - start + 1);
+std::string CifParser::apply_atom_name_formatting_rules(const std::string& name) const {
+    // Not needed with GEMMI-based parsing, but kept for API compatibility
+    return name;
 }
 
-// Legacy helper methods (still needed for normalization)
-bool PdbParser::is_water(const std::string& residue_name) const {
-    if (residue_name.length() != 3) {
-        return false;
-    }
-
-    char c0 = residue_name[0] & ~0x20;
-    char c1 = residue_name[1] & ~0x20;
-    char c2 = residue_name[2] & ~0x20;
-
-    if (c0 == 'H' && c1 == 'O' && c2 == 'H') return true;
-    if (c0 == 'W' && c1 == 'A' && c2 == 'T') return true;
-    if (c0 == 'H' && c1 == '2' && c2 == 'O') return true;
-    if (c0 == 'O' && c1 == 'H' && c2 == '2') return true;
-    if (c0 == 'S' && c1 == 'O' && c2 == 'L') return true;
-
-    return false;
-}
-
-bool PdbParser::is_modified_nucleotide_name(const std::string& residue_name) const {
-    std::string trimmed = residue_name;
-    while (!trimmed.empty() && trimmed[0] == ' ') {
-        trimmed.erase(0, 1);
-    }
-    while (!trimmed.empty() && trimmed.back() == ' ') {
-        trimmed.pop_back();
-    }
-
-    static const std::vector<std::string> modified_nucleotides = {
-        "PSU", "P5P", "PU",
-        "A2M", "1MA", "2MA", "6MA", "OMA", "MIA", "I6A", "T6A", "M6A", "A23", "DA",
-        "5MC", "OMC", "S4C", "5IC", "5FC", "CBR", "CVC", "CM0",
-        "OMG", "1MG", "2MG", "7MG", "M2G", "YYG", "YG", "QUO",
-        "5MU", "H2U", "DHU", "OMU", "4SU", "S4U", "5BU", "2MU", "UR3", "RT", "70U", "2YR",
-        "I", "DI", "EPE", "J48", "KIR", "NCA", "NF2", "NMN", "NNR", "WVQ"
-    };
-
-    for (const auto& mod : modified_nucleotides) {
-        if (trimmed == mod) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool PdbParser::check_alt_loc_filter(char alt_loc) const {
-    return (alt_loc == ' ' || alt_loc == 'A' || alt_loc == '1');
-}
-
-std::string PdbParser::apply_atom_name_exact_matches(const std::string& name) const {
+std::string CifParser::apply_atom_name_exact_matches(const std::string& name) const {
     if (name == " O1'") return " O4'";
     if (name == " OL ") return " O1P";
     if (name == " OP1") return " O1P";
@@ -304,8 +309,11 @@ std::string PdbParser::apply_atom_name_exact_matches(const std::string& name) co
     if (name == "   P" || name == "P   ") return " P  ";
 
     std::string trimmed = name;
-    trimmed.erase(0, trimmed.find_first_not_of(" \t"));
-    trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
+    size_t start = trimmed.find_first_not_of(" \t");
+    size_t end = trimmed.find_last_not_of(" \t");
+    if (start != std::string::npos) {
+        trimmed = trimmed.substr(start, end - start + 1);
+    }
 
     if (trimmed == "OP1") return " O1P";
     if (trimmed == "OP2") return " O2P";
@@ -315,7 +323,7 @@ std::string PdbParser::apply_atom_name_exact_matches(const std::string& name) co
     return name;
 }
 
-std::string PdbParser::ensure_atom_name_length(const std::string& name) const {
+std::string CifParser::ensure_atom_name_length(const std::string& name) const {
     if (name.length() == 4) {
         return name;
     }
@@ -325,15 +333,19 @@ std::string PdbParser::ensure_atom_name_length(const std::string& name) const {
     return name.substr(0, 4);
 }
 
-std::string PdbParser::normalize_atom_name(const std::string& name) const {
-    return normalize_atom_name_from_gemmi(name);
+std::string CifParser::normalize_residue_name(const std::string& name) const {
+    if (name.empty()) {
+        return "";
+    }
+    size_t start = name.find_first_not_of(" \t");
+    if (start == std::string::npos) {
+        return "";
+    }
+    size_t end = name.find_last_not_of(" \t");
+    return name.substr(start, end - start + 1);
 }
 
-std::string PdbParser::normalize_residue_name(const std::string& name) const {
-    return normalize_residue_name_from_gemmi(name);
-}
-
-core::Structure PdbParser::build_structure_from_residues(
+core::Structure CifParser::build_structure_from_residues(
     const std::string& pdb_id,
     const std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms) const {
 
@@ -359,47 +371,6 @@ core::Structure PdbParser::build_structure_from_residues(
     }
 
     return structure;
-}
-
-// Legacy methods - deprecated but kept for API compatibility
-core::Atom PdbParser::parse_atom_line(const std::string& /* line */, size_t /* line_number */) {
-    throw ParseError("parse_atom_line is deprecated - use GEMMI-based parsing");
-}
-
-core::Atom PdbParser::parse_hetatm_line(const std::string& /* line */, size_t /* line_number */) {
-    throw ParseError("parse_hetatm_line is deprecated - use GEMMI-based parsing");
-}
-
-std::string PdbParser::parse_atom_name(const std::string& /* line */) {
-    throw ParseError("parse_atom_name is deprecated - use GEMMI-based parsing");
-}
-
-std::string PdbParser::parse_residue_name(const std::string& /* line */) {
-    throw ParseError("parse_residue_name is deprecated - use GEMMI-based parsing");
-}
-
-char PdbParser::parse_chain_id(const std::string& /* line */) {
-    throw ParseError("parse_chain_id is deprecated - use GEMMI-based parsing");
-}
-
-char PdbParser::parse_alt_loc(const std::string& /* line */) {
-    throw ParseError("parse_alt_loc is deprecated - use GEMMI-based parsing");
-}
-
-char PdbParser::parse_insertion(const std::string& /* line */) {
-    throw ParseError("parse_insertion is deprecated - use GEMMI-based parsing");
-}
-
-double PdbParser::parse_occupancy(const std::string& /* line */) {
-    throw ParseError("parse_occupancy is deprecated - use GEMMI-based parsing");
-}
-
-int PdbParser::parse_residue_seq(const std::string& /* line */) {
-    throw ParseError("parse_residue_seq is deprecated - use GEMMI-based parsing");
-}
-
-geometry::Vector3D PdbParser::parse_coordinates(const std::string& /* line */) {
-    throw ParseError("parse_coordinates is deprecated - use GEMMI-based parsing");
 }
 
 } // namespace io

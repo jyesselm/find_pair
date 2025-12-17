@@ -5,10 +5,17 @@ Provides functions to compare frame calculations between legacy and modern JSON 
 """
 
 import os
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Any
 from pathlib import Path
 from .models import FrameComparison, FrameRecord, FrameMismatch, AtomLineInfo
 from .pdb_utils import PdbFileReader
+
+
+def trim_string(value: Any) -> Any:
+    """Trim whitespace from string values, leave other types unchanged."""
+    if isinstance(value, str):
+        return value.strip()
+    return value
 
 
 def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
@@ -264,31 +271,31 @@ def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
             # Only warn if legacy_residue_idx also doesn't match (otherwise it's just 0-based vs 1-based)
             if mod_legacy_residue_idx is None or leg_residue_idx != mod_legacy_residue_idx:
                 mismatches['residue_idx'] = {'legacy': leg_residue_idx, 'modern': mod_residue_idx}
-        
-        # Compare base_type
-        leg_base_type = leg_rec.get('base_type', '')
-        mod_base_type = mod_rec.get('base_type', '')
+
+        # Compare base_type (trim strings for consistent comparison)
+        leg_base_type = trim_string(leg_rec.get('base_type', ''))
+        mod_base_type = trim_string(mod_rec.get('base_type', ''))
         if leg_base_type != mod_base_type:
             mismatches['base_type'] = {'legacy': leg_base_type, 'modern': mod_base_type}
-        
-        # Compare residue_name
-        leg_resname = leg_rec.get('residue_name', '')
-        mod_resname = mod_rec.get('residue_name', '')
+
+        # Compare residue_name (trim strings for consistent comparison)
+        leg_resname = trim_string(leg_rec.get('residue_name', ''))
+        mod_resname = trim_string(mod_rec.get('residue_name', ''))
         if leg_resname != mod_resname:
             mismatches['residue_name'] = {'legacy': leg_resname, 'modern': mod_resname}
-        
+
         # Compare RMS
         leg_rms = leg_rec.get('rms_fit', 0.0)
         mod_rms = mod_rec.get('rms_fit', 0.0)
         if abs(leg_rms - mod_rms) > 0.001:
             mismatches['rms'] = {'legacy': leg_rms, 'modern': mod_rms, 'diff': abs(leg_rms - mod_rms)}
-        
+
         # Compare num_matched_atoms
         leg_num = leg_rec.get('num_matched_atoms', 0)
         mod_num = mod_rec.get('num_matched_atoms', 0)
         if leg_num != mod_num:
             mismatches['num_matched_atoms'] = {'legacy': leg_num, 'modern': mod_num}
-        
+
         # Compare matched_atoms
         leg_atoms = leg_rec.get('matched_atoms', [])
         mod_atoms = mod_rec.get('matched_atoms', [])
@@ -369,18 +376,18 @@ def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
             if mod_legacy_residue_idx is None or leg_residue_idx != mod_legacy_residue_idx:
                 mismatches['residue_idx'] = {'legacy': leg_residue_idx, 'modern': mod_residue_idx}
         
-        # Compare residue_name
-        leg_resname = leg_rec.get('residue_name', '')
-        mod_resname = mod_rec.get('residue_name', '')
+        # Compare residue_name (trim strings for consistent comparison)
+        leg_resname = trim_string(leg_rec.get('residue_name', ''))
+        mod_resname = trim_string(mod_rec.get('residue_name', ''))
         if leg_resname != mod_resname:
             mismatches['residue_name'] = {'legacy': leg_resname, 'modern': mod_resname}
-        
+
         # Compare RMS
         leg_rms = leg_rec.get('rms_fit', 0.0)
         mod_rms = mod_rec.get('rms_fit', 0.0)
         if abs(leg_rms - mod_rms) > 0.001:
             mismatches['rms'] = {'legacy': leg_rms, 'modern': mod_rms, 'diff': abs(leg_rms - mod_rms)}
-        
+
         # Compare num_points
         leg_num = leg_rec.get('num_points', 0)
         mod_num = mod_rec.get('num_points', 0)
@@ -495,30 +502,30 @@ def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
             if mod_legacy_residue_idx is None or leg_residue_idx != mod_legacy_residue_idx:
                 mismatches['residue_idx'] = {'legacy': leg_residue_idx, 'modern': mod_residue_idx}
         
-        # Compare base_type
-        leg_base_type = leg_rec.get('base_type', '')
-        mod_base_type = mod_rec.get('base_type', '')
+        # Compare base_type (trim strings for consistent comparison)
+        leg_base_type = trim_string(leg_rec.get('base_type', ''))
+        mod_base_type = trim_string(mod_rec.get('base_type', ''))
         if leg_base_type != mod_base_type:
             mismatches['base_type'] = {'legacy': leg_base_type, 'modern': mod_base_type}
-        
-        # Compare residue_name
-        leg_resname = leg_rec.get('residue_name', '')
-        mod_resname = mod_rec.get('residue_name', '')
+
+        # Compare residue_name (trim strings for consistent comparison)
+        leg_resname = trim_string(leg_rec.get('residue_name', ''))
+        mod_resname = trim_string(mod_rec.get('residue_name', ''))
         if leg_resname != mod_resname:
             mismatches['residue_name'] = {'legacy': leg_resname, 'modern': mod_resname}
-        
+
         # Compare RMS
         leg_rms = leg_rec.get('rms_fit', 0.0)
         mod_rms = mod_rec.get('rms_fit', 0.0)
         if abs(leg_rms - mod_rms) > 0.001:
             mismatches['rms'] = {'legacy': leg_rms, 'modern': mod_rms, 'diff': abs(leg_rms - mod_rms)}
-        
+
         # Compare num_matched_atoms
         leg_num = leg_rec.get('num_matched_atoms', 0)
         mod_num = mod_rec.get('num_matched_atoms', 0)
         if leg_num != mod_num:
             mismatches['num_matched_atoms'] = {'legacy': leg_num, 'modern': mod_num}
-        
+
         # Compare template_file (compare only filename, not full path)
         leg_template = leg_rec.get('template_file', '')
         mod_template = mod_rec.get('template_file', '')

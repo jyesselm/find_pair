@@ -4,10 +4,17 @@ Atom-level comparison utilities.
 Provides functions to compare atoms between legacy and modern JSON outputs.
 """
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 from pathlib import Path
 from .models import AtomInfo, AtomComparison, FieldMismatch
 from .pdb_utils import PdbFileReader
+
+
+def trim_string(value: Any) -> Any:
+    """Trim whitespace from string values, leave other types unchanged."""
+    if isinstance(value, str):
+        return value.strip()
+    return value
 
 
 def create_atom_key(atom: Dict) -> Tuple[str, int, str, str]:
@@ -170,19 +177,26 @@ def compare_atoms(legacy_atoms: List[Dict], modern_atoms: List[Dict],
         # 'pdb_line' intentionally excluded - modern doesn't store raw PDB lines
     ]
     
+    # Fields that should be trimmed before comparison
+    string_fields = {'residue_name', 'atom_name', 'chain_id', 'record_type'}
+
     # Special comparison: atom_idx (legacy) vs legacy_atom_idx (modern)
     # Also check that modern atom_idx matches legacy atom_idx when legacy_atom_idx is present
-    
+
     # Compare atoms matched by legacy_idx
     for legacy_idx in matched_by_idx:
         leg_atom = legacy_by_idx[legacy_idx]
         mod_atom = modern_by_legacy_idx[legacy_idx]
         key = create_atom_key(leg_atom)
-        
+
         mismatches = {}
         for field in fields_to_check:
             leg_val = leg_atom.get(field)
             mod_val = mod_atom.get(field)
+            # Trim string fields before comparison
+            if field in string_fields:
+                leg_val = trim_string(leg_val)
+                mod_val = trim_string(mod_val)
             if leg_val != mod_val:
                 mismatches[field] = {'legacy': leg_val, 'modern': mod_val}
         
@@ -229,11 +243,15 @@ def compare_atoms(legacy_atoms: List[Dict], modern_atoms: List[Dict],
     for key in common_keys - matched_by_key:
         leg_atom = legacy_map[key]
         mod_atom = modern_map[key]
-        
+
         mismatches = {}
         for field in fields_to_check:
             leg_val = leg_atom.get(field)
             mod_val = mod_atom.get(field)
+            # Trim string fields before comparison
+            if field in string_fields:
+                leg_val = trim_string(leg_val)
+                mod_val = trim_string(mod_val)
             if leg_val != mod_val:
                 mismatches[field] = {'legacy': leg_val, 'modern': mod_val}
         

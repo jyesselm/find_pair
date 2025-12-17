@@ -1,17 +1,16 @@
 /**
- * @file pdb_parser.hpp
- * @brief PDB file parser using GEMMI library
+ * @file cif_parser.hpp
+ * @brief mmCIF/CIF file parser using GEMMI library
  *
- * This parser reads PDB files using GEMMI and creates Structure objects
- * containing atoms, residues, and chains.
+ * This parser reads mmCIF files and creates Structure objects containing
+ * atoms, residues, and chains. It handles coordinate data from the
+ * _atom_site loop.
  */
 
 #pragma once
 
 #include <filesystem>
-#include <istream>
 #include <string>
-#include <memory>
 #include <stdexcept>
 #include <map>
 #include <tuple>
@@ -29,54 +28,46 @@ namespace x3dna {
 namespace io {
 
 /**
- * @class PdbParser
- * @brief Parser for PDB (Protein Data Bank) format files using GEMMI
+ * @class CifParser
+ * @brief Parser for mmCIF (macromolecular Crystallographic Information File) format
  *
- * Parses PDB files using GEMMI library and creates Structure objects. Supports:
- * - ATOM records (standard atoms)
- * - HETATM records (heteroatoms, optional)
- * - Chain identification
- * - Residue numbering
- * - Alternate conformations
- * - Compressed files (.pdb.gz)
+ * Parses mmCIF files using GEMMI and creates Structure objects. Supports:
+ * - ATOM records (group_PDB = "ATOM")
+ * - HETATM records (group_PDB = "HETATM", optional)
+ * - Chain identification (auth_asym_id preferred, label_asym_id fallback)
+ * - Residue numbering (auth_seq_id preferred)
+ * - Alternate conformations (label_alt_id)
+ * - Compressed files (.cif.gz)
  */
-class PdbParser {
+class CifParser {
 public:
     /**
      * @brief Constructor
      */
-    PdbParser() = default;
+    CifParser() = default;
 
     /**
      * @brief Destructor
      */
-    ~PdbParser() = default;
+    ~CifParser() = default;
 
     // Copy and move semantics
-    PdbParser(const PdbParser&) = default;
-    PdbParser& operator=(const PdbParser&) = default;
-    PdbParser(PdbParser&&) noexcept = default;
-    PdbParser& operator=(PdbParser&&) noexcept = default;
+    CifParser(const CifParser&) = default;
+    CifParser& operator=(const CifParser&) = default;
+    CifParser(CifParser&&) noexcept = default;
+    CifParser& operator=(CifParser&&) noexcept = default;
 
     /**
-     * @brief Parse PDB file from filesystem path
-     * @param path Path to PDB file (.pdb or .pdb.gz)
+     * @brief Parse CIF file from filesystem path
+     * @param path Path to CIF file (.cif or .cif.gz)
      * @return Structure object containing parsed data
      * @throws ParseError if file cannot be read or parsed
      */
     core::Structure parse_file(const std::filesystem::path& path);
 
     /**
-     * @brief Parse PDB file from input stream
-     * @param stream Input stream containing PDB data
-     * @return Structure object containing parsed data
-     * @throws ParseError if stream cannot be read or parsed
-     */
-    core::Structure parse_stream(std::istream& stream);
-
-    /**
-     * @brief Parse PDB file from string content
-     * @param content String containing PDB file content
+     * @brief Parse CIF file from string content
+     * @param content String containing CIF file content
      * @return Structure object containing parsed data
      * @throws ParseError if content cannot be parsed
      */
@@ -107,6 +98,21 @@ public:
     bool include_waters() const { return include_waters_; }
 
     /**
+     * @brief Set whether to use auth_* fields (default) or label_* fields
+     * @param use_auth True to use auth_asym_id/auth_seq_id (PDB-style), false for label_*
+     *
+     * auth_* fields correspond to original PDB identifiers and are preferred
+     * for compatibility with legacy X3DNA output.
+     */
+    void set_use_auth_fields(bool use_auth) { use_auth_fields_ = use_auth; }
+
+    /**
+     * @brief Get whether auth_* fields are used
+     * @return True if using auth_* fields
+     */
+    bool use_auth_fields() const { return use_auth_fields_; }
+
+    /**
      * @brief Exception class for parsing errors
      */
     class ParseError : public std::runtime_error {
@@ -114,23 +120,14 @@ public:
         /**
          * @brief Constructor
          * @param message Error message
-         * @param line_number Line number where error occurred (0 if unknown)
          */
-        ParseError(const std::string& message, size_t line_number = 0);
-
-        /**
-         * @brief Get line number where error occurred
-         * @return Line number (0 if unknown)
-         */
-        size_t line_number() const { return line_number_; }
-
-    private:
-        size_t line_number_;
+        explicit ParseError(const std::string& message);
     };
 
 private:
-    bool include_hetatm_ = false;      // Include HETATM records
-    bool include_waters_ = false;      // Include water molecules (HOH)
+    bool include_hetatm_ = false;     // Include HETATM records
+    bool include_waters_ = false;     // Include water molecules
+    bool use_auth_fields_ = true;     // Use auth_* fields for PDB compatibility
 
     /**
      * @brief Convert GEMMI Structure to our Structure
@@ -140,20 +137,6 @@ private:
      */
     core::Structure convert_gemmi_structure(const gemmi::Structure& gemmi_struct,
                                             const std::string& pdb_id);
-
-    /**
-     * @brief Normalize atom name from GEMMI format to PDB 4-character format
-     * @param name Atom name from GEMMI
-     * @return Normalized atom name
-     */
-    std::string normalize_atom_name_from_gemmi(const std::string& name) const;
-
-    /**
-     * @brief Normalize residue name from GEMMI
-     * @param name Residue name from GEMMI
-     * @return Normalized residue name
-     */
-    std::string normalize_residue_name_from_gemmi(const std::string& name) const;
 
     /**
      * @brief Check if residue is a water molecule
@@ -170,11 +153,41 @@ private:
     bool is_modified_nucleotide_name(const std::string& residue_name) const;
 
     /**
+     * @brief Normalize atom name to PDB 4-character format
+     * @param name Atom name from CIF
+     * @return Normalized atom name
+     */
+    std::string normalize_atom_name(const std::string& name) const;
+
+    /**
+     * @brief Normalize residue name (trim whitespace)
+     * @param name Residue name from CIF
+     * @return Normalized residue name
+     */
+    std::string normalize_residue_name(const std::string& name) const;
+
+    /**
+     * @brief Check if atom should be kept based on filtering rules
+     * @param is_hetatm True if HETATM record
+     * @param alt_loc Alternate location indicator
+     * @param residue_name Residue name
+     * @return True if atom should be kept
+     */
+    bool should_keep_atom(bool is_hetatm, char alt_loc, const std::string& residue_name) const;
+
+    /**
      * @brief Check alternate location filter
      * @param alt_loc Alternate location character
      * @return True if this alt_loc should be kept
      */
     bool check_alt_loc_filter(char alt_loc) const;
+
+    /**
+     * @brief Apply atom name formatting rules (PDB-style spacing)
+     * @param name Atom name
+     * @return Formatted atom name
+     */
+    std::string apply_atom_name_formatting_rules(const std::string& name) const;
 
     /**
      * @brief Apply atom name exact matches (phosphate atoms, etc.)
@@ -191,20 +204,6 @@ private:
     std::string ensure_atom_name_length(const std::string& name) const;
 
     /**
-     * @brief Normalize atom name (legacy compatibility)
-     * @param name Atom name
-     * @return Normalized atom name
-     */
-    std::string normalize_atom_name(const std::string& name) const;
-
-    /**
-     * @brief Normalize residue name (legacy compatibility)
-     * @param name Residue name
-     * @return Normalized residue name
-     */
-    std::string normalize_residue_name(const std::string& name) const;
-
-    /**
      * @brief Build Structure from grouped residue atoms
      * @param pdb_id Structure identifier
      * @param residue_atoms Map of residue key to atoms
@@ -213,18 +212,6 @@ private:
     core::Structure build_structure_from_residues(
         const std::string& pdb_id,
         const std::map<std::tuple<std::string, char, int, char>, std::vector<core::Atom>>& residue_atoms) const;
-
-    // Deprecated legacy methods - kept for API compatibility
-    core::Atom parse_atom_line(const std::string& line, size_t line_number);
-    core::Atom parse_hetatm_line(const std::string& line, size_t line_number);
-    std::string parse_atom_name(const std::string& line);
-    std::string parse_residue_name(const std::string& line);
-    char parse_chain_id(const std::string& line);
-    char parse_alt_loc(const std::string& line);
-    char parse_insertion(const std::string& line);
-    double parse_occupancy(const std::string& line);
-    int parse_residue_seq(const std::string& line);
-    geometry::Vector3D parse_coordinates(const std::string& line);
 };
 
 } // namespace io

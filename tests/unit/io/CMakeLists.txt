@@ -64,3 +64,15 @@ target_link_libraries(test_input_file_parser
 
 gtest_discover_tests(test_input_file_parser)
 
+add_executable(test_cif_parser
+    test_cif_parser.cpp
+)
+
+target_link_libraries(test_cif_parser
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_cif_parser)
+
