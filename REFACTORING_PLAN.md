@@ -12,11 +12,11 @@
 
 | Phase | Status | Key Accomplishments |
 |-------|--------|---------------------|
-| 0 | ⬜ Not Started | Portability foundation |
+| 0 | ✅ Done | ResourceLocator, init API, CMake export, EMBEDDING.md |
 | 1 | ✅ Mostly Done | Named constants, [[nodiscard]] added to most headers |
 | 2 | ⬜ Not Started | Builder patterns for core data structures |
 | 3 | 🔶 Partial | OverlapCalculator extracted, helix_organizer helpers added |
-| 4 | ✅ Mostly Done | GEMMI parser refactoring, ResidueKey struct |
+| 4 | ✅ Done | GEMMI parser refactoring, ResidueKey struct |
 | 5 | ⬜ Not Started | Protocol configuration consolidation |
 | 6 | ✅ Done | Early returns, named booleans applied |
 | 7 | ⬜ Not Started | Final cleanup |
@@ -527,12 +527,16 @@ algorithms/validation/
 - `FrameAlignment` struct with `is_aligned()` and `angle_sum()` (commit `2e6b306`)
 - `compute_frame_alignment()` helper function
 - `update_direction_count()` helper function (commit `d4fb211`)
+- `are_on_opposite_z_sides()` helper function (commit `84731af`)
 - Early returns and named booleans applied (commits `22c9cf7`, `31e3ae4`)
+
+**Extracted classes**:
+- `BackboneLinkageChecker` - O3'-P linkage detection (~85 lines)
 
 **Remaining extraction**:
 ```
 algorithms/helix/
-├── backbone_linkage_checker.hpp/cpp (~80 lines)
+├── backbone_linkage_checker.hpp/cpp ✅ DONE (~85 lines)
 │   └── O3'-P linkage detection
 ├── pair_geometry_helper.hpp/cpp (~100 lines)
 │   └── Origin/z-axis calculations
