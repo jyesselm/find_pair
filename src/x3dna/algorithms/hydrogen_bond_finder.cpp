@@ -331,85 +331,61 @@ void HydrogenBondFinder::validate_hbonds(std::vector<HydrogenBondResult>& hbonds
     }
 }
 
+namespace {
+// Helper to check if residue has a specific atom
+bool has_atom(const core::Residue& residue, const char* name) {
+    for (const auto& atom : residue.atoms()) {
+        if (atom.name() == name) return true;
+    }
+    return false;
+}
+
+// Determine purine type (A or G) from atoms
+char determine_purine_type(const core::Residue& residue) {
+    const bool has_o6 = has_atom(residue, " O6 ");
+    const bool has_n6 = has_atom(residue, " N6 ");
+    return (has_o6 || !has_n6) ? 'G' : 'A';
+}
+
+// Determine pyrimidine type (C, T, or U) from atoms
+char determine_pyrimidine_type(const core::Residue& residue) {
+    if (has_atom(residue, " N4 ")) return 'C';
+    if (has_atom(residue, " C5M") || has_atom(residue, " C7 ")) return 'T';
+    return 'U';
+}
+
+// Determine base type from atoms for unknown residues
+char determine_base_type_from_atoms(const core::Residue& residue) {
+    const bool has_n9 = has_atom(residue, " N9 ");
+    const bool has_n1 = has_atom(residue, " N1 ");
+    const bool has_c6 = has_atom(residue, " C6 ");
+
+    const bool is_purine = has_n9 || (has_n1 && has_c6);
+    const bool is_pyrimidine = has_n1 && !has_c6;
+
+    if (is_purine) return determine_purine_type(residue);
+    if (is_pyrimidine) return determine_pyrimidine_type(residue);
+    return '?';
+}
+} // namespace
+
 char HydrogenBondFinder::get_base_type_for_hbond(const core::Residue& residue) {
-    // Get base type for H-bond detection
-    // Matches legacy behavior: uses one_letter_code() if available, otherwise uses residue_type()
-    // Legacy assigns lowercase letters (a, c, g, t, u) to modified nucleotides, which get
-    // converted to uppercase in donor_acceptor via toupper()
-
+    // Check one_letter_code first
     char code = residue.one_letter_code();
-    if (code != '?') {
-        return code; // Standard nucleotide or already determined
+    if (code != '?') return code;
+
+    // Try residue_type() for known types
+    switch (residue.residue_type()) {
+        case core::ResidueType::ADENINE:  return 'A';
+        case core::ResidueType::CYTOSINE: return 'C';
+        case core::ResidueType::GUANINE:  return 'G';
+        case core::ResidueType::THYMINE:  return 'T';
+        case core::ResidueType::URACIL:   return 'U';
+        default: break;
     }
 
-    // For modified nucleotides, use residue_type() to determine base type
-    // This matches legacy's get_seq() behavior for modified nucleotides
-    core::ResidueType res_type = residue.residue_type();
-    switch (res_type) {
-        case core::ResidueType::ADENINE:
-            return 'A';
-        case core::ResidueType::CYTOSINE:
-            return 'C';
-        case core::ResidueType::GUANINE:
-            return 'G';
-        case core::ResidueType::THYMINE:
-            return 'T';
-        case core::ResidueType::URACIL:
-            return 'U';
-        default:
-            // For unknown/modified nucleotides, try to determine from atoms
-            // Legacy uses lowercase letters for modified nucleotides
-            // Check if it has purine or pyrimidine ring atoms
-            bool has_purine = false, has_pyrimidine = false;
-            for (const auto& atom : residue.atoms()) {
-                std::string name = atom.name();
-                if (name == " N9 ") {
-                    has_purine = true;
-                } else if (name == " N1 ") {
-                    // Could be purine or pyrimidine, check for other atoms
-                    bool has_c6 = false;
-                    for (const auto& a2 : residue.atoms()) {
-                        if (a2.name() == " C6 ") {
-                            has_c6 = true;
-                            break;
-                        }
-                    }
-                    if (has_c6) {
-                        has_purine = true;
-                    } else {
-                        has_pyrimidine = true;
-                    }
-                }
-            }
-
-            if (has_purine) {
-                // Check for G vs A
-                bool has_o6 = false, has_n6 = false;
-                for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == " O6 ")
-                        has_o6 = true;
-                    if (atom.name() == " N6 ")
-                        has_n6 = true;
-                }
-                return (has_o6 || (!has_n6)) ? 'G' : 'A';
-            } else if (has_pyrimidine) {
-                // Check for C vs T vs U
-                bool has_n4 = false, has_c5m = false;
-                for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == " N4 ")
-                        has_n4 = true;
-                    if (atom.name() == " C5M" || atom.name() == " C7 ")
-                        has_c5m = true;
-                }
-                if (has_n4)
-                    return 'C';
-                if (has_c5m)
-                    return 'T';
-                return 'U'; // Default for pyrimidines
-            }
-
-            return '?'; // Cannot determine
-    }
+    // Fall back to atom-based detection
+    return determine_base_type_from_atoms(residue);
 }
 
 } // namespace algorithms

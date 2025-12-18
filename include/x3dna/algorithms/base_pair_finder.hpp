@@ -14,9 +14,10 @@
 #include <x3dna/algorithms/pair_finding_observer.hpp>
 #include <x3dna/algorithms/pair_selection_strategy.hpp>
 #include <x3dna/io/json_writer.hpp>
-#include <vector>
+#include <algorithm>
 #include <memory>
 #include <optional>
+#include <vector>
 
 namespace x3dna {
 namespace algorithms {
@@ -108,124 +109,103 @@ private:
     BasePairValidator validator_;
     QualityScoreCalculator quality_calculator_;
     PairFindingStrategy strategy_;
-
-    // Mutable cache for const methods
     mutable PairCandidateCache cache_;
 
-    /**
-     * @brief Find best pairs using greedy mutual best match (legacy find_bestpair)
-     * @param writer Optional JsonWriter to record validation results
-     */
+    // ============================================================================
+    // Internal types - must be defined before methods that use them
+    // ============================================================================
+
+    /** @brief Results from Phase 1 validation of all pairs */
+    struct Phase1Results {
+        std::map<std::pair<int, int>, ValidationResult> validation_results;
+        std::map<std::pair<int, int>, int> bp_type_ids;
+
+        [[nodiscard]] const ValidationResult* get_result(int idx1, int idx2) const {
+            auto key = (idx1 < idx2) ? std::make_pair(idx1, idx2) : std::make_pair(idx2, idx1);
+            auto it = validation_results.find(key);
+            return (it != validation_results.end()) ? &it->second : nullptr;
+        }
+
+        [[nodiscard]] int get_bp_type_id(int idx1, int idx2) const {
+            auto key = (idx1 < idx2) ? std::make_pair(idx1, idx2) : std::make_pair(idx2, idx1);
+            auto it = bp_type_ids.find(key);
+            return (it != bp_type_ids.end()) ? it->second : 0;
+        }
+    };
+
+    /** @brief Mapping between legacy indices and residue pointers */
+    struct ResidueIndexMapping {
+        std::map<int, const core::Residue*> by_legacy_idx;
+        int max_legacy_idx = 0;
+
+        [[nodiscard]] const core::Residue* get(int legacy_idx) const {
+            auto it = by_legacy_idx.find(legacy_idx);
+            return (it != by_legacy_idx.end()) ? it->second : nullptr;
+        }
+
+        [[nodiscard]] bool empty() const { return by_legacy_idx.empty(); }
+    };
+
+    /** @brief Context for partner search - groups related data to reduce parameters */
+    struct PartnerSearchContext {
+        const std::vector<bool>& matched_indices;
+        const ResidueIndexMapping& mapping;
+        const Phase1Results& phase1;
+        io::JsonWriter* writer;
+    };
+
+    /** @brief Mutable state during pair selection */
+    struct PairSelectionState {
+        std::vector<bool> matched_indices;
+        std::vector<core::BasePair> base_pairs;
+        std::vector<std::pair<size_t, size_t>> selected_pairs_legacy_idx;
+        std::vector<std::pair<int, int>> pairs_found_this_iteration;
+
+        explicit PairSelectionState(int max_idx)
+            : matched_indices(max_idx + 1, false) {}
+
+        void mark_matched(int idx1, int idx2) {
+            matched_indices[idx1] = true;
+            matched_indices[idx2] = true;
+        }
+
+        [[nodiscard]] size_t count_matched() const {
+            return std::count(matched_indices.begin(), matched_indices.end(), true);
+        }
+    };
+
+    // ============================================================================
+    // Private methods
+    // ============================================================================
+
     [[nodiscard]] std::vector<core::BasePair> find_best_pairs(core::Structure& structure,
                                                               io::JsonWriter* writer = nullptr) const;
-
-    /**
-     * @brief Find all valid pairs (exhaustive search)
-     */
     [[nodiscard]] std::vector<core::BasePair> find_all_pairs(const core::Structure& structure) const;
-
-    /**
-     * @brief Find best partner for a residue
-     * @param residue_idx Index of residue (0-based)
-     * @param structure Structure to search
-     * @param matched_indices Set of already matched residue indices
-     * @param writer Optional JsonWriter to record validation results
-     * @return Best partner index and validation result, or nullopt if none found
-     */
     [[nodiscard]] std::optional<std::pair<int, ValidationResult>> find_best_partner(
-        int legacy_idx1, // Legacy 1-based residue index (from atom.legacy_residue_idx() set during
-                         // PDB parsing)
-        const core::Structure& structure, const std::vector<bool>& matched_indices,
-        const std::map<int, const core::Residue*>& residue_by_legacy_idx,
-        const std::map<std::pair<int, int>, ValidationResult>& phase1_validation_results,
-        const std::map<std::pair<int, int>, int>& phase1_bp_type_ids, // Store bp_type_id from Phase 1
-        io::JsonWriter* writer = nullptr) const;
+        int legacy_idx, const PartnerSearchContext& ctx) const;
 
-    /**
-     * @brief Adjust quality score based on hydrogen bonds (matches legacy adjust_pairQuality)
-     * @param hbonds Vector of hydrogen bonds
-     * @return Adjustment value to add to quality_score (negative value)
-     */
     [[nodiscard]] double adjust_pair_quality(const std::vector<core::hydrogen_bond>& hbonds) const;
+    [[nodiscard]] int calculate_bp_type_id(const core::Residue* res1, const core::Residue* res2,
+                                           const ValidationResult& result, double quality_score) const;
+    [[nodiscard]] double calculate_adjusted_score(const ValidationResult& result, int bp_type_id) const;
 
-    /**
-     * @brief Record validation results for a pair (matches legacy check_pair ->
-     * calculate_more_bppars)
-     * @param legacy_idx1 First residue legacy index (1-based)
-     * @param legacy_idx2 Second residue legacy index (1-based)
-     * @param res1 First residue pointer
-     * @param res2 Second residue pointer
-     * @param result Validation result
-     * @param writer JSON writer (can be nullptr)
-     */
     void record_validation_results(int legacy_idx1, int legacy_idx2, const core::Residue* res1,
                                    const core::Residue* res2, const ValidationResult& result,
                                    io::JsonWriter* writer) const;
 
-    /**
-     * @brief Calculate bp_type_id using check_wc_wobble_pair logic
-     * @param res1 First residue
-     * @param res2 Second residue
-     * @param result Validation result
-     * @param quality_score Adjusted quality score
-     * @return bp_type_id (-1, 0, 1, or 2)
-     *
-     * Note: Full implementation requires bpstep_par (shear, stretch, opening) from Stage 6.
-     * This is a simplified version that uses base pair type and direction vectors.
-     */
-    [[nodiscard]] int calculate_bp_type_id(const core::Residue* res1, const core::Residue* res2,
-                                           const ValidationResult& result, double quality_score) const;
-
-    /**
-     * @brief Get residue index in structure (0-based, counting all residues)
-     */
     [[nodiscard]] static size_t get_residue_index(const core::Structure& structure, const core::Residue& residue);
+    [[nodiscard]] static bool can_participate_in_pairing(const core::Residue* res);
+    [[nodiscard]] static bool is_matched(int legacy_idx, const std::vector<bool>& matched);
 
-    // Phase 1 and Phase 2 helper structures and methods
-
-    /**
-     * @struct Phase1Results
-     * @brief Results from Phase 1 validation of all pairs
-     */
-    struct Phase1Results {
-        std::map<std::pair<int, int>, ValidationResult> validation_results;
-        std::map<std::pair<int, int>, int> bp_type_ids;
-    };
-
-    /**
-     * @struct ResidueIndexMapping
-     * @brief Mapping between legacy indices and residue pointers
-     */
-    struct ResidueIndexMapping {
-        std::map<int, const core::Residue*> by_legacy_idx;
-        int max_legacy_idx = 0;
-    };
-
-    /**
-     * @brief Build residue index mapping from structure
-     * @param structure Structure to analyze
-     * @return ResidueIndexMapping with legacy indices mapped to residue pointers
-     */
     [[nodiscard]] ResidueIndexMapping build_residue_index_mapping(const core::Structure& structure) const;
-
-    /**
-     * @brief Run Phase 1 validation on all pairs
-     * @param mapping Residue index mapping
-     * @return Phase1Results with validation results and bp_type_ids
-     */
     [[nodiscard]] Phase1Results run_phase1_validation(const ResidueIndexMapping& mapping) const;
-
-    /**
-     * @brief Create BasePair from validated residue pair
-     * @param legacy_idx1 First residue legacy index (1-based)
-     * @param legacy_idx2 Second residue legacy index (1-based)
-     * @param res1 First residue pointer
-     * @param res2 Second residue pointer
-     * @param result Validation result
-     * @return Constructed BasePair
-     */
     [[nodiscard]] core::BasePair create_base_pair(int legacy_idx1, int legacy_idx2, const core::Residue* res1,
                                                   const core::Residue* res2, const ValidationResult& result) const;
+    [[nodiscard]] bool try_select_mutual_pair(int legacy_idx1, int legacy_idx2,
+                                               const core::Residue* res1, const core::Residue* res2,
+                                               const ValidationResult& result,
+                                               const PartnerSearchContext& ctx,
+                                               PairSelectionState& state) const;
 };
 
 } // namespace algorithms
