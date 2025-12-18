@@ -380,117 +380,133 @@ class TestDistanceChecksComparator:
 
 
 class TestHbondComparator:
-    """Test Stage 8: hbond_list comparator."""
-    
+    """Test Stage 8: hbond_list comparator.
+
+    Key: (base_i, base_j) - residue indices
+    Checks: hbonds[].{donor_atom, acceptor_atom, distance}
+    """
+
     def test_matching_hbonds_pass(self):
         """Identical hbonds should pass."""
-        legacy = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "num_hbonds": 2,
-                   "hbonds": [{"donor_atom": "N6", "acceptor_atom": "O4"},
-                             {"donor_atom": "N1", "acceptor_atom": "N3"}]}]
-        modern = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "num_hbonds": 2,
-                   "hbonds": [{"donor_atom": "N6", "acceptor_atom": "O4"},
-                             {"donor_atom": "N1", "acceptor_atom": "N3"}]}]
+        legacy = [{"base_i": 1, "base_j": 10, "num_hbonds": 2,
+                   "hbonds": [{"donor_atom": "N6", "acceptor_atom": "O4", "distance": 2.9},
+                             {"donor_atom": "N1", "acceptor_atom": "N3", "distance": 2.8}]}]
+        modern = [{"base_i": 1, "base_j": 10, "num_hbonds": 2,
+                   "hbonds": [{"donor_atom": "N6", "acceptor_atom": "O4", "distance": 2.9},
+                             {"donor_atom": "N1", "acceptor_atom": "N3", "distance": 2.8}]}]
         passed, errors = compare_hbonds(legacy, modern)
         assert passed, f"Should pass: {errors}"
-    
+
     def test_num_hbonds_mismatch_detected(self):
-        """num_hbonds mismatch should be detected."""
-        legacy = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "num_hbonds": 2, "hbonds": []}]
-        modern = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "num_hbonds": 3, "hbonds": []}]
+        """hbond count mismatch should be detected (via actual hbonds list length)."""
+        legacy = [{"base_i": 1, "base_j": 10, "num_hbonds": 2,
+                   "hbonds": [{"donor_atom": "N6", "acceptor_atom": "O4", "distance": 2.9},
+                             {"donor_atom": "N1", "acceptor_atom": "N3", "distance": 2.8}]}]
+        modern = [{"base_i": 1, "base_j": 10, "num_hbonds": 3,
+                   "hbonds": [{"donor_atom": "N6", "acceptor_atom": "O4", "distance": 2.9},
+                             {"donor_atom": "N1", "acceptor_atom": "N3", "distance": 2.8},
+                             {"donor_atom": "N2", "acceptor_atom": "O2", "distance": 3.0}]}]
         passed, errors = compare_hbonds(legacy, modern)
-        assert not passed, "Should fail on num_hbonds mismatch"
-        assert any("num_hbonds" in e for e in errors), f"Should mention num_hbonds: {errors}"
-    
+        assert not passed, "Should fail on hbond count mismatch"
+        assert any("hbond" in e.lower() and "count" in e.lower() for e in errors), f"Should mention hbond count: {errors}"
+
     def test_donor_atom_mismatch_detected(self):
         """donor_atom mismatch should be detected."""
-        legacy = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "num_hbonds": 1,
-                   "hbonds": [{"donor_atom": "N6", "acceptor_atom": "O4"}]}]
-        modern = [{"chain_id_i": "A", "residue_seq_i": 1, "insertion_i": " ",
-                   "chain_id_j": "A", "residue_seq_j": 10, "insertion_j": " ",
-                   "num_hbonds": 1,
-                   "hbonds": [{"donor_atom": "N1", "acceptor_atom": "O4"}]}]  # Different donor
+        legacy = [{"base_i": 1, "base_j": 10, "num_hbonds": 1,
+                   "hbonds": [{"donor_atom": "N6", "acceptor_atom": "O4", "distance": 2.9}]}]
+        modern = [{"base_i": 1, "base_j": 10, "num_hbonds": 1,
+                   "hbonds": [{"donor_atom": "N1", "acceptor_atom": "O4", "distance": 2.9}]}]  # Different donor
         passed, errors = compare_hbonds(legacy, modern)
         assert not passed, "Should fail on donor_atom mismatch"
-        assert any("donor" in e for e in errors), f"Should mention donor: {errors}"
+        assert any("atom" in e.lower() for e in errors), f"Should mention atom mismatch: {errors}"
 
 
 class TestStepParamsComparator:
-    """Test Stage 11: bpstep_params comparator."""
-    
+    """Test Stage 11: bpstep_params comparator.
+
+    Key: (bp_idx1, bp_idx2) - step indices
+    Legacy format: params dict with capitalized keys {"Shift": ..., "Slide": ...}
+    Modern format: lowercase individual fields {"shift": ..., "slide": ...}
+    """
+
     def test_matching_params_pass(self):
         """Identical step params should pass."""
-        legacy = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
-                   "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
-        modern = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": {"Shift": 0.1, "Slide": -1.5, "Rise": 3.3,
+                              "Tilt": -2.0, "Roll": 8.5, "Twist": 31.0}}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "shift": 0.1, "slide": -1.5, "rise": 3.3,
                    "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
         passed, errors = compare_step_params(legacy, modern)
         assert passed, f"Should pass: {errors}"
-    
+
     def test_shift_mismatch_detected(self):
         """shift mismatch should be detected."""
-        legacy = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
-                   "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
-        modern = [{"step_idx": 0, "shift": 0.2, "slide": -1.5, "rise": 3.3,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": {"Shift": 0.1, "Slide": -1.5, "Rise": 3.3,
+                              "Tilt": -2.0, "Roll": 8.5, "Twist": 31.0}}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "shift": 0.2, "slide": -1.5, "rise": 3.3,
                    "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
         passed, errors = compare_step_params(legacy, modern)
         assert not passed, "Should fail on shift mismatch"
         assert any("shift" in e for e in errors), f"Should mention shift: {errors}"
-    
+
     def test_slide_mismatch_detected(self):
         """slide mismatch should be detected."""
-        legacy = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
-                   "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
-        modern = [{"step_idx": 0, "shift": 0.1, "slide": -1.6, "rise": 3.3,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": {"Shift": 0.1, "Slide": -1.5, "Rise": 3.3,
+                              "Tilt": -2.0, "Roll": 8.5, "Twist": 31.0}}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "shift": 0.1, "slide": -1.6, "rise": 3.3,
                    "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
         passed, errors = compare_step_params(legacy, modern)
         assert not passed, "Should fail on slide mismatch"
         assert any("slide" in e for e in errors), f"Should mention slide: {errors}"
-    
+
     def test_rise_mismatch_detected(self):
         """rise mismatch should be detected."""
-        legacy = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
-                   "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
-        modern = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.4,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": {"Shift": 0.1, "Slide": -1.5, "Rise": 3.3,
+                              "Tilt": -2.0, "Roll": 8.5, "Twist": 31.0}}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "shift": 0.1, "slide": -1.5, "rise": 3.4,
                    "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
         passed, errors = compare_step_params(legacy, modern)
         assert not passed, "Should fail on rise mismatch"
         assert any("rise" in e for e in errors), f"Should mention rise: {errors}"
-    
+
     def test_tilt_mismatch_detected(self):
         """tilt mismatch should be detected."""
-        legacy = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
-                   "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
-        modern = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": {"Shift": 0.1, "Slide": -1.5, "Rise": 3.3,
+                              "Tilt": -2.0, "Roll": 8.5, "Twist": 31.0}}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "shift": 0.1, "slide": -1.5, "rise": 3.3,
                    "tilt": -3.0, "roll": 8.5, "twist": 31.0}]
         passed, errors = compare_step_params(legacy, modern)
         assert not passed, "Should fail on tilt mismatch"
         assert any("tilt" in e for e in errors), f"Should mention tilt: {errors}"
-    
+
     def test_roll_mismatch_detected(self):
         """roll mismatch should be detected."""
-        legacy = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
-                   "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
-        modern = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": {"Shift": 0.1, "Slide": -1.5, "Rise": 3.3,
+                              "Tilt": -2.0, "Roll": 8.5, "Twist": 31.0}}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "shift": 0.1, "slide": -1.5, "rise": 3.3,
                    "tilt": -2.0, "roll": 9.5, "twist": 31.0}]
         passed, errors = compare_step_params(legacy, modern)
         assert not passed, "Should fail on roll mismatch"
         assert any("roll" in e for e in errors), f"Should mention roll: {errors}"
-    
+
     def test_twist_mismatch_detected(self):
         """twist mismatch should be detected."""
-        legacy = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
-                   "tilt": -2.0, "roll": 8.5, "twist": 31.0}]
-        modern = [{"step_idx": 0, "shift": 0.1, "slide": -1.5, "rise": 3.3,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": {"Shift": 0.1, "Slide": -1.5, "Rise": 3.3,
+                              "Tilt": -2.0, "Roll": 8.5, "Twist": 31.0}}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "shift": 0.1, "slide": -1.5, "rise": 3.3,
                    "tilt": -2.0, "roll": 8.5, "twist": 32.0}]
         passed, errors = compare_step_params(legacy, modern)
         assert not passed, "Should fail on twist mismatch"
@@ -498,52 +514,62 @@ class TestStepParamsComparator:
 
 
 class TestHelicalParamsComparator:
-    """Test Stage 12: helical_params comparator."""
-    
+    """Test Stage 12: helical_params comparator.
+
+    Key: (bp_idx1, bp_idx2) - step indices
+    Legacy format: params array [x_disp, y_disp, rise, incl, tip, twist]
+    Modern format: individual fields {"x_displacement": ..., "y_displacement": ...}
+    """
+
     def test_matching_params_pass(self):
         """Identical helical params should pass."""
-        legacy = [{"step_idx": 0, "x_displacement": -0.5, "y_displacement": 0.8,
-                   "rise": 2.8, "inclination": 12.0, "tip": -4.5, "twist": 32.0}]
-        modern = [{"step_idx": 0, "x_displacement": -0.5, "y_displacement": 0.8,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": [-0.5, 0.8, 2.8, 12.0, -4.5, 32.0]}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "x_displacement": -0.5, "y_displacement": 0.8,
                    "rise": 2.8, "inclination": 12.0, "tip": -4.5, "twist": 32.0}]
         passed, errors = compare_helical_params(legacy, modern)
         assert passed, f"Should pass: {errors}"
-    
+
     def test_x_displacement_mismatch_detected(self):
         """x_displacement mismatch should be detected."""
-        legacy = [{"step_idx": 0, "x_displacement": -0.5, "y_displacement": 0.8,
-                   "rise": 2.8, "inclination": 12.0, "tip": -4.5, "twist": 32.0}]
-        modern = [{"step_idx": 0, "x_displacement": -0.6, "y_displacement": 0.8,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": [-0.5, 0.8, 2.8, 12.0, -4.5, 32.0]}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "x_displacement": -0.6, "y_displacement": 0.8,
                    "rise": 2.8, "inclination": 12.0, "tip": -4.5, "twist": 32.0}]
         passed, errors = compare_helical_params(legacy, modern)
         assert not passed, "Should fail on x_displacement mismatch"
         assert any("x_displacement" in e for e in errors), f"Should mention x_displacement: {errors}"
-    
+
     def test_y_displacement_mismatch_detected(self):
         """y_displacement mismatch should be detected."""
-        legacy = [{"step_idx": 0, "x_displacement": -0.5, "y_displacement": 0.8,
-                   "rise": 2.8, "inclination": 12.0, "tip": -4.5, "twist": 32.0}]
-        modern = [{"step_idx": 0, "x_displacement": -0.5, "y_displacement": 0.9,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": [-0.5, 0.8, 2.8, 12.0, -4.5, 32.0]}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "x_displacement": -0.5, "y_displacement": 0.9,
                    "rise": 2.8, "inclination": 12.0, "tip": -4.5, "twist": 32.0}]
         passed, errors = compare_helical_params(legacy, modern)
         assert not passed, "Should fail on y_displacement mismatch"
         assert any("y_displacement" in e for e in errors), f"Should mention y_displacement: {errors}"
-    
+
     def test_inclination_mismatch_detected(self):
         """inclination mismatch should be detected."""
-        legacy = [{"step_idx": 0, "x_displacement": -0.5, "y_displacement": 0.8,
-                   "rise": 2.8, "inclination": 12.0, "tip": -4.5, "twist": 32.0}]
-        modern = [{"step_idx": 0, "x_displacement": -0.5, "y_displacement": 0.8,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": [-0.5, 0.8, 2.8, 12.0, -4.5, 32.0]}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "x_displacement": -0.5, "y_displacement": 0.8,
                    "rise": 2.8, "inclination": 13.0, "tip": -4.5, "twist": 32.0}]
         passed, errors = compare_helical_params(legacy, modern)
         assert not passed, "Should fail on inclination mismatch"
         assert any("inclination" in e for e in errors), f"Should mention inclination: {errors}"
-    
+
     def test_tip_mismatch_detected(self):
         """tip mismatch should be detected."""
-        legacy = [{"step_idx": 0, "x_displacement": -0.5, "y_displacement": 0.8,
-                   "rise": 2.8, "inclination": 12.0, "tip": -4.5, "twist": 32.0}]
-        modern = [{"step_idx": 0, "x_displacement": -0.5, "y_displacement": 0.8,
+        legacy = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "params": [-0.5, 0.8, 2.8, 12.0, -4.5, 32.0]}]
+        modern = [{"bp_idx1": 1, "bp_idx2": 2,
+                   "x_displacement": -0.5, "y_displacement": 0.8,
                    "rise": 2.8, "inclination": 12.0, "tip": -5.5, "twist": 32.0}]
         passed, errors = compare_helical_params(legacy, modern)
         assert not passed, "Should fail on tip mismatch"

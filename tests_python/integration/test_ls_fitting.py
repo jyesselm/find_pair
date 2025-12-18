@@ -138,9 +138,9 @@ def compare_ls_fitting_json(legacy_file: Path, modern_file: Path,
     except Exception as e:
         return False, {"error": f"Comparison error: {str(e)}"}
 
-def test_single_pdb(pdb_id: str, pdb_file: Path, output_dir: Path,
-                    legacy_exe: Optional[Path], modern_exe: Path,
-                    project_root: Path) -> Dict:
+def run_single_pdb_test(pdb_id: str, pdb_file: Path, output_dir: Path,
+                        legacy_exe: Optional[Path], modern_exe: Path,
+                        project_root: Path) -> Dict:
     """Test ls_fitting generation for a single PDB."""
     result = {
         "pdb_id": pdb_id,
@@ -226,7 +226,7 @@ def main():
     print()
     
     try:
-        result = test_single_pdb(
+        result = run_single_pdb_test(
             pdb_id, pdb_file, output_dir, legacy_exe, modern_exe, project_root
         )
         

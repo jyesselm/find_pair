@@ -18,12 +18,12 @@ from functools import partial
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from tests_python.integration.test_ls_fitting import test_single_pdb
+from tests_python.integration.test_ls_fitting import run_single_pdb_test
 from scripts.test_utils import find_executables, load_valid_pdbs_fast
 
 
-def test_single_pdb_wrapper(args):
-    """Wrapper for test_single_pdb to work with multiprocessing.Pool.map"""
+def single_pdb_test_wrapper(args):
+    """Wrapper for run_single_pdb_test to work with multiprocessing.Pool.map"""
     pdb_id, output_dir, legacy_exe, modern_exe, project_root, index, total = args
     
     pdb_file = project_root / "data" / "pdb" / f"{pdb_id}.pdb"
@@ -33,8 +33,8 @@ def test_single_pdb_wrapper(args):
         return pdb_id, {"status": "skip", "error": "PDB file not found"}
     
     try:
-        result = test_single_pdb(
-            pdb_id, pdb_file, output_dir, 
+        result = run_single_pdb_test(
+            pdb_id, pdb_file, output_dir,
             legacy_exe, modern_exe, project_root
         )
         
@@ -95,7 +95,7 @@ def run_batch_test(pdb_ids: List[str], output_dir: Path,
     
     # Run tests in parallel
     with Pool(processes=num_workers) as pool:
-        pdb_results = pool.map(test_single_pdb_wrapper, args_list)
+        pdb_results = pool.map(single_pdb_test_wrapper, args_list)
     
     # Aggregate results
     for pdb_id, result in pdb_results:
