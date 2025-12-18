@@ -532,13 +532,14 @@ algorithms/validation/
 
 **Extracted classes**:
 - `BackboneLinkageChecker` - O3'-P linkage detection (~85 lines)
+- `PairGeometryHelper` - Origin/z-axis/strand calculations (~60 lines)
 
 **Remaining extraction**:
 ```
 algorithms/helix/
 ├── backbone_linkage_checker.hpp/cpp ✅ DONE (~85 lines)
 │   └── O3'-P linkage detection
-├── pair_geometry_helper.hpp/cpp (~100 lines)
+├── pair_geometry_helper.hpp/cpp ✅ DONE (~60 lines)
 │   └── Origin/z-axis calculations
 ├── helix_context_calculator.hpp/cpp (~200 lines)
 │   └── Neighbor detection, endpoint finding
