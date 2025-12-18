@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <x3dna/protocols/find_pair_protocol.hpp>
 #include <x3dna/config/config_manager.hpp>
+#include <x3dna/config/resource_locator.hpp>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/residue.hpp>
@@ -62,12 +63,11 @@ protected:
 
         structure_.add_chain(chain_a);
 
-        // Check if templates directory exists
-        std::filesystem::path template_path = "data/templates";
-        if (!std::filesystem::exists(template_path)) {
-            // Try alternative path
-            template_path = "../../data/templates";
+        // Use ResourceLocator for template path (it auto-initializes from environment)
+        if (!ResourceLocator::is_initialized()) {
+            ResourceLocator::initialize_from_environment();
         }
+        auto template_path = ResourceLocator::templates_dir();
 
         protocol_ = std::make_unique<FindPairProtocol>(template_path);
     }
@@ -174,10 +174,8 @@ TEST_F(FindPairProtocolTest, ConfigStructInitialization) {
     config.find_all_pairs = true;
     config.output_stage = "frames";
 
-    std::filesystem::path template_path = "data/templates";
-    if (!std::filesystem::exists(template_path)) {
-        template_path = "../../data/templates";
-    }
+    // Use ResourceLocator for template path
+    auto template_path = ResourceLocator::templates_dir();
 
     FindPairProtocol configured_protocol(template_path, config);
 

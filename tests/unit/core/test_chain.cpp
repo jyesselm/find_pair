@@ -15,22 +15,19 @@ using namespace x3dna::geometry;
 class ChainTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        // Create chain A with nucleotides
+        // Create chain A with nucleotides (use create_from_atoms for proper initialization)
         chain_a_ = Chain('A');
 
-        Residue c1("  C", 1, 'A');
-        c1.add_atom(Atom(" C1'", Vector3D(1, 2, 3)));
-        c1.add_atom(Atom(" N1 ", Vector3D(2, 3, 4)));
+        std::vector<Atom> c1_atoms = {Atom(" C1'", Vector3D(1, 2, 3)), Atom(" N1 ", Vector3D(2, 3, 4))};
+        auto c1 = Residue::create_from_atoms("  C", 1, 'A', ' ', c1_atoms);
         chain_a_.add_residue(c1);
 
-        Residue g1("  G", 2, 'A');
-        g1.add_atom(Atom(" C1'", Vector3D(5, 6, 7)));
-        g1.add_atom(Atom(" N9 ", Vector3D(6, 7, 8)));
+        std::vector<Atom> g1_atoms = {Atom(" C1'", Vector3D(5, 6, 7)), Atom(" N9 ", Vector3D(6, 7, 8))};
+        auto g1 = Residue::create_from_atoms("  G", 2, 'A', ' ', g1_atoms);
         chain_a_.add_residue(g1);
 
-        Residue a1("  A", 3, 'A');
-        a1.add_atom(Atom(" C1'", Vector3D(9, 10, 11)));
-        a1.add_atom(Atom(" N9 ", Vector3D(10, 11, 12)));
+        std::vector<Atom> a1_atoms = {Atom(" C1'", Vector3D(9, 10, 11)), Atom(" N9 ", Vector3D(10, 11, 12))};
+        auto a1 = Residue::create_from_atoms("  A", 3, 'A', ' ', a1_atoms);
         chain_a_.add_residue(a1);
     }
 
@@ -89,13 +86,13 @@ TEST_F(ChainTest, Sequence) {
 
 TEST_F(ChainTest, SequenceWithNonNucleotides) {
     Chain chain('A');
-    Residue c1("  C", 1, 'A');
+    auto c1 = Residue::create_from_atoms("  C", 1, 'A', ' ', {});
     chain.add_residue(c1);
 
-    Residue unknown("XXX", 2, 'A');
+    auto unknown = Residue::create_from_atoms("XXX", 2, 'A', ' ', {});
     chain.add_residue(unknown);
 
-    Residue g1("  G", 3, 'A');
+    auto g1 = Residue::create_from_atoms("  G", 3, 'A', ' ', {});
     chain.add_residue(g1);
 
     std::string seq = chain.sequence();
@@ -112,13 +109,13 @@ TEST_F(ChainTest, Nucleotides) {
 
 TEST_F(ChainTest, NucleotidesWithMixed) {
     Chain chain('A');
-    Residue c1("  C", 1, 'A');
+    auto c1 = Residue::create_from_atoms("  C", 1, 'A', ' ', {});
     chain.add_residue(c1);
 
-    Residue unknown("XXX", 2, 'A');
+    auto unknown = Residue::create_from_atoms("XXX", 2, 'A', ' ', {});
     chain.add_residue(unknown);
 
-    Residue g1("  G", 3, 'A');
+    auto g1 = Residue::create_from_atoms("  G", 3, 'A', ' ', {});
     chain.add_residue(g1);
 
     auto nts = chain.nucleotides();

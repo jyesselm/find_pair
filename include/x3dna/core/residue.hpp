@@ -309,13 +309,16 @@ public:
         std::string chain_str = j.value("chain_id", "");
         char chain_id = chain_str.empty() ? '\0' : chain_str[0];
 
-        Residue residue(name, seq_num, chain_id);
-
+        // Parse atoms first
+        std::vector<Atom> atoms;
         if (j.contains("atoms") && j["atoms"].is_array()) {
             for (const auto& atom_json : j["atoms"]) {
-                residue.add_atom(Atom::from_json_legacy(atom_json));
+                atoms.push_back(Atom::from_json_legacy(atom_json));
             }
         }
+
+        // Use create_from_atoms to properly initialize one_letter_code, type, etc.
+        Residue residue = create_from_atoms(name, seq_num, chain_id, ' ', atoms);
 
         if (j.contains("reference_frame")) {
             residue.set_reference_frame(ReferenceFrame::from_json_legacy(j["reference_frame"]));
@@ -351,13 +354,16 @@ public:
         std::string chain_str = j.value("chain_id", "");
         char chain_id = chain_str.empty() ? '\0' : chain_str[0];
 
-        Residue residue(name, seq_num, chain_id);
-
+        // Parse atoms first
+        std::vector<Atom> atoms;
         if (j.contains("atoms") && j["atoms"].is_array()) {
             for (const auto& atom_json : j["atoms"]) {
-                residue.add_atom(Atom::from_json(atom_json));
+                atoms.push_back(Atom::from_json(atom_json));
             }
         }
+
+        // Use create_from_atoms to properly initialize one_letter_code, type, etc.
+        Residue residue = create_from_atoms(name, seq_num, chain_id, ' ', atoms);
 
         if (j.contains("reference_frame")) {
             residue.set_reference_frame(ReferenceFrame::from_json(j["reference_frame"]));

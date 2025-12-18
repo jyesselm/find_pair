@@ -211,13 +211,14 @@ TEST_F(AtomTest, JsonLegacyRoundTrip) {
     EXPECT_EQ(atom.record_type(), atom1_.record_type());
 }
 
-// JSON serialization tests - Modern format
+// JSON serialization tests - Standard format (to_json uses legacy keys for compatibility)
 TEST_F(AtomTest, ToJsonModern) {
     auto json = atom1_.to_json();
 
-    EXPECT_EQ(json["name"], " C1'");
-    std::vector<double> expected_pos = {1.0, 2.0, 3.0};
-    EXPECT_EQ(json["position"], expected_pos);
+    // to_json() uses legacy keys for compatibility with JSON validation
+    EXPECT_EQ(json["atom_name"], " C1'");
+    std::vector<double> expected_xyz = {1.0, 2.0, 3.0};
+    EXPECT_EQ(json["xyz"], expected_xyz);
     EXPECT_EQ(json["residue_name"], "  C");
     EXPECT_EQ(json["chain_id"], "A");
     EXPECT_EQ(json["residue_seq"], 1);
@@ -225,7 +226,8 @@ TEST_F(AtomTest, ToJsonModern) {
 }
 
 TEST_F(AtomTest, FromJsonModern) {
-    nlohmann::json j = {{"name", " N3 "},   {"position", {4.0, 5.0, 6.0}}, {"residue_name", "  G"}, {"chain_id", "B"},
+    // from_json() expects legacy keys to match to_json() output
+    nlohmann::json j = {{"atom_name", " N3 "}, {"xyz", {4.0, 5.0, 6.0}}, {"residue_name", "  G"}, {"chain_id", "B"},
                         {"residue_seq", 2}, {"record_type", "A"}};
 
     Atom atom = Atom::from_json(j);

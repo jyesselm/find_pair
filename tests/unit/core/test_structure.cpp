@@ -16,24 +16,24 @@ using namespace x3dna::geometry;
 class StructureTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        // Create structure with two chains
+        // Create structure with two chains (use create_from_atoms for proper initialization)
         structure_ = Structure("TEST");
 
         // Chain A
         Chain chain_a('A');
-        Residue c1("  C", 1, 'A');
-        c1.add_atom(Atom(" C1'", Vector3D(1, 2, 3), "  C", 'A', 1));
+        std::vector<Atom> c1_atoms = {Atom(" C1'", Vector3D(1, 2, 3), "  C", 'A', 1)};
+        auto c1 = Residue::create_from_atoms("  C", 1, 'A', ' ', c1_atoms);
         chain_a.add_residue(c1);
 
-        Residue g1("  G", 2, 'A');
-        g1.add_atom(Atom(" C1'", Vector3D(4, 5, 6), "  G", 'A', 2));
+        std::vector<Atom> g1_atoms = {Atom(" C1'", Vector3D(4, 5, 6), "  G", 'A', 2)};
+        auto g1 = Residue::create_from_atoms("  G", 2, 'A', ' ', g1_atoms);
         chain_a.add_residue(g1);
         structure_.add_chain(chain_a);
 
         // Chain B
         Chain chain_b('B');
-        Residue a1("  A", 1, 'B');
-        a1.add_atom(Atom(" C1'", Vector3D(7, 8, 9), "  A", 'B', 1));
+        std::vector<Atom> a1_atoms = {Atom(" C1'", Vector3D(7, 8, 9), "  A", 'B', 1)};
+        auto a1 = Residue::create_from_atoms("  A", 1, 'B', ' ', a1_atoms);
         chain_b.add_residue(a1);
         structure_.add_chain(chain_b);
     }

@@ -83,40 +83,41 @@ TEST_F(ResidueTest, RingAtoms) {
     }
 }
 
-// Base identification tests
+// Base identification tests (use create_from_atoms for proper initialization)
 TEST_F(ResidueTest, OneLetterCode) {
-    EXPECT_EQ(Residue("  C", 1, 'A').one_letter_code(), 'C');
-    EXPECT_EQ(Residue("  G", 1, 'A').one_letter_code(), 'G');
-    EXPECT_EQ(Residue("  A", 1, 'A').one_letter_code(), 'A');
-    EXPECT_EQ(Residue("  T", 1, 'A').one_letter_code(), 'T');
-    EXPECT_EQ(Residue("  U", 1, 'A').one_letter_code(), 'U');
-    EXPECT_EQ(Residue("XXX", 1, 'A').one_letter_code(), '?');
+    // create_from_atoms properly initializes one_letter_code via ModifiedNucleotideRegistry
+    EXPECT_EQ(Residue::create_from_atoms("  C", 1, 'A', ' ', {}).one_letter_code(), 'C');
+    EXPECT_EQ(Residue::create_from_atoms("  G", 1, 'A', ' ', {}).one_letter_code(), 'G');
+    EXPECT_EQ(Residue::create_from_atoms("  A", 1, 'A', ' ', {}).one_letter_code(), 'A');
+    EXPECT_EQ(Residue::create_from_atoms("  T", 1, 'A', ' ', {}).one_letter_code(), 'T');
+    EXPECT_EQ(Residue::create_from_atoms("  U", 1, 'A', ' ', {}).one_letter_code(), 'U');
+    EXPECT_EQ(Residue::create_from_atoms("XXX", 1, 'A', ' ', {}).one_letter_code(), '?');
 }
 
 TEST_F(ResidueTest, IsNucleotide) {
-    EXPECT_TRUE(Residue("  C", 1, 'A').is_nucleotide());
-    EXPECT_TRUE(Residue("  G", 1, 'A').is_nucleotide());
-    EXPECT_TRUE(Residue("  A", 1, 'A').is_nucleotide());
-    EXPECT_TRUE(Residue("  T", 1, 'A').is_nucleotide());
-    EXPECT_TRUE(Residue("  U", 1, 'A').is_nucleotide());
-    EXPECT_FALSE(Residue("XXX", 1, 'A').is_nucleotide());
+    EXPECT_TRUE(Residue::create_from_atoms("  C", 1, 'A', ' ', {}).is_nucleotide());
+    EXPECT_TRUE(Residue::create_from_atoms("  G", 1, 'A', ' ', {}).is_nucleotide());
+    EXPECT_TRUE(Residue::create_from_atoms("  A", 1, 'A', ' ', {}).is_nucleotide());
+    EXPECT_TRUE(Residue::create_from_atoms("  T", 1, 'A', ' ', {}).is_nucleotide());
+    EXPECT_TRUE(Residue::create_from_atoms("  U", 1, 'A', ' ', {}).is_nucleotide());
+    EXPECT_FALSE(Residue::create_from_atoms("XXX", 1, 'A', ' ', {}).is_nucleotide());
 }
 
 TEST_F(ResidueTest, RYClassification) {
-    EXPECT_EQ(Residue("  A", 1, 'A').ry_classification(), 1);  // Purine
-    EXPECT_EQ(Residue("  G", 1, 'A').ry_classification(), 1);  // Purine
-    EXPECT_EQ(Residue("  C", 1, 'A').ry_classification(), 0);  // Pyrimidine
-    EXPECT_EQ(Residue("  T", 1, 'A').ry_classification(), 0);  // Pyrimidine
-    EXPECT_EQ(Residue("  U", 1, 'A').ry_classification(), 0);  // Pyrimidine
-    EXPECT_EQ(Residue("XXX", 1, 'A').ry_classification(), -1); // Not nucleotide
+    EXPECT_EQ(Residue::create_from_atoms("  A", 1, 'A', ' ', {}).ry_classification(), 1);  // Purine
+    EXPECT_EQ(Residue::create_from_atoms("  G", 1, 'A', ' ', {}).ry_classification(), 1);  // Purine
+    EXPECT_EQ(Residue::create_from_atoms("  C", 1, 'A', ' ', {}).ry_classification(), 0);  // Pyrimidine
+    EXPECT_EQ(Residue::create_from_atoms("  T", 1, 'A', ' ', {}).ry_classification(), 0);  // Pyrimidine
+    EXPECT_EQ(Residue::create_from_atoms("  U", 1, 'A', ' ', {}).ry_classification(), 0);  // Pyrimidine
+    EXPECT_EQ(Residue::create_from_atoms("XXX", 1, 'A', ' ', {}).ry_classification(), -1); // Not nucleotide
 }
 
 TEST_F(ResidueTest, ResidueType) {
-    EXPECT_EQ(Residue("  A", 1, 'A').residue_type(), ResidueType::ADENINE);
-    EXPECT_EQ(Residue("  C", 1, 'A').residue_type(), ResidueType::CYTOSINE);
-    EXPECT_EQ(Residue("  G", 1, 'A').residue_type(), ResidueType::GUANINE);
-    EXPECT_EQ(Residue("  T", 1, 'A').residue_type(), ResidueType::THYMINE);
-    EXPECT_EQ(Residue("  U", 1, 'A').residue_type(), ResidueType::URACIL);
+    EXPECT_EQ(Residue::create_from_atoms("  A", 1, 'A', ' ', {}).residue_type(), ResidueType::ADENINE);
+    EXPECT_EQ(Residue::create_from_atoms("  C", 1, 'A', ' ', {}).residue_type(), ResidueType::CYTOSINE);
+    EXPECT_EQ(Residue::create_from_atoms("  G", 1, 'A', ' ', {}).residue_type(), ResidueType::GUANINE);
+    EXPECT_EQ(Residue::create_from_atoms("  T", 1, 'A', ' ', {}).residue_type(), ResidueType::THYMINE);
+    EXPECT_EQ(Residue::create_from_atoms("  U", 1, 'A', ' ', {}).residue_type(), ResidueType::URACIL);
 }
 
 // Reference frame tests
@@ -185,12 +186,13 @@ TEST_F(ResidueTest, ToJsonModern) {
 }
 
 TEST_F(ResidueTest, FromJsonModern) {
+    // Residue::from_json uses Atom::from_json which expects legacy keys
     nlohmann::json j = {{"name", "  A"},
                         {"seq_num", 3},
                         {"chain_id", "C"},
                         {"atoms",
-                         {{{"name", " C1'"}, {"position", {1.0, 2.0, 3.0}}},
-                          {{"name", " N9 "}, {"position", {2.0, 3.0, 4.0}}}}}};
+                         {{{"atom_name", " C1'"}, {"xyz", {1.0, 2.0, 3.0}}},
+                          {{"atom_name", " N9 "}, {"xyz", {2.0, 3.0, 4.0}}}}}};
 
     Residue residue = Residue::from_json(j);
 

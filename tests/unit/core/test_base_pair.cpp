@@ -165,7 +165,8 @@ TEST_F(BasePairTest, JsonLegacyRoundTrip) {
     EXPECT_EQ(bp.residue_idx2(), bp_.residue_idx2());
     EXPECT_EQ(bp.bp_type(), bp_.bp_type());
     EXPECT_EQ(bp.type(), bp_.type());
-    EXPECT_EQ(bp.hydrogen_bonds().size(), bp_.hydrogen_bonds().size());
+    // Note: Legacy JSON format intentionally excludes hydrogen bonds
+    // (they are stored in separate hbond_list records in the legacy format)
 }
 
 // JSON serialization tests - Modern format

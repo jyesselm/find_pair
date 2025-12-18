@@ -31,11 +31,12 @@ protected:
         file << "    2         # duplex\n";
         file << "   10         # number of base-pairs\n";
         file << "    1     1    # explicit bp numbering/hetero atoms\n";
-        file << "    1    20   0 #    1 | ....>A:...1_:[..C]C-----G[..G]:..20_:B<....   0.12   "
+        // Format when flags & 1: bp_num res1 res2 flag # comment
+        file << "    1     1    20   0 #    1 | ....>A:...1_:[..C]C-----G[..G]:..20_:B<....   0.12   "
                 "0.04   9.62   9.02  -4.32\n";
-        file << "    2    19   0 #    2 | ....>A:...2_:[.DC]C-----G[.DG]:..19_:B<....   0.18   "
+        file << "    2     2    19   0 #    2 | ....>A:...2_:[.DC]C-----G[.DG]:..19_:B<....   0.18   "
                 "0.06  10.72   8.93  -4.16\n";
-        file << "    3    18   0 #    3 | ....>A:...3_:[.DG]G-----C[.DC]:..18_:B<....   0.38   "
+        file << "    3     3    18   0 #    3 | ....>A:...3_:[.DG]G-----C[.DC]:..18_:B<....   0.38   "
                 "0.04  10.91   8.90  -3.99\n";
         file << "##### Base-pair criteria used:     4.00     0.00    15.00     2.50    65.00     "
                 "4.50     7.80 [ O N]\n";

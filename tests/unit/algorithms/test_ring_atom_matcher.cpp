@@ -19,36 +19,37 @@ class RingAtomMatcherTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // Create a test experimental residue (adenine)
-        experimental_residue_ = Residue("  A", 1, 'A');
-
-        // Add ring atoms for adenine (purine): 9 atoms
-        experimental_residue_.add_atom(Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", 'A', 1));
-        experimental_residue_.add_atom(Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", 'A', 1));
-        experimental_residue_.add_atom(Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", 'A', 1));
-        experimental_residue_.add_atom(Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", 'A', 1));
-        experimental_residue_.add_atom(Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", 'A', 1));
-        experimental_residue_.add_atom(Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", 'A', 1));
-        experimental_residue_.add_atom(Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", 'A', 1));
-        experimental_residue_.add_atom(Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", 'A', 1));
-        experimental_residue_.add_atom(Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", 'A', 1));
+        // Use create_from_atoms for proper residue type initialization
+        std::vector<Atom> exp_atoms = {
+            Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", 'A', 1),
+            Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", 'A', 1),
+            Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", 'A', 1),
+            Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", 'A', 1),
+            Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", 'A', 1),
+            Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", 'A', 1),
+            Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", 'A', 1),
+            Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", 'A', 1),
+            Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", 'A', 1)
+        };
+        experimental_residue_ = Residue::create_from_atoms("  A", 1, 'A', ' ', exp_atoms);
 
         // Create standard template structure (same atoms, different coordinates)
         standard_template_ = Structure("ATOMIC_A");
         Chain chain('A');
-        Residue template_residue("  A", 1, 'A');
-
-        // Standard template coordinates (from Atomic_A.pdb format)
-        template_residue.add_atom(Atom(" C1'", Vector3D(-2.479, 5.346, 0.000), "  A", 'A', 1));
-        template_residue.add_atom(Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", 'A', 1));
-        template_residue.add_atom(Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", 'A', 1));
-        template_residue.add_atom(Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", 'A', 1));
-        template_residue.add_atom(Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", 'A', 1));
-        template_residue.add_atom(Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", 'A', 1));
-        template_residue.add_atom(Atom(" N6 ", Vector3D(1.611, 0.909, 0.000), "  A", 'A', 1));
-        template_residue.add_atom(Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", 'A', 1));
-        template_residue.add_atom(Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", 'A', 1));
-        template_residue.add_atom(Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", 'A', 1));
-        template_residue.add_atom(Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", 'A', 1));
+        std::vector<Atom> template_atoms = {
+            Atom(" C1'", Vector3D(-2.479, 5.346, 0.000), "  A", 'A', 1),
+            Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", 'A', 1),
+            Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", 'A', 1),
+            Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", 'A', 1),
+            Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", 'A', 1),
+            Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", 'A', 1),
+            Atom(" N6 ", Vector3D(1.611, 0.909, 0.000), "  A", 'A', 1),
+            Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", 'A', 1),
+            Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", 'A', 1),
+            Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", 'A', 1),
+            Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", 'A', 1)
+        };
+        auto template_residue = Residue::create_from_atoms("  A", 1, 'A', ' ', template_atoms);
 
         chain.add_residue(template_residue);
         standard_template_.add_chain(chain);

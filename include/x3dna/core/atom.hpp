@@ -292,11 +292,12 @@ public:
     }
 
     /**
-     * @brief Create Atom from modern JSON format
+     * @brief Create Atom from JSON format (matches to_json() output)
      */
     [[nodiscard]] static Atom from_json(const nlohmann::json& j) {
-        std::string name = j.value("name", "");
-        geometry::Vector3D position = geometry::Vector3D::from_json(j["position"]);
+        std::string name = j.value("atom_name", "");
+        std::vector<double> xyz = j.value("xyz", std::vector<double>{0.0, 0.0, 0.0});
+        geometry::Vector3D position(xyz[0], xyz[1], xyz[2]);
 
         std::string residue_name = j.value("residue_name", "");
         std::string chain_str = j.value("chain_id", "");
