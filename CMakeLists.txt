@@ -66,6 +66,7 @@ add_library(x3dna
     src/x3dna/algorithms/helix/pair_geometry_helper.cpp
     src/x3dna/algorithms/helix/helix_context_calculator.cpp
     src/x3dna/algorithms/helix/strand_direction_checker.cpp
+    src/x3dna/algorithms/helix/five_to_three_orderer.cpp
     src/x3dna/config/config_manager.cpp
     src/x3dna/config/resource_locator.cpp
     src/x3dna/protocols/find_pair_protocol.cpp

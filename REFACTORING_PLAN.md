@@ -535,8 +535,9 @@ algorithms/validation/
 - `PairGeometryHelper` - Origin/z-axis/strand calculations (~60 lines)
 - `HelixContextCalculator` - Neighbor detection, endpoint finding, helix location (~320 lines)
 - `StrandDirectionChecker` - All wc_bporien, check_* functions (~450 lines)
+- `FiveToThreeOrderer` - Main ensure_five_to_three algorithm (~180 lines)
 
-**Remaining extraction**:
+**Extraction complete**:
 ```
 algorithms/helix/
 ├── backbone_linkage_checker.hpp/cpp ✅ DONE (~85 lines)
@@ -547,10 +548,10 @@ algorithms/helix/
 │   └── Neighbor detection, endpoint finding
 ├── strand_direction_checker.hpp/cpp ✅ DONE (~450 lines)
 │   └── All wc_bporien, check_* functions
-├── five_to_three_orderer.hpp/cpp (~200 lines)
+├── five_to_three_orderer.hpp/cpp ✅ DONE (~180 lines)
 │   └── Main ordering algorithm
-└── helix_organizer.hpp/cpp (~150 lines)
-    └── Facade composing all above
+└── helix_organizer.hpp/cpp (existing - can be refactored to facade)
+    └── Original implementation remains, new classes available for composition
 ```
 
 **Unit tests**:
