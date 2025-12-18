@@ -19,12 +19,16 @@
 | 4 | ✅ Done | GEMMI parser refactoring, ResidueKey struct |
 | 5 | ✅ Done (5.1) | FindPairConfig, AnalyzeConfig structs for protocol config |
 | 6 | ✅ Done | Early returns, named booleans applied |
-| 7 | ⬜ Not Started | Final cleanup |
+| 7 | ✅ Partial | Dead code check done, validation verified, unit tests fixed |
 
 ### Completed Commits (Recent)
 
 | Commit | Description |
 |--------|-------------|
+| `52b15bf` | docs: Update CLAUDE.md with unit test status and refactoring notes |
+| `b3ac81e` | Fix broken unit tests and improve JSON serialization consistency |
+| `590619e` | Refactor: Remove dead IO code and fix test resource discovery |
+| `93a5231` | Refactor: Remove redundant algorithm classes and dead code |
 | `a00ca8a` | Consolidate AnalyzeProtocol configuration into AnalyzeConfig struct |
 | `1d76adf` | Consolidate FindPairProtocol configuration into FindPairConfig struct |
 | `d4fb211` | Add update_direction_count helper in helix_organizer.cpp |
@@ -971,4 +975,5 @@ make release && make test && fp2-validate validate core --test-set 100
 
 **Current validation status**:
 - 100% pass rate on 100-PDB test set
-- 99.1% pass rate on fast set (3569/3602, 33 known failures in complex structures)
+- 99.3% pass rate on fast set (3578/3602, 24 known failures in complex structures)
+- 383/384 unit tests passing (only `cpptest` external GEMMI dependency fails)
