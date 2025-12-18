@@ -17,7 +17,7 @@
 | 2 | ⬜ Not Started | Builder patterns for core data structures |
 | 3 | ✅ Done | OverlapCalculator, 5 helix/* classes extracted (~1095 lines) |
 | 4 | ✅ Done | GEMMI parser refactoring, ResidueKey struct |
-| 5 | ⬜ Not Started | Protocol configuration consolidation |
+| 5 | ✅ Done (5.1) | FindPairConfig, AnalyzeConfig structs for protocol config |
 | 6 | ✅ Done | Early returns, named booleans applied |
 | 7 | ⬜ Not Started | Final cleanup |
 
@@ -25,6 +25,8 @@
 
 | Commit | Description |
 |--------|-------------|
+| `a00ca8a` | Consolidate AnalyzeProtocol configuration into AnalyzeConfig struct |
+| `1d76adf` | Consolidate FindPairProtocol configuration into FindPairConfig struct |
 | `d4fb211` | Add update_direction_count helper in helix_organizer.cpp |
 | `2e6b306` | Refactor helix_organizer.cpp with FrameAlignment helper |
 | `a157efb` | Fix GEMMI parser compatibility issues |
@@ -643,33 +645,22 @@ namespace format {
 
 ## Phase 5: Protocol and App Classes
 
-### Step 5.1: Consolidate Protocol Configuration
+### Step 5.1: Consolidate Protocol Configuration ✅ DONE
 **Problem**: 10+ setter methods in each protocol class
+**Status**: Completed
 
-**Solution**: Builder pattern or config struct
-```cpp
-// BEFORE (in find_pair_protocol.hpp)
-void set_legacy_mode(bool);
-void set_split_output(bool);
-void set_output_dir(const std::string&);
-// ... 10 more setters
+**Completed work**:
+- Created `FindPairConfig` struct in `find_pair_protocol.hpp`
+  - Consolidates: single_strand_mode, find_all_pairs, divide_helices, legacy_mode, output_dir, output_stage
+- Created `AnalyzeConfig` struct in `analyze_protocol.hpp`
+  - Consolidates: calculate_torsions, simple_parameters, circular_structure, step_start, step_size, legacy_mode
+- Both protocols now have:
+  - Constructor taking config struct (preferred)
+  - Legacy constructor for backward compatibility
+  - `config()` accessor returning mutable/const reference
+  - Individual setters that delegate to config_ (backward compat)
 
-// AFTER
-struct FindPairConfig {
-    bool legacy_mode = false;
-    bool split_output = false;
-    std::string output_dir = "output";
-    // ... all options with defaults
-
-    // Validation
-    [[nodiscard]] bool is_valid() const;
-};
-
-class FindPairProtocol {
-public:
-    explicit FindPairProtocol(FindPairConfig config);
-};
-```
+**Commits**: `1d76adf`, `a00ca8a`
 
 ### Step 5.2: Refactor App Main Functions
 **Problem**: `find_pair_app.cpp` main() is 127 lines with deep nesting
