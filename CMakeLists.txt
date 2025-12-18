@@ -25,6 +25,20 @@ endif()
 # Include directories
 include_directories(include)
 
+# Generate parameters header from JSON (compile-time constants)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set(PARAMS_JSON ${CMAKE_SOURCE_DIR}/resources/config/parameters.json)
+set(PARAMS_HPP ${CMAKE_SOURCE_DIR}/include/x3dna/config/parameters_generated.hpp)
+set(PARAMS_SCRIPT ${CMAKE_SOURCE_DIR}/scripts/generate_parameters.py)
+
+add_custom_command(
+    OUTPUT ${PARAMS_HPP}
+    COMMAND ${Python3_EXECUTABLE} ${PARAMS_SCRIPT} ${PARAMS_JSON} ${PARAMS_HPP}
+    DEPENDS ${PARAMS_JSON} ${PARAMS_SCRIPT}
+    COMMENT "Generating parameters_generated.hpp from parameters.json"
+)
+add_custom_target(generate_parameters DEPENDS ${PARAMS_HPP})
+
 # Dependencies (must be included before tests)
 include(cmake/Dependencies.cmake)
 
@@ -70,6 +84,9 @@ target_include_directories(x3dna PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
+
+# Ensure parameters header is generated before compiling
+add_dependencies(x3dna generate_parameters)
 
 # Link dependencies to library
 target_link_libraries(x3dna PUBLIC
