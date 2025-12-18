@@ -117,6 +117,15 @@ python3 scripts/rebuild_json.py regenerate 1EHZ 2BNA                       # Spe
 
 **Tolerance settings**: Step comparison uses 5e-4 tolerance in `step_comparison.py` to account for floating point variations. Verbose reporter uses 1e-4 tolerance for display.
 
+**C++ Unit Tests:**
+
+| Category | Pass Rate | Notes |
+|----------|-----------|-------|
+| Unit Tests | 383/384 (99.7%) | 1 external GEMMI test not built |
+| Integration Tests | ~92 skipped | Require real PDB files |
+
+Run with `make test` or `ctest --test-dir build`.
+
 ### Large Structure Validation (December 2024)
 
 **Key Finding**: Step parameter calculations are **correct**. Failures in large structures are due to different helix organization, not calculation errors.
@@ -179,6 +188,16 @@ Analysis of 1VQ5 (ribosome, 1535 pairs, 1157 steps):
 - `BasePairFinder` - Greedy pair finding with mutual selection
 - `BasePairValidator` - Geometric checks, H-bonds, quality scores
 - `ParameterCalculator` - Step and helical parameter calculation
+- `HelixOrganizer` - Helix organization and step ordering
+- `HydrogenBondFinder` - H-bond detection with donor/acceptor validation
+
+### Recent Refactoring (December 2024)
+
+Removed ~1,700 LOC of dead/redundant code:
+- HelixDetector (redundant with HelixOrganizer)
+- HydrogenBondCounter (consolidated into HydrogenBondFinder)
+- Helix submodule files (extracted but never integrated)
+- ResidueIndexFixer (unused)
 
 ## Coding Guidelines (from .cursorrules)
 
