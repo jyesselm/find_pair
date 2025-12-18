@@ -21,6 +21,22 @@ namespace x3dna {
 namespace protocols {
 
 /**
+ * @struct FindPairConfig
+ * @brief Configuration options for FindPairProtocol
+ *
+ * Consolidates all protocol options into a single struct for cleaner
+ * initialization and reduced setter boilerplate.
+ */
+struct FindPairConfig {
+    bool single_strand_mode = false;   ///< Process single strand only
+    bool find_all_pairs = false;       ///< Find all potential pairs
+    bool divide_helices = false;       ///< Divide structures into helices
+    bool legacy_mode = false;          ///< Enable legacy compatibility mode
+    std::filesystem::path output_dir;  ///< Output directory for JSON files
+    std::string output_stage = "all";  ///< Output stage: "frames", "distances", "hbonds", etc.
+};
+
+/**
  * @class FindPairProtocol
  * @brief Orchestrates the find_pair workflow
  *
@@ -35,9 +51,17 @@ namespace protocols {
 class FindPairProtocol : public ProtocolBase {
 public:
     /**
-     * @brief Constructor
+     * @brief Constructor with config struct (preferred)
      * @param template_path Path to standard base template directory
-     * @param output_dir Output directory for JSON files (optional, for Phase 2 refactor)
+     * @param config Protocol configuration options
+     */
+    explicit FindPairProtocol(const std::filesystem::path& template_path,
+                              const FindPairConfig& config);
+
+    /**
+     * @brief Constructor (legacy - for backward compatibility)
+     * @param template_path Path to standard base template directory
+     * @param output_dir Output directory for JSON files (optional)
      */
     explicit FindPairProtocol(const std::filesystem::path& template_path = "data/templates",
                               const std::filesystem::path& output_dir = "");
@@ -48,92 +72,35 @@ public:
      */
     void execute(core::Structure& structure) override;
 
-    // Options
+    // Configuration
     /**
-     * @brief Set single strand mode
+     * @brief Get configuration (const)
      */
-    void set_single_strand_mode(bool value) {
-        single_strand_mode_ = value;
-    }
+    [[nodiscard]] const FindPairConfig& config() const { return config_; }
 
     /**
-     * @brief Get single strand mode
+     * @brief Get configuration (mutable, for modification)
      */
-    bool single_strand_mode() const {
-        return single_strand_mode_;
-    }
+    FindPairConfig& config() { return config_; }
 
-    /**
-     * @brief Set find all pairs mode
-     */
-    void set_find_all_pairs(bool value) {
-        find_all_pairs_ = value;
-    }
+    // Individual setters (for backward compatibility)
+    void set_single_strand_mode(bool value) { config_.single_strand_mode = value; }
+    [[nodiscard]] bool single_strand_mode() const { return config_.single_strand_mode; }
 
-    /**
-     * @brief Get find all pairs mode
-     */
-    bool find_all_pairs() const {
-        return find_all_pairs_;
-    }
+    void set_find_all_pairs(bool value) { config_.find_all_pairs = value; }
+    [[nodiscard]] bool find_all_pairs() const { return config_.find_all_pairs; }
 
-    /**
-     * @brief Set divide helices mode
-     */
-    void set_divide_helices(bool value) {
-        divide_helices_ = value;
-    }
+    void set_divide_helices(bool value) { config_.divide_helices = value; }
+    [[nodiscard]] bool divide_helices() const { return config_.divide_helices; }
 
-    /**
-     * @brief Get divide helices mode
-     */
-    bool divide_helices() const {
-        return divide_helices_;
-    }
+    void set_legacy_mode(bool value) { config_.legacy_mode = value; }
+    [[nodiscard]] bool legacy_mode() const { return config_.legacy_mode; }
 
-    /**
-     * @brief Set legacy mode (for exact compatibility)
-     */
-    void set_legacy_mode(bool value) {
-        legacy_mode_ = value;
-    }
+    void set_output_dir(const std::filesystem::path& dir) { config_.output_dir = dir; }
+    [[nodiscard]] const std::filesystem::path& output_dir() const { return config_.output_dir; }
 
-    /**
-     * @brief Get legacy mode
-     */
-    bool legacy_mode() const {
-        return legacy_mode_;
-    }
-
-    /**
-     * @brief Set output directory for JSON files
-     * @param output_dir Directory where JSON files will be written
-     */
-    void set_output_dir(const std::filesystem::path& output_dir) {
-        output_dir_ = output_dir;
-    }
-
-    /**
-     * @brief Get output directory
-     */
-    const std::filesystem::path& output_dir() const {
-        return output_dir_;
-    }
-
-    /**
-     * @brief Set output stage (controls which JSON to write)
-     * @param stage Stage name: "frames", "distances", "hbonds", "validation", "selection", "all"
-     */
-    void set_output_stage(const std::string& stage) {
-        output_stage_ = stage;
-    }
-
-    /**
-     * @brief Get output stage
-     */
-    const std::string& output_stage() const {
-        return output_stage_;
-    }
+    void set_output_stage(const std::string& stage) { config_.output_stage = stage; }
+    [[nodiscard]] const std::string& output_stage() const { return config_.output_stage; }
 
     /**
      * @brief Set JSON writer for recording results
@@ -207,23 +174,14 @@ private:
     algorithms::BasePairFinder pair_finder_;
     algorithms::HelixDetector helix_detector_;
 
+    // Configuration (consolidates all options)
+    FindPairConfig config_;
+
     // Results - helices
     std::vector<algorithms::Helix> helices_;
 
-    // Options
-    bool single_strand_mode_ = false;
-    bool find_all_pairs_ = false;
-    bool divide_helices_ = false;
-    bool legacy_mode_ = false;
-
     // Results
     std::vector<core::BasePair> base_pairs_;
-
-    // Output directory for JSON files (Phase 2 refactor)
-    std::filesystem::path output_dir_;
-
-    // Output stage (controls which JSON to write)
-    std::string output_stage_ = "all";
 
     // JSON writer (optional, for recording)
     // TODO: Phase 4 - Remove JsonWriter once protocols write their own JSON

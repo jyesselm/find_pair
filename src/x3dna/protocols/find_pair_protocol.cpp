@@ -14,29 +14,25 @@
 namespace x3dna {
 namespace protocols {
 
-FindPairProtocol::FindPairProtocol(const std::filesystem::path& template_path, const std::filesystem::path& output_dir)
-    : frame_calculator_(template_path), pair_finder_(algorithms::ValidationParameters::defaults()),
-      output_dir_(output_dir) {}
+FindPairProtocol::FindPairProtocol(const std::filesystem::path& template_path,
+                                   const FindPairConfig& config)
+    : frame_calculator_(template_path),
+      pair_finder_(algorithms::ValidationParameters::defaults()),
+      config_(config) {}
+
+FindPairProtocol::FindPairProtocol(const std::filesystem::path& template_path,
+                                   const std::filesystem::path& output_dir)
+    : frame_calculator_(template_path),
+      pair_finder_(algorithms::ValidationParameters::defaults()) {
+    config_.output_dir = output_dir;
+}
 
 void FindPairProtocol::execute(core::Structure& structure) {
-    // Check legacy mode from config if not explicitly set
-    if (!legacy_mode_ && config_) {
-        legacy_mode_ = config_->legacy_mode();
-    }
-
-    // Set legacy mode on frame calculator if needed
-    // (Note: BaseFrameCalculator may have its own legacy mode support)
-    // frame_calculator_.set_legacy_mode(legacy_mode_);
-
     // Step 1: Calculate frames for all residues
     calculate_frames(structure);
 
-    // Write frames JSON if requested
-    // Note: pdb_file should be passed separately or constructed from PDB ID
-    // For now, construct from PDB ID (caller should use write_frames_json directly)
-
     // Step 2: Find base pairs (only if not just frames stage)
-    if (output_stage_ != "frames") {
+    if (config_.output_stage != "frames") {
         find_pairs(structure);
     }
 
@@ -76,32 +72,10 @@ void FindPairProtocol::calculate_frames(core::Structure& structure) {
 
 void FindPairProtocol::find_pairs(core::Structure& structure) {
     // Set finding strategy based on options
-    if (find_all_pairs_) {
+    if (config_.find_all_pairs) {
         pair_finder_.set_strategy(algorithms::PairFindingStrategy::ALL_PAIRS);
     } else {
         pair_finder_.set_strategy(algorithms::PairFindingStrategy::BEST_PAIR);
-    }
-
-    // Update validation parameters from config if available
-    if (config_) {
-        const auto& thresholds = config_->thresholds();
-        algorithms::ValidationParameters params;
-        params.min_dorg = thresholds.min_dorg;
-        params.max_dorg = thresholds.max_dorg;
-        params.min_dv = thresholds.min_dv;
-        params.max_dv = thresholds.max_dv;
-        params.min_dNN = thresholds.min_dNN;
-        params.max_dNN = thresholds.max_dNN;
-        params.min_plane_angle = thresholds.min_plane_angle;
-        params.max_plane_angle = thresholds.max_plane_angle;
-        params.min_base_hb = thresholds.min_base_hb;
-        params.hb_lower = thresholds.hb_lower;
-        params.hb_dist1 = thresholds.hb_dist1;
-        // Note: hb_dist2 is not part of ValidationParameters
-        // It's used in hydrogen bond conflict resolution but not in validation
-        params.hb_atoms = thresholds.hb_atoms;
-        params.overlap_threshold = thresholds.overlap_threshold;
-        pair_finder_.set_parameters(params);
     }
 
     // Find pairs (with JSON recording if writer provided)
@@ -110,10 +84,6 @@ void FindPairProtocol::find_pairs(core::Structure& structure) {
     } else {
         base_pairs_ = pair_finder_.find_pairs(structure);
     }
-
-    // In legacy mode, we may need to process pairs in legacy order
-    // For now, the BasePairFinder handles this internally if needed
-    // Future: May need to reorder pairs here for exact legacy match
 }
 
 void FindPairProtocol::detect_helices(core::Structure& /* structure */) {
@@ -129,7 +99,7 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure, const std
     writer.record_residue_indices(structure);
 
     // Set legacy mode on frame calculator
-    frame_calculator_.set_legacy_mode(legacy_mode_);
+    frame_calculator_.set_legacy_mode(config_.legacy_mode);
 
     // Record frame calculations for each residue in legacy order
     size_t frames_recorded = 0;

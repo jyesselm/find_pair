@@ -15,7 +15,7 @@
 | 0 | ✅ Done | ResourceLocator, init API, CMake export, EMBEDDING.md |
 | 1 | ✅ Mostly Done | Named constants, [[nodiscard]] added to most headers |
 | 2 | ⬜ Not Started | Builder patterns for core data structures |
-| 3 | 🔶 Partial | OverlapCalculator extracted, helix_organizer helpers added |
+| 3 | ✅ Done | OverlapCalculator, 5 helix/* classes extracted (~1095 lines) |
 | 4 | ✅ Done | GEMMI parser refactoring, ResidueKey struct |
 | 5 | ⬜ Not Started | Protocol configuration consolidation |
 | 6 | ✅ Done | Early returns, named booleans applied |

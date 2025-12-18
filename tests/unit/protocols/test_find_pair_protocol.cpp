@@ -115,37 +115,20 @@ TEST_F(FindPairProtocolTest, LegacyMode) {
 }
 
 // Configuration tests
-TEST_F(FindPairProtocolTest, SetConfigManager) {
-    auto& config = ConfigManager::instance();
-    protocol_->set_config_manager(config);
+TEST_F(FindPairProtocolTest, ConfigAccess) {
+    // Test that config() returns a reference to FindPairConfig
+    auto& config = protocol_->config();
 
-    EXPECT_EQ(&protocol_->config(), &config);
-}
+    // Modify through config reference
+    config.legacy_mode = true;
+    EXPECT_TRUE(protocol_->legacy_mode());
 
-TEST_F(FindPairProtocolTest, ParameterMapping) {
-    auto& config = ConfigManager::instance();
-    config.set_defaults();
-    protocol_->set_config_manager(config);
+    config.find_all_pairs = true;
+    EXPECT_TRUE(protocol_->find_all_pairs());
 
-    // Modify config parameters
-    config.thresholds().max_dorg = 20.0;
-    config.thresholds().min_base_hb = 2;
-    config.thresholds().hb_lower = 2.0;
-
-    // Execute protocol (should use updated parameters)
-    // Note: This will fail if templates don't exist, but we can test the setup
-    try {
-        protocol_->execute(structure_);
-
-        // Verify parameters were used (check pair finder)
-        // The pair finder should have been configured with the new parameters
-        // This is an indirect test - if execute succeeds, parameters were set
-        EXPECT_GE(protocol_->base_pairs().size(), 0);
-    } catch (const std::exception& e) {
-        // If templates don't exist, that's okay for unit tests
-        // We're testing the protocol setup, not the full execution
-        GTEST_SKIP() << "Templates not available: " << e.what();
-    }
+    // Verify const access works
+    const auto& const_protocol = *protocol_;
+    EXPECT_TRUE(const_protocol.config().legacy_mode);
 }
 
 // Base pairs access tests
@@ -183,21 +166,24 @@ TEST_F(FindPairProtocolTest, SetJsonWriter) {
     EXPECT_NO_THROW(protocol_->set_json_writer(nullptr));
 }
 
-// Integration with ConfigManager
-TEST_F(FindPairProtocolTest, ConfigManagerIntegration) {
-    auto& config = ConfigManager::instance();
-    config.set_defaults();
+// Test config struct initialization
+TEST_F(FindPairProtocolTest, ConfigStructInitialization) {
+    // Test creating protocol with config struct
+    FindPairConfig config;
+    config.legacy_mode = true;
+    config.find_all_pairs = true;
+    config.output_stage = "frames";
 
-    // Set custom parameters
-    config.thresholds().max_dorg = 18.0;
-    config.thresholds().min_base_hb = 1;
-    config.set_legacy_mode(true);
+    std::filesystem::path template_path = "data/templates";
+    if (!std::filesystem::exists(template_path)) {
+        template_path = "../../data/templates";
+    }
 
-    protocol_->set_config_manager(config);
+    FindPairProtocol configured_protocol(template_path, config);
 
-    // Protocol should inherit legacy mode from config if not explicitly set
-    // (This is tested in the implementation, not directly here)
-    EXPECT_TRUE(config.legacy_mode());
+    EXPECT_TRUE(configured_protocol.legacy_mode());
+    EXPECT_TRUE(configured_protocol.find_all_pairs());
+    EXPECT_EQ(configured_protocol.output_stage(), "frames");
 }
 
 // Multiple executions
