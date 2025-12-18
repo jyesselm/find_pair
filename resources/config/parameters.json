@@ -1,0 +1,78 @@
+{
+  "_description": "X3DNA parameter configuration - single source of truth for all constants",
+  "_version": "1.0.0",
+
+  "validation": {
+    "_description": "Base pair validation thresholds",
+    "distance": {
+      "min_dorg": 0.0,
+      "max_dorg": 15.0,
+      "min_dv": 0.0,
+      "max_dv": 2.5,
+      "min_dNN": 4.5,
+      "max_dNN": 1e18
+    },
+    "angle": {
+      "min_plane_angle": 0.0,
+      "max_plane_angle": 65.0
+    },
+    "overlap_threshold": 0.01
+  },
+
+  "hydrogen_bond": {
+    "_description": "Hydrogen bond detection and validation",
+    "detection": {
+      "hb_lower": 1.8,
+      "hb_dist1": 4.0,
+      "hb_dist2": 0.0,
+      "hb_atoms": ".O.N"
+    },
+    "thresholds": {
+      "good_min": 2.5,
+      "good_max": 3.5,
+      "filter_max": 3.6,
+      "nonstandard_min": 2.6,
+      "nonstandard_max": 3.2,
+      "default_dist2": 4.5
+    },
+    "min_base_hb": 1,
+    "linkage_conflict": 18
+  },
+
+  "quality_score": {
+    "_description": "Quality score calculation weights",
+    "d_v_weight": 2.0,
+    "plane_angle_divisor": 20.0,
+    "wc_bonus": 2.0
+  },
+
+  "nucleotide": {
+    "_description": "Nucleotide identification",
+    "rmsd_cutoff": 0.2618,
+    "dnn_fallback": 1e10,
+    "bond_distance": 2.0,
+    "min_atom_distance": 0.1
+  },
+
+  "helix": {
+    "_description": "Helix organization parameters",
+    "helix_break": 7.8,
+    "end_stack_xang": 125.0,
+    "std_curved": 0.6
+  },
+
+  "water": {
+    "_description": "Water/hydration parameters",
+    "water_dist": 3.2,
+    "water_dlow": 0.0,
+    "water_atoms": ".O.N"
+  },
+
+  "misc": {
+    "_description": "Miscellaneous parameters",
+    "alt_list": "A1",
+    "o3p_dist": 4.5,
+    "xbig": 1e18,
+    "gamut": 5e8
+  }
+}
