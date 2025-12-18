@@ -4,6 +4,7 @@
  */
 
 #include <x3dna/algorithms/base_frame_calculator.hpp>
+#include <x3dna/algorithms/validation_constants.hpp>
 #include <stdexcept>
 #include <cmath>
 #include <algorithm>
@@ -291,7 +292,7 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Res
     RmsdCheckResult rmsd_check;
     std::optional<double> rmsd_result;
     bool found_purine_atoms = false;
-    constexpr double RMSD_THRESHOLD = 0.2618;
+    constexpr double RMSD_THRESHOLD = validation_constants::NT_RMSD_CUTOFF;
 
     if (has_ring_atoms) {
         rmsd_check = check_nt_type_by_rmsd(residue);

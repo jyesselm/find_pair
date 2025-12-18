@@ -6,6 +6,7 @@
 #include <x3dna/algorithms/hydrogen_bond_finder.hpp>
 #include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.hpp>
 #include <x3dna/algorithms/base_pair_validator.hpp>
+#include <x3dna/algorithms/validation_constants.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <algorithm>
@@ -63,8 +64,8 @@ void HydrogenBondFinder::count_simple(const core::Residue& res1, const core::Res
 
 std::vector<HydrogenBondResult> HydrogenBondFinder::find_hydrogen_bonds(const Residue& res1, const Residue& res2,
                                                                         double hb_lower, double hb_dist1) {
-    // Default hb_dist2 = 4.5 (typical value, can be overridden)
-    auto detailed = find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1, 4.5);
+    auto detailed = find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1,
+                                                  validation_constants::HB_DEFAULT_DIST2);
     return detailed.final_hbonds;
 }
 
@@ -132,8 +133,11 @@ DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(const Resid
         if (hbond.type != ' ') {
             result.final_hbonds.push_back(hbond);
 
-            // Count good H-bonds (type='-' and distance in [2.5, 3.5])
-            if (hbond.type == '-' && hbond.distance >= 2.5 && hbond.distance <= 3.5) {
+            // Count good H-bonds (type='-' and distance in valid range)
+            const bool is_good_hbond = hbond.type == '-' &&
+                                       hbond.distance >= validation_constants::HB_GOOD_MIN &&
+                                       hbond.distance <= validation_constants::HB_GOOD_MAX;
+            if (is_good_hbond) {
                 result.num_good_hb++;
             }
         }
@@ -303,29 +307,34 @@ void HydrogenBondFinder::validate_hbonds(std::vector<HydrogenBondResult>& hbonds
         // Restore absolute distance (matches legacy line 3998: hb_dist[k] = fabs(hb_dist[k]))
         hbond.distance = std::abs(hbond.distance);
 
-        if (hbond.type == '-' && hbond.distance >= 2.5 && hbond.distance <= 3.5) {
+        const bool is_good = hbond.type == '-' &&
+                             hbond.distance >= validation_constants::HB_GOOD_MIN &&
+                             hbond.distance <= validation_constants::HB_GOOD_MAX;
+        if (is_good) {
             num_good_hb++;
         }
     }
 
-    // Second pass: apply filtering if there are good H-bonds (matches legacy lines 4002-4011)
+    // Second pass: apply filtering if there are good H-bonds
     if (num_good_hb > 0) {
         for (auto& hbond : hbonds) {
-            if (hbond.type == ' ') {
-                continue; // Already invalid
-            }
+            if (hbond.type == ' ') continue;
 
-            // Filter out H-bonds with distance > 3.6 (matches legacy line 4006)
-            if (hbond.distance > 3.6) {
+            // Filter out H-bonds with distance exceeding max
+            if (hbond.distance > validation_constants::HB_FILTER_MAX) {
                 hbond.type = ' ';
                 continue;
             }
 
-            // Filter out non-standard H-bonds with lkg_type != 18 and distance outside [2.6, 3.2]
-            // (matches legacy lines 4007-4008)
-            if (hbond.type == '*' && hbond.linkage_type != 18 && (hbond.distance < 2.6 || hbond.distance > 3.2)) {
+            // Filter out non-standard H-bonds outside valid range
+            const bool is_nonstandard_invalid =
+                hbond.type == '*' &&
+                hbond.linkage_type != validation_constants::HB_LINKAGE_CONFLICT &&
+                (hbond.distance < validation_constants::HB_NONSTANDARD_MIN ||
+                 hbond.distance > validation_constants::HB_NONSTANDARD_MAX);
+
+            if (is_nonstandard_invalid) {
                 hbond.type = ' ';
-                continue;
             }
         }
     }

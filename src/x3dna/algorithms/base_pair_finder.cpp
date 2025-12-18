@@ -43,7 +43,7 @@ double BasePairFinder::calculate_adjusted_score(const ValidationResult& result, 
 
     // Watson-Crick pairs get a bonus (lower is better)
     if (bp_type_id == 2) {
-        score -= 2.0;
+        score -= validation_constants::WC_QUALITY_BONUS;
     }
     return score;
 }
@@ -324,9 +324,9 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
         // Calculate bp_type_id using check_wc_wobble_pair logic
         int bp_type_id = calculate_bp_type_id(res1, res2, result, adjusted_quality_score);
 
-        // If bp_type_id == 2, subtract 2.0 from quality_score (matches legacy)
+        // If bp_type_id == 2, subtract WC bonus from quality_score (matches legacy)
         if (bp_type_id == 2) {
-            rtn_val[4] -= 2.0;
+            rtn_val[4] -= validation_constants::WC_QUALITY_BONUS;
         }
 
         // Only record pair_validation for valid pairs when i < j to avoid duplicates
@@ -411,8 +411,8 @@ constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
 constexpr std::array<const char*, 9> RING_ATOM_NAMES = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
                                                         " C5 ", " N7 ", " C8 ", " N9 "};
 
-// NT_CUTOFF from legacy (0.2618)
-constexpr double NT_CUTOFF = 0.2618;
+// Use constant from validation_constants.hpp
+using validation_constants::NT_RMSD_CUTOFF;
 
 /**
  * @brief Check nucleotide type by RMSD (matches legacy check_nt_type_by_rmsd)
@@ -521,7 +521,7 @@ bool passes_rmsd_nucleotide_check(const Residue& residue) {
     if (total_ring_atoms < 3) return false;
 
     auto rmsd = check_nt_type_by_rmsd(residue);
-    return rmsd.has_value() && *rmsd <= NT_CUTOFF;
+    return rmsd.has_value() && *rmsd <= NT_RMSD_CUTOFF;
 }
 
 } // namespace

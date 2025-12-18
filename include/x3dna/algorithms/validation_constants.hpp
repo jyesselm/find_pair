@@ -24,6 +24,21 @@ constexpr double MIN_ATOM_DISTANCE = 0.1; // Min distance to exclude same-atom m
 constexpr double XBIG = 1.0e+18; // Very large number for bounds
 constexpr double GAMUT = 5.0e8;  // Range for numeric stability
 
+// Hydrogen bond distance thresholds (from legacy cmn_fncs.c)
+constexpr double HB_DEFAULT_DIST2 = 4.5;   // Default hb_dist2 for find_hydrogen_bonds
+constexpr double HB_GOOD_MIN = 2.5;        // Minimum distance for "good" H-bond
+constexpr double HB_GOOD_MAX = 3.5;        // Maximum distance for "good" H-bond
+constexpr double HB_FILTER_MAX = 3.6;      // Max distance before filtering
+constexpr double HB_NONSTANDARD_MIN = 2.6; // Min distance for non-standard H-bond filtering
+constexpr double HB_NONSTANDARD_MAX = 3.2; // Max distance for non-standard H-bond filtering
+constexpr int HB_LINKAGE_CONFLICT = 18;    // Linkage type indicating conflict pair
+
+// Nucleotide RMSD threshold (from legacy residue_ident)
+constexpr double NT_RMSD_CUTOFF = 0.2618;  // RMSD threshold for nucleotide identification
+
+// Watson-Crick bonus (from legacy find_bestpair)
+constexpr double WC_QUALITY_BONUS = 2.0;   // Bonus subtracted from quality score for WC pairs
+
 } // namespace validation_constants
 } // namespace algorithms
 } // namespace x3dna
