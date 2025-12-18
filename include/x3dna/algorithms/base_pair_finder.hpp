@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <x3dna/common_types.hpp>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/base_pair.hpp>
 #include <x3dna/algorithms/base_pair_validator.hpp>
@@ -20,15 +21,7 @@
 namespace x3dna {
 namespace algorithms {
 
-/**
- * @enum PairFindingStrategy
- * @brief Strategy for finding base pairs
- */
-enum class PairFindingStrategy {
-    BEST_PAIR,     // Greedy mutual best match (matches legacy find_bestpair)
-    ALL_PAIRS,     // Exhaustive search (matches legacy all_pairs)
-    DISTANCE_BASED // Simple distance-based
-};
+// PairFindingStrategy is defined in common_types.hpp
 
 /**
  * @class BasePairFinder

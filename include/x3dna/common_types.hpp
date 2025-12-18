@@ -1,6 +1,10 @@
 /**
  * @file common_types.hpp
  * @brief Common types and enumerations for X3DNA
+ *
+ * Note: Core types (ResidueType, BasePairType) are defined in their
+ * respective headers (residue.hpp, base_pair.hpp). This file only
+ * contains types that aren't tied to a specific class.
  */
 
 #pragma once
@@ -9,28 +13,6 @@
 #include <string>
 
 namespace x3dna {
-namespace core {
-
-/**
- * @enum ResidueType
- * @brief Type of residue
- */
-enum class ResidueType { ADENINE, CYTOSINE, GUANINE, THYMINE, URACIL, AMINO_ACID, OTHER };
-
-/**
- * @enum PurinePyrimidine
- * @brief Purine/Pyrimidine classification
- */
-enum class PurinePyrimidine { PURINE = 1, PYRIMIDINE = 0, NOT_BASE = -1 };
-
-/**
- * @enum BasePairType
- * @brief Type of base pair
- */
-enum class BasePairType { WATSON_CRICK, WOBBLE, HOOGSTEEN, REVERSE_HOOGSTEEN, UNKNOWN };
-
-} // namespace core
-
 namespace algorithms {
 
 /**
