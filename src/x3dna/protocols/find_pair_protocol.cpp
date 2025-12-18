@@ -81,11 +81,6 @@ void FindPairProtocol::find_pairs(core::Structure& structure) {
     }
 }
 
-void FindPairProtocol::detect_helices(core::Structure& /* structure */) {
-    // Detect helices from base pairs
-    helices_ = helix_detector_.detect_helices(base_pairs_);
-}
-
 size_t FindPairProtocol::write_frames_json(core::Structure& structure, const std::filesystem::path& pdb_file,
                                            const std::filesystem::path& output_dir) {
     io::JsonWriter writer(pdb_file);
@@ -185,11 +180,6 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure, const std
     writer.write_split_files(output_dir, true);
 
     return frames_recorded;
-}
-
-void FindPairProtocol::reorder_pairs(core::Structure& /* structure */) {
-    // Reorder base pairs to 5'→3' orientation
-    helix_detector_.reorder_base_pairs(base_pairs_);
 }
 
 } // namespace protocols

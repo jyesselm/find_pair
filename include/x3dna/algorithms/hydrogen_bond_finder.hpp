@@ -54,6 +54,22 @@ struct DetailedHBondResult {
 class HydrogenBondFinder {
 public:
     /**
+     * @brief Count H-bonds simply (no validation) - matches legacy check_pair
+     * @param res1 First residue
+     * @param res2 Second residue
+     * @param hb_lower Lower distance limit
+     * @param hb_dist1 Upper distance limit
+     * @param hb_atoms H-bond atom list (default ".O.N")
+     * @param num_base_hb Output: count of base-base H-bonds
+     * @param num_o2_hb Output: count of O2' H-bonds
+     *
+     * Matches legacy check_pair H-bond counting (lines 4605-4614 in cmn_fncs.c)
+     * Counts H-bonds BEFORE validation - this is the key difference from validated counting
+     */
+    static void count_simple(const core::Residue& res1, const core::Residue& res2, double hb_lower, double hb_dist1,
+                             const std::string& hb_atoms, int& num_base_hb, int& num_o2_hb);
+
+    /**
      * @brief Find hydrogen bonds between two residues
      * @param res1 First residue
      * @param res2 Second residue

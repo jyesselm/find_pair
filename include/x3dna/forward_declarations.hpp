@@ -41,7 +41,7 @@ namespace algorithms {
 class BaseFrameCalculator;
 class BasePairFinder;
 class ParameterCalculator;
-class HelixDetector;
+class HelixOrganizer;
 class HydrogenBondValidator;
 class StandardBaseTemplates;
 class RingAtomMatcher;

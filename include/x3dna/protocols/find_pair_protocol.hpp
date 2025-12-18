@@ -11,7 +11,6 @@
 #include <x3dna/core/structure_legacy_order.hpp>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/algorithms/base_pair_finder.hpp>
-#include <x3dna/algorithms/helix_detector.hpp>
 #include <x3dna/io/json_writer.hpp>
 #include <memory>
 #include <vector>
@@ -43,9 +42,9 @@ struct FindPairConfig {
  * This protocol:
  * 1. Calculates reference frames for all residues
  * 2. Finds base pairs using specified strategy
- * 3. Detects helices (when HelixDetector is available)
- * 4. Records results to JSON (if writer provided)
+ * 3. Records results to JSON (if writer provided)
  *
+ * Helix organization is handled separately by HelixOrganizer.
  * Supports legacy mode for exact compatibility with legacy code.
  */
 class FindPairProtocol : public ProtocolBase {
@@ -145,13 +144,6 @@ public:
     }
 
     /**
-     * @brief Get detected helices
-     */
-    const std::vector<algorithms::Helix>& helices() const {
-        return helices_;
-    }
-
-    /**
      * @brief Write frames JSON (base_frame_calc, frame_calc, ls_fitting)
      * @param structure Structure with calculated frames
      * @param pdb_file PDB file path (for JsonWriter initialization)
@@ -186,26 +178,12 @@ private:
      */
     void find_pairs(core::Structure& structure);
 
-    /**
-     * @brief Detect helices using HelixDetector
-     */
-    void detect_helices(core::Structure& structure);
-
-    /**
-     * @brief Reorder pairs using HelixDetector
-     */
-    void reorder_pairs(core::Structure& structure);
-
     // Algorithm components
     algorithms::BaseFrameCalculator frame_calculator_;
     algorithms::BasePairFinder pair_finder_;
-    algorithms::HelixDetector helix_detector_;
 
     // Configuration (consolidates all options)
     FindPairConfig config_;
-
-    // Results - helices
-    std::vector<algorithms::Helix> helices_;
 
     // Results
     std::vector<core::BasePair> base_pairs_;

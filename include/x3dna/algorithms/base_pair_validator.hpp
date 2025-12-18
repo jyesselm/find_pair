@@ -11,7 +11,6 @@
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
-#include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_counter.hpp>
 #include <x3dna/algorithms/hydrogen_bond_finder.hpp>
 #include <vector>
 #include <optional>
