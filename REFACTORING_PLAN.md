@@ -534,6 +534,7 @@ algorithms/validation/
 - `BackboneLinkageChecker` - O3'-P linkage detection (~85 lines)
 - `PairGeometryHelper` - Origin/z-axis/strand calculations (~60 lines)
 - `HelixContextCalculator` - Neighbor detection, endpoint finding, helix location (~320 lines)
+- `StrandDirectionChecker` - All wc_bporien, check_* functions (~450 lines)
 
 **Remaining extraction**:
 ```
@@ -544,7 +545,7 @@ algorithms/helix/
 │   └── Origin/z-axis calculations
 ├── helix_context_calculator.hpp/cpp ✅ DONE (~320 lines)
 │   └── Neighbor detection, endpoint finding
-├── strand_direction_checker.hpp/cpp (~300 lines)
+├── strand_direction_checker.hpp/cpp ✅ DONE (~450 lines)
 │   └── All wc_bporien, check_* functions
 ├── five_to_three_orderer.hpp/cpp (~200 lines)
 │   └── Main ordering algorithm
