@@ -99,11 +99,14 @@ bool ResourceLocator::validate_resources_path(const std::filesystem::path& path)
 
 std::optional<std::filesystem::path> ResourceLocator::find_resources_auto() {
     // Priority 1: Common relative paths from current working directory
+    // Include deep paths for test discovery from build/tests/unit/*/
     const std::vector<std::filesystem::path> search_paths = {
         "resources",
         "../resources",
         "../../resources",
         "../../../resources",
+        "../../../../resources",
+        "../../../../../resources",
     };
 
     for (const auto& path : search_paths) {

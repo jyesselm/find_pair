@@ -38,7 +38,6 @@ add_library(x3dna
     src/x3dna/io/pdb_writer.cpp
     src/x3dna/io/input_file_parser.cpp
     src/x3dna/io/input_file_writer.cpp
-    src/x3dna/io/residue_index_fixer.cpp
     src/x3dna/io/frame_json_recorder.cpp
     src/x3dna/residue_tracker.cpp
     src/x3dna/core/structure_legacy_order.cpp
