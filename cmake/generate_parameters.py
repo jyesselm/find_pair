@@ -6,13 +6,15 @@ This script reads the single source of truth (parameters.json) and generates
 a C++ header with compile-time constants.
 
 Usage:
-    python scripts/generate_parameters.py
-
-Output:
-    include/x3dna/config/parameters_generated.hpp
+    python cmake/generate_parameters.py [json_path] [output_path]
 
 CMake integration:
     This script is run automatically during build when parameters.json changes.
+    See CMakeLists.txt for the custom command configuration.
+
+Files:
+    Input:  resources/config/parameters.json
+    Output: include/x3dna/config/parameters_generated.hpp
 """
 
 import json
@@ -209,6 +211,7 @@ def main():
         json_path = Path(sys.argv[1])
         output_path = Path(sys.argv[2])
     else:
+        # Fallback: script is in cmake/, project root is parent
         script_dir = Path(__file__).parent
         project_root = script_dir.parent
         json_path = project_root / "resources" / "config" / "parameters.json"

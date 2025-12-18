@@ -29,7 +29,7 @@ include_directories(include)
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 set(PARAMS_JSON ${CMAKE_SOURCE_DIR}/resources/config/parameters.json)
 set(PARAMS_HPP ${CMAKE_SOURCE_DIR}/include/x3dna/config/parameters_generated.hpp)
-set(PARAMS_SCRIPT ${CMAKE_SOURCE_DIR}/scripts/generate_parameters.py)
+set(PARAMS_SCRIPT ${CMAKE_SOURCE_DIR}/cmake/generate_parameters.py)
 
 add_custom_command(
     OUTPUT ${PARAMS_HPP}
