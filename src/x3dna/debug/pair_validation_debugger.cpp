@@ -50,8 +50,8 @@ nlohmann::json PairValidationDetails::to_json() const {
     return j;
 }
 
-std::optional<PairValidationDetails> PairValidationDetails::from_legacy_json(
-    const nlohmann::json& legacy_data, int base_i, int base_j) {
+std::optional<PairValidationDetails> PairValidationDetails::from_legacy_json(const nlohmann::json& legacy_data,
+                                                                             int base_i, int base_j) {
 
     PairValidationDetails details;
     details.base_i = base_i;
@@ -118,8 +118,8 @@ std::string ValidationComparison::generate_report() const {
     auto compare_field = [&](const std::string& name, double leg, double mod, double tol = 1e-6) {
         double diff = std::abs(leg - mod);
         bool match = diff <= tol;
-        ss << "  " << std::setw(20) << std::left << name << ": "
-           << std::setw(12) << leg << " vs " << std::setw(12) << mod;
+        ss << "  " << std::setw(20) << std::left << name << ": " << std::setw(12) << leg << " vs " << std::setw(12)
+           << mod;
         if (!match) {
             ss << " [DIFF: " << diff << "]";
         } else {
@@ -130,8 +130,8 @@ std::string ValidationComparison::generate_report() const {
 
     auto compare_bool = [&](const std::string& name, bool leg, bool mod) {
         bool match = (leg == mod);
-        ss << "  " << std::setw(20) << std::left << name << ": "
-           << (leg ? "true" : "false") << " vs " << (mod ? "true" : "false");
+        ss << "  " << std::setw(20) << std::left << name << ": " << (leg ? "true" : "false") << " vs "
+           << (mod ? "true" : "false");
         if (!match) {
             ss << " [MISMATCH]";
         } else {
@@ -142,8 +142,7 @@ std::string ValidationComparison::generate_report() const {
 
     auto compare_int = [&](const std::string& name, int leg, int mod) {
         bool match = (leg == mod);
-        ss << "  " << std::setw(20) << std::left << name << ": "
-           << leg << " vs " << mod;
+        ss << "  " << std::setw(20) << std::left << name << ": " << leg << " vs " << mod;
         if (!match) {
             ss << " [MISMATCH]";
         } else {
@@ -271,8 +270,10 @@ void PairValidationDebugger::parse_env_config() {
 }
 
 bool PairValidationDebugger::is_enabled_for_pdb(const std::string& pdb_id) const {
-    if (!enabled_) return false;
-    if (filter_pdb_.empty()) return true;
+    if (!enabled_)
+        return false;
+    if (filter_pdb_.empty())
+        return true;
 
     // Case-insensitive comparison
     std::string pdb_upper = pdb_id;
@@ -284,8 +285,10 @@ bool PairValidationDebugger::is_enabled_for_pdb(const std::string& pdb_id) const
 }
 
 bool PairValidationDebugger::should_debug_pair(const std::string& pdb_id, int base_i, int base_j) const {
-    if (!is_enabled_for_pdb(pdb_id)) return false;
-    if (filter_pairs_.empty()) return true;
+    if (!is_enabled_for_pdb(pdb_id))
+        return false;
+    if (filter_pairs_.empty())
+        return true;
 
     return matches_pair_filter(base_i, base_j);
 }
@@ -313,7 +316,8 @@ void PairValidationDebugger::set_current_pdb(const std::string& pdb_id) {
 }
 
 void PairValidationDebugger::record_modern_validation(const PairValidationDetails& details) {
-    if (!is_enabled_for_pdb(current_pdb_)) return;
+    if (!is_enabled_for_pdb(current_pdb_))
+        return;
 
     int norm_i = std::min(details.base_i, details.base_j);
     int norm_j = std::max(details.base_i, details.base_j);
@@ -321,7 +325,8 @@ void PairValidationDebugger::record_modern_validation(const PairValidationDetail
 }
 
 bool PairValidationDebugger::load_legacy_results(const std::string& json_dir) {
-    if (!is_enabled_for_pdb(current_pdb_)) return false;
+    if (!is_enabled_for_pdb(current_pdb_))
+        return false;
 
     // Try to load pair_validation JSON
     std::string path = json_dir + "/pair_validation/" + current_pdb_ + ".json";
@@ -344,8 +349,7 @@ bool PairValidationDebugger::load_legacy_results(const std::string& json_dir) {
                 legacy_results_[{norm_i, norm_j}] = *details;
             }
         }
-        std::cerr << "[X3DNA_DEBUG] Loaded " << legacy_results_.size()
-                  << " legacy pair validation records\n";
+        std::cerr << "[X3DNA_DEBUG] Loaded " << legacy_results_.size() << " legacy pair validation records\n";
         return true;
     } catch (const std::exception& e) {
         std::cerr << "[X3DNA_DEBUG] Error parsing legacy JSON: " << e.what() << "\n";
@@ -445,7 +449,8 @@ std::vector<ValidationComparison> PairValidationDebugger::compare_all_pairs() co
 }
 
 void PairValidationDebugger::print_comparison_report() const {
-    if (!is_enabled_for_pdb(current_pdb_)) return;
+    if (!is_enabled_for_pdb(current_pdb_))
+        return;
 
     auto comparisons = compare_all_pairs();
 
@@ -489,19 +494,20 @@ void PairValidationDebugger::export_comparison_json(const std::string& output_pa
 }
 
 void PairValidationDebugger::log(const std::string& message) const {
-    if (!enabled_) return;
+    if (!enabled_)
+        return;
     std::cerr << "[X3DNA_DEBUG] " << message << "\n";
 }
 
 void PairValidationDebugger::log_pair(int base_i, int base_j, const std::string& message) const {
-    if (!enabled_) return;
+    if (!enabled_)
+        return;
     std::cerr << "[X3DNA_DEBUG] (" << base_i << "," << base_j << ") " << message << "\n";
 }
 
 // ScopedPairDebug implementation
 
-ScopedPairDebug::ScopedPairDebug(const std::string& pdb_id, const std::string& json_dir)
-    : pdb_id_(pdb_id) {
+ScopedPairDebug::ScopedPairDebug(const std::string& pdb_id, const std::string& json_dir) : pdb_id_(pdb_id) {
     auto& dbg = PairValidationDebugger::instance();
     was_enabled_ = dbg.is_enabled();
     if (was_enabled_) {

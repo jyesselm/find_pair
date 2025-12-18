@@ -30,12 +30,12 @@ namespace protocols {
  * initialization and reduced setter boilerplate.
  */
 struct AnalyzeConfig {
-    bool calculate_torsions = false;   ///< Calculate torsion angles
-    bool simple_parameters = false;    ///< Use simple parameter mode
-    bool circular_structure = false;   ///< Treat as circular structure
-    size_t step_start = 1;             ///< Step start index (1-based, for -S option)
-    size_t step_size = 1;              ///< Step size (1-based, for -S option)
-    bool legacy_mode = false;          ///< Enable legacy compatibility mode
+    bool calculate_torsions = false; ///< Calculate torsion angles
+    bool simple_parameters = false;  ///< Use simple parameter mode
+    bool circular_structure = false; ///< Treat as circular structure
+    size_t step_start = 1;           ///< Step start index (1-based, for -S option)
+    size_t step_size = 1;            ///< Step size (1-based, for -S option)
+    bool legacy_mode = false;        ///< Enable legacy compatibility mode
 };
 
 /**
@@ -59,8 +59,7 @@ public:
      * @param template_path Path to standard base template directory
      * @param config Protocol configuration options
      */
-    explicit AnalyzeProtocol(const std::filesystem::path& template_path,
-                             const AnalyzeConfig& config);
+    explicit AnalyzeProtocol(const std::filesystem::path& template_path, const AnalyzeConfig& config);
 
     /**
      * @brief Constructor (legacy - for backward compatibility)
@@ -84,31 +83,59 @@ public:
     /**
      * @brief Get configuration (const)
      */
-    [[nodiscard]] const AnalyzeConfig& config() const { return config_; }
+    [[nodiscard]] const AnalyzeConfig& config() const {
+        return config_;
+    }
 
     /**
      * @brief Get configuration (mutable, for modification)
      */
-    AnalyzeConfig& config() { return config_; }
+    AnalyzeConfig& config() {
+        return config_;
+    }
 
     // Individual setters (for backward compatibility)
-    void set_calculate_torsions(bool value) { config_.calculate_torsions = value; }
-    [[nodiscard]] bool calculate_torsions() const { return config_.calculate_torsions; }
+    void set_calculate_torsions(bool value) {
+        config_.calculate_torsions = value;
+    }
+    [[nodiscard]] bool calculate_torsions() const {
+        return config_.calculate_torsions;
+    }
 
-    void set_simple_parameters(bool value) { config_.simple_parameters = value; }
-    [[nodiscard]] bool simple_parameters() const { return config_.simple_parameters; }
+    void set_simple_parameters(bool value) {
+        config_.simple_parameters = value;
+    }
+    [[nodiscard]] bool simple_parameters() const {
+        return config_.simple_parameters;
+    }
 
-    void set_circular_structure(bool value) { config_.circular_structure = value; }
-    [[nodiscard]] bool circular_structure() const { return config_.circular_structure; }
+    void set_circular_structure(bool value) {
+        config_.circular_structure = value;
+    }
+    [[nodiscard]] bool circular_structure() const {
+        return config_.circular_structure;
+    }
 
-    void set_step_start(size_t start) { config_.step_start = start; }
-    [[nodiscard]] size_t step_start() const { return config_.step_start; }
+    void set_step_start(size_t start) {
+        config_.step_start = start;
+    }
+    [[nodiscard]] size_t step_start() const {
+        return config_.step_start;
+    }
 
-    void set_step_size(size_t size) { config_.step_size = size; }
-    [[nodiscard]] size_t step_size() const { return config_.step_size; }
+    void set_step_size(size_t size) {
+        config_.step_size = size;
+    }
+    [[nodiscard]] size_t step_size() const {
+        return config_.step_size;
+    }
 
-    void set_legacy_mode(bool value) { config_.legacy_mode = value; }
-    [[nodiscard]] bool legacy_mode() const { return config_.legacy_mode; }
+    void set_legacy_mode(bool value) {
+        config_.legacy_mode = value;
+    }
+    [[nodiscard]] bool legacy_mode() const {
+        return config_.legacy_mode;
+    }
 
     /**
      * @brief Set JSON writer for recording results

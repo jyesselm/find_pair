@@ -44,9 +44,8 @@ static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo>& get_re
 
         std::ifstream file(config_file);
         if (!file.is_open()) {
-            throw std::runtime_error(
-                "ModifiedNucleotideRegistry: Cannot open config file: " + config_file.string() +
-                ". Ensure the resources directory contains modified_nucleotides.json");
+            throw std::runtime_error("ModifiedNucleotideRegistry: Cannot open config file: " + config_file.string() +
+                                     ". Ensure the resources directory contains modified_nucleotides.json");
         }
 
         try {
@@ -67,8 +66,8 @@ static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo>& get_re
                 }
             }
         } catch (const json::exception& e) {
-            throw std::runtime_error(
-                "ModifiedNucleotideRegistry: Error parsing modified_nucleotides.json: " + std::string(e.what()));
+            throw std::runtime_error("ModifiedNucleotideRegistry: Error parsing modified_nucleotides.json: " +
+                                     std::string(e.what()));
         }
     });
 

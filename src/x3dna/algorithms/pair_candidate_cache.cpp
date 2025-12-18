@@ -8,12 +8,8 @@
 namespace x3dna {
 namespace algorithms {
 
-void PairCandidateCache::build(
-    const core::Structure& structure,
-    const BasePairValidator& validator,
-    const QualityScoreCalculator& quality_calc,
-    NucleotideChecker is_nucleotide
-) {
+void PairCandidateCache::build(const core::Structure& structure, const BasePairValidator& validator,
+                               const QualityScoreCalculator& quality_calc, NucleotideChecker is_nucleotide) {
     clear();
 
     // Build index map from structure
@@ -115,7 +111,7 @@ std::vector<int> PairCandidateCache::valid_partners_for(int legacy_idx) const {
 
 std::vector<std::pair<int, CandidateInfo>> PairCandidateCache::all_candidates_for(int legacy_idx) const {
     std::vector<std::pair<int, CandidateInfo>> result;
-    
+
     auto it = all_partners_.find(legacy_idx);
     if (it == all_partners_.end()) {
         return result;
@@ -130,9 +126,7 @@ std::vector<std::pair<int, CandidateInfo>> PairCandidateCache::all_candidates_fo
     return result;
 }
 
-void PairCandidateCache::for_each_valid(
-    std::function<void(int, int, const CandidateInfo&)> callback
-) const {
+void PairCandidateCache::for_each_valid(std::function<void(int, int, const CandidateInfo&)> callback) const {
     for (const auto& [key, info] : cache_) {
         if (info.is_valid()) {
             callback(key.first, key.second, info);
@@ -140,6 +134,5 @@ void PairCandidateCache::for_each_valid(
     }
 }
 
-}  // namespace algorithms
-}  // namespace x3dna
-
+} // namespace algorithms
+} // namespace x3dna

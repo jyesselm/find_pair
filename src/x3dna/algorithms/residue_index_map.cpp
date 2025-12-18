@@ -100,6 +100,5 @@ std::vector<int> ResidueIndexMap::legacy_indices() const {
     return result;
 }
 
-}  // namespace algorithms
-}  // namespace x3dna
-
+} // namespace algorithms
+} // namespace x3dna

@@ -85,8 +85,7 @@ core::Structure PdbParser::parse_string(const std::string& content) {
 }
 
 // Convert GEMMI Structure to our Structure
-core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi_struct,
-                                                    const std::string& pdb_id) {
+core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi_struct, const std::string& pdb_id) {
     std::map<ResidueKey, std::vector<core::Atom>> residue_atoms;
 
     // Legacy indices: assign sequentially as atoms are encountered (1-based)
@@ -151,20 +150,20 @@ core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi
                 std::string atom_name = normalize_atom_name_from_gemmi(original_atom_name);
 
                 // Create atom using Builder pattern
-                auto builder = core::Atom::create(atom_name,
-                    geometry::Vector3D(gemmi_atom.pos.x, gemmi_atom.pos.y, gemmi_atom.pos.z))
-                    .residue_name(residue_name)
-                    .chain_id(chain_id)
-                    .residue_seq(residue_seq)
-                    .record_type(is_hetatm ? 'H' : 'A')
-                    .alt_loc(alt_loc)
-                    .insertion(insertion)
-                    .occupancy(gemmi_atom.occ)
-                    .b_factor(gemmi_atom.b_iso)
-                    .atom_serial(gemmi_atom.serial)
-                    .model_number(model_number)
-                    .original_atom_name(original_atom_name)
-                    .original_residue_name(original_residue_name);
+                auto builder = core::Atom::create(atom_name, geometry::Vector3D(gemmi_atom.pos.x, gemmi_atom.pos.y,
+                                                                                gemmi_atom.pos.z))
+                                   .residue_name(residue_name)
+                                   .chain_id(chain_id)
+                                   .residue_seq(residue_seq)
+                                   .record_type(is_hetatm ? 'H' : 'A')
+                                   .alt_loc(alt_loc)
+                                   .insertion(insertion)
+                                   .occupancy(gemmi_atom.occ)
+                                   .b_factor(gemmi_atom.b_iso)
+                                   .atom_serial(gemmi_atom.serial)
+                                   .model_number(model_number)
+                                   .original_atom_name(original_atom_name)
+                                   .original_residue_name(original_residue_name);
 
                 // Set element if available
                 if (gemmi_atom.element != gemmi::El::X) {
@@ -250,11 +249,16 @@ bool PdbParser::is_water(const std::string& residue_name) const {
     char c1 = residue_name[1] & ~0x20;
     char c2 = residue_name[2] & ~0x20;
 
-    if (c0 == 'H' && c1 == 'O' && c2 == 'H') return true;
-    if (c0 == 'W' && c1 == 'A' && c2 == 'T') return true;
-    if (c0 == 'H' && c1 == '2' && c2 == 'O') return true;
-    if (c0 == 'O' && c1 == 'H' && c2 == '2') return true;
-    if (c0 == 'S' && c1 == 'O' && c2 == 'L') return true;
+    if (c0 == 'H' && c1 == 'O' && c2 == 'H')
+        return true;
+    if (c0 == 'W' && c1 == 'A' && c2 == 'T')
+        return true;
+    if (c0 == 'H' && c1 == '2' && c2 == 'O')
+        return true;
+    if (c0 == 'O' && c1 == 'H' && c2 == '2')
+        return true;
+    if (c0 == 'S' && c1 == 'O' && c2 == 'L')
+        return true;
 
     return false;
 }
@@ -269,25 +273,39 @@ bool PdbParser::check_alt_loc_filter(char alt_loc) const {
 }
 
 std::string PdbParser::apply_atom_name_exact_matches(const std::string& name) const {
-    if (name == " O1'") return " O4'";
-    if (name == " OL ") return " O1P";
-    if (name == " OP1") return " O1P";
-    if (name == " OR ") return " O2P";
-    if (name == " OP2") return " O2P";
-    if (name == " OP3") return " O3P";
-    if (name == " C5A") return " C5M";
-    if (name == " O5T") return " O5'";
-    if (name == " O3T") return " O3'";
-    if (name == "   P" || name == "P   ") return " P  ";
+    if (name == " O1'")
+        return " O4'";
+    if (name == " OL ")
+        return " O1P";
+    if (name == " OP1")
+        return " O1P";
+    if (name == " OR ")
+        return " O2P";
+    if (name == " OP2")
+        return " O2P";
+    if (name == " OP3")
+        return " O3P";
+    if (name == " C5A")
+        return " C5M";
+    if (name == " O5T")
+        return " O5'";
+    if (name == " O3T")
+        return " O3'";
+    if (name == "   P" || name == "P   ")
+        return " P  ";
 
     std::string trimmed = name;
     trimmed.erase(0, trimmed.find_first_not_of(" \t"));
     trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
 
-    if (trimmed == "OP1") return " O1P";
-    if (trimmed == "OP2") return " O2P";
-    if (trimmed == "OP3") return " O3P";
-    if (trimmed == "P") return " P  ";
+    if (trimmed == "OP1")
+        return " O1P";
+    if (trimmed == "OP2")
+        return " O2P";
+    if (trimmed == "OP3")
+        return " O3P";
+    if (trimmed == "P")
+        return " P  ";
 
     return name;
 }
@@ -311,8 +329,7 @@ std::string PdbParser::normalize_residue_name(const std::string& name) const {
 }
 
 core::Structure PdbParser::build_structure_from_residues(
-    const std::string& pdb_id,
-    const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const {
+    const std::string& pdb_id, const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const {
 
     core::Structure structure(pdb_id);
     std::map<char, core::Chain> chains;
@@ -322,8 +339,8 @@ core::Structure PdbParser::build_structure_from_residues(
             continue;
         }
 
-        core::Residue residue = core::Residue::create_from_atoms(
-            key.residue_name, key.residue_seq, key.chain_id, key.insertion_code, atoms);
+        core::Residue residue = core::Residue::create_from_atoms(key.residue_name, key.residue_seq, key.chain_id,
+                                                                 key.insertion_code, atoms);
 
         auto [it, inserted] = chains.try_emplace(key.chain_id, key.chain_id);
         it->second.add_residue(residue);

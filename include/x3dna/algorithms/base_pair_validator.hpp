@@ -138,8 +138,8 @@ public:
      * @param zave Average z-axis
      * @return Overlap area in Angstrom²
      */
-    [[nodiscard]] double calculate_overlap_area(const core::Residue& res1, const core::Residue& res2, const geometry::Vector3D& oave,
-                                  const geometry::Vector3D& zave) const;
+    [[nodiscard]] double calculate_overlap_area(const core::Residue& res1, const core::Residue& res2,
+                                                const geometry::Vector3D& oave, const geometry::Vector3D& zave) const;
 
     /**
      * @brief Determine H-bond type based on donor-acceptor relationship (matches legacy
@@ -150,7 +150,8 @@ public:
      * @param atom2 Second atom name
      * @return '-' if valid standard H-bond, '*' otherwise
      */
-    [[nodiscard]] static char donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2);
+    [[nodiscard]] static char donor_acceptor(char base1, char base2, const std::string& atom1,
+                                             const std::string& atom2);
 
 private:
     ValidationParameters params_;
@@ -205,7 +206,8 @@ private:
      * @brief Find hydrogen bonds between two residues (with validation)
      * Used for adjust_pairQuality - matches hb_numlist behavior
      */
-    [[nodiscard]] std::vector<core::hydrogen_bond> find_hydrogen_bonds(const core::Residue& res1, const core::Residue& res2) const;
+    [[nodiscard]] std::vector<core::hydrogen_bond> find_hydrogen_bonds(const core::Residue& res1,
+                                                                       const core::Residue& res2) const;
 
     /**
      * @brief Count hydrogen bonds simply (before validation) - matches legacy check_pair behavior

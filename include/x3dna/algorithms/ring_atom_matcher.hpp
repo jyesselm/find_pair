@@ -53,7 +53,7 @@ public:
      * @return MatchedAtoms structure with matched atom pairs
      */
     [[nodiscard]] static MatchedAtoms match(const core::Residue& residue, const core::Structure& standard_template,
-                              std::optional<core::ResidueType> residue_type = std::nullopt);
+                                            std::optional<core::ResidueType> residue_type = std::nullopt);
 
     /**
      * @brief Get list of ring atom names for a residue type
@@ -69,7 +69,8 @@ private:
      * @param atom_name Atom name to find (must match exactly, including spaces)
      * @return Optional atom if found, nullopt otherwise
      */
-    [[nodiscard]] static std::optional<core::Atom> find_atom_by_name(const core::Residue& residue, const std::string& atom_name);
+    [[nodiscard]] static std::optional<core::Atom> find_atom_by_name(const core::Residue& residue,
+                                                                     const std::string& atom_name);
 
     /**
      * @brief Find first atom with given name in a structure (checks all chains/residues)
@@ -77,7 +78,8 @@ private:
      * @param atom_name Atom name to find
      * @return Optional atom if found, nullopt otherwise
      */
-    [[nodiscard]] static std::optional<core::Atom> find_atom_by_name(const core::Structure& structure, const std::string& atom_name);
+    [[nodiscard]] static std::optional<core::Atom> find_atom_by_name(const core::Structure& structure,
+                                                                     const std::string& atom_name);
 
     /**
      * @brief Check if residue type is a purine

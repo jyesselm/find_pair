@@ -9,7 +9,7 @@
 #pragma once
 
 #include <x3dna/core/base_pair.hpp>
-#include <x3dna/algorithms/helix_organizer.hpp>  // For types
+#include <x3dna/algorithms/helix_organizer.hpp> // For types
 #include <x3dna/algorithms/helix/strand_direction_checker.hpp>
 #include <vector>
 
@@ -25,8 +25,8 @@ using algorithms::HelixSegment;
  * @brief Configuration for five-to-three ordering
  */
 struct FiveToThreeConfig {
-    double end_stack_xang = 125.0;  ///< Max x-angle for stacked WC pairs
-    double o3p_upper = 2.5;         ///< Max O3'-P distance for backbone linkage
+    double end_stack_xang = 125.0; ///< Max x-angle for stacked WC pairs
+    double o3p_upper = 2.5;        ///< Max O3'-P distance for backbone linkage
 };
 
 /**
@@ -54,15 +54,16 @@ public:
      * @param helices Helix segments (may be modified)
      * @param swapped Output: strand swap flags for each pair
      */
-    void ensure_five_to_three(
-        const std::vector<core::BasePair>& pairs,
-        const BackboneData& backbone,
-        std::vector<size_t>& pair_order,
-        std::vector<HelixSegment>& helices,
-        std::vector<bool>& swapped) const;
+    void ensure_five_to_three(const std::vector<core::BasePair>& pairs, const BackboneData& backbone,
+                              std::vector<size_t>& pair_order, std::vector<HelixSegment>& helices,
+                              std::vector<bool>& swapped) const;
 
-    [[nodiscard]] const FiveToThreeConfig& config() const { return config_; }
-    [[nodiscard]] const StrandDirectionChecker& direction_checker() const { return direction_checker_; }
+    [[nodiscard]] const FiveToThreeConfig& config() const {
+        return config_;
+    }
+    [[nodiscard]] const StrandDirectionChecker& direction_checker() const {
+        return direction_checker_;
+    }
 
 private:
     FiveToThreeConfig config_;

@@ -15,12 +15,10 @@
 namespace x3dna {
 namespace protocols {
 
-AnalyzeProtocol::AnalyzeProtocol(const std::filesystem::path& template_path,
-                                 const AnalyzeConfig& config)
+AnalyzeProtocol::AnalyzeProtocol(const std::filesystem::path& template_path, const AnalyzeConfig& config)
     : frame_calculator_(template_path), config_(config) {}
 
-AnalyzeProtocol::AnalyzeProtocol(const std::filesystem::path& template_path)
-    : frame_calculator_(template_path) {}
+AnalyzeProtocol::AnalyzeProtocol(const std::filesystem::path& template_path) : frame_calculator_(template_path) {}
 
 void AnalyzeProtocol::execute(const std::filesystem::path& input_file) {
     // Step 1: Parse .inp file

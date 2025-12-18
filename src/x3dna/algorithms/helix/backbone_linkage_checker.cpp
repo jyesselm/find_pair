@@ -7,9 +7,7 @@
 
 namespace x3dna::algorithms::helix {
 
-LinkDirection BackboneLinkageChecker::check_linkage(
-    size_t res_i, size_t res_j,
-    const BackboneData& backbone) const {
+LinkDirection BackboneLinkageChecker::check_linkage(size_t res_i, size_t res_j, const BackboneData& backbone) const {
 
     auto it_i = backbone.find(res_i);
     auto it_j = backbone.find(res_j);
@@ -40,9 +38,7 @@ LinkDirection BackboneLinkageChecker::check_linkage(
     return LinkDirection::None;
 }
 
-double BackboneLinkageChecker::o3_distance(
-    size_t res_i, size_t res_j,
-    const BackboneData& backbone) const {
+double BackboneLinkageChecker::o3_distance(size_t res_i, size_t res_j, const BackboneData& backbone) const {
 
     auto it_i = backbone.find(res_i);
     auto it_j = backbone.find(res_j);
@@ -61,13 +57,11 @@ double BackboneLinkageChecker::o3_distance(
     return -1.0;
 }
 
-bool BackboneLinkageChecker::are_pairs_connected(
-    const core::BasePair& pair1,
-    const core::BasePair& pair2,
-    const BackboneData& backbone) const {
+bool BackboneLinkageChecker::are_pairs_connected(const core::BasePair& pair1, const core::BasePair& pair2,
+                                                 const BackboneData& backbone) const {
 
     if (backbone.empty()) {
-        return true;  // Assume connected when no backbone data
+        return true; // Assume connected when no backbone data
     }
 
     // Get 1-based residue indices for both pairs

@@ -31,7 +31,7 @@ namespace core {
  */
 class Residue {
 public:
-    class Builder;  // Forward declaration
+    class Builder; // Forward declaration
 
     /**
      * @brief Default constructor
@@ -71,12 +71,8 @@ public:
      * @param atoms Vector of atoms in this residue
      * @return Residue with all properties initialized
      */
-    [[nodiscard]] static Residue create_from_atoms(
-        const std::string& name,
-        int sequence_number,
-        char chain_id,
-        char insertion_code,
-        const std::vector<Atom>& atoms);
+    [[nodiscard]] static Residue create_from_atoms(const std::string& name, int sequence_number, char chain_id,
+                                                   char insertion_code, const std::vector<Atom>& atoms);
 
     // Getters
     [[nodiscard]] const std::string& name() const {
@@ -102,14 +98,30 @@ public:
     }
 
     // Container-like interface for atoms
-    [[nodiscard]] auto begin() const { return atoms_.begin(); }
-    [[nodiscard]] auto end() const { return atoms_.end(); }
-    [[nodiscard]] auto begin() { return atoms_.begin(); }
-    [[nodiscard]] auto end() { return atoms_.end(); }
-    [[nodiscard]] size_t size() const { return atoms_.size(); }
-    [[nodiscard]] bool empty() const { return atoms_.empty(); }
-    [[nodiscard]] const Atom& operator[](size_t idx) const { return atoms_[idx]; }
-    [[nodiscard]] Atom& operator[](size_t idx) { return atoms_[idx]; }
+    [[nodiscard]] auto begin() const {
+        return atoms_.begin();
+    }
+    [[nodiscard]] auto end() const {
+        return atoms_.end();
+    }
+    [[nodiscard]] auto begin() {
+        return atoms_.begin();
+    }
+    [[nodiscard]] auto end() {
+        return atoms_.end();
+    }
+    [[nodiscard]] size_t size() const {
+        return atoms_.size();
+    }
+    [[nodiscard]] bool empty() const {
+        return atoms_.empty();
+    }
+    [[nodiscard]] const Atom& operator[](size_t idx) const {
+        return atoms_[idx];
+    }
+    [[nodiscard]] Atom& operator[](size_t idx) {
+        return atoms_[idx];
+    }
 
     /**
      * @brief Get reference frame (if set)
@@ -458,17 +470,13 @@ inline Residue::Builder Residue::create(const std::string& name, int seq_num, ch
 }
 
 // Inline implementation of create_from_atoms()
-inline Residue Residue::create_from_atoms(
-    const std::string& name,
-    int sequence_number,
-    char chain_id,
-    char insertion_code,
-    const std::vector<Atom>& atoms)
-{
+inline Residue Residue::create_from_atoms(const std::string& name, int sequence_number, char chain_id,
+                                          char insertion_code, const std::vector<Atom>& atoms) {
     // Helper to trim whitespace
     auto trim = [](const std::string& str) -> std::string {
         size_t start = str.find_first_not_of(" \t");
-        if (start == std::string::npos) return "";
+        if (start == std::string::npos)
+            return "";
         size_t end = str.find_last_not_of(" \t");
         return str.substr(start, end - start + 1);
     };
@@ -492,8 +500,8 @@ inline Residue Residue::create_from_atoms(
         else {
             std::string upper = trimmed;
             std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
-            if (upper == "MG" || upper == "NA" || upper == "CL" || upper == "K" ||
-                upper == "CA" || upper == "ZN" || upper == "FE" || upper == "MN") {
+            if (upper == "MG" || upper == "NA" || upper == "CL" || upper == "K" || upper == "CA" || upper == "ZN" ||
+                upper == "FE" || upper == "MN") {
                 type = ResidueType::ION;
             }
         }
@@ -506,8 +514,7 @@ inline Residue Residue::create_from_atoms(
         purine = is_purine_opt.value();
     } else {
         // Fallback to type-based determination
-        purine = (type == ResidueType::ADENINE || type == ResidueType::GUANINE ||
-                  type == ResidueType::INOSINE);
+        purine = (type == ResidueType::ADENINE || type == ResidueType::GUANINE || type == ResidueType::INOSINE);
     }
 
     // Build and return residue

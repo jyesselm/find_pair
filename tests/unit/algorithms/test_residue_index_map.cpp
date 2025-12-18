@@ -228,7 +228,7 @@ TEST_F(ResidueIndexMapTest, Clear) {
 }
 
 TEST_F(ResidueIndexMapTest, EmptyStructure) {
-    Structure structure;  // Empty
+    Structure structure; // Empty
     ResidueIndexMap index_map;
     index_map.build(structure);
 
@@ -253,4 +253,3 @@ TEST_F(ResidueIndexMapTest, AllIteration) {
         expected_legacy++;
     }
 }
-

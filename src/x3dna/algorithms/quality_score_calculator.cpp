@@ -13,15 +13,10 @@ namespace x3dna {
 namespace algorithms {
 
 // Watson-Crick pair list (matches legacy WC_LIST)
-const std::vector<std::string> QualityScoreCalculator::WC_LIST = {
-    "XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"
-};
+const std::vector<std::string> QualityScoreCalculator::WC_LIST = {"XX", "AT", "AU", "TA", "UA", "GC", "IC", "CG", "CI"};
 
-double QualityScoreCalculator::calculate_selection_score(
-    const ValidationResult& result,
-    const core::Residue& res1,
-    const core::Residue& res2
-) const {
+double QualityScoreCalculator::calculate_selection_score(const ValidationResult& result, const core::Residue& res1,
+                                                         const core::Residue& res2) const {
     // Start with raw quality score
     double adjusted_score = result.quality_score;
 
@@ -37,9 +32,7 @@ double QualityScoreCalculator::calculate_selection_score(
     return adjusted_score;
 }
 
-double QualityScoreCalculator::adjust_pair_quality(
-    const std::vector<core::hydrogen_bond>& hbonds
-) const {
+double QualityScoreCalculator::adjust_pair_quality(const std::vector<core::hydrogen_bond>& hbonds) const {
     // Match legacy adjust_pairQuality logic
     // Count good hydrogen bonds (distance in [2.5, 3.5] Angstroms)
     // Legacy: dval = num_list[k][3] / MFACTOR, then checks if in [2.5, 3.5]
@@ -78,11 +71,8 @@ double QualityScoreCalculator::adjust_pair_quality(
     }
 }
 
-int QualityScoreCalculator::calculate_bp_type_id(
-    const core::Residue& res1,
-    const core::Residue& res2,
-    const ValidationResult& result
-) const {
+int QualityScoreCalculator::calculate_bp_type_id(const core::Residue& res1, const core::Residue& res2,
+                                                 const ValidationResult& result) const {
     // Match legacy check_wc_wobble_pair logic
     // Legacy: *bpid = -1 initially in calculate_more_bppars
     // Then: if (dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0) {
@@ -103,8 +93,7 @@ int QualityScoreCalculator::calculate_bp_type_id(
 
     // Direction vector points from res1 to res2 in standard B-form orientation
     // This check ensures proper Watson-Crick geometry
-    const bool has_standard_wc_geometry =
-        result.dir_x > 0.0 && result.dir_y < 0.0 && result.dir_z < 0.0;
+    const bool has_standard_wc_geometry = result.dir_x > 0.0 && result.dir_y < 0.0 && result.dir_z < 0.0;
 
     if (!has_standard_wc_geometry) {
         return bp_type_id;
@@ -160,9 +149,8 @@ int QualityScoreCalculator::calculate_bp_type_id(
     // Check stretch and opening thresholds (matches legacy: fabs(stretch) > 2.0 ||
     // fabs(opening) > 60) CRITICAL: Legacy uses fabs(opening) > 60 (not >=), and opening is in
     // degrees
-    const bool exceeds_thresholds =
-        std::abs(stretch) > quality_constants::STRETCH_THRESHOLD ||
-        std::abs(opening) > quality_constants::OPENING_THRESHOLD;
+    const bool exceeds_thresholds = std::abs(stretch) > quality_constants::STRETCH_THRESHOLD ||
+                                    std::abs(opening) > quality_constants::OPENING_THRESHOLD;
 
     if (exceeds_thresholds) {
         return bp_type_id; // Keep -1
@@ -170,9 +158,8 @@ int QualityScoreCalculator::calculate_bp_type_id(
 
     // Check for wobble pair (fabs(shear) in [1.8, 2.8])
     // CRITICAL: Legacy checks this first, then WC check can overwrite if both conditions met
-    const bool is_wobble_range =
-        std::abs(shear) >= quality_constants::WOBBLE_SHEAR_MIN &&
-        std::abs(shear) <= quality_constants::WOBBLE_SHEAR_MAX;
+    const bool is_wobble_range = std::abs(shear) >= quality_constants::WOBBLE_SHEAR_MIN &&
+                                 std::abs(shear) <= quality_constants::WOBBLE_SHEAR_MAX;
 
     if (is_wobble_range) {
         bp_type_id = 1; // Wobble
@@ -195,6 +182,5 @@ int QualityScoreCalculator::calculate_bp_type_id(
     return bp_type_id;
 }
 
-}  // namespace algorithms
-}  // namespace x3dna
-
+} // namespace algorithms
+} // namespace x3dna

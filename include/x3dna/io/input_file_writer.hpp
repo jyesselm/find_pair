@@ -84,8 +84,7 @@ public:
      */
     static void write_step_params(const std::filesystem::path& output_path,
                                   const std::vector<core::BasePairStepParameters>& step_params,
-                                  const std::vector<core::BasePair>& base_pairs,
-                                  const core::Structure& structure);
+                                  const std::vector<core::BasePair>& base_pairs, const core::Structure& structure);
 
     /**
      * @brief Write helical parameters to .par file (bp_helical.par format)
@@ -96,8 +95,7 @@ public:
      */
     static void write_helical_params(const std::filesystem::path& output_path,
                                      const std::vector<core::HelicalParameters>& helical_params,
-                                     const std::vector<core::BasePair>& base_pairs,
-                                     const core::Structure& structure);
+                                     const std::vector<core::BasePair>& base_pairs, const core::Structure& structure);
 
 private:
     /**

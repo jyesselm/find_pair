@@ -19,17 +19,16 @@ protected:
     void SetUp() override {
         // Load a real PDB file for testing
         pdb_path_ = std::filesystem::path(X3DNA_SOURCE_DIR) / "data" / "pdb" / "100D.pdb";
-        
+
         if (std::filesystem::exists(pdb_path_)) {
             PdbParser parser;
             structure_ = parser.parse_file(pdb_path_);
-            
+
             // Calculate frames for all residues
-            std::filesystem::path template_path = 
-                std::filesystem::path(X3DNA_SOURCE_DIR) / "data" / "templates";
+            std::filesystem::path template_path = std::filesystem::path(X3DNA_SOURCE_DIR) / "data" / "templates";
             BaseFrameCalculator frame_calc(template_path);
             frame_calc.calculate_all_frames(structure_);
-            
+
             has_structure_ = true;
         }
     }
@@ -69,7 +68,7 @@ TEST_F(PairCandidateCacheTest, GetPairInfo) {
     // Get info for a pair that should exist
     // 100D typically has pairs like (1, 24), (2, 23), etc.
     auto info = cache.get(1, 24);
-    
+
     // The pair might or might not be valid, but it should exist
     // if both residues are nucleotides
     if (info) {
@@ -94,7 +93,7 @@ TEST_F(PairCandidateCacheTest, GetOrderIndependent) {
     auto info2 = cache.get(24, 1);
 
     EXPECT_EQ(info1.has_value(), info2.has_value());
-    
+
     if (info1 && info2) {
         EXPECT_EQ(info1->is_valid(), info2->is_valid());
         EXPECT_EQ(info1->bp_type_id, info2->bp_type_id);
@@ -115,7 +114,7 @@ TEST_F(PairCandidateCacheTest, ValidPartnersFor) {
 
     // Get valid partners for residue 1
     auto partners = cache.valid_partners_for(1);
-    
+
     // Each partner should have a valid pair with residue 1
     for (int partner_idx : partners) {
         auto info = cache.get(1, partner_idx);
@@ -136,7 +135,7 @@ TEST_F(PairCandidateCacheTest, ValidCount) {
     cache.build(structure_, validator, quality_calc, BasePairFinder::is_nucleotide);
 
     size_t valid_count = cache.valid_count();
-    
+
     // Count manually
     size_t manual_count = 0;
     for (const auto& [key, info] : cache.all()) {
@@ -162,7 +161,7 @@ TEST_F(PairCandidateCacheTest, ForEachValid) {
     size_t callback_count = 0;
     cache.for_each_valid([&](int idx1, int idx2, const CandidateInfo& info) {
         EXPECT_TRUE(info.is_valid());
-        EXPECT_LT(idx1, idx2);  // Should be normalized
+        EXPECT_LT(idx1, idx2); // Should be normalized
         callback_count++;
     });
 
@@ -179,11 +178,11 @@ TEST_F(PairCandidateCacheTest, Clear) {
     QualityScoreCalculator quality_calc;
 
     cache.build(structure_, validator, quality_calc, BasePairFinder::is_nucleotide);
-    
+
     EXPECT_FALSE(cache.empty());
-    
+
     cache.clear();
-    
+
     EXPECT_TRUE(cache.empty());
     EXPECT_EQ(cache.size(), 0);
     EXPECT_EQ(cache.valid_count(), 0);
@@ -208,7 +207,7 @@ TEST_F(PairCandidateCacheTest, IndexMapAccess) {
 
 TEST_F(PairCandidateCacheTest, EmptyStructure) {
     Structure empty_structure;
-    
+
     PairCandidateCache cache;
     BasePairValidator validator;
     QualityScoreCalculator quality_calc;
@@ -219,4 +218,3 @@ TEST_F(PairCandidateCacheTest, EmptyStructure) {
     EXPECT_EQ(cache.size(), 0);
     EXPECT_EQ(cache.valid_count(), 0);
 }
-

@@ -138,11 +138,10 @@ long json_writer_is_initialized(void);
 void json_writer_disable(void);
 
 /* Record helix organization decisions from five2three algorithm */
-void json_writer_record_helix_organization(long helix_num, long *helix_idx_row,
-                                           long *bp_idx, long *swapped,
-                                           long **base_pairs, long *direction);
+void json_writer_record_helix_organization(long helix_num, long* helix_idx_row, long* bp_idx, long* swapped,
+                                           long** base_pairs, long* direction);
 
 /* Record bp_order neighbor relationships from bp_context */
-void json_writer_record_bp_order(long num_bp, long **bp_order, long **base_pairs);
+void json_writer_record_bp_order(long num_bp, long** bp_order, long** base_pairs);
 
 #endif /* JSON_WRITER_H */

@@ -293,8 +293,7 @@ public:
      * @param strand_swapped Swap status for each pair
      */
     void record_helix_organization(size_t helix_num, const algorithms::HelixSegment& helix,
-                                   const std::vector<size_t>& pair_order,
-                                   const std::vector<core::BasePair>& pairs,
+                                   const std::vector<size_t>& pair_order, const std::vector<core::BasePair>& pairs,
                                    const std::vector<bool>& strand_swapped);
 
     /**

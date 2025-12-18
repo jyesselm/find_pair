@@ -12,61 +12,59 @@
 namespace x3dna::algorithms::helix {
 
 namespace {
-    constexpr double PI = 3.14159265358979323846;
+constexpr double PI = 3.14159265358979323846;
 
-    /**
-     * @brief Check if five2three debugging is enabled
-     */
-    bool is_debug_enabled() {
-        static bool initialized = false;
-        static bool debug_enabled = false;
-        if (!initialized) {
-            auto& cfg = config::ConfigManager::instance();
-            cfg.init_debug_from_environment();
-            debug_enabled = cfg.debug_config().debug_five2three;
-            initialized = true;
-        }
-        return debug_enabled;
+/**
+ * @brief Check if five2three debugging is enabled
+ */
+bool is_debug_enabled() {
+    static bool initialized = false;
+    static bool debug_enabled = false;
+    if (!initialized) {
+        auto& cfg = config::ConfigManager::instance();
+        cfg.init_debug_from_environment();
+        debug_enabled = cfg.debug_config().debug_five2three;
+        initialized = true;
     }
-
-    /**
-     * @brief Convert dot product to angle in degrees
-     */
-    double dot2ang(double d) {
-        if (d > 1.0) d = 1.0;
-        if (d < -1.0) d = -1.0;
-        return std::acos(d) * 180.0 / PI;
-    }
-
-    /**
-     * @brief Result of frame axis alignment comparison
-     */
-    struct FrameAlignment {
-        double dot_x;
-        double dot_y;
-        double dot_z;
-
-        [[nodiscard]] bool is_aligned() const {
-            return dot_x > 0.0 && dot_y > 0.0 && dot_z > 0.0;
-        }
-
-        [[nodiscard]] double angle_sum() const {
-            return dot2ang(dot_x) + dot2ang(dot_y) + dot2ang(dot_z);
-        }
-    };
-
-    /**
-     * @brief Compute alignment between two reference frames
-     */
-    FrameAlignment compute_frame_alignment(const core::ReferenceFrame& frame1,
-                                           const core::ReferenceFrame& frame2) {
-        return FrameAlignment{
-            frame1.x_axis().dot(frame2.x_axis()),
-            frame1.y_axis().dot(frame2.y_axis()),
-            frame1.z_axis().dot(frame2.z_axis())
-        };
-    }
+    return debug_enabled;
 }
+
+/**
+ * @brief Convert dot product to angle in degrees
+ */
+double dot2ang(double d) {
+    if (d > 1.0)
+        d = 1.0;
+    if (d < -1.0)
+        d = -1.0;
+    return std::acos(d) * 180.0 / PI;
+}
+
+/**
+ * @brief Result of frame axis alignment comparison
+ */
+struct FrameAlignment {
+    double dot_x;
+    double dot_y;
+    double dot_z;
+
+    [[nodiscard]] bool is_aligned() const {
+        return dot_x > 0.0 && dot_y > 0.0 && dot_z > 0.0;
+    }
+
+    [[nodiscard]] double angle_sum() const {
+        return dot2ang(dot_x) + dot2ang(dot_y) + dot2ang(dot_z);
+    }
+};
+
+/**
+ * @brief Compute alignment between two reference frames
+ */
+FrameAlignment compute_frame_alignment(const core::ReferenceFrame& frame1, const core::ReferenceFrame& frame2) {
+    return FrameAlignment{frame1.x_axis().dot(frame2.x_axis()), frame1.y_axis().dot(frame2.y_axis()),
+                          frame1.z_axis().dot(frame2.z_axis())};
+}
+} // namespace
 
 double StrandDirectionChecker::wcbp_xang(const core::BasePair& pair_m, const core::BasePair& pair_n) const {
     auto xm = (pair_m.frame1()->x_axis() + pair_m.frame2()->x_axis()).normalized();
@@ -74,8 +72,8 @@ double StrandDirectionChecker::wcbp_xang(const core::BasePair& pair_m, const cor
     return dot2ang(xm.dot(xn));
 }
 
-double StrandDirectionChecker::wcbp_zdir(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                          bool swap_m, bool swap_n) const {
+double StrandDirectionChecker::wcbp_zdir(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m,
+                                         bool swap_n) const {
     auto zm = swap_m ? (pair_m.frame1()->z_axis() - pair_m.frame2()->z_axis())
                      : (pair_m.frame2()->z_axis() - pair_m.frame1()->z_axis());
     auto zn = swap_n ? (pair_n.frame1()->z_axis() - pair_n.frame2()->z_axis())
@@ -87,12 +85,10 @@ bool StrandDirectionChecker::has_positive_bpid(const core::BasePair& pair) const
     bool debug = is_debug_enabled();
 
     using core::BasePairType;
-    if (pair.type() != BasePairType::WATSON_CRICK &&
-        pair.type() != BasePairType::WOBBLE) {
+    if (pair.type() != BasePairType::WATSON_CRICK && pair.type() != BasePairType::WOBBLE) {
         if (debug) {
-            std::cerr << "[has_positive_bpid] pair(" << pair.residue_idx1() << ","
-                      << pair.residue_idx2() << ") type=" << pair.bp_type()
-                      << " -> 0 (not WC/wobble)" << std::endl;
+            std::cerr << "[has_positive_bpid] pair(" << pair.residue_idx1() << "," << pair.residue_idx2()
+                      << ") type=" << pair.bp_type() << " -> 0 (not WC/wobble)" << std::endl;
         }
         return false;
     }
@@ -112,19 +108,16 @@ bool StrandDirectionChecker::has_positive_bpid(const core::BasePair& pair) const
 
     if (debug) {
         std::cerr << "[has_positive_bpid] pair(" << pair.residue_idx1() << "," << pair.residue_idx2() << ")"
-                  << " type=" << pair.bp_type()
-                  << " dir_x=" << dir_x << " dir_y=" << dir_y << " dir_z=" << dir_z
+                  << " type=" << pair.bp_type() << " dir_x=" << dir_x << " dir_y=" << dir_y << " dir_z=" << dir_z
                   << " -> " << result << std::endl;
     }
 
     return result;
 }
 
-void StrandDirectionChecker::first_step(const std::vector<core::BasePair>& pairs,
-                                         const BackboneData& backbone,
-                                         std::vector<size_t>& pair_order,
-                                         const HelixSegment& helix,
-                                         std::vector<bool>& swapped) const {
+void StrandDirectionChecker::first_step(const std::vector<core::BasePair>& pairs, const BackboneData& backbone,
+                                        std::vector<size_t>& pair_order, const HelixSegment& helix,
+                                        std::vector<bool>& swapped) const {
     bool debug = is_debug_enabled();
 
     if (helix.end_idx <= helix.start_idx) {
@@ -141,21 +134,22 @@ void StrandDirectionChecker::first_step(const std::vector<core::BasePair>& pairs
     auto link = linkage_checker_.check_linkage(res_m.strand1, res_n.strand1, backbone);
 
     if (debug) {
-        std::cerr << "[first_step] first_pair=" << first_pair << " ("
-                  << pairs[first_pair].residue_idx1()+1 << "," << pairs[first_pair].residue_idx2()+1 << ")"
-                  << " second_pair=" << second_pair << " ("
-                  << pairs[second_pair].residue_idx1()+1 << "," << pairs[second_pair].residue_idx2()+1 << ")"
+        std::cerr << "[first_step] first_pair=" << first_pair << " (" << pairs[first_pair].residue_idx1() + 1 << ","
+                  << pairs[first_pair].residue_idx2() + 1 << ")"
+                  << " second_pair=" << second_pair << " (" << pairs[second_pair].residue_idx1() + 1 << ","
+                  << pairs[second_pair].residue_idx2() + 1 << ")"
                   << " res_m.s1=" << res_m.strand1 << " res_n.s1=" << res_n.strand1
                   << " link=" << static_cast<int>(link) << std::endl;
     }
 
     if (link == LinkDirection::Reverse) {
         swapped[first_pair] = !swapped[first_pair];
-        if (debug) std::cerr << "[first_step] -> Reverse linkage, swapped first pair" << std::endl;
+        if (debug)
+            std::cerr << "[first_step] -> Reverse linkage, swapped first pair" << std::endl;
     } else if (link == LinkDirection::None) {
-        if (debug) std::cerr << "[first_step] -> No linkage, reversing helix" << std::endl;
-        std::reverse(pair_order.begin() + helix.start_idx,
-                     pair_order.begin() + helix.end_idx + 1);
+        if (debug)
+            std::cerr << "[first_step] -> No linkage, reversing helix" << std::endl;
+        std::reverse(pair_order.begin() + helix.start_idx, pair_order.begin() + helix.end_idx + 1);
 
         first_pair = pair_order[pos];
         second_pair = pair_order[pos + 1];
@@ -167,29 +161,31 @@ void StrandDirectionChecker::first_step(const std::vector<core::BasePair>& pairs
 
         if (debug) {
             std::cerr << "[first_step] After reversal: first_pair=" << first_pair << " ("
-                      << pairs[first_pair].residue_idx1()+1 << "," << pairs[first_pair].residue_idx2()+1 << ")"
+                      << pairs[first_pair].residue_idx1() + 1 << "," << pairs[first_pair].residue_idx2() + 1 << ")"
                       << " res_m.s1=" << res_m.strand1 << " res_n.s1=" << res_n.strand1
                       << " link=" << static_cast<int>(link) << std::endl;
         }
 
         if (link == LinkDirection::Reverse) {
             swapped[first_pair] = !swapped[first_pair];
-            if (debug) std::cerr << "[first_step] -> After reversal: Reverse linkage, swapped first pair" << std::endl;
+            if (debug)
+                std::cerr << "[first_step] -> After reversal: Reverse linkage, swapped first pair" << std::endl;
         } else if (link == LinkDirection::None) {
-            std::reverse(pair_order.begin() + helix.start_idx,
-                         pair_order.begin() + helix.end_idx + 1);
-            if (debug) std::cerr << "[first_step] -> Still no linkage, undoing reversal" << std::endl;
+            std::reverse(pair_order.begin() + helix.start_idx, pair_order.begin() + helix.end_idx + 1);
+            if (debug)
+                std::cerr << "[first_step] -> Still no linkage, undoing reversal" << std::endl;
         } else {
-            if (debug) std::cerr << "[first_step] -> After reversal: Forward linkage" << std::endl;
+            if (debug)
+                std::cerr << "[first_step] -> After reversal: Forward linkage" << std::endl;
         }
     } else {
-        if (debug) std::cerr << "[first_step] -> Forward linkage, no action" << std::endl;
+        if (debug)
+            std::cerr << "[first_step] -> Forward linkage, no action" << std::endl;
     }
 }
 
-bool StrandDirectionChecker::wc_bporien(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                         bool swap_m, bool swap_n,
-                                         const BackboneData& backbone) const {
+bool StrandDirectionChecker::wc_bporien(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m,
+                                        bool swap_n, const BackboneData& backbone) const {
     bool debug = is_debug_enabled();
 
     if (!has_positive_bpid(pair_m) || !has_positive_bpid(pair_n)) {
@@ -209,14 +205,11 @@ bool StrandDirectionChecker::wc_bporien(const core::BasePair& pair_m, const core
     if (debug) {
         std::cerr << "[MODERN wc_bporien] res_m=(" << pair_m.residue_idx1() << "," << pair_m.residue_idx2() << ")"
                   << " res_n=(" << pair_n.residue_idx1() << "," << pair_n.residue_idx2() << ")"
-                  << " swap_m=" << swap_m << " swap_n=" << swap_n
-                  << " xang=" << xang << " link_s1=" << static_cast<int>(link_s1)
-                  << " link_s2=" << static_cast<int>(link_s2) << std::endl;
+                  << " swap_m=" << swap_m << " swap_n=" << swap_n << " xang=" << xang
+                  << " link_s1=" << static_cast<int>(link_s1) << " link_s2=" << static_cast<int>(link_s2) << std::endl;
     }
 
-    if (xang > config_.end_stack_xang ||
-        link_s1 != LinkDirection::None ||
-        link_s2 != LinkDirection::None) {
+    if (xang > config_.end_stack_xang || link_s1 != LinkDirection::None || link_s2 != LinkDirection::None) {
         if (debug) {
             std::cerr << "[MODERN wc_bporien] -> false (early exit: xang>" << config_.end_stack_xang
                       << " or has linkage)" << std::endl;
@@ -229,16 +222,15 @@ bool StrandDirectionChecker::wc_bporien(const core::BasePair& pair_m, const core
 
     bool result = zdir_normal < 0.0 && zdir_swapped > 0.0;
     if (debug) {
-        std::cerr << "[MODERN wc_bporien] zdir_normal=" << zdir_normal
-                  << " zdir_swapped=" << zdir_swapped << " -> " << result << std::endl;
+        std::cerr << "[MODERN wc_bporien] zdir_normal=" << zdir_normal << " zdir_swapped=" << zdir_swapped << " -> "
+                  << result << std::endl;
     }
 
     return result;
 }
 
-bool StrandDirectionChecker::check_o3dist(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                           bool swap_m, bool swap_n,
-                                           const BackboneData& backbone) const {
+bool StrandDirectionChecker::check_o3dist(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m,
+                                          bool swap_n, const BackboneData& backbone) const {
     auto res_m = PairGeometryHelper::get_strand_residues(pair_m, swap_m);
     auto res_n = PairGeometryHelper::get_strand_residues(pair_n, swap_n);
 
@@ -247,35 +239,38 @@ bool StrandDirectionChecker::check_o3dist(const core::BasePair& pair_m, const co
     double dj1_i2 = linkage_checker_.o3_distance(res_m.strand2, res_n.strand1, backbone);
     double dj1_j2 = linkage_checker_.o3_distance(res_m.strand2, res_n.strand2, backbone);
 
-    return (di1_i2 > 0.0 && di1_j2 > 0.0 && di1_i2 > di1_j2) &&
-           (dj1_i2 > 0.0 && dj1_j2 > 0.0 && dj1_j2 > dj1_i2);
+    return (di1_i2 > 0.0 && di1_j2 > 0.0 && di1_i2 > di1_j2) && (dj1_i2 > 0.0 && dj1_j2 > 0.0 && dj1_j2 > dj1_i2);
 }
 
-bool StrandDirectionChecker::check_schain(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                           bool swap_m, bool swap_n,
-                                           const BackboneData& backbone) const {
+bool StrandDirectionChecker::check_schain(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m,
+                                          bool swap_n, const BackboneData& backbone) const {
     auto res_m = PairGeometryHelper::get_strand_residues(pair_m, swap_m);
     auto res_n = PairGeometryHelper::get_strand_residues(pair_n, swap_n);
 
-    bool no_same_strand = linkage_checker_.check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
+    bool no_same_strand = linkage_checker_.check_linkage(res_m.strand1, res_n.strand1, backbone) ==
+                              LinkDirection::None &&
                           linkage_checker_.check_linkage(res_m.strand2, res_n.strand2, backbone) == LinkDirection::None;
-    bool has_cross_strand = linkage_checker_.check_linkage(res_m.strand1, res_n.strand2, backbone) != LinkDirection::None ||
-                            linkage_checker_.check_linkage(res_m.strand2, res_n.strand1, backbone) != LinkDirection::None;
+    bool has_cross_strand = linkage_checker_.check_linkage(res_m.strand1, res_n.strand2, backbone) !=
+                                LinkDirection::None ||
+                            linkage_checker_.check_linkage(res_m.strand2, res_n.strand1, backbone) !=
+                                LinkDirection::None;
 
     return no_same_strand && has_cross_strand;
 }
 
-bool StrandDirectionChecker::check_others(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                           bool swap_m, bool swap_n,
-                                           const BackboneData& backbone) const {
+bool StrandDirectionChecker::check_others(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m,
+                                          bool swap_n, const BackboneData& backbone) const {
     auto res_m = PairGeometryHelper::get_strand_residues(pair_m, swap_m);
     auto res_n = PairGeometryHelper::get_strand_residues(pair_n, swap_n);
 
-    const bool has_any_linkage =
-        linkage_checker_.check_linkage(res_m.strand1, res_n.strand1, backbone) != LinkDirection::None ||
-        linkage_checker_.check_linkage(res_m.strand2, res_n.strand2, backbone) != LinkDirection::None ||
-        linkage_checker_.check_linkage(res_m.strand1, res_n.strand2, backbone) != LinkDirection::None ||
-        linkage_checker_.check_linkage(res_m.strand2, res_n.strand1, backbone) != LinkDirection::None;
+    const bool has_any_linkage = linkage_checker_.check_linkage(res_m.strand1, res_n.strand1, backbone) !=
+                                     LinkDirection::None ||
+                                 linkage_checker_.check_linkage(res_m.strand2, res_n.strand2, backbone) !=
+                                     LinkDirection::None ||
+                                 linkage_checker_.check_linkage(res_m.strand1, res_n.strand2, backbone) !=
+                                     LinkDirection::None ||
+                                 linkage_checker_.check_linkage(res_m.strand2, res_n.strand1, backbone) !=
+                                     LinkDirection::None;
     if (has_any_linkage) {
         return false;
     }
@@ -315,20 +310,16 @@ bool StrandDirectionChecker::check_others(const core::BasePair& pair_m, const co
     return false;
 }
 
-bool StrandDirectionChecker::chain1dir(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                        bool swap_m, bool swap_n,
-                                        const BackboneData& backbone) const {
+bool StrandDirectionChecker::chain1dir(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m,
+                                       bool swap_n, const BackboneData& backbone) const {
     auto res_m = PairGeometryHelper::get_strand_residues(pair_m, swap_m);
     auto res_n = PairGeometryHelper::get_strand_residues(pair_n, swap_n);
     return linkage_checker_.check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::Reverse;
 }
 
-DirectionCounts StrandDirectionChecker::check_direction(
-    const std::vector<core::BasePair>& pairs,
-    const BackboneData& backbone,
-    std::vector<size_t>& pair_order,
-    HelixSegment& helix,
-    std::vector<bool>& swapped) const {
+DirectionCounts StrandDirectionChecker::check_direction(const std::vector<core::BasePair>& pairs,
+                                                        const BackboneData& backbone, std::vector<size_t>& pair_order,
+                                                        HelixSegment& helix, std::vector<bool>& swapped) const {
 
     bool debug = is_debug_enabled();
 
@@ -348,15 +339,13 @@ DirectionCounts StrandDirectionChecker::check_direction(
         update_direction_count(link2, dir.strand2_forward, dir.strand2_reverse, dir.strand2_none);
     }
 
-    bool mixed = (dir.strand1_forward && dir.strand1_reverse) ||
-                 (dir.strand2_forward && dir.strand2_reverse);
+    bool mixed = (dir.strand1_forward && dir.strand1_reverse) || (dir.strand2_forward && dir.strand2_reverse);
     if (mixed) {
         helix.has_mixed_direction = true;
         return dir;
     }
 
-    if (dir.strand1_forward + dir.strand1_reverse +
-        dir.strand2_forward + dir.strand2_reverse == 0) {
+    if (dir.strand1_forward + dir.strand1_reverse + dir.strand2_forward + dir.strand2_reverse == 0) {
         return dir;
     }
 
@@ -388,14 +377,14 @@ DirectionCounts StrandDirectionChecker::check_direction(
         const bool needs_flip_and_reverse = res_first.strand1 > res_last.strand2;
         if (debug) {
             std::cerr << "[check_direction] ANTI-PARALLEL: first.s1=" << res_first.strand1
-                      << " last.s2=" << res_last.strand2
-                      << " check=" << (needs_flip_and_reverse ? "YES" : "NO") << std::endl;
+                      << " last.s2=" << res_last.strand2 << " check=" << (needs_flip_and_reverse ? "YES" : "NO")
+                      << std::endl;
         }
         if (needs_flip_and_reverse) {
-            if (debug) std::cerr << "[check_direction] -> Flipping all swaps and reversing" << std::endl;
+            if (debug)
+                std::cerr << "[check_direction] -> Flipping all swaps and reversing" << std::endl;
             flip_helix_swaps();
-            std::reverse(pair_order.begin() + helix.start_idx,
-                         pair_order.begin() + helix.end_idx + 1);
+            std::reverse(pair_order.begin() + helix.start_idx, pair_order.begin() + helix.end_idx + 1);
         }
         return dir;
     }
@@ -411,19 +400,17 @@ DirectionCounts StrandDirectionChecker::check_direction(
     return dir;
 }
 
-void StrandDirectionChecker::check_strand2(const std::vector<core::BasePair>& pairs,
-                                            const BackboneData& backbone,
-                                            const std::vector<size_t>& pair_order,
-                                            HelixSegment& helix,
-                                            std::vector<bool>& swapped,
-                                            const DirectionCounts& direction) const {
+void StrandDirectionChecker::check_strand2(const std::vector<core::BasePair>& pairs, const BackboneData& backbone,
+                                           const std::vector<size_t>& pair_order, HelixSegment& helix,
+                                           std::vector<bool>& swapped, const DirectionCounts& direction) const {
 
     bool mixed_direction = (direction.strand1_forward && direction.strand1_reverse) ||
-                          (direction.strand2_forward && direction.strand2_reverse);
+                           (direction.strand2_forward && direction.strand2_reverse);
 
     if (!mixed_direction) {
-        if (direction.strand1_forward + direction.strand1_reverse +
-            direction.strand2_forward + direction.strand2_reverse == 0) {
+        if (direction.strand1_forward + direction.strand1_reverse + direction.strand2_forward +
+                direction.strand2_reverse ==
+            0) {
             return;
         }
 
@@ -441,24 +428,23 @@ void StrandDirectionChecker::check_strand2(const std::vector<core::BasePair>& pa
             auto res_m = PairGeometryHelper::get_strand_residues(pair_m, swapped[idx_m]);
             auto res_n = PairGeometryHelper::get_strand_residues(pair_n, swapped[idx_n]);
 
-            bool no_same_strand = linkage_checker_.check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
-                                  linkage_checker_.check_linkage(res_m.strand2, res_n.strand2, backbone) == LinkDirection::None;
+            bool no_same_strand = linkage_checker_.check_linkage(res_m.strand1, res_n.strand1, backbone) ==
+                                      LinkDirection::None &&
+                                  linkage_checker_.check_linkage(res_m.strand2, res_n.strand2, backbone) ==
+                                      LinkDirection::None;
             auto cross_link = linkage_checker_.check_linkage(res_m.strand1, res_n.strand2, backbone);
             auto cross_link2 = linkage_checker_.check_linkage(res_m.strand2, res_n.strand1, backbone);
 
-            if (no_same_strand &&
-                (cross_link == LinkDirection::Forward ||
-                 (cross_link != LinkDirection::None && cross_link2 != LinkDirection::None))) {
+            if (no_same_strand && (cross_link == LinkDirection::Forward ||
+                                   (cross_link != LinkDirection::None && cross_link2 != LinkDirection::None))) {
                 swapped[idx_n] = !swapped[idx_n];
             }
         }
     } else {
-        const bool anti_p =
-            (direction.strand1_forward > direction.strand1_reverse) &&
-            (direction.strand2_forward < direction.strand2_reverse);
-        const bool parallel =
-            (direction.strand1_forward > direction.strand1_reverse) &&
-            (direction.strand2_forward > direction.strand2_reverse);
+        const bool anti_p = (direction.strand1_forward > direction.strand1_reverse) &&
+                            (direction.strand2_forward < direction.strand2_reverse);
+        const bool parallel = (direction.strand1_forward > direction.strand1_reverse) &&
+                              (direction.strand2_forward > direction.strand2_reverse);
 
         helix.is_parallel = parallel;
 
@@ -476,9 +462,8 @@ void StrandDirectionChecker::check_strand2(const std::vector<core::BasePair>& pa
             const auto link_strand2 = linkage_checker_.check_linkage(res_m.strand2, res_n.strand2, backbone);
 
             const bool no_strand1_link = (link_strand1 == LinkDirection::None);
-            const bool needs_strand2_swap =
-                (anti_p && link_strand2 == LinkDirection::Forward) ||
-                (parallel && link_strand2 == LinkDirection::Reverse);
+            const bool needs_strand2_swap = (anti_p && link_strand2 == LinkDirection::Forward) ||
+                                            (parallel && link_strand2 == LinkDirection::Reverse);
 
             if (no_strand1_link && needs_strand2_swap) {
                 swapped[idx_n] = !swapped[idx_n];
@@ -486,21 +471,24 @@ void StrandDirectionChecker::check_strand2(const std::vector<core::BasePair>& pa
 
             res_n = PairGeometryHelper::get_strand_residues(pair_n, swapped[idx_n]);
 
-            const bool no_same_strand_links =
-                linkage_checker_.check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
-                linkage_checker_.check_linkage(res_m.strand2, res_n.strand2, backbone) == LinkDirection::None;
+            const bool no_same_strand_links = linkage_checker_.check_linkage(res_m.strand1, res_n.strand1, backbone) ==
+                                                  LinkDirection::None &&
+                                              linkage_checker_.check_linkage(res_m.strand2, res_n.strand2, backbone) ==
+                                                  LinkDirection::None;
 
             if (!no_same_strand_links) {
                 continue;
             }
 
-            const bool should_swap_m =
-                (anti_p && linkage_checker_.check_linkage(res_m.strand2, res_n.strand1, backbone) == LinkDirection::Forward) ||
-                (parallel && linkage_checker_.check_linkage(res_m.strand1, res_n.strand2, backbone) == LinkDirection::Reverse);
+            const bool should_swap_m = (anti_p && linkage_checker_.check_linkage(res_m.strand2, res_n.strand1,
+                                                                                 backbone) == LinkDirection::Forward) ||
+                                       (parallel && linkage_checker_.check_linkage(res_m.strand1, res_n.strand2,
+                                                                                   backbone) == LinkDirection::Reverse);
 
-            const bool should_swap_n =
-                (anti_p && linkage_checker_.check_linkage(res_m.strand1, res_n.strand2, backbone) == LinkDirection::Forward) ||
-                (parallel && linkage_checker_.check_linkage(res_m.strand2, res_n.strand1, backbone) == LinkDirection::Reverse);
+            const bool should_swap_n = (anti_p && linkage_checker_.check_linkage(res_m.strand1, res_n.strand2,
+                                                                                 backbone) == LinkDirection::Forward) ||
+                                       (parallel && linkage_checker_.check_linkage(res_m.strand2, res_n.strand1,
+                                                                                   backbone) == LinkDirection::Reverse);
 
             if (should_swap_m) {
                 swapped[idx_m] = !swapped[idx_m];

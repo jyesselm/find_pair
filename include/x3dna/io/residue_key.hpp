@@ -19,10 +19,10 @@ namespace io {
  * sequence number, and insertion code.
  */
 struct ResidueKey {
-    std::string residue_name;   ///< Residue name (e.g., "A", "G", "PSU")
-    char chain_id;              ///< Chain identifier
-    int residue_seq;            ///< Residue sequence number
-    char insertion_code;        ///< Insertion code (usually ' ')
+    std::string residue_name; ///< Residue name (e.g., "A", "G", "PSU")
+    char chain_id;            ///< Chain identifier
+    int residue_seq;          ///< Residue sequence number
+    char insertion_code;      ///< Insertion code (usually ' ')
 
     /**
      * @brief Comparison operator for map ordering
@@ -36,9 +36,7 @@ struct ResidueKey {
      * @brief Equality comparison
      */
     bool operator==(const ResidueKey& other) const {
-        return residue_name == other.residue_name &&
-               chain_id == other.chain_id &&
-               residue_seq == other.residue_seq &&
+        return residue_name == other.residue_name && chain_id == other.chain_id && residue_seq == other.residue_seq &&
                insertion_code == other.insertion_code;
     }
 };

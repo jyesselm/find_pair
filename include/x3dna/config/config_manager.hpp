@@ -20,14 +20,14 @@ namespace config {
  */
 struct DebugConfig {
     // Pair validation debugging
-    bool debug_pairs = false;           // Enable pair validation debugging
-    std::string debug_pairs_filter;     // PDB:pair filter (e.g., "1EHZ:1,72")
+    bool debug_pairs = false;       // Enable pair validation debugging
+    std::string debug_pairs_filter; // PDB:pair filter (e.g., "1EHZ:1,72")
 
     // Helix organization debugging
-    bool debug_five2three = false;      // Enable five2three helix debugging
+    bool debug_five2three = false; // Enable five2three helix debugging
 
     // General debugging
-    bool verbose = false;               // Enable verbose output
+    bool verbose = false; // Enable verbose output
 
     /**
      * @brief Initialize debug settings from environment variables
@@ -170,8 +170,8 @@ private:
     std::filesystem::path x3dna_home_;
     bool include_hetatm_ = false;
     bool include_waters_ = false;
-    bool legacy_mode_ = false;            // Enable legacy compatibility mode
-    bool debug_initialized_ = false;      // Track if debug config has been initialized
+    bool legacy_mode_ = false;       // Enable legacy compatibility mode
+    bool debug_initialized_ = false; // Track if debug config has been initialized
 };
 
 } // namespace config

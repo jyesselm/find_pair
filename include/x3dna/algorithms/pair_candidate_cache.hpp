@@ -26,7 +26,9 @@ struct CandidateInfo {
     int bp_type_id;
     double adjusted_quality_score;
 
-    [[nodiscard]] bool is_valid() const { return validation.is_valid; }
+    [[nodiscard]] bool is_valid() const {
+        return validation.is_valid;
+    }
 };
 
 /**
@@ -64,12 +66,8 @@ public:
      * @param quality_calc Quality score calculator
      * @param is_nucleotide Function to check if residue is a nucleotide
      */
-    void build(
-        const core::Structure& structure,
-        const BasePairValidator& validator,
-        const QualityScoreCalculator& quality_calc,
-        NucleotideChecker is_nucleotide
-    );
+    void build(const core::Structure& structure, const BasePairValidator& validator,
+               const QualityScoreCalculator& quality_calc, NucleotideChecker is_nucleotide);
 
     /**
      * @brief Clear all cached data
@@ -79,12 +77,16 @@ public:
     /**
      * @brief Check if cache is empty
      */
-    [[nodiscard]] bool empty() const { return cache_.empty(); }
+    [[nodiscard]] bool empty() const {
+        return cache_.empty();
+    }
 
     /**
      * @brief Get number of cached pairs
      */
-    [[nodiscard]] size_t size() const { return cache_.size(); }
+    [[nodiscard]] size_t size() const {
+        return cache_.size();
+    }
 
     /**
      * @brief Get number of valid pairs
@@ -123,7 +125,9 @@ public:
     /**
      * @brief Get all cached pairs (for iteration)
      */
-    [[nodiscard]] const std::map<std::pair<int, int>, CandidateInfo>& all() const { return cache_; }
+    [[nodiscard]] const std::map<std::pair<int, int>, CandidateInfo>& all() const {
+        return cache_;
+    }
 
     /**
      * @brief Iterate over all valid pairs
@@ -136,12 +140,16 @@ public:
     /**
      * @brief Get the residue index map used during build
      */
-    [[nodiscard]] const ResidueIndexMap& index_map() const { return index_map_; }
+    [[nodiscard]] const ResidueIndexMap& index_map() const {
+        return index_map_;
+    }
 
     /**
      * @brief Get maximum legacy index
      */
-    [[nodiscard]] int max_legacy_idx() const { return index_map_.max_legacy_idx(); }
+    [[nodiscard]] int max_legacy_idx() const {
+        return index_map_.max_legacy_idx();
+    }
 
 private:
     /**
@@ -152,11 +160,10 @@ private:
     }
 
     std::map<std::pair<int, int>, CandidateInfo> cache_;
-    std::map<int, std::vector<int>> valid_partners_;  // legacy_idx -> valid partner indices
-    std::map<int, std::vector<int>> all_partners_;    // legacy_idx -> all partner indices
+    std::map<int, std::vector<int>> valid_partners_; // legacy_idx -> valid partner indices
+    std::map<int, std::vector<int>> all_partners_;   // legacy_idx -> all partner indices
     ResidueIndexMap index_map_;
 };
 
-}  // namespace algorithms
-}  // namespace x3dna
-
+} // namespace algorithms
+} // namespace x3dna

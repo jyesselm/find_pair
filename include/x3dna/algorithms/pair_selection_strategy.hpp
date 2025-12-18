@@ -42,10 +42,8 @@ public:
      * @param observer Observer for recording selection events (may be null)
      * @return Selected pairs as (legacy_idx1, legacy_idx2) with additional info
      */
-    [[nodiscard]] virtual std::vector<std::pair<int, int>> select(
-        SelectionContext& context,
-        IPairFindingObserver* observer
-    ) = 0;
+    [[nodiscard]] virtual std::vector<std::pair<int, int>> select(SelectionContext& context,
+                                                                  IPairFindingObserver* observer) = 0;
 
     /**
      * @brief Get the name of this strategy (for logging/debugging)
@@ -65,12 +63,12 @@ public:
  */
 class MutualBestStrategy : public IPairSelectionStrategy {
 public:
-    [[nodiscard]] std::vector<std::pair<int, int>> select(
-        SelectionContext& context,
-        IPairFindingObserver* observer
-    ) override;
+    [[nodiscard]] std::vector<std::pair<int, int>> select(SelectionContext& context,
+                                                          IPairFindingObserver* observer) override;
 
-    [[nodiscard]] std::string name() const override { return "MutualBest"; }
+    [[nodiscard]] std::string name() const override {
+        return "MutualBest";
+    }
 
 private:
     /**
@@ -80,13 +78,10 @@ private:
      * @param observer Observer for recording candidates
      * @return (partner_idx, adjusted_score) or nullopt if no valid partner
      */
-    [[nodiscard]] std::optional<std::pair<int, double>> find_best_partner(
-        int legacy_idx,
-        const SelectionContext& context,
-        IPairFindingObserver* observer
-    ) const;
+    [[nodiscard]] std::optional<std::pair<int, double>> find_best_partner(int legacy_idx,
+                                                                          const SelectionContext& context,
+                                                                          IPairFindingObserver* observer) const;
 };
 
-}  // namespace algorithms
-}  // namespace x3dna
-
+} // namespace algorithms
+} // namespace x3dna

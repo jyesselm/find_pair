@@ -52,7 +52,8 @@ private:
     std::optional<ReferenceFrame> frame2_;      // Reference frame for second residue
     std::vector<HydrogenBond> hbonds_;          // Hydrogen bonds
     std::optional<size_t> basepair_idx_;        // Optional index for tracking (assigned when recording)
-    bool finding_order_swapped_ = false;        // True if indices were swapped during normalization (finding order was j,i not i,j)
+    bool finding_order_swapped_ = false; // True if indices were swapped during normalization (finding order was j,i not
+                                         // i,j)
 
     /**
      * @brief Set base pair type from string and update enum
@@ -74,8 +75,8 @@ private:
         }
 
         // Watson-Crick pairs from WC_LIST (excluding "XX" placeholder)
-        if (upper_bp == "AT" || upper_bp == "TA" || upper_bp == "AU" || upper_bp == "UA" ||
-            upper_bp == "GC" || upper_bp == "CG" || upper_bp == "IC" || upper_bp == "CI") {
+        if (upper_bp == "AT" || upper_bp == "TA" || upper_bp == "AU" || upper_bp == "UA" || upper_bp == "GC" ||
+            upper_bp == "CG" || upper_bp == "IC" || upper_bp == "CI") {
             type_ = BasePairType::WATSON_CRICK;
         }
         // Wobble pairs (not in WC_LIST, but commonly occur)

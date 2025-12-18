@@ -21,8 +21,7 @@ namespace x3dna {
 namespace io {
 
 // ParseError implementation
-CifParser::ParseError::ParseError(const std::string& message)
-    : std::runtime_error(message) {}
+CifParser::ParseError::ParseError(const std::string& message) : std::runtime_error(message) {}
 
 core::Structure CifParser::parse_file(const std::filesystem::path& path) {
     if (!std::filesystem::exists(path)) {
@@ -80,8 +79,7 @@ core::Structure CifParser::parse_string(const std::string& content) {
 }
 
 // Convert GEMMI Structure to our Structure
-core::Structure CifParser::convert_gemmi_structure(const gemmi::Structure& gemmi_struct,
-                                                    const std::string& pdb_id) {
+core::Structure CifParser::convert_gemmi_structure(const gemmi::Structure& gemmi_struct, const std::string& pdb_id) {
     std::map<ResidueKey, std::vector<core::Atom>> residue_atoms;
 
     // Legacy indices: assign sequentially as atoms are encountered (1-based)
@@ -122,8 +120,10 @@ core::Structure CifParser::convert_gemmi_structure(const gemmi::Structure& gemmi
             if (!should_keep_atom(is_hetatm, ' ', residue_name)) {
                 // Check at residue level (alt_loc checked per-atom)
                 if (is_hetatm && !is_modified_nucleotide_name(residue_name)) {
-                    if (!include_hetatm_) continue;
-                    if (!include_waters_ && is_water(residue_name)) continue;
+                    if (!include_hetatm_)
+                        continue;
+                    if (!include_waters_ && is_water(residue_name))
+                        continue;
                 }
             }
 
@@ -144,20 +144,20 @@ core::Structure CifParser::convert_gemmi_structure(const gemmi::Structure& gemmi
                 std::string atom_name = normalize_atom_name(original_atom_name);
 
                 // Create atom using Builder pattern
-                auto builder = core::Atom::create(atom_name,
-                    geometry::Vector3D(gemmi_atom.pos.x, gemmi_atom.pos.y, gemmi_atom.pos.z))
-                    .residue_name(residue_name)
-                    .chain_id(chain_id)
-                    .residue_seq(residue_seq)
-                    .record_type(is_hetatm ? 'H' : 'A')
-                    .alt_loc(alt_loc)
-                    .insertion(insertion)
-                    .occupancy(gemmi_atom.occ)
-                    .b_factor(gemmi_atom.b_iso)
-                    .atom_serial(gemmi_atom.serial)
-                    .model_number(model_number)
-                    .original_atom_name(original_atom_name)
-                    .original_residue_name(original_residue_name);
+                auto builder = core::Atom::create(atom_name, geometry::Vector3D(gemmi_atom.pos.x, gemmi_atom.pos.y,
+                                                                                gemmi_atom.pos.z))
+                                   .residue_name(residue_name)
+                                   .chain_id(chain_id)
+                                   .residue_seq(residue_seq)
+                                   .record_type(is_hetatm ? 'H' : 'A')
+                                   .alt_loc(alt_loc)
+                                   .insertion(insertion)
+                                   .occupancy(gemmi_atom.occ)
+                                   .b_factor(gemmi_atom.b_iso)
+                                   .atom_serial(gemmi_atom.serial)
+                                   .model_number(model_number)
+                                   .original_atom_name(original_atom_name)
+                                   .original_residue_name(original_residue_name);
 
                 // Set element if available
                 if (gemmi_atom.element != gemmi::El::X) {
@@ -231,8 +231,7 @@ bool CifParser::is_water(const std::string& residue_name) const {
         upper += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
     }
 
-    return (upper == "HOH" || upper == "WAT" || upper == "H2O" ||
-            upper == "OH2" || upper == "SOL");
+    return (upper == "HOH" || upper == "WAT" || upper == "H2O" || upper == "OH2" || upper == "SOL");
 }
 
 bool CifParser::is_modified_nucleotide_name(const std::string& residue_name) const {
@@ -278,16 +277,26 @@ std::string CifParser::apply_atom_name_formatting_rules(const std::string& name)
 }
 
 std::string CifParser::apply_atom_name_exact_matches(const std::string& name) const {
-    if (name == " O1'") return " O4'";
-    if (name == " OL ") return " O1P";
-    if (name == " OP1") return " O1P";
-    if (name == " OR ") return " O2P";
-    if (name == " OP2") return " O2P";
-    if (name == " OP3") return " O3P";
-    if (name == " C5A") return " C5M";
-    if (name == " O5T") return " O5'";
-    if (name == " O3T") return " O3'";
-    if (name == "   P" || name == "P   ") return " P  ";
+    if (name == " O1'")
+        return " O4'";
+    if (name == " OL ")
+        return " O1P";
+    if (name == " OP1")
+        return " O1P";
+    if (name == " OR ")
+        return " O2P";
+    if (name == " OP2")
+        return " O2P";
+    if (name == " OP3")
+        return " O3P";
+    if (name == " C5A")
+        return " C5M";
+    if (name == " O5T")
+        return " O5'";
+    if (name == " O3T")
+        return " O3'";
+    if (name == "   P" || name == "P   ")
+        return " P  ";
 
     std::string trimmed = name;
     size_t start = trimmed.find_first_not_of(" \t");
@@ -296,10 +305,14 @@ std::string CifParser::apply_atom_name_exact_matches(const std::string& name) co
         trimmed = trimmed.substr(start, end - start + 1);
     }
 
-    if (trimmed == "OP1") return " O1P";
-    if (trimmed == "OP2") return " O2P";
-    if (trimmed == "OP3") return " O3P";
-    if (trimmed == "P") return " P  ";
+    if (trimmed == "OP1")
+        return " O1P";
+    if (trimmed == "OP2")
+        return " O2P";
+    if (trimmed == "OP3")
+        return " O3P";
+    if (trimmed == "P")
+        return " P  ";
 
     return name;
 }
@@ -327,8 +340,7 @@ std::string CifParser::normalize_residue_name(const std::string& name) const {
 }
 
 core::Structure CifParser::build_structure_from_residues(
-    const std::string& pdb_id,
-    const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const {
+    const std::string& pdb_id, const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const {
 
     core::Structure structure(pdb_id);
     std::map<char, core::Chain> chains;
@@ -338,8 +350,8 @@ core::Structure CifParser::build_structure_from_residues(
             continue;
         }
 
-        core::Residue residue = core::Residue::create_from_atoms(
-            key.residue_name, key.residue_seq, key.chain_id, key.insertion_code, atoms);
+        core::Residue residue = core::Residue::create_from_atoms(key.residue_name, key.residue_seq, key.chain_id,
+                                                                 key.insertion_code, atoms);
 
         auto [it, inserted] = chains.try_emplace(key.chain_id, key.chain_id);
         it->second.add_residue(residue);

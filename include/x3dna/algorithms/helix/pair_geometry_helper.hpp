@@ -9,7 +9,7 @@
 #pragma once
 
 #include <x3dna/core/base_pair.hpp>
-#include <x3dna/algorithms/helix_organizer.hpp>  // For StrandResidues
+#include <x3dna/algorithms/helix_organizer.hpp> // For StrandResidues
 #include <x3dna/geometry/vector3d.hpp>
 
 namespace x3dna::algorithms::helix {
@@ -53,8 +53,7 @@ public:
      * @return Z-axis of selected frame
      * @pre Both frames must have values
      */
-    [[nodiscard]] static geometry::Vector3D get_frame_z(
-        const core::BasePair& pair, bool swapped);
+    [[nodiscard]] static geometry::Vector3D get_frame_z(const core::BasePair& pair, bool swapped);
 
     /**
      * @brief Get 1-based residue indices for strands
@@ -68,8 +67,7 @@ public:
      * @param swapped Whether five2three algorithm swapped strands
      * @return StrandResidues with 1-based indices
      */
-    [[nodiscard]] static StrandResidues get_strand_residues(
-        const core::BasePair& pair, bool swapped);
+    [[nodiscard]] static StrandResidues get_strand_residues(const core::BasePair& pair, bool swapped);
 };
 
 } // namespace x3dna::algorithms::helix

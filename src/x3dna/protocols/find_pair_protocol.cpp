@@ -14,16 +14,11 @@
 namespace x3dna {
 namespace protocols {
 
-FindPairProtocol::FindPairProtocol(const std::filesystem::path& template_path,
-                                   const FindPairConfig& config)
-    : frame_calculator_(template_path),
-      pair_finder_(algorithms::ValidationParameters::defaults()),
-      config_(config) {}
+FindPairProtocol::FindPairProtocol(const std::filesystem::path& template_path, const FindPairConfig& config)
+    : frame_calculator_(template_path), pair_finder_(algorithms::ValidationParameters::defaults()), config_(config) {}
 
-FindPairProtocol::FindPairProtocol(const std::filesystem::path& template_path,
-                                   const std::filesystem::path& output_dir)
-    : frame_calculator_(template_path),
-      pair_finder_(algorithms::ValidationParameters::defaults()) {
+FindPairProtocol::FindPairProtocol(const std::filesystem::path& template_path, const std::filesystem::path& output_dir)
+    : frame_calculator_(template_path), pair_finder_(algorithms::ValidationParameters::defaults()) {
     config_.output_dir = output_dir;
 }
 

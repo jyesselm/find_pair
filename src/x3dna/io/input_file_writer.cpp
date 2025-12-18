@@ -433,8 +433,8 @@ void InputFileWriter::write_step_params(const std::filesystem::path& output_path
 
         // Format step label: e.g., "UA/UA" for step between U-A and U-A pairs
         std::string step_label;
-        step_label = std::string(1, bp1_base1) + std::string(1, bp2_base1) + "/" +
-                     std::string(1, bp1_base2) + std::string(1, bp2_base2);
+        step_label = std::string(1, bp1_base1) + std::string(1, bp2_base1) + "/" + std::string(1, bp1_base2) +
+                     std::string(1, bp2_base2);
 
         out << std::fixed << std::setprecision(2);
         out << std::setw(5) << step_label << " ";
@@ -487,8 +487,8 @@ void InputFileWriter::write_helical_params(const std::filesystem::path& output_p
 
         // Format step label: e.g., "UA/UA" for step between U-A and U-A pairs
         std::string step_label;
-        step_label = std::string(1, bp1_base1) + std::string(1, bp2_base1) + "/" +
-                     std::string(1, bp1_base2) + std::string(1, bp2_base2);
+        step_label = std::string(1, bp1_base1) + std::string(1, bp2_base1) + "/" + std::string(1, bp1_base2) +
+                     std::string(1, bp2_base2);
 
         out << std::fixed << std::setprecision(2);
         out << std::setw(5) << step_label << " ";

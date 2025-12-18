@@ -18,10 +18,10 @@ namespace validation {
 
 // Internal vertex struct for integer arithmetic polygon intersection
 struct Vertex {
-    Point2D ip;     // Integer point (after scaling)
-    Point2D rx;     // X range for this edge
-    Point2D ry;     // Y range for this edge
-    long inside;    // Inside count
+    Point2D ip;  // Integer point (after scaling)
+    Point2D rx;  // X range for this edge
+    Point2D ry;  // Y range for this edge
+    long inside; // Inside count
 };
 
 // Helper functions for pia_inter (polygon intersection area)
@@ -44,8 +44,7 @@ bool pia_ovl(const Point2D& p, const Point2D& q) {
     return p.x < q.y && q.x < p.y;
 }
 
-void pia_cross(double* out_s, Vertex* a, Vertex* b, Vertex* c, Vertex* d,
-               double a1, double a2, double a3, double a4) {
+void pia_cross(double* out_s, Vertex* a, Vertex* b, Vertex* c, Vertex* d, double a1, double a2, double a3, double a4) {
     // Matches legacy pia_cross (line 3233-3248)
     double r1, r2;
     Point2D dp;
@@ -79,8 +78,8 @@ void pia_inness(double* out_s, Vertex* P, long cP, Vertex* Q, long cQ) {
     }
 }
 
-void pia_fit(double minx, double miny, double mid, double sclx, double scly,
-             const Point2D* x, long cx, Vertex* ix, long fudge) {
+void pia_fit(double minx, double miny, double mid, double sclx, double scly, const Point2D* x, long cx, Vertex* ix,
+             long fudge) {
     // Matches legacy pia_fit (line 3188-3216)
     // Converts floating point coordinates to integer coordinates for precision
     long c, t;
@@ -112,11 +111,8 @@ void pia_fit(double minx, double miny, double mid, double sclx, double scly,
 
 } // anonymous namespace
 
-double OverlapCalculator::calculate(
-    const core::Residue& res1,
-    const core::Residue& res2,
-    const geometry::Vector3D& oave,
-    const geometry::Vector3D& zave) {
+double OverlapCalculator::calculate(const core::Residue& res1, const core::Residue& res2,
+                                    const geometry::Vector3D& oave, const geometry::Vector3D& zave) {
 
     // Match legacy get_oarea() logic (org/src/ana_fncs.c lines 3327-3358)
     // Steps:
@@ -203,17 +199,15 @@ double OverlapCalculator::calculate(
     return calculate_polygon_intersection(poly1, poly2);
 }
 
-std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exocyclic(
-    const core::Residue& residue,
-    const geometry::Vector3D& oave) {
+std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exocyclic(const core::Residue& residue,
+                                                                                       const geometry::Vector3D& oave) {
 
     std::vector<geometry::Vector3D> ring_coords;
 
     // Ring atoms: C4, N3, C2, N1, C6, C5, N7, C8, N9
     // Pyrimidines use 6 atoms, purines use 9
-    static const std::vector<std::string> RING_ATOMS_ALL = {
-        " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "
-    };
+    static const std::vector<std::string> RING_ATOMS_ALL = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
+                                                            " C5 ", " N7 ", " C8 ", " N9 "};
 
     // Find ring atoms in residue
     std::vector<const core::Atom*> ring_atoms;
@@ -258,9 +252,8 @@ std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exo
     return ring_coords;
 }
 
-double OverlapCalculator::calculate_polygon_intersection(
-    const std::vector<Point2D>& poly1,
-    const std::vector<Point2D>& poly2) {
+double OverlapCalculator::calculate_polygon_intersection(const std::vector<Point2D>& poly1,
+                                                         const std::vector<Point2D>& poly2) {
 
     // Matches legacy pia_inter (line 3266-3325)
     if (poly1.size() < 3 || poly2.size() < 3) {
@@ -275,17 +268,25 @@ double OverlapCalculator::calculate_polygon_intersection(
     double maxx = -validation_constants::XBIG, maxy = -validation_constants::XBIG;
 
     for (long j = 0; j < na; j++) {
-        if (minx > poly1[j].x) minx = poly1[j].x;
-        if (miny > poly1[j].y) miny = poly1[j].y;
-        if (maxx < poly1[j].x) maxx = poly1[j].x;
-        if (maxy < poly1[j].y) maxy = poly1[j].y;
+        if (minx > poly1[j].x)
+            minx = poly1[j].x;
+        if (miny > poly1[j].y)
+            miny = poly1[j].y;
+        if (maxx < poly1[j].x)
+            maxx = poly1[j].x;
+        if (maxy < poly1[j].y)
+            maxy = poly1[j].y;
     }
 
     for (long j = 0; j < nb; j++) {
-        if (minx > poly2[j].x) minx = poly2[j].x;
-        if (miny > poly2[j].y) miny = poly2[j].y;
-        if (maxx < poly2[j].x) maxx = poly2[j].x;
-        if (maxy < poly2[j].y) maxy = poly2[j].y;
+        if (minx > poly2[j].x)
+            minx = poly2[j].x;
+        if (miny > poly2[j].y)
+            miny = poly2[j].y;
+        if (maxx < poly2[j].x)
+            maxx = poly2[j].x;
+        if (maxy < poly2[j].y)
+            maxy = poly2[j].y;
     }
 
     // Check for degenerate case (zero area bounding box)

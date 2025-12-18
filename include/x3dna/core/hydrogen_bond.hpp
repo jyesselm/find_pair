@@ -18,11 +18,11 @@ namespace core {
  * The type field indicates whether the bond is standard ('-') or non-standard (' ').
  */
 struct HydrogenBond {
-    std::string donor_atom;              // Donor atom name (e.g., " N6 ")
-    std::string acceptor_atom;           // Acceptor atom name (e.g., " O4 ")
-    double distance = 0.0;               // Bond distance in Angstroms
-    char type = ' ';                     // '-' for standard, ' ' for non-standard
-    std::optional<size_t> hbond_idx;     // Optional index for tracking
+    std::string donor_atom;          // Donor atom name (e.g., " N6 ")
+    std::string acceptor_atom;       // Acceptor atom name (e.g., " O4 ")
+    double distance = 0.0;           // Bond distance in Angstroms
+    char type = ' ';                 // '-' for standard, ' ' for non-standard
+    std::optional<size_t> hbond_idx; // Optional index for tracking
 
     /**
      * @brief Check if this is a standard hydrogen bond
@@ -41,10 +41,7 @@ struct HydrogenBond {
      * @brief Constructor with all fields
      */
     HydrogenBond(std::string donor, std::string acceptor, double dist, char t)
-        : donor_atom(std::move(donor))
-        , acceptor_atom(std::move(acceptor))
-        , distance(dist)
-        , type(t) {}
+        : donor_atom(std::move(donor)), acceptor_atom(std::move(acceptor)), distance(dist), type(t) {}
 };
 
 } // namespace core

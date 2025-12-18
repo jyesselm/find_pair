@@ -50,9 +50,8 @@ struct LegacyPairData {
     bool dNN_check = false;
 };
 
-LegacyPairData load_legacy_pair_validation(const std::string& json_dir,
-                                            const std::string& pdb_id,
-                                            int base_i, int base_j) {
+LegacyPairData load_legacy_pair_validation(const std::string& json_dir, const std::string& pdb_id, int base_i,
+                                           int base_j) {
     LegacyPairData data;
 
     std::string path = json_dir + "/pair_validation/" + pdb_id + ".json";
@@ -152,12 +151,14 @@ int main(int argc, char* argv[]) {
     std::cout << "=== Comparing Pair (" << base_i << ", " << base_j << ") in " << pdb_id << " ===\n\n";
 
     // Load and parse PDB file
-    if (verbose) std::cout << "Loading PDB file: " << pdb_file << "\n";
+    if (verbose)
+        std::cout << "Loading PDB file: " << pdb_file << "\n";
     PdbParser parser;
     core::Structure structure = parser.parse_file(pdb_file);
 
     // Calculate frames
-    if (verbose) std::cout << "Calculating reference frames...\n";
+    if (verbose)
+        std::cout << "Calculating reference frames...\n";
     BaseFrameCalculator frame_calc;
     frame_calc.calculate_all_frames(structure);
 
@@ -169,23 +170,24 @@ int main(int argc, char* argv[]) {
         for (auto& residue : chain.residues()) {
             if (!residue.atoms().empty()) {
                 int legacy_idx = residue.atoms()[0].legacy_residue_idx();
-                if (legacy_idx == base_i) res1 = &residue;
-                if (legacy_idx == base_j) res2 = &residue;
+                if (legacy_idx == base_i)
+                    res1 = &residue;
+                if (legacy_idx == base_j)
+                    res2 = &residue;
             }
         }
     }
 
     if (!res1 || !res2) {
-        std::cerr << "Error: Could not find residues with legacy indices "
-                  << base_i << " and " << base_j << "\n";
+        std::cerr << "Error: Could not find residues with legacy indices " << base_i << " and " << base_j << "\n";
         return 1;
     }
 
     if (verbose) {
-        std::cout << "Found residue " << base_i << ": " << res1->name()
-                  << " (chain " << res1->chain_id() << ", seq " << res1->seq_num() << ")\n";
-        std::cout << "Found residue " << base_j << ": " << res2->name()
-                  << " (chain " << res2->chain_id() << ", seq " << res2->seq_num() << ")\n\n";
+        std::cout << "Found residue " << base_i << ": " << res1->name() << " (chain " << res1->chain_id() << ", seq "
+                  << res1->seq_num() << ")\n";
+        std::cout << "Found residue " << base_j << ": " << res2->name() << " (chain " << res2->chain_id() << ", seq "
+                  << res2->seq_num() << ")\n\n";
         std::cout << "Running modern validation...\n";
     }
     BasePairValidator validator;
@@ -197,11 +199,12 @@ int main(int argc, char* argv[]) {
     int modern_bp_type_id = score_calc.calculate_bp_type_id(*res1, *res2, modern_result);
     double adjusted_quality = modern_result.quality_score + hbond_adjustment;
     if (modern_bp_type_id == 2) {
-        adjusted_quality -= 2.0;  // WC bonus
+        adjusted_quality -= 2.0; // WC bonus
     }
 
     // Load legacy data
-    if (verbose) std::cout << "Loading legacy validation from: " << json_dir << "\n\n";
+    if (verbose)
+        std::cout << "Loading legacy validation from: " << json_dir << "\n\n";
     auto legacy_data = load_legacy_pair_validation(json_dir, pdb_id, base_i, base_j);
 
     // Print comparison
@@ -210,8 +213,8 @@ int main(int argc, char* argv[]) {
     auto compare_float = [](const std::string& name, double leg, double mod, double tol = 1e-5) {
         double diff = std::abs(leg - mod);
         bool match = diff <= tol;
-        std::cout << "  " << std::setw(20) << std::left << name << ": "
-                  << std::setw(14) << leg << " vs " << std::setw(14) << mod;
+        std::cout << "  " << std::setw(20) << std::left << name << ": " << std::setw(14) << leg << " vs "
+                  << std::setw(14) << mod;
         if (!match) {
             std::cout << " [DIFF: " << diff << "]";
         } else {
@@ -223,8 +226,7 @@ int main(int argc, char* argv[]) {
 
     auto compare_bool = [](const std::string& name, bool leg, bool mod) {
         bool match = (leg == mod);
-        std::cout << "  " << std::setw(20) << std::left << name << ": "
-                  << std::setw(14) << (leg ? "true" : "false")
+        std::cout << "  " << std::setw(20) << std::left << name << ": " << std::setw(14) << (leg ? "true" : "false")
                   << " vs " << std::setw(14) << (mod ? "true" : "false");
         if (!match) {
             std::cout << " [MISMATCH]";
@@ -237,8 +239,8 @@ int main(int argc, char* argv[]) {
 
     auto compare_int = [](const std::string& name, int leg, int mod) {
         bool match = (leg == mod);
-        std::cout << "  " << std::setw(20) << std::left << name << ": "
-                  << std::setw(14) << leg << " vs " << std::setw(14) << mod;
+        std::cout << "  " << std::setw(20) << std::left << name << ": " << std::setw(14) << leg << " vs "
+                  << std::setw(14) << mod;
         if (!match) {
             std::cout << " [MISMATCH]";
         } else {

@@ -17,14 +17,12 @@ ResourceLocator& ResourceLocator::instance() {
 
 void ResourceLocator::initialize(const std::filesystem::path& resources_path) {
     if (!std::filesystem::exists(resources_path)) {
-        throw std::runtime_error(
-            "ResourceLocator: Path does not exist: " + resources_path.string());
+        throw std::runtime_error("ResourceLocator: Path does not exist: " + resources_path.string());
     }
 
     if (!validate_resources_path(resources_path)) {
-        throw std::runtime_error(
-            "ResourceLocator: Invalid resources directory (missing templates/ or config/): " +
-            resources_path.string());
+        throw std::runtime_error("ResourceLocator: Invalid resources directory (missing templates/ or config/): " +
+                                 resources_path.string());
     }
 
     auto& inst = instance();
@@ -123,8 +121,7 @@ std::optional<std::filesystem::path> ResourceLocator::find_resources_auto() {
         }
         // Check if resources is a subdirectory
         auto resources_subdir = home_path / "resources";
-        if (std::filesystem::exists(resources_subdir) &&
-            validate_resources_path(resources_subdir)) {
+        if (std::filesystem::exists(resources_subdir) && validate_resources_path(resources_subdir)) {
             return resources_subdir;
         }
     }
@@ -139,8 +136,7 @@ std::optional<std::filesystem::path> ResourceLocator::find_resources_auto() {
             // We'll return the x3dna path and handle the mapping in the calling code
             // Actually, for simplicity, if they have the new structure, use it
             auto resources_subdir = x3dna_path / "resources";
-            if (std::filesystem::exists(resources_subdir) &&
-                validate_resources_path(resources_subdir)) {
+            if (std::filesystem::exists(resources_subdir) && validate_resources_path(resources_subdir)) {
                 return resources_subdir;
             }
         }
@@ -153,9 +149,8 @@ void ResourceLocator::require_initialized() {
     if (!instance().initialized_) {
         // Try auto-initialization as a convenience
         if (!initialize_from_environment()) {
-            throw std::runtime_error(
-                "ResourceLocator: Not initialized. Call ResourceLocator::initialize() "
-                "or set X3DNA_HOMEDIR environment variable before using x3dna library.");
+            throw std::runtime_error("ResourceLocator: Not initialized. Call ResourceLocator::initialize() "
+                                     "or set X3DNA_HOMEDIR environment variable before using x3dna library.");
         }
     }
 }

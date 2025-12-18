@@ -119,12 +119,14 @@ int main(int argc, char* argv[]) {
 
                 // Write .par files
                 if (!step_params.empty()) {
-                    x3dna::io::InputFileWriter::write_step_params("bp_step.par", step_params, analyze_base_pairs, structure);
+                    x3dna::io::InputFileWriter::write_step_params("bp_step.par", step_params, analyze_base_pairs,
+                                                                  structure);
                     std::cout << "Step parameters written: bp_step.par\n";
                 }
 
                 if (!helical_params.empty()) {
-                    x3dna::io::InputFileWriter::write_helical_params("bp_helical.par", helical_params, analyze_base_pairs, structure);
+                    x3dna::io::InputFileWriter::write_helical_params("bp_helical.par", helical_params,
+                                                                     analyze_base_pairs, structure);
                     std::cout << "Helical parameters written: bp_helical.par\n";
                 }
             }

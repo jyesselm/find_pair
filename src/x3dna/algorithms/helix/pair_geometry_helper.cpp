@@ -13,11 +13,7 @@ geometry::Vector3D PairGeometryHelper::get_pair_origin(const core::BasePair& pai
     // Note: organize() validates all pairs have both frames
     const auto& o1 = pair.frame1()->origin();
     const auto& o2 = pair.frame2()->origin();
-    return geometry::Vector3D(
-        (o1.x() + o2.x()) / 2.0,
-        (o1.y() + o2.y()) / 2.0,
-        (o1.z() + o2.z()) / 2.0
-    );
+    return geometry::Vector3D((o1.x() + o2.x()) / 2.0, (o1.y() + o2.y()) / 2.0, (o1.z() + o2.z()) / 2.0);
 }
 
 geometry::Vector3D PairGeometryHelper::get_pair_z_axis(const core::BasePair& pair) {
@@ -33,14 +29,12 @@ geometry::Vector3D PairGeometryHelper::get_pair_z_axis(const core::BasePair& pai
     return zave;
 }
 
-geometry::Vector3D PairGeometryHelper::get_frame_z(
-    const core::BasePair& pair, bool swapped) {
+geometry::Vector3D PairGeometryHelper::get_frame_z(const core::BasePair& pair, bool swapped) {
     // Note: organize() validates all pairs have both frames
     return swapped ? pair.frame2()->z_axis() : pair.frame1()->z_axis();
 }
 
-StrandResidues PairGeometryHelper::get_strand_residues(
-    const core::BasePair& pair, bool swapped) {
+StrandResidues PairGeometryHelper::get_strand_residues(const core::BasePair& pair, bool swapped) {
     // BasePair stores 0-based indices normalized to (smaller, larger).
     // finding_order_swapped() indicates if original finding order was (larger, smaller).
     // Legacy code uses the ORIGINAL finding order for strand assignments.

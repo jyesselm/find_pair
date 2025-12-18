@@ -73,7 +73,7 @@ public:
      * @return Vector of found base pairs
      */
     [[nodiscard]] std::vector<core::BasePair> find_pairs_with_recording(core::Structure& structure,
-                                                          io::JsonWriter* writer = nullptr) const;
+                                                                        io::JsonWriter* writer = nullptr) const;
 
     /**
      * @brief Set finding strategy
@@ -123,7 +123,8 @@ private:
      * @brief Find best pairs using greedy mutual best match (legacy find_bestpair)
      * @param writer Optional JsonWriter to record validation results
      */
-    [[nodiscard]] std::vector<core::BasePair> find_best_pairs(core::Structure& structure, io::JsonWriter* writer = nullptr) const;
+    [[nodiscard]] std::vector<core::BasePair> find_best_pairs(core::Structure& structure,
+                                                              io::JsonWriter* writer = nullptr) const;
 
     /**
      * @brief Find all valid pairs (exhaustive search)
@@ -179,8 +180,8 @@ private:
      * Note: Full implementation requires bpstep_par (shear, stretch, opening) from Stage 6.
      * This is a simplified version that uses base pair type and direction vectors.
      */
-    [[nodiscard]] int calculate_bp_type_id(const core::Residue* res1, const core::Residue* res2, const ValidationResult& result,
-                             double quality_score) const;
+    [[nodiscard]] int calculate_bp_type_id(const core::Residue* res1, const core::Residue* res2,
+                                           const ValidationResult& result, double quality_score) const;
 
     /**
      * @brief Get residue index in structure (0-based, counting all residues)
@@ -230,9 +231,8 @@ private:
      * @param result Validation result
      * @return Constructed BasePair
      */
-    [[nodiscard]] core::BasePair create_base_pair(int legacy_idx1, int legacy_idx2,
-                                                   const core::Residue* res1, const core::Residue* res2,
-                                                   const ValidationResult& result) const;
+    [[nodiscard]] core::BasePair create_base_pair(int legacy_idx1, int legacy_idx2, const core::Residue* res1,
+                                                  const core::Residue* res2, const ValidationResult& result) const;
 };
 
 } // namespace algorithms

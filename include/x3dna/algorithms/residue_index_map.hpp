@@ -55,12 +55,16 @@ public:
     /**
      * @brief Check if mapping is empty
      */
-    [[nodiscard]] bool empty() const { return by_legacy_.empty(); }
+    [[nodiscard]] bool empty() const {
+        return by_legacy_.empty();
+    }
 
     /**
      * @brief Get number of mapped residues
      */
-    [[nodiscard]] size_t size() const { return by_legacy_.size(); }
+    [[nodiscard]] size_t size() const {
+        return by_legacy_.size();
+    }
 
     // ==================== Lookups ====================
 
@@ -109,12 +113,16 @@ public:
     /**
      * @brief Get maximum legacy index
      */
-    [[nodiscard]] int max_legacy_idx() const { return max_legacy_idx_; }
+    [[nodiscard]] int max_legacy_idx() const {
+        return max_legacy_idx_;
+    }
 
     /**
      * @brief Get minimum legacy index (usually 1)
      */
-    [[nodiscard]] int min_legacy_idx() const { return min_legacy_idx_; }
+    [[nodiscard]] int min_legacy_idx() const {
+        return min_legacy_idx_;
+    }
 
     // ==================== Iteration ====================
 
@@ -143,7 +151,9 @@ public:
     /**
      * @brief Iterate over all (legacy_idx, residue) pairs
      */
-    [[nodiscard]] const std::map<int, const core::Residue*>& all() const { return by_legacy_; }
+    [[nodiscard]] const std::map<int, const core::Residue*>& all() const {
+        return by_legacy_;
+    }
 
 private:
     std::map<int, const core::Residue*> by_legacy_;
@@ -154,6 +164,5 @@ private:
     int min_legacy_idx_ = 0;
 };
 
-}  // namespace algorithms
-}  // namespace x3dna
-
+} // namespace algorithms
+} // namespace x3dna

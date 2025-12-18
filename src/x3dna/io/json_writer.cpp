@@ -809,8 +809,8 @@ void JsonWriter::record_helix_organization(size_t helix_num, const algorithms::H
     nlohmann::json record;
     record["type"] = "helix_organization";
     record["helix_num"] = static_cast<int>(helix_num);
-    record["helix_start_pos"] = static_cast<int>(helix.start_idx + 1);  // 1-based
-    record["helix_end_pos"] = static_cast<int>(helix.end_idx + 1);      // 1-based
+    record["helix_start_pos"] = static_cast<int>(helix.start_idx + 1); // 1-based
+    record["helix_end_pos"] = static_cast<int>(helix.end_idx + 1);     // 1-based
     record["helix_length"] = static_cast<int>(helix.end_idx - helix.start_idx + 1);
 
     // Debug fields for helix organization analysis
@@ -819,14 +819,9 @@ void JsonWriter::record_helix_organization(size_t helix_num, const algorithms::H
     record["has_mixed_direction"] = helix.has_mixed_direction;
 
     // Direction counts: [s1_fwd, s1_rev, s1_none, s2_fwd, s2_rev, s2_none]
-    record["direction"] = nlohmann::json::array({
-        helix.direction.strand1_forward,
-        helix.direction.strand1_reverse,
-        helix.direction.strand1_none,
-        helix.direction.strand2_forward,
-        helix.direction.strand2_reverse,
-        helix.direction.strand2_none
-    });
+    record["direction"] = nlohmann::json::array({helix.direction.strand1_forward, helix.direction.strand1_reverse,
+                                                 helix.direction.strand1_none, helix.direction.strand2_forward,
+                                                 helix.direction.strand2_reverse, helix.direction.strand2_none});
 
     nlohmann::json pairs_array = nlohmann::json::array();
     for (size_t j = helix.start_idx; j <= helix.end_idx; ++j) {
@@ -834,8 +829,8 @@ void JsonWriter::record_helix_organization(size_t helix_num, const algorithms::H
         const auto& pair = pairs[bp_idx];
 
         nlohmann::json pair_info;
-        pair_info["helix_pos"] = static_cast<int>(j + 1);  // 1-based
-        pair_info["bp_idx"] = static_cast<int>(bp_idx + 1);  // 1-based (legacy format)
+        pair_info["helix_pos"] = static_cast<int>(j + 1);   // 1-based
+        pair_info["bp_idx"] = static_cast<int>(bp_idx + 1); // 1-based (legacy format)
         pair_info["strand_swapped"] = strand_swapped[bp_idx];
         // Preserve original finding order to match legacy behavior
         if (pair.finding_order_swapped()) {
@@ -865,7 +860,7 @@ void JsonWriter::record_bp_context(const std::vector<core::BasePair>& pairs,
         const auto& pair = pairs[i];
 
         nlohmann::json pair_info;
-        pair_info["bp_idx"] = static_cast<int>(i + 1);  // 1-based
+        pair_info["bp_idx"] = static_cast<int>(i + 1); // 1-based
         pair_info["is_endpoint"] = ctx.is_endpoint;
         pair_info["neighbor1"] = ctx.neighbor1.has_value() ? static_cast<int>(ctx.neighbor1.value() + 1) : 0;
         pair_info["neighbor2"] = ctx.neighbor2.has_value() ? static_cast<int>(ctx.neighbor2.value() + 1) : 0;

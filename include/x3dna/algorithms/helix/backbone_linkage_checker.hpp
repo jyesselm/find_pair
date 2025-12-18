@@ -9,20 +9,20 @@
 #pragma once
 
 #include <x3dna/core/base_pair.hpp>
-#include <x3dna/algorithms/helix_organizer.hpp>  // For LinkDirection, BackboneData
+#include <x3dna/algorithms/helix_organizer.hpp> // For LinkDirection, BackboneData
 
 namespace x3dna::algorithms::helix {
 
 // Re-use types from helix_organizer to avoid duplication
-using algorithms::LinkDirection;
 using algorithms::BackboneData;
+using algorithms::LinkDirection;
 
 /**
  * @struct BackboneLinkageConfig
  * @brief Configuration for backbone linkage detection
  */
 struct BackboneLinkageConfig {
-    double o3p_upper = 2.5;  ///< Maximum O3'-P distance for linkage (Angstroms)
+    double o3p_upper = 2.5; ///< Maximum O3'-P distance for linkage (Angstroms)
 };
 
 /**
@@ -34,8 +34,7 @@ struct BackboneLinkageConfig {
  */
 class BackboneLinkageChecker {
 public:
-    explicit BackboneLinkageChecker(const BackboneLinkageConfig& config = {})
-        : config_(config) {}
+    explicit BackboneLinkageChecker(const BackboneLinkageConfig& config = {}) : config_(config) {}
 
     /**
      * @brief Check linkage direction between two residues
@@ -44,9 +43,7 @@ public:
      * @param backbone Backbone atom data
      * @return LinkDirection indicating the type of linkage
      */
-    [[nodiscard]] LinkDirection check_linkage(
-        size_t res_i, size_t res_j,
-        const BackboneData& backbone) const;
+    [[nodiscard]] LinkDirection check_linkage(size_t res_i, size_t res_j, const BackboneData& backbone) const;
 
     /**
      * @brief Calculate O3'-O3' distance between residues
@@ -55,9 +52,7 @@ public:
      * @param backbone Backbone atom data
      * @return Distance in Angstroms, or -1.0 if atoms not found
      */
-    [[nodiscard]] double o3_distance(
-        size_t res_i, size_t res_j,
-        const BackboneData& backbone) const;
+    [[nodiscard]] double o3_distance(size_t res_i, size_t res_j, const BackboneData& backbone) const;
 
     /**
      * @brief Check if two base pairs are connected via backbone
@@ -66,12 +61,12 @@ public:
      * @param backbone Backbone atom data
      * @return true if any backbone linkage exists between the pairs
      */
-    [[nodiscard]] bool are_pairs_connected(
-        const core::BasePair& pair1,
-        const core::BasePair& pair2,
-        const BackboneData& backbone) const;
+    [[nodiscard]] bool are_pairs_connected(const core::BasePair& pair1, const core::BasePair& pair2,
+                                           const BackboneData& backbone) const;
 
-    [[nodiscard]] const BackboneLinkageConfig& config() const { return config_; }
+    [[nodiscard]] const BackboneLinkageConfig& config() const {
+        return config_;
+    }
 
 private:
     BackboneLinkageConfig config_;
@@ -85,9 +80,12 @@ private:
  * @param none None count to increment
  */
 inline void update_direction_count(LinkDirection link, int& forward, int& reverse, int& none) {
-    if (link == LinkDirection::Forward) ++forward;
-    else if (link == LinkDirection::Reverse) ++reverse;
-    else ++none;
+    if (link == LinkDirection::Forward)
+        ++forward;
+    else if (link == LinkDirection::Reverse)
+        ++reverse;
+    else
+        ++none;
 }
 
 } // namespace x3dna::algorithms::helix

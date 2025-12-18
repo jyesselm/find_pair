@@ -44,11 +44,8 @@ public:
      * @param zave Average z-axis of the two reference frames
      * @return Overlap area in square Angstroms
      */
-    [[nodiscard]] static double calculate(
-        const core::Residue& res1,
-        const core::Residue& res2,
-        const geometry::Vector3D& oave,
-        const geometry::Vector3D& zave);
+    [[nodiscard]] static double calculate(const core::Residue& res1, const core::Residue& res2,
+                                          const geometry::Vector3D& oave, const geometry::Vector3D& zave);
 
     /**
      * @brief Get ring coordinates with exocyclic atoms for a residue
@@ -57,8 +54,7 @@ public:
      * @return Vector of 3D coordinates for ring + exocyclic atoms
      */
     [[nodiscard]] static std::vector<geometry::Vector3D> get_ring_coordinates_with_exocyclic(
-        const core::Residue& residue,
-        const geometry::Vector3D& oave);
+        const core::Residue& residue, const geometry::Vector3D& oave);
 
     /**
      * @brief Calculate polygon intersection area
@@ -69,9 +65,8 @@ public:
      * Uses the pia_inter algorithm (Polygon Intersection Area) for
      * accurate computation of overlapping polygon regions.
      */
-    [[nodiscard]] static double calculate_polygon_intersection(
-        const std::vector<Point2D>& poly1,
-        const std::vector<Point2D>& poly2);
+    [[nodiscard]] static double calculate_polygon_intersection(const std::vector<Point2D>& poly1,
+                                                               const std::vector<Point2D>& poly2);
 
 private:
     // Maximum polygon vertices (matches legacy MNPOLY)

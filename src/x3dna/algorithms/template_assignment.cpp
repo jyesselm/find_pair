@@ -9,8 +9,8 @@ namespace algorithms {
 const std::map<std::string, core::ResidueType> TemplateAssignment::MODIFIED_PURINES = {};
 const std::map<std::string, core::ResidueType> TemplateAssignment::MODIFIED_PYRIMIDINES = {};
 
-std::optional<core::ResidueType> TemplateAssignment::get_type_for_modified(
-    const std::string& residue_name, bool /* is_purine */
+std::optional<core::ResidueType> TemplateAssignment::get_type_for_modified(const std::string& residue_name,
+                                                                           bool /* is_purine */
 ) {
     // Use the centralized registry
     return core::ModifiedNucleotideRegistry::get_base_type(residue_name);

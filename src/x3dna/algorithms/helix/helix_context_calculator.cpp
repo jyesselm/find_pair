@@ -12,30 +12,30 @@
 namespace x3dna::algorithms::helix {
 
 namespace {
-    /**
-     * @brief Check if five2three debugging is enabled
-     */
-    bool is_debug_enabled() {
-        static bool initialized = false;
-        static bool debug_enabled = false;
-        if (!initialized) {
-            auto& cfg = config::ConfigManager::instance();
-            cfg.init_debug_from_environment();
-            debug_enabled = cfg.debug_config().debug_five2three;
-            initialized = true;
-        }
-        return debug_enabled;
+/**
+ * @brief Check if five2three debugging is enabled
+ */
+bool is_debug_enabled() {
+    static bool initialized = false;
+    static bool debug_enabled = false;
+    if (!initialized) {
+        auto& cfg = config::ConfigManager::instance();
+        cfg.init_debug_from_environment();
+        debug_enabled = cfg.debug_config().debug_five2three;
+        initialized = true;
     }
+    return debug_enabled;
 }
+} // namespace
 
-std::vector<PairContext> HelixContextCalculator::calculate_context(
-    const std::vector<core::BasePair>& pairs,
-    const BackboneData& backbone) const {
+std::vector<PairContext> HelixContextCalculator::calculate_context(const std::vector<core::BasePair>& pairs,
+                                                                   const BackboneData& backbone) const {
 
     size_t n = pairs.size();
     std::vector<PairContext> context(n);
 
-    if (n < 2) return context;
+    if (n < 2)
+        return context;
 
     for (size_t i = 0; i < n; ++i) {
         auto org_i = PairGeometryHelper::get_pair_origin(pairs[i]);
@@ -44,7 +44,8 @@ std::vector<PairContext> HelixContextCalculator::calculate_context(
         std::vector<std::pair<double, size_t>> neighbors;
 
         for (size_t j = 0; j < n; ++j) {
-            if (j == i) continue;
+            if (j == i)
+                continue;
 
             auto org_j = PairGeometryHelper::get_pair_origin(pairs[j]);
             double dist = (org_j - org_i).length();
@@ -60,23 +61,22 @@ std::vector<PairContext> HelixContextCalculator::calculate_context(
         // with NO stored neighbors (end_list only stores the endpoint itself)
         if (neighbors.empty() || neighbors[0].first > config_.helix_break) {
             context[i].is_endpoint = true;
-            continue;  // Don't store neighbor1 - matches legacy line 963-965
+            continue; // Don't store neighbor1 - matches legacy line 963-965
         }
 
         context[i].neighbor1 = neighbors[0].second;
         context[i].dist1 = neighbors[0].first;
 
         // Check backbone connectivity to neighbor1
-        context[i].has_backbone_link1 = linkage_checker_.are_pairs_connected(
-            pairs[i], pairs[neighbors[0].second], backbone);
+        context[i].has_backbone_link1 = linkage_checker_.are_pairs_connected(pairs[i], pairs[neighbors[0].second],
+                                                                             backbone);
 
         auto v1 = PairGeometryHelper::get_pair_origin(pairs[neighbors[0].second]) - org_i;
         double d1 = z_i.dot(v1);
 
         // Legacy lines 931-941: If 2nd and 3rd closest are both on opposite z-side,
         // swap them if 2nd has larger |z-distance| (prefer smaller |z-distance|)
-        if (neighbors.size() >= 3 &&
-            neighbors[1].first <= config_.helix_break &&
+        if (neighbors.size() >= 3 && neighbors[1].first <= config_.helix_break &&
             neighbors[2].first <= config_.helix_break) {
             auto v2 = PairGeometryHelper::get_pair_origin(pairs[neighbors[1].second]) - org_i;
             auto v3 = PairGeometryHelper::get_pair_origin(pairs[neighbors[2].second]) - org_i;
@@ -92,7 +92,8 @@ std::vector<PairContext> HelixContextCalculator::calculate_context(
         }
 
         for (size_t k = 1; k < neighbors.size(); ++k) {
-            if (neighbors[k].first > config_.helix_break) break;
+            if (neighbors[k].first > config_.helix_break)
+                break;
 
             auto vk = PairGeometryHelper::get_pair_origin(pairs[neighbors[k].second]) - org_i;
             double dk = z_i.dot(vk);
@@ -101,8 +102,9 @@ std::vector<PairContext> HelixContextCalculator::calculate_context(
                 context[i].neighbor2 = neighbors[k].second;
                 context[i].dist2 = neighbors[k].first;
                 // Check backbone connectivity to neighbor2
-                context[i].has_backbone_link2 = linkage_checker_.are_pairs_connected(
-                    pairs[i], pairs[neighbors[k].second], backbone);
+                context[i].has_backbone_link2 = linkage_checker_.are_pairs_connected(pairs[i],
+                                                                                     pairs[neighbors[k].second],
+                                                                                     backbone);
                 context[i].is_endpoint = false;
                 break;
             }
@@ -127,8 +129,8 @@ std::vector<PairContext> HelixContextCalculator::calculate_context(
                 if (are_on_opposite_z_sides(d1, d2) && dist_n1_n2 <= config_.helix_break) {
                     context[i].neighbor2 = n2_idx;
                     context[i].dist2 = neighbors[1].first;
-                    context[i].has_backbone_link2 = linkage_checker_.are_pairs_connected(
-                        pairs[i], pairs[n2_idx], backbone);
+                    context[i].has_backbone_link2 = linkage_checker_.are_pairs_connected(pairs[i], pairs[n2_idx],
+                                                                                         backbone);
                     // Still an endpoint, but now has a neighbor2
                 }
             }
@@ -138,8 +140,7 @@ std::vector<PairContext> HelixContextCalculator::calculate_context(
     return context;
 }
 
-std::vector<size_t> HelixContextCalculator::find_endpoints(
-    const std::vector<PairContext>& context) const {
+std::vector<size_t> HelixContextCalculator::find_endpoints(const std::vector<PairContext>& context) const {
 
     bool debug = is_debug_enabled();
 
@@ -162,9 +163,10 @@ std::vector<size_t> HelixContextCalculator::find_endpoints(
         }
         std::cerr << std::endl;
         for (size_t i = 0; i < context.size(); ++i) {
-            std::cerr << "[context] pair " << i << ": ep=" << context[i].is_endpoint
-                      << " n1=" << (context[i].neighbor1.has_value() ? std::to_string(context[i].neighbor1.value()) : "-")
-                      << " n2=" << (context[i].neighbor2.has_value() ? std::to_string(context[i].neighbor2.value()) : "-")
+            std::cerr << "[context] pair " << i << ": ep=" << context[i].is_endpoint << " n1="
+                      << (context[i].neighbor1.has_value() ? std::to_string(context[i].neighbor1.value()) : "-")
+                      << " n2="
+                      << (context[i].neighbor2.has_value() ? std::to_string(context[i].neighbor2.value()) : "-")
                       << std::endl;
         }
     }
@@ -173,9 +175,7 @@ std::vector<size_t> HelixContextCalculator::find_endpoints(
 }
 
 std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixContextCalculator::locate_helices(
-    const std::vector<PairContext>& context,
-    const std::vector<size_t>& endpoints,
-    const BackboneData& backbone,
+    const std::vector<PairContext>& context, const std::vector<size_t>& endpoints, const BackboneData& backbone,
     size_t num_pairs) const {
 
     bool debug = is_debug_enabled();
@@ -184,7 +184,7 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixContextCalculator
     std::vector<HelixSegment> helices;
     std::vector<bool> visited(num_pairs, false);
 
-    (void)backbone;  // Not used in traverse - backbone connectivity checked in calculate_context
+    (void)backbone; // Not used in traverse - backbone connectivity checked in calculate_context
     pair_order.reserve(num_pairs);
 
     // Legacy locate_helix algorithm (find_pair.c lines 1029-1082):
@@ -196,17 +196,21 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixContextCalculator
         // Skip if all items in this endpoint's "end_list" are already matched
         const auto& ep_ctx = context[ep];
         int matched_count = 0;
-        int item_count = 1;  // The endpoint itself
-        if (visited[ep]) matched_count++;
+        int item_count = 1; // The endpoint itself
+        if (visited[ep])
+            matched_count++;
         if (ep_ctx.neighbor1.has_value()) {
             item_count++;
-            if (visited[ep_ctx.neighbor1.value()]) matched_count++;
+            if (visited[ep_ctx.neighbor1.value()])
+                matched_count++;
         }
         if (ep_ctx.neighbor2.has_value()) {
             item_count++;
-            if (visited[ep_ctx.neighbor2.value()]) matched_count++;
+            if (visited[ep_ctx.neighbor2.value()])
+                matched_count++;
         }
-        if (matched_count == item_count) continue;
+        if (matched_count == item_count)
+            continue;
 
         HelixSegment helix;
         helix.start_idx = pair_order.size();
@@ -238,12 +242,11 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixContextCalculator
             // If this is an endpoint (bp_order[k][1] == 0 in legacy means endpoint)
             if (ctx.is_endpoint) {
                 // Legacy lines 1050-1055: Only add neighbor1 if it exists, not matched, and no neighbor2
-                if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()] &&
-                    !ctx.neighbor2.has_value()) {
+                if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()] && !ctx.neighbor2.has_value()) {
                     pair_order.push_back(ctx.neighbor1.value());
                     visited[ctx.neighbor1.value()] = true;
                 }
-                break;  // Stop traversal for this helix
+                break; // Stop traversal for this helix
             }
 
             // Not an endpoint - continue traversal
@@ -251,7 +254,8 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixContextCalculator
             bool n2_matched = !ctx.neighbor2.has_value() || visited[ctx.neighbor2.value()];
 
             // Legacy line 1057-1059: If both or neither neighbor matched, stop
-            if ((n1_matched && n2_matched) || (!n1_matched && !n2_matched && ctx.neighbor1.has_value() && ctx.neighbor2.has_value())) {
+            if ((n1_matched && n2_matched) ||
+                (!n1_matched && !n2_matched && ctx.neighbor1.has_value() && ctx.neighbor2.has_value())) {
                 // Both matched or neither matched - stop
                 // For "neither matched" case, only apply if both neighbors actually exist
                 break;
@@ -289,8 +293,8 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixContextCalculator
         if (helix.end_idx >= helix.start_idx) {
             helices.push_back(helix);
             if (debug) {
-                std::cerr << "[locate_helices] Created helix " << helices.size()
-                          << " (pos " << helix.start_idx << "-" << helix.end_idx << "): ";
+                std::cerr << "[locate_helices] Created helix " << helices.size() << " (pos " << helix.start_idx << "-"
+                          << helix.end_idx << "): ";
                 for (size_t p = helix.start_idx; p <= helix.end_idx; ++p) {
                     std::cerr << pair_order[p] << " ";
                 }
@@ -323,8 +327,7 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixContextCalculator
     return {pair_order, helices};
 }
 
-std::vector<PairContextInfo> HelixContextCalculator::to_public_context(
-    const std::vector<PairContext>& context) {
+std::vector<PairContextInfo> HelixContextCalculator::to_public_context(const std::vector<PairContext>& context) {
 
     std::vector<PairContextInfo> result;
     result.reserve(context.size());

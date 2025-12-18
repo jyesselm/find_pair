@@ -22,7 +22,7 @@
 
 // Forward declare GEMMI types to avoid header inclusion
 namespace gemmi {
-    struct Structure;
+struct Structure;
 }
 
 namespace x3dna {
@@ -86,25 +86,33 @@ public:
      * @brief Set whether to include HETATM records
      * @param value True to include HETATM, false to skip
      */
-    void set_include_hetatm(bool value) { include_hetatm_ = value; }
+    void set_include_hetatm(bool value) {
+        include_hetatm_ = value;
+    }
 
     /**
      * @brief Get whether HETATM records are included
      * @return True if HETATM records are included
      */
-    bool include_hetatm() const { return include_hetatm_; }
+    bool include_hetatm() const {
+        return include_hetatm_;
+    }
 
     /**
      * @brief Set whether to include water molecules (HOH)
      * @param value True to include waters, false to skip
      */
-    void set_include_waters(bool value) { include_waters_ = value; }
+    void set_include_waters(bool value) {
+        include_waters_ = value;
+    }
 
     /**
      * @brief Get whether water molecules are included
      * @return True if waters are included
      */
-    bool include_waters() const { return include_waters_; }
+    bool include_waters() const {
+        return include_waters_;
+    }
 
     /**
      * @brief Exception class for parsing errors
@@ -122,15 +130,17 @@ public:
          * @brief Get line number where error occurred
          * @return Line number (0 if unknown)
          */
-        size_t line_number() const { return line_number_; }
+        size_t line_number() const {
+            return line_number_;
+        }
 
     private:
         size_t line_number_;
     };
 
 private:
-    bool include_hetatm_ = false;      // Include HETATM records
-    bool include_waters_ = false;      // Include water molecules (HOH)
+    bool include_hetatm_ = false; // Include HETATM records
+    bool include_waters_ = false; // Include water molecules (HOH)
 
     /**
      * @brief Convert GEMMI Structure to our Structure
@@ -138,8 +148,7 @@ private:
      * @param pdb_id PDB identifier
      * @return Structure object
      */
-    core::Structure convert_gemmi_structure(const gemmi::Structure& gemmi_struct,
-                                            const std::string& pdb_id);
+    core::Structure convert_gemmi_structure(const gemmi::Structure& gemmi_struct, const std::string& pdb_id);
 
     /**
      * @brief Normalize atom name from GEMMI format to PDB 4-character format
@@ -211,8 +220,7 @@ private:
      * @return Structure object
      */
     core::Structure build_structure_from_residues(
-        const std::string& pdb_id,
-        const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const;
+        const std::string& pdb_id, const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const;
 };
 
 } // namespace io

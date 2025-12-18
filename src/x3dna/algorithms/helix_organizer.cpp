@@ -1,7 +1,7 @@
 /**
  * @file helix_organizer.cpp
  * @brief Implementation of helix organization algorithm
- * 
+ *
  * This implements the legacy X3DNA five2three algorithm for ensuring
  * proper 5'→3' strand direction in base pair step calculations.
  */
@@ -18,149 +18,147 @@
 namespace x3dna::algorithms {
 
 namespace {
-    constexpr double PI = 3.14159265358979323846;
+constexpr double PI = 3.14159265358979323846;
 
-    /**
-     * @brief Result of frame axis alignment comparison
-     */
-    struct FrameAlignment {
-        double dot_x;  ///< Dot product of x-axes
-        double dot_y;  ///< Dot product of y-axes
-        double dot_z;  ///< Dot product of z-axes
+/**
+ * @brief Result of frame axis alignment comparison
+ */
+struct FrameAlignment {
+    double dot_x; ///< Dot product of x-axes
+    double dot_y; ///< Dot product of y-axes
+    double dot_z; ///< Dot product of z-axes
 
-        [[nodiscard]] bool is_aligned() const {
-            return dot_x > 0.0 && dot_y > 0.0 && dot_z > 0.0;
-        }
-
-        [[nodiscard]] double angle_sum() const;  // Forward declaration, defined after dot2ang
-    };
-
-    /**
-     * @brief Check if five2three debugging is enabled
-     *
-     * Uses ConfigManager for debug settings, which reads from environment
-     * variables on first access. This centralizes the debug configuration.
-     */
-    bool is_five2three_debug_enabled() {
-        static bool initialized = false;
-        static bool debug_enabled = false;
-        if (!initialized) {
-            // Initialize from ConfigManager (which reads env vars)
-            auto& cfg = config::ConfigManager::instance();
-            cfg.init_debug_from_environment();
-            debug_enabled = cfg.debug_config().debug_five2three;
-            initialized = true;
-        }
-        return debug_enabled;
+    [[nodiscard]] bool is_aligned() const {
+        return dot_x > 0.0 && dot_y > 0.0 && dot_z > 0.0;
     }
 
-    // Convert dot product to angle in degrees
-    double dot2ang(double d) {
-        if (d > 1.0) d = 1.0;
-        if (d < -1.0) d = -1.0;
-        return std::acos(d) * 180.0 / PI;
+    [[nodiscard]] double angle_sum() const; // Forward declaration, defined after dot2ang
+};
+
+/**
+ * @brief Check if five2three debugging is enabled
+ *
+ * Uses ConfigManager for debug settings, which reads from environment
+ * variables on first access. This centralizes the debug configuration.
+ */
+bool is_five2three_debug_enabled() {
+    static bool initialized = false;
+    static bool debug_enabled = false;
+    if (!initialized) {
+        // Initialize from ConfigManager (which reads env vars)
+        auto& cfg = config::ConfigManager::instance();
+        cfg.init_debug_from_environment();
+        debug_enabled = cfg.debug_config().debug_five2three;
+        initialized = true;
     }
-
-    // Implementation of FrameAlignment::angle_sum (after dot2ang is defined)
-    double FrameAlignment::angle_sum() const {
-        return dot2ang(dot_x) + dot2ang(dot_y) + dot2ang(dot_z);
-    }
-
-    /**
-     * @brief Compute alignment between two reference frames
-     * @param frame1 First reference frame
-     * @param frame2 Second reference frame
-     * @return FrameAlignment with dot products and alignment status
-     */
-    FrameAlignment compute_frame_alignment(const core::ReferenceFrame& frame1,
-                                           const core::ReferenceFrame& frame2) {
-        return FrameAlignment{
-            frame1.x_axis().dot(frame2.x_axis()),
-            frame1.y_axis().dot(frame2.y_axis()),
-            frame1.z_axis().dot(frame2.z_axis())
-        };
-    }
-
-    /**
-     * @brief Update direction count based on linkage type
-     * @param link The linkage direction
-     * @param forward Forward count to increment
-     * @param reverse Reverse count to increment
-     * @param none None count to increment
-     */
-    void update_direction_count(LinkDirection link, int& forward, int& reverse, int& none) {
-        if (link == LinkDirection::Forward) ++forward;
-        else if (link == LinkDirection::Reverse) ++reverse;
-        else ++none;
-    }
-
-    /**
-     * @brief Check if two z-distances are on opposite sides of origin
-     * @param d1 First z-distance
-     * @param d2 Second z-distance
-     * @return true if d1 and d2 have opposite signs
-     */
-    bool are_on_opposite_z_sides(double d1, double d2) {
-        return d1 * d2 < 0;
-    }
-
-    /**
-     * @brief Check if a pair has positive bpid (WC-like geometry)
-     *
-     * Legacy code in calculate_more_bppars sets bpid = -1 by default,
-     * and only sets it positive if:
-     *   1. dir_x > 0 && dir_y < 0 && dir_z < 0
-     *   2. Then check_wc_wobble_pair validates shear/stretch/opening
-     *
-     * This function checks the first geometric condition.
-     * The wc_bporien check requires base_pairs[m][3] > 0 && base_pairs[n][3] > 0.
-     */
-    bool has_positive_bpid(const x3dna::core::BasePair& pair) {
-        bool debug = is_five2three_debug_enabled();
-
-        // Legacy check: base_pairs[m][3] > 0 requires both:
-        // 1. Pair is WC or wobble type (check_wc_wobble_pair only sets bpid for these)
-        // 2. Geometric condition (dir_x > 0 && dir_y < 0 && dir_z < 0)
-        // For non-WC/wobble pairs, bpid stays at -1 even if geometry matches.
-        using x3dna::core::BasePairType;
-        if (pair.type() != BasePairType::WATSON_CRICK &&
-            pair.type() != BasePairType::WOBBLE) {
-            if (debug) {
-                std::cerr << "[has_positive_bpid] pair(" << pair.residue_idx1() << ","
-                          << pair.residue_idx2() << ") type=" << pair.bp_type()
-                          << " -> 0 (not WC/wobble)" << std::endl;
-            }
-            return false;
-        }
-
-        if (!pair.frame1().has_value() || !pair.frame2().has_value()) {
-            return false;
-        }
-
-        // Copy to avoid dangling reference (optional returns by value)
-        auto f1 = pair.frame1().value();
-        auto f2 = pair.frame2().value();
-
-        // Legacy: dir_x = dot(&orien[i][0], &orien[j][0])
-        //         dir_y = dot(&orien[i][3], &orien[j][3])
-        //         dir_z = dot(&orien[i][6], &orien[j][6])
-        double dir_x = f1.x_axis().dot(f2.x_axis());
-        double dir_y = f1.y_axis().dot(f2.y_axis());
-        double dir_z = f1.z_axis().dot(f2.z_axis());
-
-        bool result = (dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0);
-
-        if (debug) {
-            std::cerr << "[has_positive_bpid] pair(" << pair.residue_idx1() << "," << pair.residue_idx2() << ")"
-                      << " type=" << pair.bp_type()
-                      << " dir_x=" << dir_x << " dir_y=" << dir_y << " dir_z=" << dir_z
-                      << " -> " << result << std::endl;
-        }
-
-        // Legacy condition: dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0
-        return result;
-    }
+    return debug_enabled;
 }
+
+// Convert dot product to angle in degrees
+double dot2ang(double d) {
+    if (d > 1.0)
+        d = 1.0;
+    if (d < -1.0)
+        d = -1.0;
+    return std::acos(d) * 180.0 / PI;
+}
+
+// Implementation of FrameAlignment::angle_sum (after dot2ang is defined)
+double FrameAlignment::angle_sum() const {
+    return dot2ang(dot_x) + dot2ang(dot_y) + dot2ang(dot_z);
+}
+
+/**
+ * @brief Compute alignment between two reference frames
+ * @param frame1 First reference frame
+ * @param frame2 Second reference frame
+ * @return FrameAlignment with dot products and alignment status
+ */
+FrameAlignment compute_frame_alignment(const core::ReferenceFrame& frame1, const core::ReferenceFrame& frame2) {
+    return FrameAlignment{frame1.x_axis().dot(frame2.x_axis()), frame1.y_axis().dot(frame2.y_axis()),
+                          frame1.z_axis().dot(frame2.z_axis())};
+}
+
+/**
+ * @brief Update direction count based on linkage type
+ * @param link The linkage direction
+ * @param forward Forward count to increment
+ * @param reverse Reverse count to increment
+ * @param none None count to increment
+ */
+void update_direction_count(LinkDirection link, int& forward, int& reverse, int& none) {
+    if (link == LinkDirection::Forward)
+        ++forward;
+    else if (link == LinkDirection::Reverse)
+        ++reverse;
+    else
+        ++none;
+}
+
+/**
+ * @brief Check if two z-distances are on opposite sides of origin
+ * @param d1 First z-distance
+ * @param d2 Second z-distance
+ * @return true if d1 and d2 have opposite signs
+ */
+bool are_on_opposite_z_sides(double d1, double d2) {
+    return d1 * d2 < 0;
+}
+
+/**
+ * @brief Check if a pair has positive bpid (WC-like geometry)
+ *
+ * Legacy code in calculate_more_bppars sets bpid = -1 by default,
+ * and only sets it positive if:
+ *   1. dir_x > 0 && dir_y < 0 && dir_z < 0
+ *   2. Then check_wc_wobble_pair validates shear/stretch/opening
+ *
+ * This function checks the first geometric condition.
+ * The wc_bporien check requires base_pairs[m][3] > 0 && base_pairs[n][3] > 0.
+ */
+bool has_positive_bpid(const x3dna::core::BasePair& pair) {
+    bool debug = is_five2three_debug_enabled();
+
+    // Legacy check: base_pairs[m][3] > 0 requires both:
+    // 1. Pair is WC or wobble type (check_wc_wobble_pair only sets bpid for these)
+    // 2. Geometric condition (dir_x > 0 && dir_y < 0 && dir_z < 0)
+    // For non-WC/wobble pairs, bpid stays at -1 even if geometry matches.
+    using x3dna::core::BasePairType;
+    if (pair.type() != BasePairType::WATSON_CRICK && pair.type() != BasePairType::WOBBLE) {
+        if (debug) {
+            std::cerr << "[has_positive_bpid] pair(" << pair.residue_idx1() << "," << pair.residue_idx2()
+                      << ") type=" << pair.bp_type() << " -> 0 (not WC/wobble)" << std::endl;
+        }
+        return false;
+    }
+
+    if (!pair.frame1().has_value() || !pair.frame2().has_value()) {
+        return false;
+    }
+
+    // Copy to avoid dangling reference (optional returns by value)
+    auto f1 = pair.frame1().value();
+    auto f2 = pair.frame2().value();
+
+    // Legacy: dir_x = dot(&orien[i][0], &orien[j][0])
+    //         dir_y = dot(&orien[i][3], &orien[j][3])
+    //         dir_z = dot(&orien[i][6], &orien[j][6])
+    double dir_x = f1.x_axis().dot(f2.x_axis());
+    double dir_y = f1.y_axis().dot(f2.y_axis());
+    double dir_z = f1.z_axis().dot(f2.z_axis());
+
+    bool result = (dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0);
+
+    if (debug) {
+        std::cerr << "[has_positive_bpid] pair(" << pair.residue_idx1() << "," << pair.residue_idx2() << ")"
+                  << " type=" << pair.bp_type() << " dir_x=" << dir_x << " dir_y=" << dir_y << " dir_z=" << dir_z
+                  << " -> " << result << std::endl;
+    }
+
+    // Legacy condition: dir_x > 0.0 && dir_y < 0.0 && dir_z < 0.0
+    return result;
+}
+} // namespace
 
 HelixOrganizer::HelixOrganizer(const Config& config) : config_(config) {}
 
@@ -174,11 +172,7 @@ geometry::Vector3D HelixOrganizer::get_pair_origin(const core::BasePair& pair) c
     // Note: organize() validates all pairs have both frames
     const auto& o1 = pair.frame1()->origin();
     const auto& o2 = pair.frame2()->origin();
-    return geometry::Vector3D(
-        (o1.x() + o2.x()) / 2.0,
-        (o1.y() + o2.y()) / 2.0,
-        (o1.z() + o2.z()) / 2.0
-    );
+    return geometry::Vector3D((o1.x() + o2.x()) / 2.0, (o1.y() + o2.y()) / 2.0, (o1.z() + o2.z()) / 2.0);
 }
 
 geometry::Vector3D HelixOrganizer::get_pair_z_axis(const core::BasePair& pair) const {
@@ -199,8 +193,7 @@ geometry::Vector3D HelixOrganizer::get_frame_z(const core::BasePair& pair, bool 
     return swapped ? pair.frame2()->z_axis() : pair.frame1()->z_axis();
 }
 
-StrandResidues HelixOrganizer::get_strand_residues(
-    const core::BasePair& pair, bool swapped) const {
+StrandResidues HelixOrganizer::get_strand_residues(const core::BasePair& pair, bool swapped) const {
     // BasePair stores 0-based indices normalized to (smaller, larger).
     // finding_order_swapped() indicates if original finding order was (larger, smaller).
     // Legacy code uses the ORIGINAL finding order for strand assignments.
@@ -221,8 +214,7 @@ StrandResidues HelixOrganizer::get_strand_residues(
 // Backbone connectivity
 // =============================================================================
 
-LinkDirection HelixOrganizer::check_linkage(
-    size_t res_i, size_t res_j, const BackboneData& backbone) const {
+LinkDirection HelixOrganizer::check_linkage(size_t res_i, size_t res_j, const BackboneData& backbone) const {
 
     auto it_i = backbone.find(res_i);
     auto it_j = backbone.find(res_j);
@@ -271,12 +263,11 @@ double HelixOrganizer::o3_distance(size_t i, size_t j, const BackboneData& backb
     return -1.0;
 }
 
-bool HelixOrganizer::are_pairs_backbone_connected(
-    const core::BasePair& pair1, const core::BasePair& pair2,
-    const BackboneData& backbone) const {
+bool HelixOrganizer::are_pairs_backbone_connected(const core::BasePair& pair1, const core::BasePair& pair2,
+                                                  const BackboneData& backbone) const {
 
     if (backbone.empty()) {
-        return true;  // Assume connected when no backbone data
+        return true; // Assume connected when no backbone data
     }
 
     // Get 1-based residue indices for both pairs
@@ -307,8 +298,8 @@ double HelixOrganizer::wcbp_xang(const core::BasePair& pair_m, const core::BaseP
     return dot2ang(xm.dot(xn));
 }
 
-double HelixOrganizer::wcbp_zdir(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                  bool swap_m, bool swap_n) const {
+double HelixOrganizer::wcbp_zdir(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m,
+                                 bool swap_n) const {
     // Get z-direction vectors based on swap status
     // Note: organize() validates all pairs have both frames
     // When swapped: z = z1 - z2, otherwise z = z2 - z1
@@ -324,10 +315,8 @@ double HelixOrganizer::wcbp_zdir(const core::BasePair& pair_m, const core::BaseP
 // Five2three sub-functions
 // =============================================================================
 
-void HelixOrganizer::first_step(const std::vector<core::BasePair>& pairs,
-                                const BackboneData& backbone,
-                                std::vector<size_t>& pair_order,
-                                const HelixSegment& helix,
+void HelixOrganizer::first_step(const std::vector<core::BasePair>& pairs, const BackboneData& backbone,
+                                std::vector<size_t>& pair_order, const HelixSegment& helix,
                                 std::vector<bool>& swapped) const {
     bool debug = is_five2three_debug_enabled();
 
@@ -348,10 +337,10 @@ void HelixOrganizer::first_step(const std::vector<core::BasePair>& pairs,
     auto link = check_linkage(res_m.strand1, res_n.strand1, backbone);
 
     if (debug) {
-        std::cerr << "[first_step] first_pair=" << first_pair << " ("
-                  << pairs[first_pair].residue_idx1()+1 << "," << pairs[first_pair].residue_idx2()+1 << ")"
-                  << " second_pair=" << second_pair << " ("
-                  << pairs[second_pair].residue_idx1()+1 << "," << pairs[second_pair].residue_idx2()+1 << ")"
+        std::cerr << "[first_step] first_pair=" << first_pair << " (" << pairs[first_pair].residue_idx1() + 1 << ","
+                  << pairs[first_pair].residue_idx2() + 1 << ")"
+                  << " second_pair=" << second_pair << " (" << pairs[second_pair].residue_idx1() + 1 << ","
+                  << pairs[second_pair].residue_idx2() + 1 << ")"
                   << " res_m.s1=" << res_m.strand1 << " res_n.s1=" << res_n.strand1
                   << " link=" << static_cast<int>(link) << std::endl;
     }
@@ -359,12 +348,13 @@ void HelixOrganizer::first_step(const std::vector<core::BasePair>& pairs,
     if (link == LinkDirection::Reverse) {
         // Reverse linkage - swap the first pair
         swapped[first_pair] = !swapped[first_pair];
-        if (debug) std::cerr << "[first_step] -> Reverse linkage, swapped first pair" << std::endl;
+        if (debug)
+            std::cerr << "[first_step] -> Reverse linkage, swapped first pair" << std::endl;
     } else if (link == LinkDirection::None) {
-        if (debug) std::cerr << "[first_step] -> No linkage, reversing helix" << std::endl;
+        if (debug)
+            std::cerr << "[first_step] -> No linkage, reversing helix" << std::endl;
         // No linkage - reverse the entire helix segment and try again
-        std::reverse(pair_order.begin() + helix.start_idx,
-                     pair_order.begin() + helix.end_idx + 1);
+        std::reverse(pair_order.begin() + helix.start_idx, pair_order.begin() + helix.end_idx + 1);
 
         // Update pair indices after reversal
         first_pair = pair_order[pos];
@@ -377,30 +367,32 @@ void HelixOrganizer::first_step(const std::vector<core::BasePair>& pairs,
 
         if (debug) {
             std::cerr << "[first_step] After reversal: first_pair=" << first_pair << " ("
-                      << pairs[first_pair].residue_idx1()+1 << "," << pairs[first_pair].residue_idx2()+1 << ")"
+                      << pairs[first_pair].residue_idx1() + 1 << "," << pairs[first_pair].residue_idx2() + 1 << ")"
                       << " res_m.s1=" << res_m.strand1 << " res_n.s1=" << res_n.strand1
                       << " link=" << static_cast<int>(link) << std::endl;
         }
 
         if (link == LinkDirection::Reverse) {
             swapped[first_pair] = !swapped[first_pair];
-            if (debug) std::cerr << "[first_step] -> After reversal: Reverse linkage, swapped first pair" << std::endl;
+            if (debug)
+                std::cerr << "[first_step] -> After reversal: Reverse linkage, swapped first pair" << std::endl;
         } else if (link == LinkDirection::None) {
             // Still no linkage - undo the reversal
-            std::reverse(pair_order.begin() + helix.start_idx,
-                         pair_order.begin() + helix.end_idx + 1);
-            if (debug) std::cerr << "[first_step] -> Still no linkage, undoing reversal" << std::endl;
+            std::reverse(pair_order.begin() + helix.start_idx, pair_order.begin() + helix.end_idx + 1);
+            if (debug)
+                std::cerr << "[first_step] -> Still no linkage, undoing reversal" << std::endl;
         } else {
-            if (debug) std::cerr << "[first_step] -> After reversal: Forward linkage" << std::endl;
+            if (debug)
+                std::cerr << "[first_step] -> After reversal: Forward linkage" << std::endl;
         }
     } else {
-        if (debug) std::cerr << "[first_step] -> Forward linkage, no action" << std::endl;
+        if (debug)
+            std::cerr << "[first_step] -> Forward linkage, no action" << std::endl;
     }
 }
 
-bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                 bool swap_m, bool swap_n,
-                                 const BackboneData& backbone) const {
+bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m, bool swap_n,
+                                const BackboneData& backbone) const {
     // Legacy check: only apply to Watson-Crick pairs (base_pairs[m][3] > 0)
     //
     // Legacy's bpid is set in calculate_more_bppars:
@@ -431,15 +423,12 @@ bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePa
     if (debug) {
         std::cerr << "[MODERN wc_bporien] res_m=(" << pair_m.residue_idx1() << "," << pair_m.residue_idx2() << ")"
                   << " res_n=(" << pair_n.residue_idx1() << "," << pair_n.residue_idx2() << ")"
-                  << " swap_m=" << swap_m << " swap_n=" << swap_n
-                  << " xang=" << xang << " link_s1=" << static_cast<int>(link_s1)
-                  << " link_s2=" << static_cast<int>(link_s2) << std::endl;
+                  << " swap_m=" << swap_m << " swap_n=" << swap_n << " xang=" << xang
+                  << " link_s1=" << static_cast<int>(link_s1) << " link_s2=" << static_cast<int>(link_s2) << std::endl;
     }
 
     // If x-angle is too large or backbone is linked, don't swap
-    if (xang > config_.end_stack_xang ||
-        link_s1 != LinkDirection::None ||
-        link_s2 != LinkDirection::None) {
+    if (xang > config_.end_stack_xang || link_s1 != LinkDirection::None || link_s2 != LinkDirection::None) {
         if (debug) {
             std::cerr << "[MODERN wc_bporien] -> false (early exit: xang>" << config_.end_stack_xang
                       << " or has linkage)" << std::endl;
@@ -453,16 +442,15 @@ bool HelixOrganizer::wc_bporien(const core::BasePair& pair_m, const core::BasePa
 
     bool result = zdir_normal < 0.0 && zdir_swapped > 0.0;
     if (debug) {
-        std::cerr << "[MODERN wc_bporien] zdir_normal=" << zdir_normal
-                  << " zdir_swapped=" << zdir_swapped << " -> " << result << std::endl;
+        std::cerr << "[MODERN wc_bporien] zdir_normal=" << zdir_normal << " zdir_swapped=" << zdir_swapped << " -> "
+                  << result << std::endl;
     }
 
-    return result;  // Need to swap pair_n
+    return result; // Need to swap pair_n
 }
 
-bool HelixOrganizer::check_o3dist(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                   bool swap_m, bool swap_n,
-                                   const BackboneData& backbone) const {
+bool HelixOrganizer::check_o3dist(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m, bool swap_n,
+                                  const BackboneData& backbone) const {
     auto res_m = get_strand_residues(pair_m, swap_m);
     auto res_n = get_strand_residues(pair_n, swap_n);
 
@@ -471,13 +459,11 @@ bool HelixOrganizer::check_o3dist(const core::BasePair& pair_m, const core::Base
     double dj1_i2 = o3_distance(res_m.strand2, res_n.strand1, backbone);
     double dj1_j2 = o3_distance(res_m.strand2, res_n.strand2, backbone);
 
-    return (di1_i2 > 0.0 && di1_j2 > 0.0 && di1_i2 > di1_j2) &&
-           (dj1_i2 > 0.0 && dj1_j2 > 0.0 && dj1_j2 > dj1_i2);
+    return (di1_i2 > 0.0 && di1_j2 > 0.0 && di1_i2 > di1_j2) && (dj1_i2 > 0.0 && dj1_j2 > 0.0 && dj1_j2 > dj1_i2);
 }
 
-bool HelixOrganizer::check_schain(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                   bool swap_m, bool swap_n,
-                                   const BackboneData& backbone) const {
+bool HelixOrganizer::check_schain(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m, bool swap_n,
+                                  const BackboneData& backbone) const {
     auto res_m = get_strand_residues(pair_m, swap_m);
     auto res_n = get_strand_residues(pair_n, swap_n);
 
@@ -490,18 +476,16 @@ bool HelixOrganizer::check_schain(const core::BasePair& pair_m, const core::Base
     return no_same_strand && has_cross_strand;
 }
 
-bool HelixOrganizer::check_others(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                   bool swap_m, bool swap_n,
-                                   const BackboneData& backbone) const {
+bool HelixOrganizer::check_others(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m, bool swap_n,
+                                  const BackboneData& backbone) const {
     auto res_m = get_strand_residues(pair_m, swap_m);
     auto res_n = get_strand_residues(pair_n, swap_n);
 
     // If any backbone linkage exists, no swap needed
-    const bool has_any_linkage =
-        check_linkage(res_m.strand1, res_n.strand1, backbone) != LinkDirection::None ||
-        check_linkage(res_m.strand2, res_n.strand2, backbone) != LinkDirection::None ||
-        check_linkage(res_m.strand1, res_n.strand2, backbone) != LinkDirection::None ||
-        check_linkage(res_m.strand2, res_n.strand1, backbone) != LinkDirection::None;
+    const bool has_any_linkage = check_linkage(res_m.strand1, res_n.strand1, backbone) != LinkDirection::None ||
+                                 check_linkage(res_m.strand2, res_n.strand2, backbone) != LinkDirection::None ||
+                                 check_linkage(res_m.strand1, res_n.strand2, backbone) != LinkDirection::None ||
+                                 check_linkage(res_m.strand2, res_n.strand1, backbone) != LinkDirection::None;
     if (has_any_linkage) {
         return false;
     }
@@ -548,9 +532,8 @@ bool HelixOrganizer::check_others(const core::BasePair& pair_m, const core::Base
     return false;
 }
 
-bool HelixOrganizer::chain1dir(const core::BasePair& pair_m, const core::BasePair& pair_n,
-                                bool swap_m, bool swap_n,
-                                const BackboneData& backbone) const {
+bool HelixOrganizer::chain1dir(const core::BasePair& pair_m, const core::BasePair& pair_n, bool swap_m, bool swap_n,
+                               const BackboneData& backbone) const {
     auto res_m = get_strand_residues(pair_m, swap_m);
     auto res_n = get_strand_residues(pair_n, swap_n);
 
@@ -558,12 +541,9 @@ bool HelixOrganizer::chain1dir(const core::BasePair& pair_m, const core::BasePai
     return check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::Reverse;
 }
 
-DirectionCounts HelixOrganizer::check_direction(
-    const std::vector<core::BasePair>& pairs,
-    const BackboneData& backbone,
-    std::vector<size_t>& pair_order,
-    HelixSegment& helix,
-    std::vector<bool>& swapped) const {
+DirectionCounts HelixOrganizer::check_direction(const std::vector<core::BasePair>& pairs, const BackboneData& backbone,
+                                                std::vector<size_t>& pair_order, HelixSegment& helix,
+                                                std::vector<bool>& swapped) const {
 
     bool debug = is_five2three_debug_enabled();
 
@@ -585,16 +565,14 @@ DirectionCounts HelixOrganizer::check_direction(
     }
 
     // Check for mixed direction (returns early in legacy)
-    bool mixed = (dir.strand1_forward && dir.strand1_reverse) ||
-                 (dir.strand2_forward && dir.strand2_reverse);
+    bool mixed = (dir.strand1_forward && dir.strand1_reverse) || (dir.strand2_forward && dir.strand2_reverse);
     if (mixed) {
         helix.has_mixed_direction = true;
         return dir;
     }
 
     // No linkages at all
-    if (dir.strand1_forward + dir.strand1_reverse +
-        dir.strand2_forward + dir.strand2_reverse == 0) {
+    if (dir.strand1_forward + dir.strand1_reverse + dir.strand2_forward + dir.strand2_reverse == 0) {
         return dir;
     }
 
@@ -631,14 +609,14 @@ DirectionCounts HelixOrganizer::check_direction(
         const bool needs_flip_and_reverse = res_first.strand1 > res_last.strand2;
         if (debug) {
             std::cerr << "[check_direction] ANTI-PARALLEL: first.s1=" << res_first.strand1
-                      << " last.s2=" << res_last.strand2
-                      << " check=" << (needs_flip_and_reverse ? "YES" : "NO") << std::endl;
+                      << " last.s2=" << res_last.strand2 << " check=" << (needs_flip_and_reverse ? "YES" : "NO")
+                      << std::endl;
         }
         if (needs_flip_and_reverse) {
-            if (debug) std::cerr << "[check_direction] -> Flipping all swaps and reversing" << std::endl;
+            if (debug)
+                std::cerr << "[check_direction] -> Flipping all swaps and reversing" << std::endl;
             flip_helix_swaps();
-            std::reverse(pair_order.begin() + helix.start_idx,
-                         pair_order.begin() + helix.end_idx + 1);
+            std::reverse(pair_order.begin() + helix.start_idx, pair_order.begin() + helix.end_idx + 1);
         }
         return dir;
     }
@@ -654,21 +632,19 @@ DirectionCounts HelixOrganizer::check_direction(
     return dir;
 }
 
-void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs,
-                                   const BackboneData& backbone,
-                                   const std::vector<size_t>& pair_order,
-                                   HelixSegment& helix,
-                                   std::vector<bool>& swapped,
-                                   const DirectionCounts& direction) const {
+void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs, const BackboneData& backbone,
+                                   const std::vector<size_t>& pair_order, HelixSegment& helix,
+                                   std::vector<bool>& swapped, const DirectionCounts& direction) const {
 
     bool mixed_direction = (direction.strand1_forward && direction.strand1_reverse) ||
-                          (direction.strand2_forward && direction.strand2_reverse);
+                           (direction.strand2_forward && direction.strand2_reverse);
 
     if (!mixed_direction) {
         // Normal case - check for cross-strand swaps
-        if (direction.strand1_forward + direction.strand1_reverse +
-            direction.strand2_forward + direction.strand2_reverse == 0) {
-            return;  // No linkages to check
+        if (direction.strand1_forward + direction.strand1_reverse + direction.strand2_forward +
+                direction.strand2_reverse ==
+            0) {
+            return; // No linkages to check
         }
 
         for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
@@ -692,20 +668,17 @@ void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs,
             auto cross_link = check_linkage(res_m.strand1, res_n.strand2, backbone);
             auto cross_link2 = check_linkage(res_m.strand2, res_n.strand1, backbone);
 
-            if (no_same_strand &&
-                (cross_link == LinkDirection::Forward ||
-                 (cross_link != LinkDirection::None && cross_link2 != LinkDirection::None))) {
+            if (no_same_strand && (cross_link == LinkDirection::Forward ||
+                                   (cross_link != LinkDirection::None && cross_link2 != LinkDirection::None))) {
                 swapped[idx_n] = !swapped[idx_n];
             }
         }
     } else {
         // Mixed direction case - more complex handling
-        const bool anti_p =
-            (direction.strand1_forward > direction.strand1_reverse) &&
-            (direction.strand2_forward < direction.strand2_reverse);
-        const bool parallel =
-            (direction.strand1_forward > direction.strand1_reverse) &&
-            (direction.strand2_forward > direction.strand2_reverse);
+        const bool anti_p = (direction.strand1_forward > direction.strand1_reverse) &&
+                            (direction.strand2_forward < direction.strand2_reverse);
+        const bool parallel = (direction.strand1_forward > direction.strand1_reverse) &&
+                              (direction.strand2_forward > direction.strand2_reverse);
 
         helix.is_parallel = parallel;
 
@@ -724,9 +697,8 @@ void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs,
             const auto link_strand2 = check_linkage(res_m.strand2, res_n.strand2, backbone);
 
             const bool no_strand1_link = (link_strand1 == LinkDirection::None);
-            const bool needs_strand2_swap =
-                (anti_p && link_strand2 == LinkDirection::Forward) ||
-                (parallel && link_strand2 == LinkDirection::Reverse);
+            const bool needs_strand2_swap = (anti_p && link_strand2 == LinkDirection::Forward) ||
+                                            (parallel && link_strand2 == LinkDirection::Reverse);
 
             if (no_strand1_link && needs_strand2_swap) {
                 swapped[idx_n] = !swapped[idx_n];
@@ -736,22 +708,25 @@ void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs,
             res_n = get_strand_residues(pair_n, swapped[idx_n]);
 
             // Check for cross-strand swaps
-            const bool no_same_strand_links =
-                check_linkage(res_m.strand1, res_n.strand1, backbone) == LinkDirection::None &&
-                check_linkage(res_m.strand2, res_n.strand2, backbone) == LinkDirection::None;
+            const bool no_same_strand_links = check_linkage(res_m.strand1, res_n.strand1, backbone) ==
+                                                  LinkDirection::None &&
+                                              check_linkage(res_m.strand2, res_n.strand2, backbone) ==
+                                                  LinkDirection::None;
 
             if (!no_same_strand_links) {
                 continue;
             }
 
             // Determine which pair needs swapping based on cross-strand linkage
-            const bool should_swap_m =
-                (anti_p && check_linkage(res_m.strand2, res_n.strand1, backbone) == LinkDirection::Forward) ||
-                (parallel && check_linkage(res_m.strand1, res_n.strand2, backbone) == LinkDirection::Reverse);
+            const bool should_swap_m = (anti_p && check_linkage(res_m.strand2, res_n.strand1, backbone) ==
+                                                      LinkDirection::Forward) ||
+                                       (parallel && check_linkage(res_m.strand1, res_n.strand2, backbone) ==
+                                                        LinkDirection::Reverse);
 
-            const bool should_swap_n =
-                (anti_p && check_linkage(res_m.strand1, res_n.strand2, backbone) == LinkDirection::Forward) ||
-                (parallel && check_linkage(res_m.strand2, res_n.strand1, backbone) == LinkDirection::Reverse);
+            const bool should_swap_n = (anti_p && check_linkage(res_m.strand1, res_n.strand2, backbone) ==
+                                                      LinkDirection::Forward) ||
+                                       (parallel && check_linkage(res_m.strand2, res_n.strand1, backbone) ==
+                                                        LinkDirection::Reverse);
 
             if (should_swap_m) {
                 swapped[idx_m] = !swapped[idx_m];
@@ -766,14 +741,14 @@ void HelixOrganizer::check_strand2(const std::vector<core::BasePair>& pairs,
 // Context calculation (bp_context equivalent)
 // =============================================================================
 
-std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
-    const std::vector<core::BasePair>& pairs,
-    const BackboneData& backbone) const {
+std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(const std::vector<core::BasePair>& pairs,
+                                                                           const BackboneData& backbone) const {
 
     size_t n = pairs.size();
     std::vector<PairContext> context(n);
 
-    if (n < 2) return context;
+    if (n < 2)
+        return context;
 
     for (size_t i = 0; i < n; ++i) {
         auto org_i = get_pair_origin(pairs[i]);
@@ -782,7 +757,8 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
         std::vector<std::pair<double, size_t>> neighbors;
 
         for (size_t j = 0; j < n; ++j) {
-            if (j == i) continue;
+            if (j == i)
+                continue;
 
             auto org_j = get_pair_origin(pairs[j]);
             double dist = (org_j - org_i).length();
@@ -798,23 +774,21 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
         // with NO stored neighbors (end_list only stores the endpoint itself)
         if (neighbors.empty() || neighbors[0].first > config_.helix_break) {
             context[i].is_endpoint = true;
-            continue;  // Don't store neighbor1 - matches legacy line 963-965
+            continue; // Don't store neighbor1 - matches legacy line 963-965
         }
 
         context[i].neighbor1 = neighbors[0].second;
         context[i].dist1 = neighbors[0].first;
 
         // Check backbone connectivity to neighbor1
-        context[i].has_backbone_link1 = are_pairs_backbone_connected(
-            pairs[i], pairs[neighbors[0].second], backbone);
+        context[i].has_backbone_link1 = are_pairs_backbone_connected(pairs[i], pairs[neighbors[0].second], backbone);
 
         auto v1 = get_pair_origin(pairs[neighbors[0].second]) - org_i;
         double d1 = z_i.dot(v1);
 
         // Legacy lines 931-941: If 2nd and 3rd closest are both on opposite z-side,
         // swap them if 2nd has larger |z-distance| (prefer smaller |z-distance|)
-        if (neighbors.size() >= 3 &&
-            neighbors[1].first <= config_.helix_break &&
+        if (neighbors.size() >= 3 && neighbors[1].first <= config_.helix_break &&
             neighbors[2].first <= config_.helix_break) {
             auto v2 = get_pair_origin(pairs[neighbors[1].second]) - org_i;
             auto v3 = get_pair_origin(pairs[neighbors[2].second]) - org_i;
@@ -830,7 +804,8 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
         }
 
         for (size_t k = 1; k < neighbors.size(); ++k) {
-            if (neighbors[k].first > config_.helix_break) break;
+            if (neighbors[k].first > config_.helix_break)
+                break;
 
             auto vk = get_pair_origin(pairs[neighbors[k].second]) - org_i;
             double dk = z_i.dot(vk);
@@ -839,8 +814,8 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
                 context[i].neighbor2 = neighbors[k].second;
                 context[i].dist2 = neighbors[k].first;
                 // Check backbone connectivity to neighbor2
-                context[i].has_backbone_link2 = are_pairs_backbone_connected(
-                    pairs[i], pairs[neighbors[k].second], backbone);
+                context[i].has_backbone_link2 = are_pairs_backbone_connected(pairs[i], pairs[neighbors[k].second],
+                                                                             backbone);
                 context[i].is_endpoint = false;
                 break;
             }
@@ -865,8 +840,7 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
                 if (are_on_opposite_z_sides(d1, d2) && dist_n1_n2 <= config_.helix_break) {
                     context[i].neighbor2 = n2_idx;
                     context[i].dist2 = neighbors[1].first;
-                    context[i].has_backbone_link2 = are_pairs_backbone_connected(
-                        pairs[i], pairs[n2_idx], backbone);
+                    context[i].has_backbone_link2 = are_pairs_backbone_connected(pairs[i], pairs[n2_idx], backbone);
                     // Still an endpoint, but now has a neighbor2
                 }
             }
@@ -876,8 +850,7 @@ std::vector<HelixOrganizer::PairContext> HelixOrganizer::calculate_context(
     return context;
 }
 
-std::vector<size_t> HelixOrganizer::find_endpoints(
-    const std::vector<PairContext>& context) const {
+std::vector<size_t> HelixOrganizer::find_endpoints(const std::vector<PairContext>& context) const {
 
     bool debug = is_five2three_debug_enabled();
 
@@ -900,9 +873,10 @@ std::vector<size_t> HelixOrganizer::find_endpoints(
         }
         std::cerr << std::endl;
         for (size_t i = 0; i < context.size(); ++i) {
-            std::cerr << "[context] pair " << i << ": ep=" << context[i].is_endpoint
-                      << " n1=" << (context[i].neighbor1.has_value() ? std::to_string(context[i].neighbor1.value()) : "-")
-                      << " n2=" << (context[i].neighbor2.has_value() ? std::to_string(context[i].neighbor2.value()) : "-")
+            std::cerr << "[context] pair " << i << ": ep=" << context[i].is_endpoint << " n1="
+                      << (context[i].neighbor1.has_value() ? std::to_string(context[i].neighbor1.value()) : "-")
+                      << " n2="
+                      << (context[i].neighbor2.has_value() ? std::to_string(context[i].neighbor2.value()) : "-")
                       << std::endl;
         }
     }
@@ -911,9 +885,7 @@ std::vector<size_t> HelixOrganizer::find_endpoints(
 }
 
 std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate_helices(
-    const std::vector<PairContext>& context,
-    const std::vector<size_t>& endpoints,
-    const BackboneData& backbone,
+    const std::vector<PairContext>& context, const std::vector<size_t>& endpoints, const BackboneData& backbone,
     size_t num_pairs) const {
 
     bool debug = is_five2three_debug_enabled();
@@ -922,7 +894,7 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
     std::vector<HelixSegment> helices;
     std::vector<bool> visited(num_pairs, false);
 
-    (void)backbone;  // Not used in traverse - backbone connectivity checked in calculate_context
+    (void)backbone; // Not used in traverse - backbone connectivity checked in calculate_context
     pair_order.reserve(num_pairs);
 
     // Legacy locate_helix algorithm (find_pair.c lines 1029-1082):
@@ -934,17 +906,21 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
         // Skip if all items in this endpoint's "end_list" are already matched
         const auto& ep_ctx = context[ep];
         int matched_count = 0;
-        int item_count = 1;  // The endpoint itself
-        if (visited[ep]) matched_count++;
+        int item_count = 1; // The endpoint itself
+        if (visited[ep])
+            matched_count++;
         if (ep_ctx.neighbor1.has_value()) {
             item_count++;
-            if (visited[ep_ctx.neighbor1.value()]) matched_count++;
+            if (visited[ep_ctx.neighbor1.value()])
+                matched_count++;
         }
         if (ep_ctx.neighbor2.has_value()) {
             item_count++;
-            if (visited[ep_ctx.neighbor2.value()]) matched_count++;
+            if (visited[ep_ctx.neighbor2.value()])
+                matched_count++;
         }
-        if (matched_count == item_count) continue;
+        if (matched_count == item_count)
+            continue;
 
         HelixSegment helix;
         helix.start_idx = pair_order.size();
@@ -976,12 +952,11 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
             // If this is an endpoint (bp_order[k][1] == 0 in legacy means endpoint)
             if (ctx.is_endpoint) {
                 // Legacy lines 1050-1055: Only add neighbor1 if it exists, not matched, and no neighbor2
-                if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()] &&
-                    !ctx.neighbor2.has_value()) {
+                if (ctx.neighbor1.has_value() && !visited[ctx.neighbor1.value()] && !ctx.neighbor2.has_value()) {
                     pair_order.push_back(ctx.neighbor1.value());
                     visited[ctx.neighbor1.value()] = true;
                 }
-                break;  // Stop traversal for this helix
+                break; // Stop traversal for this helix
             }
 
             // Not an endpoint - continue traversal
@@ -989,7 +964,8 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
             bool n2_matched = !ctx.neighbor2.has_value() || visited[ctx.neighbor2.value()];
 
             // Legacy line 1057-1059: If both or neither neighbor matched, stop
-            if ((n1_matched && n2_matched) || (!n1_matched && !n2_matched && ctx.neighbor1.has_value() && ctx.neighbor2.has_value())) {
+            if ((n1_matched && n2_matched) ||
+                (!n1_matched && !n2_matched && ctx.neighbor1.has_value() && ctx.neighbor2.has_value())) {
                 // Both matched or neither matched - stop
                 // For "neither matched" case, only apply if both neighbors actually exist
                 break;
@@ -1027,8 +1003,8 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
         if (helix.end_idx >= helix.start_idx) {
             helices.push_back(helix);
             if (debug) {
-                std::cerr << "[locate_helices] Created helix " << helices.size()
-                          << " (pos " << helix.start_idx << "-" << helix.end_idx << "): ";
+                std::cerr << "[locate_helices] Created helix " << helices.size() << " (pos " << helix.start_idx << "-"
+                          << helix.end_idx << "): ";
                 for (size_t p = helix.start_idx; p <= helix.end_idx; ++p) {
                     std::cerr << pair_order[p] << " ";
                 }
@@ -1065,12 +1041,9 @@ std::pair<std::vector<size_t>, std::vector<HelixSegment>> HelixOrganizer::locate
 // Main five2three algorithm
 // =============================================================================
 
-void HelixOrganizer::ensure_five_to_three(
-    const std::vector<core::BasePair>& pairs,
-    const BackboneData& backbone,
-    std::vector<size_t>& pair_order,
-    std::vector<HelixSegment>& helices,
-    std::vector<bool>& swapped) const {
+void HelixOrganizer::ensure_five_to_three(const std::vector<core::BasePair>& pairs, const BackboneData& backbone,
+                                          std::vector<size_t>& pair_order, std::vector<HelixSegment>& helices,
+                                          std::vector<bool>& swapped) const {
 
     bool debug = is_five2three_debug_enabled();
 
@@ -1084,11 +1057,12 @@ void HelixOrganizer::ensure_five_to_three(
     size_t helix_num = 0;
     for (auto& helix : helices) {
         ++helix_num;
-        if (helix.start_idx > helix.end_idx) continue;
+        if (helix.start_idx > helix.end_idx)
+            continue;
 
         if (debug) {
-            std::cerr << "\n=== HELIX " << helix_num << " (pairs "
-                      << helix.start_idx << "-" << helix.end_idx << ") ===" << std::endl;
+            std::cerr << "\n=== HELIX " << helix_num << " (pairs " << helix.start_idx << "-" << helix.end_idx
+                      << ") ===" << std::endl;
         }
 
         // STEP 1: first_step - set initial strand assignment
@@ -1098,8 +1072,8 @@ void HelixOrganizer::ensure_five_to_three(
             std::cerr << "[STEP1 first_step] After first_step:" << std::endl;
             for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
                 size_t idx = pair_order[pos];
-                std::cerr << "  pos " << pos << " pair_idx=" << idx
-                          << " (" << pairs[idx].residue_idx1()+1 << "," << pairs[idx].residue_idx2()+1 << ")"
+                std::cerr << "  pos " << pos << " pair_idx=" << idx << " (" << pairs[idx].residue_idx1() + 1 << ","
+                          << pairs[idx].residue_idx2() + 1 << ")"
                           << " swap=" << swapped[idx] << std::endl;
             }
         }
@@ -1118,35 +1092,39 @@ void HelixOrganizer::ensure_five_to_three(
             bool rev_oth = check_others(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
 
             if (debug) {
-                std::cerr << "[STEP2 pass1] pos " << pos << "->" << (pos+1)
-                          << " m=(" << pair_m.residue_idx1()+1 << "," << pair_m.residue_idx2()+1 << ")"
-                          << " n=(" << pair_n.residue_idx1()+1 << "," << pair_n.residue_idx2()+1 << ")"
-                          << " swap_m=" << swapped[idx_m] << " swap_n=" << swapped[idx_n]
-                          << " rev_wc=" << rev_wc << " rev_o3d=" << rev_o3d
-                          << " rev_csc=" << rev_csc << " rev_oth=" << rev_oth << std::endl;
+                std::cerr << "[STEP2 pass1] pos " << pos << "->" << (pos + 1) << " m=(" << pair_m.residue_idx1() + 1
+                          << "," << pair_m.residue_idx2() + 1 << ")"
+                          << " n=(" << pair_n.residue_idx1() + 1 << "," << pair_n.residue_idx2() + 1 << ")"
+                          << " swap_m=" << swapped[idx_m] << " swap_n=" << swapped[idx_n] << " rev_wc=" << rev_wc
+                          << " rev_o3d=" << rev_o3d << " rev_csc=" << rev_csc << " rev_oth=" << rev_oth << std::endl;
             }
 
             // Apply swap based on checks
             if (rev_wc) {
                 swapped[idx_n] = !swapped[idx_n];
-                if (debug) std::cerr << "  -> rev_wc: toggled swap_n to " << swapped[idx_n] << std::endl;
+                if (debug)
+                    std::cerr << "  -> rev_wc: toggled swap_n to " << swapped[idx_n] << std::endl;
             } else if (rev_o3d || rev_csc || rev_oth) {
                 swapped[idx_n] = !swapped[idx_n];
-                if (debug) std::cerr << "  -> rev_o3d/csc/oth: toggled swap_n to " << swapped[idx_n] << std::endl;
+                if (debug)
+                    std::cerr << "  -> rev_o3d/csc/oth: toggled swap_n to " << swapped[idx_n] << std::endl;
             }
 
             // Check strand 1 direction
             bool rev_s1 = chain1dir(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
-            if (debug) std::cerr << "  chain1dir=" << rev_s1 << std::endl;
+            if (debug)
+                std::cerr << "  chain1dir=" << rev_s1 << std::endl;
 
             if (rev_s1) {
                 swapped[idx_n] = !swapped[idx_n];
-                if (debug) std::cerr << "  -> rev_s1: toggled swap_n to " << swapped[idx_n] << std::endl;
+                if (debug)
+                    std::cerr << "  -> rev_s1: toggled swap_n to " << swapped[idx_n] << std::endl;
             }
         }
 
         // STEP 3: Second pass - re-check WC orientation
-        if (debug) std::cerr << "[STEP3 pass2] Second pass WC check:" << std::endl;
+        if (debug)
+            std::cerr << "[STEP3 pass2] Second pass WC check:" << std::endl;
         for (size_t pos = helix.start_idx; pos < helix.end_idx; ++pos) {
             size_t idx_m = pair_order[pos];
             size_t idx_n = pair_order[pos + 1];
@@ -1156,12 +1134,13 @@ void HelixOrganizer::ensure_five_to_three(
 
             bool rev_wc = wc_bporien(pair_m, pair_n, swapped[idx_m], swapped[idx_n], backbone);
             if (debug) {
-                std::cerr << "  pos " << pos << " rev_wc=" << rev_wc
-                          << " (swap_m=" << swapped[idx_m] << " swap_n=" << swapped[idx_n] << ")" << std::endl;
+                std::cerr << "  pos " << pos << " rev_wc=" << rev_wc << " (swap_m=" << swapped[idx_m]
+                          << " swap_n=" << swapped[idx_n] << ")" << std::endl;
             }
             if (rev_wc) {
                 swapped[idx_m] = !swapped[idx_m];
-                if (debug) std::cerr << "  -> toggled swap_m to " << swapped[idx_m] << std::endl;
+                if (debug)
+                    std::cerr << "  -> toggled swap_m to " << swapped[idx_m] << std::endl;
             }
         }
 
@@ -1169,8 +1148,8 @@ void HelixOrganizer::ensure_five_to_three(
             std::cerr << "[After pass2] Swap state:" << std::endl;
             for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
                 size_t idx = pair_order[pos];
-                std::cerr << "  pos " << pos << " pair_idx=" << idx
-                          << " (" << pairs[idx].residue_idx1()+1 << "," << pairs[idx].residue_idx2()+1 << ")"
+                std::cerr << "  pos " << pos << " pair_idx=" << idx << " (" << pairs[idx].residue_idx1() + 1 << ","
+                          << pairs[idx].residue_idx2() + 1 << ")"
                           << " swap=" << swapped[idx] << std::endl;
             }
         }
@@ -1192,8 +1171,8 @@ void HelixOrganizer::ensure_five_to_three(
             std::cerr << "[After check_strand2] Swap state:" << std::endl;
             for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
                 size_t idx = pair_order[pos];
-                std::cerr << "  pos " << pos << " pair_idx=" << idx
-                          << " (" << pairs[idx].residue_idx1()+1 << "," << pairs[idx].residue_idx2()+1 << ")"
+                std::cerr << "  pos " << pos << " pair_idx=" << idx << " (" << pairs[idx].residue_idx1() + 1 << ","
+                          << pairs[idx].residue_idx2() + 1 << ")"
                           << " swap=" << swapped[idx] << std::endl;
             }
         }
@@ -1206,8 +1185,8 @@ void HelixOrganizer::ensure_five_to_three(
             std::cerr << "[FINAL] Helix " << helix_num << " swap state:" << std::endl;
             for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
                 size_t idx = pair_order[pos];
-                std::cerr << "  pos " << pos << " pair_idx=" << idx
-                          << " (" << pairs[idx].residue_idx1()+1 << "," << pairs[idx].residue_idx2()+1 << ")"
+                std::cerr << "  pos " << pos << " pair_idx=" << idx << " (" << pairs[idx].residue_idx1() + 1 << ","
+                          << pairs[idx].residue_idx2() + 1 << ")"
                           << " swap=" << swapped[idx] << std::endl;
             }
         }
@@ -1218,8 +1197,7 @@ void HelixOrganizer::ensure_five_to_three(
 // Main organize function
 // =============================================================================
 
-HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs,
-                                        const BackboneData& backbone) const {
+HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs, const BackboneData& backbone) const {
     HelixOrdering result;
 
     if (pairs.empty()) {
@@ -1229,17 +1207,16 @@ HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs,
     // Validate all pairs have both frames - required for helix organization
     for (size_t i = 0; i < pairs.size(); ++i) {
         if (!pairs[i].frame1().has_value() || !pairs[i].frame2().has_value()) {
-            throw std::invalid_argument(
-                "HelixOrganizer::organize: pair " + std::to_string(i) +
-                " missing frame(s). All pairs must have valid frames.");
+            throw std::invalid_argument("HelixOrganizer::organize: pair " + std::to_string(i) +
+                                        " missing frame(s). All pairs must have valid frames.");
         }
     }
 
     if (pairs.size() == 1) {
         result.pair_order = {0};
-        result.helices = {{0, 0, false, false, false, false, {}}};  // Added direction field
+        result.helices = {{0, 0, false, false, false, false, {}}}; // Added direction field
         result.strand_swapped = {false};
-        result.helix_breaks = {};  // No breaks for single pair
+        result.helix_breaks = {}; // No breaks for single pair
         return result;
     }
 

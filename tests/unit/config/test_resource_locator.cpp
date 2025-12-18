@@ -45,10 +45,7 @@ TEST_F(ResourceLocatorTest, InitializeWithValidPath) {
 }
 
 TEST_F(ResourceLocatorTest, InitializeWithInvalidPathThrows) {
-    EXPECT_THROW(
-        ResourceLocator::initialize("/nonexistent/path/to/resources"),
-        std::runtime_error
-    );
+    EXPECT_THROW(ResourceLocator::initialize("/nonexistent/path/to/resources"), std::runtime_error);
     EXPECT_FALSE(ResourceLocator::is_initialized());
 }
 

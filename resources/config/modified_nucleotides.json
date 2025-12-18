@@ -1415,10 +1415,10 @@
         "description": "Inosine monophosphate (fixed: should be purine)"
       },
       "DI": {
-        "code": "g",
-        "type": "GUANINE",
+        "code": "I",
+        "type": "INOSINE",
         "is_purine": true,
-        "description": "2'-deoxyinosine (treated as modified guanine in legacy X3DNA)"
+        "description": "2'-deoxyinosine (uses Atomic_I.pdb template)"
       },
       "I": {
         "code": "I",
@@ -2527,10 +2527,10 @@
         "description": "Pseudouridine derivative (legacy uses lowercase p)"
       },
       "FHU": {
-        "code": "P",
+        "code": "p",
         "type": "PSEUDOURIDINE",
         "is_purine": false,
-        "description": "5-formyl-pseudouridine"
+        "description": "5-formyl-pseudouridine (legacy uses lowercase p)"
       },
       "I2T": {
         "code": "p",

@@ -218,8 +218,8 @@ core::HelicalParameters ParameterCalculator::calculate_helical_parameters(const 
     return calculate_helical_parameters_impl(pair1.frame1().value(), pair2.frame1().value());
 }
 
-core::HelicalParameters ParameterCalculator::calculate_helical_parameters_impl(const core::ReferenceFrame& frame1,
-                                                                               const core::ReferenceFrame& frame2) const {
+core::HelicalParameters ParameterCalculator::calculate_helical_parameters_impl(
+    const core::ReferenceFrame& frame1, const core::ReferenceFrame& frame2) const {
     core::HelicalParameters params;
 
     // Get rotation matrices and origins

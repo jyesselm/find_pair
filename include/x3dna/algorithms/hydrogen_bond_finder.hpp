@@ -67,8 +67,9 @@ public:
      * 3. Validate H-bonds (validate_hbonds)
      * 4. Return only H-bonds with type != ' '
      */
-    [[nodiscard]] static std::vector<HydrogenBondResult> find_hydrogen_bonds(const core::Residue& res1, const core::Residue& res2,
-                                                               double hb_lower, double hb_dist1);
+    [[nodiscard]] static std::vector<HydrogenBondResult> find_hydrogen_bonds(const core::Residue& res1,
+                                                                             const core::Residue& res2, double hb_lower,
+                                                                             double hb_dist1);
 
     /**
      * @brief Find hydrogen bonds and return detailed comparison info
@@ -78,8 +79,9 @@ public:
      * @param hb_dist1 Upper distance limit
      * @return Detailed results including all steps
      */
-    [[nodiscard]] static DetailedHBondResult find_hydrogen_bonds_detailed(const core::Residue& res1, const core::Residue& res2,
-                                                            double hb_lower, double hb_dist1, double hb_dist2 = 4.5);
+    [[nodiscard]] static DetailedHBondResult find_hydrogen_bonds_detailed(const core::Residue& res1,
+                                                                          const core::Residue& res2, double hb_lower,
+                                                                          double hb_dist1, double hb_dist2 = 4.5);
 
 private:
     /**

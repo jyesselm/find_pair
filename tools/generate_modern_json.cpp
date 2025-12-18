@@ -267,9 +267,8 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
 
                     // Record helix organization for each helix
                     for (size_t h = 0; h < helix_order.helices.size(); ++h) {
-                        writer.record_helix_organization(h + 1, helix_order.helices[h],
-                                                         helix_order.pair_order, base_pairs,
-                                                         helix_order.strand_swapped);
+                        writer.record_helix_organization(h + 1, helix_order.helices[h], helix_order.pair_order,
+                                                         base_pairs, helix_order.strand_swapped);
                     }
 
                     ParameterCalculator param_calc;
@@ -287,14 +286,16 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                         const auto& pair2 = base_pairs[idx2];
 
                         // Verify both pairs have frames
-                        if (!pair1.frame1().has_value() || !pair1.frame2().has_value() ||
-                            !pair2.frame1().has_value() || !pair2.frame2().has_value()) {
+                        if (!pair1.frame1().has_value() || !pair1.frame2().has_value() || !pair2.frame1().has_value() ||
+                            !pair2.frame2().has_value()) {
                             continue;
                         }
 
                         // Get strand_swapped flags from helix organization
-                        bool swap1 = (idx1 < helix_order.strand_swapped.size()) ? helix_order.strand_swapped[idx1] : false;
-                        bool swap2 = (idx2 < helix_order.strand_swapped.size()) ? helix_order.strand_swapped[idx2] : false;
+                        bool swap1 = (idx1 < helix_order.strand_swapped.size()) ? helix_order.strand_swapped[idx1]
+                                                                                : false;
+                        bool swap2 = (idx2 < helix_order.strand_swapped.size()) ? helix_order.strand_swapped[idx2]
+                                                                                : false;
 
                         // Use BasePair::get_step_frame() which encapsulates the legacy frame selection logic
                         auto bp1_frame = pair1.get_step_frame(swap1).value();

@@ -53,11 +53,11 @@ TEST_F(AtomTest, FullConstructor) {
 // Builder pattern tests
 TEST_F(AtomTest, BuilderBasic) {
     auto atom = Atom::create(" N1 ", Vector3D(5.0, 6.0, 7.0))
-        .residue_name("  A")
-        .chain_id('B')
-        .residue_seq(10)
-        .record_type('H')
-        .build();
+                    .residue_name("  A")
+                    .chain_id('B')
+                    .residue_seq(10)
+                    .record_type('H')
+                    .build();
 
     EXPECT_EQ(atom.name(), " N1 ");
     EXPECT_EQ(atom.position(), Vector3D(5.0, 6.0, 7.0));
@@ -69,23 +69,23 @@ TEST_F(AtomTest, BuilderBasic) {
 
 TEST_F(AtomTest, BuilderAllFields) {
     auto atom = Atom::create(" CA ", Vector3D(1.0, 2.0, 3.0))
-        .residue_name("ALA")
-        .chain_id('A')
-        .residue_seq(42)
-        .record_type('A')
-        .alt_loc('A')
-        .insertion('B')
-        .occupancy(0.75)
-        .atom_serial(100)
-        .model_number(1)
-        .line_number(500)
-        .b_factor(25.5)
-        .element("C")
-        .original_atom_name(" CA ")
-        .original_residue_name("ALA")
-        .legacy_atom_idx(50)
-        .legacy_residue_idx(10)
-        .build();
+                    .residue_name("ALA")
+                    .chain_id('A')
+                    .residue_seq(42)
+                    .record_type('A')
+                    .alt_loc('A')
+                    .insertion('B')
+                    .occupancy(0.75)
+                    .atom_serial(100)
+                    .model_number(1)
+                    .line_number(500)
+                    .b_factor(25.5)
+                    .element("C")
+                    .original_atom_name(" CA ")
+                    .original_residue_name("ALA")
+                    .legacy_atom_idx(50)
+                    .legacy_residue_idx(10)
+                    .build();
 
     EXPECT_EQ(atom.name(), " CA ");
     EXPECT_EQ(atom.residue_name(), "ALA");

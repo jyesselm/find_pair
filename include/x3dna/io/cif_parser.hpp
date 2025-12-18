@@ -21,7 +21,7 @@
 
 // Forward declare GEMMI types to avoid header inclusion
 namespace gemmi {
-    struct Structure;
+struct Structure;
 }
 
 namespace x3dna {
@@ -77,25 +77,33 @@ public:
      * @brief Set whether to include HETATM records
      * @param value True to include HETATM, false to skip
      */
-    void set_include_hetatm(bool value) { include_hetatm_ = value; }
+    void set_include_hetatm(bool value) {
+        include_hetatm_ = value;
+    }
 
     /**
      * @brief Get whether HETATM records are included
      * @return True if HETATM records are included
      */
-    bool include_hetatm() const { return include_hetatm_; }
+    bool include_hetatm() const {
+        return include_hetatm_;
+    }
 
     /**
      * @brief Set whether to include water molecules (HOH)
      * @param value True to include waters, false to skip
      */
-    void set_include_waters(bool value) { include_waters_ = value; }
+    void set_include_waters(bool value) {
+        include_waters_ = value;
+    }
 
     /**
      * @brief Get whether water molecules are included
      * @return True if waters are included
      */
-    bool include_waters() const { return include_waters_; }
+    bool include_waters() const {
+        return include_waters_;
+    }
 
     /**
      * @brief Set whether to use auth_* fields (default) or label_* fields
@@ -104,13 +112,17 @@ public:
      * auth_* fields correspond to original PDB identifiers and are preferred
      * for compatibility with legacy X3DNA output.
      */
-    void set_use_auth_fields(bool use_auth) { use_auth_fields_ = use_auth; }
+    void set_use_auth_fields(bool use_auth) {
+        use_auth_fields_ = use_auth;
+    }
 
     /**
      * @brief Get whether auth_* fields are used
      * @return True if using auth_* fields
      */
-    bool use_auth_fields() const { return use_auth_fields_; }
+    bool use_auth_fields() const {
+        return use_auth_fields_;
+    }
 
     /**
      * @brief Exception class for parsing errors
@@ -125,9 +137,9 @@ public:
     };
 
 private:
-    bool include_hetatm_ = false;     // Include HETATM records
-    bool include_waters_ = false;     // Include water molecules
-    bool use_auth_fields_ = true;     // Use auth_* fields for PDB compatibility
+    bool include_hetatm_ = false; // Include HETATM records
+    bool include_waters_ = false; // Include water molecules
+    bool use_auth_fields_ = true; // Use auth_* fields for PDB compatibility
 
     /**
      * @brief Convert GEMMI Structure to our Structure
@@ -135,8 +147,7 @@ private:
      * @param pdb_id PDB identifier
      * @return Structure object
      */
-    core::Structure convert_gemmi_structure(const gemmi::Structure& gemmi_struct,
-                                            const std::string& pdb_id);
+    core::Structure convert_gemmi_structure(const gemmi::Structure& gemmi_struct, const std::string& pdb_id);
 
     /**
      * @brief Check if residue is a water molecule
@@ -210,8 +221,7 @@ private:
      * @return Structure object
      */
     core::Structure build_structure_from_residues(
-        const std::string& pdb_id,
-        const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const;
+        const std::string& pdb_id, const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const;
 };
 
 } // namespace io

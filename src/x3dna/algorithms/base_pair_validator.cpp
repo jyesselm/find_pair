@@ -88,9 +88,8 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
     }
 
     // Calculate quality score (matches rtn_val[5])
-    result.quality_score = result.dorg +
-        validation_constants::D_V_WEIGHT * result.d_v +
-        result.plane_angle / validation_constants::PLANE_ANGLE_DIVISOR;
+    result.quality_score = result.dorg + validation_constants::D_V_WEIGHT * result.d_v +
+                           result.plane_angle / validation_constants::PLANE_ANGLE_DIVISOR;
 
     // Perform validation checks
     result.distance_check = in_range(result.dorg, params_.min_dorg, params_.max_dorg);

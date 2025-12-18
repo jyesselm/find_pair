@@ -9,10 +9,7 @@
 namespace x3dna {
 namespace algorithms {
 
-std::vector<std::pair<int, int>> MutualBestStrategy::select(
-    SelectionContext& context,
-    IPairFindingObserver* observer
-) {
+std::vector<std::pair<int, int>> MutualBestStrategy::select(SelectionContext& context, IPairFindingObserver* observer) {
     std::vector<std::pair<int, int>> selected_pairs;
     std::vector<std::pair<int, int>> pairs_found_this_iteration;
 
@@ -37,7 +34,7 @@ std::vector<std::pair<int, int>> MutualBestStrategy::select(
         // CRITICAL: Iterate sequentially from 1 to max_legacy_idx to match legacy iteration order
         for (int legacy_idx1 = 1; legacy_idx1 <= context.max_legacy_idx; ++legacy_idx1) {
             // Skip if already matched
-            if (legacy_idx1 >= static_cast<int>(context.matched_indices.size()) || 
+            if (legacy_idx1 >= static_cast<int>(context.matched_indices.size()) ||
                 context.matched_indices[legacy_idx1]) {
                 continue;
             }
@@ -64,8 +61,8 @@ std::vector<std::pair<int, int>> MutualBestStrategy::select(
             if (observer) {
                 int best_j_for_i = legacy_idx2;
                 int best_i_for_j = partner_of_partner.has_value() ? partner_of_partner->first : 0;
-                observer->on_mutual_best_check(legacy_idx1, legacy_idx2, best_j_for_i, best_i_for_j,
-                                              is_mutual, is_mutual);
+                observer->on_mutual_best_check(legacy_idx1, legacy_idx2, best_j_for_i, best_i_for_j, is_mutual,
+                                               is_mutual);
             }
 
             if (is_mutual) {
@@ -94,10 +91,11 @@ std::vector<std::pair<int, int>> MutualBestStrategy::select(
         if (observer) {
             size_t total_matched = 0;
             for (bool m : context.matched_indices) {
-                if (m) total_matched++;
+                if (m)
+                    total_matched++;
             }
-            observer->on_iteration_complete(iteration_num, pairs_found_this_iteration,
-                                           context.matched_indices, total_matched);
+            observer->on_iteration_complete(iteration_num, pairs_found_this_iteration, context.matched_indices,
+                                            total_matched);
         }
 
         // Recount matches after this iteration
@@ -113,11 +111,9 @@ std::vector<std::pair<int, int>> MutualBestStrategy::select(
     return selected_pairs;
 }
 
-std::optional<std::pair<int, double>> MutualBestStrategy::find_best_partner(
-    int legacy_idx,
-    const SelectionContext& context,
-    IPairFindingObserver* observer
-) const {
+std::optional<std::pair<int, double>> MutualBestStrategy::find_best_partner(int legacy_idx,
+                                                                            const SelectionContext& context,
+                                                                            IPairFindingObserver* observer) const {
     std::optional<std::pair<int, double>> best_result;
     double best_score = std::numeric_limits<double>::max();
 
@@ -126,11 +122,10 @@ std::optional<std::pair<int, double>> MutualBestStrategy::find_best_partner(
 
     // Get all valid partners from cache
     auto partners = context.cache.valid_partners_for(legacy_idx);
-    
+
     for (int partner_idx : partners) {
         // Skip if partner is already matched
-        if (partner_idx >= static_cast<int>(context.matched_indices.size()) ||
-            context.matched_indices[partner_idx]) {
+        if (partner_idx >= static_cast<int>(context.matched_indices.size()) || context.matched_indices[partner_idx]) {
             continue;
         }
 
@@ -166,6 +161,5 @@ std::optional<std::pair<int, double>> MutualBestStrategy::find_best_partner(
     return best_result;
 }
 
-}  // namespace algorithms
-}  // namespace x3dna
-
+} // namespace algorithms
+} // namespace x3dna

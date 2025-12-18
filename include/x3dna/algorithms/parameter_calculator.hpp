@@ -30,7 +30,7 @@ public:
      * @return BasePairStepParameters structure
      */
     [[nodiscard]] core::BasePairStepParameters calculate_step_parameters(const core::BasePair& pair1,
-                                                           const core::BasePair& pair2) const;
+                                                                         const core::BasePair& pair2) const;
 
     /**
      * @brief Calculate step parameters for a single base pair (for bp_type_id calculation)
@@ -49,7 +49,7 @@ public:
      * @return BasePairStepParameters structure
      */
     [[nodiscard]] core::BasePairStepParameters calculate_step_parameters(const core::ReferenceFrame& frame1,
-                                                           const core::ReferenceFrame& frame2) const;
+                                                                         const core::ReferenceFrame& frame2) const;
 
     /**
      * @brief Calculate helical parameters from two base pairs
@@ -57,7 +57,8 @@ public:
      * @param pair2 Second base pair
      * @return HelicalParameters structure
      */
-    [[nodiscard]] core::HelicalParameters calculate_helical_parameters(const core::BasePair& pair1, const core::BasePair& pair2) const;
+    [[nodiscard]] core::HelicalParameters calculate_helical_parameters(const core::BasePair& pair1,
+                                                                       const core::BasePair& pair2) const;
 
     /**
      * @brief Calculate helical parameters from two reference frames
@@ -66,14 +67,15 @@ public:
      * @return HelicalParameters structure
      */
     [[nodiscard]] core::HelicalParameters calculate_helical_parameters_impl(const core::ReferenceFrame& frame1,
-                                                              const core::ReferenceFrame& frame2) const;
+                                                                            const core::ReferenceFrame& frame2) const;
 
     /**
      * @brief Calculate step parameters for all consecutive pairs
      * @param pairs Vector of base pairs
      * @return Vector of step parameters (one per consecutive pair)
      */
-    [[nodiscard]] std::vector<core::BasePairStepParameters> calculate_all_step_parameters(const std::vector<core::BasePair>& pairs) const;
+    [[nodiscard]] std::vector<core::BasePairStepParameters> calculate_all_step_parameters(
+        const std::vector<core::BasePair>& pairs) const;
 
     /**
      * @brief Calculate midstep reference frame
@@ -82,7 +84,7 @@ public:
      * @return Midstep reference frame
      */
     [[nodiscard]] core::ReferenceFrame calculate_midstep_frame(const core::ReferenceFrame& frame1,
-                                                 const core::ReferenceFrame& frame2) const;
+                                                               const core::ReferenceFrame& frame2) const;
 
     /**
      * @brief Calculate pair frame (middle frame between two bases in a base pair)
@@ -94,7 +96,8 @@ public:
      * - Checks if z-axes are anti-parallel and reverses y/z if needed
      * - Uses bpstep_par to compute the middle frame
      */
-    [[nodiscard]] core::ReferenceFrame calculate_pair_frame(const core::ReferenceFrame& frame1, const core::ReferenceFrame& frame2) const;
+    [[nodiscard]] core::ReferenceFrame calculate_pair_frame(const core::ReferenceFrame& frame1,
+                                                            const core::ReferenceFrame& frame2) const;
 
 private:
     /**

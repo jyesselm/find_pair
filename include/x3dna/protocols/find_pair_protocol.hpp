@@ -28,12 +28,12 @@ namespace protocols {
  * initialization and reduced setter boilerplate.
  */
 struct FindPairConfig {
-    bool single_strand_mode = false;   ///< Process single strand only
-    bool find_all_pairs = false;       ///< Find all potential pairs
-    bool divide_helices = false;       ///< Divide structures into helices
-    bool legacy_mode = false;          ///< Enable legacy compatibility mode
-    std::filesystem::path output_dir;  ///< Output directory for JSON files
-    std::string output_stage = "all";  ///< Output stage: "frames", "distances", "hbonds", etc.
+    bool single_strand_mode = false;  ///< Process single strand only
+    bool find_all_pairs = false;      ///< Find all potential pairs
+    bool divide_helices = false;      ///< Divide structures into helices
+    bool legacy_mode = false;         ///< Enable legacy compatibility mode
+    std::filesystem::path output_dir; ///< Output directory for JSON files
+    std::string output_stage = "all"; ///< Output stage: "frames", "distances", "hbonds", etc.
 };
 
 /**
@@ -55,8 +55,7 @@ public:
      * @param template_path Path to standard base template directory
      * @param config Protocol configuration options
      */
-    explicit FindPairProtocol(const std::filesystem::path& template_path,
-                              const FindPairConfig& config);
+    explicit FindPairProtocol(const std::filesystem::path& template_path, const FindPairConfig& config);
 
     /**
      * @brief Constructor (legacy - for backward compatibility)
@@ -76,31 +75,59 @@ public:
     /**
      * @brief Get configuration (const)
      */
-    [[nodiscard]] const FindPairConfig& config() const { return config_; }
+    [[nodiscard]] const FindPairConfig& config() const {
+        return config_;
+    }
 
     /**
      * @brief Get configuration (mutable, for modification)
      */
-    FindPairConfig& config() { return config_; }
+    FindPairConfig& config() {
+        return config_;
+    }
 
     // Individual setters (for backward compatibility)
-    void set_single_strand_mode(bool value) { config_.single_strand_mode = value; }
-    [[nodiscard]] bool single_strand_mode() const { return config_.single_strand_mode; }
+    void set_single_strand_mode(bool value) {
+        config_.single_strand_mode = value;
+    }
+    [[nodiscard]] bool single_strand_mode() const {
+        return config_.single_strand_mode;
+    }
 
-    void set_find_all_pairs(bool value) { config_.find_all_pairs = value; }
-    [[nodiscard]] bool find_all_pairs() const { return config_.find_all_pairs; }
+    void set_find_all_pairs(bool value) {
+        config_.find_all_pairs = value;
+    }
+    [[nodiscard]] bool find_all_pairs() const {
+        return config_.find_all_pairs;
+    }
 
-    void set_divide_helices(bool value) { config_.divide_helices = value; }
-    [[nodiscard]] bool divide_helices() const { return config_.divide_helices; }
+    void set_divide_helices(bool value) {
+        config_.divide_helices = value;
+    }
+    [[nodiscard]] bool divide_helices() const {
+        return config_.divide_helices;
+    }
 
-    void set_legacy_mode(bool value) { config_.legacy_mode = value; }
-    [[nodiscard]] bool legacy_mode() const { return config_.legacy_mode; }
+    void set_legacy_mode(bool value) {
+        config_.legacy_mode = value;
+    }
+    [[nodiscard]] bool legacy_mode() const {
+        return config_.legacy_mode;
+    }
 
-    void set_output_dir(const std::filesystem::path& dir) { config_.output_dir = dir; }
-    [[nodiscard]] const std::filesystem::path& output_dir() const { return config_.output_dir; }
+    void set_output_dir(const std::filesystem::path& dir) {
+        config_.output_dir = dir;
+    }
+    [[nodiscard]] const std::filesystem::path& output_dir() const {
+        return config_.output_dir;
+    }
 
-    void set_output_stage(const std::string& stage) { config_.output_stage = stage; }
-    [[nodiscard]] const std::string& output_stage() const { return config_.output_stage; }
+    void set_output_stage(const std::string& stage) {
+        config_.output_stage = stage;
+    }
+    [[nodiscard]] const std::string& output_stage() const {
+        return config_.output_stage;
+    }
 
     /**
      * @brief Set JSON writer for recording results

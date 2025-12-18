@@ -114,7 +114,8 @@ InputData InputFileParser::parse_stream(std::istream& stream) {
     return data;
 }
 
-std::pair<size_t, size_t> InputFileParser::parse_base_pair_line(const std::string& line, size_t line_number, int flags) {
+std::pair<size_t, size_t> InputFileParser::parse_base_pair_line(const std::string& line, size_t line_number,
+                                                                int flags) {
     std::istringstream iss(line);
 
     // Two formats:

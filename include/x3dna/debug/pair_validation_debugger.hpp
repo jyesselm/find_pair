@@ -65,8 +65,8 @@ struct PairValidationDetails {
     nlohmann::json to_json() const;
 
     // Load from legacy JSON file
-    static std::optional<PairValidationDetails> from_legacy_json(
-        const nlohmann::json& legacy_data, int base_i, int base_j);
+    static std::optional<PairValidationDetails> from_legacy_json(const nlohmann::json& legacy_data, int base_i,
+                                                                 int base_j);
 };
 
 /**
@@ -102,7 +102,9 @@ public:
     /**
      * @brief Check if debugging is enabled
      */
-    bool is_enabled() const { return enabled_; }
+    bool is_enabled() const {
+        return enabled_;
+    }
 
     /**
      * @brief Check if debugging is enabled for specific PDB
@@ -200,21 +202,21 @@ private:
 };
 
 // Convenience macros for conditional debugging
-#define X3DNA_DEBUG_PAIR_IF_ENABLED(base_i, base_j, msg) \
-    do { \
-        auto& dbg = x3dna::debug::PairValidationDebugger::instance(); \
-        if (dbg.should_debug_pair(dbg.current_pdb(), base_i, base_j)) { \
-            dbg.log_pair(base_i, base_j, msg); \
-        } \
-    } while(0)
+#define X3DNA_DEBUG_PAIR_IF_ENABLED(base_i, base_j, msg)                                                               \
+    do {                                                                                                               \
+        auto& dbg = x3dna::debug::PairValidationDebugger::instance();                                                  \
+        if (dbg.should_debug_pair(dbg.current_pdb(), base_i, base_j)) {                                                \
+            dbg.log_pair(base_i, base_j, msg);                                                                         \
+        }                                                                                                              \
+    } while (0)
 
-#define X3DNA_DEBUG_LOG_IF_ENABLED(msg) \
-    do { \
-        auto& dbg = x3dna::debug::PairValidationDebugger::instance(); \
-        if (dbg.is_enabled()) { \
-            dbg.log(msg); \
-        } \
-    } while(0)
+#define X3DNA_DEBUG_LOG_IF_ENABLED(msg)                                                                                \
+    do {                                                                                                               \
+        auto& dbg = x3dna::debug::PairValidationDebugger::instance();                                                  \
+        if (dbg.is_enabled()) {                                                                                        \
+            dbg.log(msg);                                                                                              \
+        }                                                                                                              \
+    } while (0)
 
 } // namespace debug
 } // namespace x3dna

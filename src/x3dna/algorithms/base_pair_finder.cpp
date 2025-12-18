@@ -169,12 +169,11 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::
 
                 // Store legacy indices for recording (preserve original finding order to match legacy)
                 // Legacy stores pairs in the order they were found: (searching_residue, best_partner)
-                selected_pairs_legacy_idx.push_back({static_cast<size_t>(legacy_idx1),
-                                                     static_cast<size_t>(legacy_idx2)});
+                selected_pairs_legacy_idx.push_back(
+                    {static_cast<size_t>(legacy_idx1), static_cast<size_t>(legacy_idx2)});
 
                 // Track pair found in this iteration (preserve finding order)
-                pairs_found_this_iteration.push_back(
-                    {static_cast<int>(legacy_idx1), static_cast<int>(legacy_idx2)});
+                pairs_found_this_iteration.push_back({static_cast<int>(legacy_idx1), static_cast<int>(legacy_idx2)});
 
                 // Record mutual best decision (after selection)
                 if (writer) {
@@ -324,8 +323,7 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
     // Helper lambda to record ineligible candidate and continue
     auto record_ineligible = [&](int idx) {
         if (collect_candidates) {
-            candidates.push_back(std::make_tuple(idx, false,
-                std::numeric_limits<double>::max(), 0));
+            candidates.push_back(std::make_tuple(idx, false, std::numeric_limits<double>::max(), 0));
         }
     };
 
@@ -334,10 +332,9 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
         int candidate_bp_type_id = 0;
 
         // Skip if same residue or already matched (matches legacy checks)
-        const bool is_self_or_matched =
-            legacy_idx2 == legacy_idx1 ||
-            legacy_idx2 >= static_cast<int>(matched_indices.size()) ||
-            matched_indices[legacy_idx2];
+        const bool is_self_or_matched = legacy_idx2 == legacy_idx1 ||
+                                        legacy_idx2 >= static_cast<int>(matched_indices.size()) ||
+                                        matched_indices[legacy_idx2];
         if (is_self_or_matched) {
             record_ineligible(legacy_idx2);
             continue;
@@ -355,8 +352,7 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
 
         // Equivalent to legacy RY[j] >= 0 check: is_nucleotide (includes modified nucleotides)
         // and has frame. Use is_nucleotide() instead of residue_type() >= 0.
-        const bool is_invalid_nucleotide =
-            !is_nucleotide(*residue) || !residue->reference_frame().has_value();
+        const bool is_invalid_nucleotide = !is_nucleotide(*residue) || !residue->reference_frame().has_value();
         if (is_invalid_nucleotide) {
             record_ineligible(legacy_idx2);
             continue;
@@ -364,9 +360,8 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
 
         // Validate pair - use Phase 1 validation result if available
         // This ensures consistency: if Phase 1 said pair is invalid, don't select it
-        std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2)
-            ? std::make_pair(legacy_idx1, legacy_idx2)
-            : std::make_pair(legacy_idx2, legacy_idx1);
+        std::pair<int, int> normalized_pair = (legacy_idx1 < legacy_idx2) ? std::make_pair(legacy_idx1, legacy_idx2)
+                                                                          : std::make_pair(legacy_idx2, legacy_idx1);
 
         // Get or compute validation result
         ValidationResult result;
@@ -377,9 +372,8 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             result = phase1_it->second;
         } else {
             // Fallback: validate on the fly (shouldn't happen if Phase 1 ran and writer was set)
-            result = (legacy_idx1 < legacy_idx2)
-                ? validator_.validate(*res1, *residue)
-                : validator_.validate(*residue, *res1);
+            result = (legacy_idx1 < legacy_idx2) ? validator_.validate(*res1, *residue)
+                                                 : validator_.validate(*residue, *res1);
         }
 
         // Common validity check - skip invalid pairs regardless of source
@@ -409,9 +403,8 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
         // Get bp_type_id - prefer Phase 1 result for consistency
         auto bp_type_it = phase1_bp_type_ids.find(normalized_pair);
         const bool has_phase1_bp_type = (bp_type_it != phase1_bp_type_ids.end());
-        int bp_type_id = has_phase1_bp_type
-            ? bp_type_it->second
-            : calculate_bp_type_id(res1, residue, result, adjusted_quality_score);
+        int bp_type_id = has_phase1_bp_type ? bp_type_it->second
+                                            : calculate_bp_type_id(res1, residue, result, adjusted_quality_score);
 
         // Apply Watson-Crick bonus
         if (bp_type_id == 2) {
@@ -779,9 +772,8 @@ BasePairFinder::Phase1Results BasePairFinder::run_phase1_validation(const Residu
     return results;
 }
 
-BasePair BasePairFinder::create_base_pair(int legacy_idx1, int legacy_idx2,
-                                           const Residue* res1, const Residue* res2,
-                                           const ValidationResult& result) const {
+BasePair BasePairFinder::create_base_pair(int legacy_idx1, int legacy_idx2, const Residue* res1, const Residue* res2,
+                                          const ValidationResult& result) const {
     // ALWAYS store smaller index first for consistency with legacy behavior
     size_t idx_small = static_cast<size_t>(std::min(legacy_idx1, legacy_idx2)) - 1;
     size_t idx_large = static_cast<size_t>(std::max(legacy_idx1, legacy_idx2)) - 1;

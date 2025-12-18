@@ -23,7 +23,7 @@ namespace core {
  */
 class Atom {
 public:
-    class Builder;  // Forward declaration
+    class Builder; // Forward declaration
 
     /**
      * @brief Default constructor (for container compatibility)

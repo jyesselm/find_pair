@@ -9,7 +9,7 @@
 #pragma once
 
 #include <x3dna/core/base_pair.hpp>
-#include <x3dna/algorithms/helix_organizer.hpp>  // For BackboneData, HelixSegment, PairContextInfo
+#include <x3dna/algorithms/helix_organizer.hpp> // For BackboneData, HelixSegment, PairContextInfo
 #include <x3dna/algorithms/helix/pair_geometry_helper.hpp>
 #include <x3dna/algorithms/helix/backbone_linkage_checker.hpp>
 #include <vector>
@@ -28,8 +28,8 @@ using algorithms::PairContextInfo;
  * @brief Configuration for context calculation
  */
 struct HelixContextConfig {
-    double helix_break = 7.8;      ///< Max distance (Å) between adjacent pairs in helix
-    double neighbor_cutoff = 8.5;  ///< Cutoff for neighbor detection
+    double helix_break = 7.8;     ///< Max distance (Å) between adjacent pairs in helix
+    double neighbor_cutoff = 8.5; ///< Cutoff for neighbor detection
 };
 
 /**
@@ -68,9 +68,8 @@ public:
      * @param backbone Backbone connectivity data
      * @return Vector of PairContext for each pair
      */
-    [[nodiscard]] std::vector<PairContext> calculate_context(
-        const std::vector<core::BasePair>& pairs,
-        const BackboneData& backbone) const;
+    [[nodiscard]] std::vector<PairContext> calculate_context(const std::vector<core::BasePair>& pairs,
+                                                             const BackboneData& backbone) const;
 
     /**
      * @brief Find helix endpoints from context
@@ -80,8 +79,7 @@ public:
      * @param context Calculated pair contexts
      * @return Vector of endpoint pair indices
      */
-    [[nodiscard]] std::vector<size_t> find_endpoints(
-        const std::vector<PairContext>& context) const;
+    [[nodiscard]] std::vector<size_t> find_endpoints(const std::vector<PairContext>& context) const;
 
     /**
      * @brief Locate and chain pairs into helices
@@ -96,18 +94,17 @@ public:
      * @return Pair of (ordered pair indices, helix segments)
      */
     [[nodiscard]] std::pair<std::vector<size_t>, std::vector<HelixSegment>> locate_helices(
-        const std::vector<PairContext>& context,
-        const std::vector<size_t>& endpoints,
-        const BackboneData& backbone,
+        const std::vector<PairContext>& context, const std::vector<size_t>& endpoints, const BackboneData& backbone,
         size_t num_pairs) const;
 
     /**
      * @brief Convert internal PairContext to public PairContextInfo
      */
-    [[nodiscard]] static std::vector<PairContextInfo> to_public_context(
-        const std::vector<PairContext>& context);
+    [[nodiscard]] static std::vector<PairContextInfo> to_public_context(const std::vector<PairContext>& context);
 
-    [[nodiscard]] const HelixContextConfig& config() const { return config_; }
+    [[nodiscard]] const HelixContextConfig& config() const {
+        return config_;
+    }
 
 private:
     HelixContextConfig config_;
