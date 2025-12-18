@@ -23,6 +23,22 @@ namespace x3dna {
 namespace protocols {
 
 /**
+ * @struct AnalyzeConfig
+ * @brief Configuration options for AnalyzeProtocol
+ *
+ * Consolidates all protocol options into a single struct for cleaner
+ * initialization and reduced setter boilerplate.
+ */
+struct AnalyzeConfig {
+    bool calculate_torsions = false;   ///< Calculate torsion angles
+    bool simple_parameters = false;    ///< Use simple parameter mode
+    bool circular_structure = false;   ///< Treat as circular structure
+    size_t step_start = 1;             ///< Step start index (1-based, for -S option)
+    size_t step_size = 1;              ///< Step size (1-based, for -S option)
+    bool legacy_mode = false;          ///< Enable legacy compatibility mode
+};
+
+/**
  * @class AnalyzeProtocol
  * @brief Orchestrates the analyze workflow
  *
@@ -39,7 +55,15 @@ namespace protocols {
 class AnalyzeProtocol : public ProtocolBase {
 public:
     /**
-     * @brief Constructor
+     * @brief Constructor with config struct (preferred)
+     * @param template_path Path to standard base template directory
+     * @param config Protocol configuration options
+     */
+    explicit AnalyzeProtocol(const std::filesystem::path& template_path,
+                             const AnalyzeConfig& config);
+
+    /**
+     * @brief Constructor (legacy - for backward compatibility)
      * @param template_path Path to standard base template directory
      */
     explicit AnalyzeProtocol(const std::filesystem::path& template_path = "data/templates");
@@ -56,90 +80,35 @@ public:
      */
     void execute(core::Structure& structure) override;
 
-    // Options
+    // Configuration
     /**
-     * @brief Set calculate torsions mode
+     * @brief Get configuration (const)
      */
-    void set_calculate_torsions(bool value) {
-        calculate_torsions_ = value;
-    }
+    [[nodiscard]] const AnalyzeConfig& config() const { return config_; }
 
     /**
-     * @brief Get calculate torsions mode
+     * @brief Get configuration (mutable, for modification)
      */
-    bool calculate_torsions() const {
-        return calculate_torsions_;
-    }
+    AnalyzeConfig& config() { return config_; }
 
-    /**
-     * @brief Set simple parameters mode
-     */
-    void set_simple_parameters(bool value) {
-        simple_parameters_ = value;
-    }
+    // Individual setters (for backward compatibility)
+    void set_calculate_torsions(bool value) { config_.calculate_torsions = value; }
+    [[nodiscard]] bool calculate_torsions() const { return config_.calculate_torsions; }
 
-    /**
-     * @brief Get simple parameters mode
-     */
-    bool simple_parameters() const {
-        return simple_parameters_;
-    }
+    void set_simple_parameters(bool value) { config_.simple_parameters = value; }
+    [[nodiscard]] bool simple_parameters() const { return config_.simple_parameters; }
 
-    /**
-     * @brief Set circular structure mode
-     */
-    void set_circular_structure(bool value) {
-        circular_structure_ = value;
-    }
+    void set_circular_structure(bool value) { config_.circular_structure = value; }
+    [[nodiscard]] bool circular_structure() const { return config_.circular_structure; }
 
-    /**
-     * @brief Get circular structure mode
-     */
-    bool circular_structure() const {
-        return circular_structure_;
-    }
+    void set_step_start(size_t start) { config_.step_start = start; }
+    [[nodiscard]] size_t step_start() const { return config_.step_start; }
 
-    /**
-     * @brief Set step start index (for -S option)
-     */
-    void set_step_start(size_t start) {
-        step_start_ = start;
-    }
+    void set_step_size(size_t size) { config_.step_size = size; }
+    [[nodiscard]] size_t step_size() const { return config_.step_size; }
 
-    /**
-     * @brief Get step start index
-     */
-    size_t step_start() const {
-        return step_start_;
-    }
-
-    /**
-     * @brief Set step size (for -S option)
-     */
-    void set_step_size(size_t size) {
-        step_size_ = size;
-    }
-
-    /**
-     * @brief Get step size
-     */
-    size_t step_size() const {
-        return step_size_;
-    }
-
-    /**
-     * @brief Set legacy mode (for exact compatibility)
-     */
-    void set_legacy_mode(bool value) {
-        legacy_mode_ = value;
-    }
-
-    /**
-     * @brief Get legacy mode
-     */
-    bool legacy_mode() const {
-        return legacy_mode_;
-    }
+    void set_legacy_mode(bool value) { config_.legacy_mode = value; }
+    [[nodiscard]] bool legacy_mode() const { return config_.legacy_mode; }
 
     /**
      * @brief Set JSON writer for recording results
@@ -213,13 +182,8 @@ private:
     algorithms::ParameterCalculator param_calculator_;
     io::PdbParser pdb_parser_;
 
-    // Options
-    bool calculate_torsions_ = false;
-    bool simple_parameters_ = false;
-    bool circular_structure_ = false;
-    size_t step_start_ = 1;    // 1-based (matches legacy -S option)
-    size_t step_size_ = 1;     // 1-based (matches legacy -S option)
-    bool legacy_mode_ = false; // Legacy compatibility mode
+    // Configuration (consolidates all options)
+    AnalyzeConfig config_;
 
     // Results
     std::vector<core::BasePair> base_pairs_;

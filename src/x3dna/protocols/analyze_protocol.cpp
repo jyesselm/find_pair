@@ -15,7 +15,12 @@
 namespace x3dna {
 namespace protocols {
 
-AnalyzeProtocol::AnalyzeProtocol(const std::filesystem::path& template_path) : frame_calculator_(template_path) {}
+AnalyzeProtocol::AnalyzeProtocol(const std::filesystem::path& template_path,
+                                 const AnalyzeConfig& config)
+    : frame_calculator_(template_path), config_(config) {}
+
+AnalyzeProtocol::AnalyzeProtocol(const std::filesystem::path& template_path)
+    : frame_calculator_(template_path) {}
 
 void AnalyzeProtocol::execute(const std::filesystem::path& input_file) {
     // Step 1: Parse .inp file
@@ -36,11 +41,6 @@ void AnalyzeProtocol::execute(const std::filesystem::path& input_file) {
 }
 
 void AnalyzeProtocol::execute(core::Structure& structure) {
-    // Check legacy mode from config if not explicitly set
-    if (!legacy_mode_ && config_) {
-        legacy_mode_ = config_->legacy_mode();
-    }
-
     // Step 1: Recalculate frames for all residues
     recalculate_frames(structure);
 
@@ -214,17 +214,17 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
     }
 
     // Determine range of pairs to process (based on -S option)
-    // step_start_ and step_size_ are 1-based (matching legacy)
+    // config_.step_start and config_.step_size are 1-based (matching legacy)
     // Legacy: for (j = istart; j <= nbpm1; j += istep) where j is 1-based base pair index
-    size_t start_idx = (step_start_ > 0) ? (step_start_ - 1) : 0; // Convert to 0-based
+    size_t start_idx = (config_.step_start > 0) ? (config_.step_start - 1) : 0; // Convert to 0-based
     if (start_idx >= base_pairs_.size()) {
         return; // Start index out of range
     }
 
     // Calculate parameters for consecutive pairs
-    // Apply step_size_ by skipping pairs
+    // Apply step_size by skipping pairs
     // Use 1-based base pair indices for JSON recording (matching legacy)
-    for (size_t i = start_idx; i + 1 < base_pairs_.size(); i += step_size_) {
+    for (size_t i = start_idx; i + 1 < base_pairs_.size(); i += config_.step_size) {
         const auto& pair1 = base_pairs_[i];
         const auto& pair2 = base_pairs_[i + 1];
 
@@ -273,7 +273,7 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
     }
 
     // Handle circular structure (last pair with first pair)
-    if (circular_structure_ && base_pairs_.size() >= 2) {
+    if (config_.circular_structure && base_pairs_.size() >= 2) {
         const auto& pair1 = base_pairs_.back();
         const auto& pair2 = base_pairs_.front();
 
