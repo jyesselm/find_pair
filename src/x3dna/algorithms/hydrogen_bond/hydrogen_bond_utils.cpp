@@ -91,12 +91,15 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
     }
 
     // Handle both trimmed and padded names
-    // Pad to 4 characters following PDB convention if needed
+    // Pad to 4 characters following PDB convention:
+    // - Single-letter elements (C, N, O, etc.) get leading space: "O3'" → " O3'"
+    // - Two-letter elements (CL, FE) fill columns 1-2: "CL" → "CL  "
     std::string name = atom_name;
     if (name.length() < 4) {
-        // For element-first names (e.g., "C1'", "N9"), pad with space at start
-        // For 2-letter element names (e.g., "CL"), keep them at positions 0-1
-        if (name.length() <= 2) {
+        // Most nucleotide atoms are single-letter elements with format " XNN"
+        // where X is element, N can be number or modifier
+        // Prepend space for single-letter element names (length 1-3)
+        if (name.length() <= 3 && !name.empty() && std::isupper(static_cast<unsigned char>(name[0]))) {
             name = " " + name;
         }
         while (name.length() < 4) {
@@ -160,8 +163,7 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
 
 bool is_base_atom(const std::string& atom_name) {
     // Matches legacy is_baseatom (line 4652 in cmn_fncs.c)
-    // Base atoms: C5M or atoms matching pattern where first letter is not H or P
-    // and second char is a digit
+    // Base atoms: C5M or atoms matching pattern " XD " where X is not H or P and D is digit
     // Updated to work with trimmed atom names
 
     // Trim the name for comparison
@@ -174,8 +176,9 @@ bool is_base_atom(const std::string& atom_name) {
     }
 
     // For trimmed names like "N1", "C2", "N9", etc.
-    // Pattern: letter (not H or P), digit, optional more chars
-    if (name.length() >= 2 && name[0] != 'H' && name[0] != 'P' &&
+    // Pattern: exactly 2 chars - letter (not H or P) followed by digit
+    // This excludes sugar atoms like "C5'" and backbone atoms like "O1P"
+    if (name.length() == 2 && name[0] != 'H' && name[0] != 'P' &&
         std::isdigit(static_cast<unsigned char>(name[1]))) {
         return true;
     }

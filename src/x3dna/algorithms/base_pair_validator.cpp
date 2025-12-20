@@ -105,6 +105,7 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
     bool cdns = result.distance_check && result.d_v_check && result.plane_angle_check && result.dNN_check &&
                 result.overlap_check;
 
+
     if (cdns) {
         // Count H-bonds simply (BEFORE validation) - matches legacy check_pair behavior
         // This is the key fix: legacy counts H-bonds before validation for pair validation
@@ -473,16 +474,16 @@ void BasePairValidator::load_atom_list(const std::string& /* x3dna_home - deprec
 
 bool BasePairValidator::is_base_atom(const std::string& atom_name) {
     // Matches legacy is_baseatom (line 4652 in cmn_fncs.c)
-    // Base atoms: C5M or atoms matching pattern where first char is not H or P
-    // and second char is a digit
+    // Base atoms: C5M or atoms matching pattern " XD " where X is not H or P and D is digit
     // Updated to work with trimmed atom names
     if (atom_name == "C5M") {
         return true;
     }
 
     // For trimmed names like "N1", "C2", "N9", etc.
-    // Pattern: letter (not H or P), digit, optional more chars
-    if (atom_name.length() >= 2 && atom_name[0] != 'H' && atom_name[0] != 'P' &&
+    // Pattern: exactly 2 chars - letter (not H or P) followed by digit
+    // This excludes sugar atoms like "C5'" and backbone atoms like "O1P"
+    if (atom_name.length() == 2 && atom_name[0] != 'H' && atom_name[0] != 'P' &&
         std::isdigit(static_cast<unsigned char>(atom_name[1]))) {
         return true;
     }

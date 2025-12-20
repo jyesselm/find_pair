@@ -234,7 +234,8 @@ std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exo
                 continue;
             }
             // Skip hydrogen atoms (matches legacy get_cntatom which skips idx==3)
-            if (atom.name().size() >= 2 && atom.name()[1] == 'H') {
+            // With trimmed atom names, check first character for 'H'
+            if (!atom.name().empty() && atom.name()[0] == 'H') {
                 continue;
             }
             double dist = (atom.position() - ring_atom->position()).length();
