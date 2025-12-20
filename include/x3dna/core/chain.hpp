@@ -26,12 +26,12 @@ public:
 
     /**
      * @brief Constructor with chain ID
-     * @param id Chain identifier (e.g., 'A', 'B')
+     * @param id Chain identifier (e.g., "A", "B", "AA" for CIF files)
      */
-    explicit Chain(char id) : chain_id_(id) {}
+    explicit Chain(const std::string& id) : chain_id_(id) {}
 
     // Getters
-    [[nodiscard]] char chain_id() const {
+    [[nodiscard]] const std::string& chain_id() const {
         return chain_id_;
     }
     [[nodiscard]] const std::vector<Residue>& residues() const {
@@ -82,7 +82,7 @@ public:
     }
 
     // Setters
-    void set_chain_id(char id) {
+    void set_chain_id(const std::string& id) {
         chain_id_ = id;
     }
 
@@ -141,7 +141,7 @@ public:
      */
     [[nodiscard]] nlohmann::json to_json_legacy() const {
         nlohmann::json j;
-        j["chain_id"] = std::string(1, chain_id_);
+        j["chain_id"] = chain_id_;
         j["num_residues"] = static_cast<long>(residues_.size());
         j["residues"] = nlohmann::json::array();
         for (const auto& residue : residues_) {
@@ -154,8 +154,7 @@ public:
      * @brief Create Chain from legacy JSON format
      */
     [[nodiscard]] static Chain from_json_legacy(const nlohmann::json& j) {
-        std::string chain_str = j.value("chain_id", "");
-        char chain_id = chain_str.empty() ? '\0' : chain_str[0];
+        std::string chain_id = j.value("chain_id", "");
 
         Chain chain(chain_id);
 
@@ -173,7 +172,7 @@ public:
      */
     [[nodiscard]] nlohmann::json to_json() const {
         nlohmann::json j;
-        j["chain_id"] = std::string(1, chain_id_);
+        j["chain_id"] = chain_id_;
         j["residues"] = nlohmann::json::array();
         for (const auto& residue : residues_) {
             j["residues"].push_back(residue.to_json());
@@ -185,8 +184,7 @@ public:
      * @brief Create Chain from modern JSON format
      */
     [[nodiscard]] static Chain from_json(const nlohmann::json& j) {
-        std::string chain_str = j.value("chain_id", "");
-        char chain_id = chain_str.empty() ? '\0' : chain_str[0];
+        std::string chain_id = j.value("chain_id", "");
 
         Chain chain(chain_id);
 
@@ -200,7 +198,7 @@ public:
     }
 
 private:
-    char chain_id_ = '\0';          // Chain identifier
+    std::string chain_id_;          // Chain identifier (string for CIF compatibility)
     std::vector<Residue> residues_; // Residues in this chain
 };
 

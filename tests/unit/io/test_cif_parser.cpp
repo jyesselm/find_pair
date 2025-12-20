@@ -88,7 +88,7 @@ ATOM 2 N N1 C A 1 A 1 . . 1.100 2.100 3.100 1.00 20.00
     EXPECT_EQ(structure.num_atoms(), 2);
 
     // Check first atom
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();
@@ -97,7 +97,7 @@ ATOM 2 N N1 C A 1 A 1 . . 1.100 2.100 3.100 1.00 20.00
     auto atoms = residues[0].atoms();
     ASSERT_EQ(atoms.size(), 2);
 
-    EXPECT_EQ(atoms[0].chain_id(), 'A');
+    EXPECT_EQ(atoms[0].chain_id(), "A");
     EXPECT_EQ(atoms[0].residue_seq(), 1);
     EXPECT_DOUBLE_EQ(atoms[0].position().x(), 1.0);
     EXPECT_DOUBLE_EQ(atoms[0].position().y(), 2.0);
@@ -137,7 +137,7 @@ HETATM 2 N N1 SPM A 21 A 21 . . 10.683 -8.783 22.839 1.00 40.13
     EXPECT_EQ(structure.num_atoms(), 2);
 
     // Check HETATM atom
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     // Should have residues 1 and 21
@@ -252,8 +252,8 @@ ATOM 2 C "C1'" G B 1 B 1 . . 2.000 3.000 4.000 1.00 20.00
     Structure structure = parser.parse_string(cif_content);
 
     EXPECT_EQ(structure.num_chains(), 2);
-    EXPECT_TRUE(structure.find_chain('A').has_value());
-    EXPECT_TRUE(structure.find_chain('B').has_value());
+    EXPECT_TRUE(structure.find_chain("A").has_value());
+    EXPECT_TRUE(structure.find_chain("B").has_value());
 }
 
 /**
@@ -287,7 +287,7 @@ ATOM 3 C "C1'" A A 3 A 3 . . 3.000 4.000 5.000 1.00 20.00
     CifParser parser;
     Structure structure = parser.parse_string(cif_content);
 
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();
@@ -321,7 +321,7 @@ TEST(CifParserTest, ParseRealCifFile) {
     EXPECT_GT(structure.num_chains(), 0);
 
     // Verify we can find specific atoms
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();
@@ -372,7 +372,7 @@ ATOM 2 N N1 C A 1 A 1 . . 1.100 2.100 3.100 1.00 20.00
     CifParser parser;
     Structure structure = parser.parse_string(cif_content);
 
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();
@@ -417,7 +417,7 @@ ATOM 3 O OP2 G A 1 A 1 . . 1.200 2.200 3.200 1.00 20.00
     CifParser parser;
     Structure structure = parser.parse_string(cif_content);
 
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();
@@ -546,7 +546,7 @@ ATOM 3 C "C1'" G A 2 A 2 . . 2.000 3.000 4.000 1.00 20.00
     CifParser parser;
     Structure structure = parser.parse_string(cif_content);
 
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();

@@ -121,10 +121,10 @@ protected:
                             base_frame_record["residue_idx"] = residue_idx;
                             base_frame_record["base_type"] = std::string(1, residue.one_letter_code());
                             base_frame_record["residue_name"] = residue.name();
-                            base_frame_record["chain_id"] = std::string(1, residue.chain_id());
+                            base_frame_record["chain_id"] = residue.chain_id();
                             base_frame_record["residue_seq"] = residue.seq_num();
-                            if (residue.insertion() != ' ') {
-                                base_frame_record["insertion"] = std::string(1, residue.insertion());
+                            if (!residue.insertion().empty()) {
+                                base_frame_record["insertion"] = residue.insertion();
                             }
                             base_frame_record["standard_template"] = frame_result.template_file.string();
                             base_frame_record["rms_fit"] = frame_result.rms_fit;
@@ -137,10 +137,10 @@ protected:
                             ls_fitting_record["type"] = "ls_fitting";
                             ls_fitting_record["residue_idx"] = residue_idx;
                             ls_fitting_record["residue_name"] = residue.name();
-                            ls_fitting_record["chain_id"] = std::string(1, residue.chain_id());
+                            ls_fitting_record["chain_id"] = residue.chain_id();
                             ls_fitting_record["residue_seq"] = residue.seq_num();
-                            if (residue.insertion() != ' ') {
-                                ls_fitting_record["insertion"] = std::string(1, residue.insertion());
+                            if (!residue.insertion().empty()) {
+                                ls_fitting_record["insertion"] = residue.insertion();
                             }
                             ls_fitting_record["num_points"] = frame_result.num_matched;
                             ls_fitting_record["rms_fit"] = frame_result.rms_fit;

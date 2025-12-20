@@ -43,12 +43,12 @@ public:
      * @param name Atom name
      * @param position 3D position vector
      * @param residue_name Residue name (e.g., "  C", "  G")
-     * @param chain_id Chain identifier (e.g., 'A', 'B')
+     * @param chain_id Chain identifier (e.g., "A", "B", "AA" for CIF)
      * @param residue_seq Residue sequence number
      * @param record_type PDB record type (e.g., 'A' for ATOM, 'H' for HETATM)
      */
-    Atom(const std::string& name, const geometry::Vector3D& position, const std::string& residue_name, char chain_id,
-         int residue_seq, char record_type = 'A')
+    Atom(const std::string& name, const geometry::Vector3D& position, const std::string& residue_name,
+         const std::string& chain_id, int residue_seq, char record_type = 'A')
         : name_(name), position_(position), residue_name_(residue_name), chain_id_(chain_id), residue_seq_(residue_seq),
           record_type_(record_type) {}
 
@@ -70,7 +70,7 @@ public:
     [[nodiscard]] const std::string& residue_name() const {
         return residue_name_;
     }
-    [[nodiscard]] char chain_id() const {
+    [[nodiscard]] const std::string& chain_id() const {
         return chain_id_;
     }
     [[nodiscard]] int residue_seq() const {
@@ -82,7 +82,7 @@ public:
     [[nodiscard]] char alt_loc() const {
         return alt_loc_;
     }
-    [[nodiscard]] char insertion() const {
+    [[nodiscard]] const std::string& insertion() const {
         return insertion_;
     }
     [[nodiscard]] double occupancy() const {
@@ -217,14 +217,14 @@ public:
         j["atom_name"] = name_;
         j["xyz"] = {position_.x(), position_.y(), position_.z()};
         j["residue_name"] = residue_name_.empty() ? "" : residue_name_;
-        j["chain_id"] = (chain_id_ == '\0' || chain_id_ == ' ') ? "" : std::string(1, chain_id_);
+        j["chain_id"] = chain_id_;
         j["residue_seq"] = residue_seq_;
         j["record_type"] = (record_type_ == '\0') ? "" : std::string(1, record_type_);
         if (alt_loc_ != ' ' && alt_loc_ != '\0') {
             j["alt_loc"] = std::string(1, alt_loc_);
         }
-        if (insertion_ != ' ' && insertion_ != '\0') {
-            j["insertion"] = std::string(1, insertion_);
+        if (!insertion_.empty()) {
+            j["insertion"] = insertion_;
         }
 
         // Add debug information (always include for debugging)
@@ -265,13 +265,7 @@ public:
         geometry::Vector3D position(xyz[0], xyz[1], xyz[2]);
 
         std::string residue_name = j.value("residue_name", "");
-        std::string chain_str = j.value("chain_id", "");
-        char chain_id;
-        if (chain_str.empty()) {
-            chain_id = '\0';
-        } else {
-            chain_id = chain_str[0];
-        }
+        std::string chain_id = j.value("chain_id", "");
         int residue_seq = j.value("residue_seq", 0);
         std::string record_str = j.value("record_type", "A");
         char record_type;
@@ -299,12 +293,12 @@ public:
         // Core fields (match legacy exactly)
         j["atom_name"] = name_;
         j["residue_name"] = residue_name_;
-        j["chain_id"] = (chain_id_ == '\0' || chain_id_ == ' ') ? "" : std::string(1, chain_id_);
+        j["chain_id"] = chain_id_;
         j["residue_seq"] = residue_seq_;
 
-        // Insertion code (only if non-space, matches legacy format)
-        if (insertion_ != ' ' && insertion_ != '\0') {
-            j["insertion"] = std::string(1, insertion_);
+        // Insertion code (only if non-empty, matches legacy format)
+        if (!insertion_.empty()) {
+            j["insertion"] = insertion_;
         }
 
         // Coordinates
@@ -330,13 +324,7 @@ public:
         geometry::Vector3D position(xyz[0], xyz[1], xyz[2]);
 
         std::string residue_name = j.value("residue_name", "");
-        std::string chain_str = j.value("chain_id", "");
-        char chain_id;
-        if (chain_str.empty()) {
-            chain_id = '\0';
-        } else {
-            chain_id = chain_str[0];
-        }
+        std::string chain_id = j.value("chain_id", "");
         int residue_seq = j.value("residue_seq", 0);
         std::string record_str = j.value("record_type", "A");
         char record_type;
@@ -355,11 +343,11 @@ private:
     std::string name_;                  // Atom name (e.g., " C1'", " N3 ")
     geometry::Vector3D position_;       // 3D coordinates
     std::string residue_name_;          // Residue name (e.g., "  C", "  G")
-    char chain_id_ = '\0';              // Chain identifier
+    std::string chain_id_;              // Chain identifier (string for CIF compatibility)
     int residue_seq_ = 0;               // Residue sequence number
     char record_type_ = 'A';            // PDB record type ('A' = ATOM, 'H' = HETATM)
     char alt_loc_ = ' ';                // Alternate location indicator (PDB column 17)
-    char insertion_ = ' ';              // Insertion code (PDB column 27)
+    std::string insertion_;             // Insertion code (PDB column 27, string for CIF)
     double occupancy_ = 1.0;            // Occupancy (PDB columns 55-60, default 1.0)
     int atom_serial_ = 0;               // Atom serial number (PDB column 7-11)
     int model_number_ = 0;              // Model number (from MODEL record, 0 if none)
@@ -411,7 +399,7 @@ public:
         return *this;
     }
 
-    Builder& chain_id(char id) {
+    Builder& chain_id(const std::string& id) {
         atom_.chain_id_ = id;
         return *this;
     }
@@ -431,7 +419,7 @@ public:
         return *this;
     }
 
-    Builder& insertion(char ins) {
+    Builder& insertion(const std::string& ins) {
         atom_.insertion_ = ins;
         return *this;
     }

@@ -379,8 +379,12 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Res
                 }
             }
             const auto& std_coord = rmsd_check.matched_standard_coords[i];
-            core::Atom std_atom(atom_name, geometry::Vector3D(std_coord.x(), std_coord.y(), std_coord.z()), "", ' ', 0,
-                                'A');
+            core::Atom std_atom = core::Atom::create(atom_name, geometry::Vector3D(std_coord.x(), std_coord.y(), std_coord.z()))
+                                  .residue_name("")
+                                  .chain_id("")
+                                  .residue_seq(0)
+                                  .record_type('A')
+                                  .build();
             matched.standard.push_back(std_atom);
         }
 

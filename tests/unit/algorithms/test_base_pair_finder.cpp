@@ -37,8 +37,8 @@ TEST_F(BasePairFinderTest, EmptyStructure) {
 // Test finding pairs with single residue
 TEST_F(BasePairFinderTest, SingleResidue) {
     Structure structure;
-    Chain chain('A');
-    Residue residue("  A", 'A', 1);
+    Chain chain("A");
+    Residue residue("  A", 1, "A");
 
     // Add frame
     Matrix3D rot = Matrix3D::identity();

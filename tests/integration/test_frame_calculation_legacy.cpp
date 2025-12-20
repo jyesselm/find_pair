@@ -143,20 +143,18 @@ protected:
      * Includes insertion code to match legacy residue identification (ResName + ChainID + ResSeq +
      * iCode)
      */
-    static std::vector<std::tuple<char, int, char, std::string>> build_ordered_residue_list(
+    static std::vector<std::tuple<std::string, int, std::string, std::string>> build_ordered_residue_list(
         const nlohmann::json& legacy_json) {
-        std::vector<std::tuple<char, int, char, std::string>> ordered_residues;
+        std::vector<std::tuple<std::string, int, std::string, std::string>> ordered_residues;
         if (legacy_json.contains("calculations")) {
             for (const auto& calc : legacy_json["calculations"]) {
                 if (calc.contains("type") && calc["type"] == "pdb_atoms" && calc.contains("atoms") &&
                     calc["atoms"].is_array()) {
-                    std::set<std::tuple<char, int, char, std::string>> seen;
+                    std::set<std::tuple<std::string, int, std::string, std::string>> seen;
                     for (const auto& atom : calc["atoms"]) {
-                        std::string chain_str = atom.value("chain_id", "");
-                        char chain_id = chain_str.empty() ? '\0' : chain_str[0];
+                        std::string chain_id = atom.value("chain_id", "");
                         int seq_num = atom.value("residue_seq", 0);
-                        std::string insertion_str = atom.value("insertion", " ");
-                        char insertion = insertion_str.empty() ? ' ' : insertion_str[0];
+                        std::string insertion = atom.value("insertion", "");
                         std::string res_name = atom.value("residue_name", "");
                         auto key = std::make_tuple(chain_id, seq_num, insertion, res_name);
                         if (seen.find(key) == seen.end()) {
@@ -176,7 +174,7 @@ protected:
      */
     static std::optional<const Residue*> find_residue_by_legacy_idx(
         const Structure& structure, size_t legacy_residue_idx,
-        const std::vector<std::tuple<char, int, char, std::string>>& ordered_residues) {
+        const std::vector<std::tuple<std::string, int, std::string, std::string>>& ordered_residues) {
 
         if (legacy_residue_idx == 0 || legacy_residue_idx > ordered_residues.size()) {
             return std::nullopt;

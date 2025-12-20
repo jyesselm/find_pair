@@ -16,18 +16,18 @@ class ChainTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // Create chain A with nucleotides (use create_from_atoms for proper initialization)
-        chain_a_ = Chain('A');
+        chain_a_ = Chain("A");
 
         std::vector<Atom> c1_atoms = {Atom(" C1'", Vector3D(1, 2, 3)), Atom(" N1 ", Vector3D(2, 3, 4))};
-        auto c1 = Residue::create_from_atoms("  C", 1, 'A', ' ', c1_atoms);
+        auto c1 = Residue::create_from_atoms("  C", 1, "A", " ", c1_atoms);
         chain_a_.add_residue(c1);
 
         std::vector<Atom> g1_atoms = {Atom(" C1'", Vector3D(5, 6, 7)), Atom(" N9 ", Vector3D(6, 7, 8))};
-        auto g1 = Residue::create_from_atoms("  G", 2, 'A', ' ', g1_atoms);
+        auto g1 = Residue::create_from_atoms("  G", 2, "A", " ", g1_atoms);
         chain_a_.add_residue(g1);
 
         std::vector<Atom> a1_atoms = {Atom(" C1'", Vector3D(9, 10, 11)), Atom(" N9 ", Vector3D(10, 11, 12))};
-        auto a1 = Residue::create_from_atoms("  A", 3, 'A', ' ', a1_atoms);
+        auto a1 = Residue::create_from_atoms("  A", 3, "A", " ", a1_atoms);
         chain_a_.add_residue(a1);
     }
 
@@ -37,27 +37,27 @@ protected:
 // Constructor tests
 TEST_F(ChainTest, DefaultConstructor) {
     Chain chain;
-    EXPECT_EQ(chain.chain_id(), '\0');
+    EXPECT_EQ(chain.chain_id(), "");
     EXPECT_EQ(chain.num_residues(), 0);
     EXPECT_EQ(chain.num_atoms(), 0);
 }
 
 TEST_F(ChainTest, ChainIdConstructor) {
-    Chain chain('B');
-    EXPECT_EQ(chain.chain_id(), 'B');
+    Chain chain("B");
+    EXPECT_EQ(chain.chain_id(), "B");
     EXPECT_EQ(chain.num_residues(), 0);
 }
 
 // Residue management tests
 TEST_F(ChainTest, AddResidue) {
-    Chain chain('A');
+    Chain chain("A");
     EXPECT_EQ(chain.num_residues(), 0);
 
-    Residue residue("  C", 1, 'A');
+    Residue residue("  C", 1, "A");
     chain.add_residue(residue);
     EXPECT_EQ(chain.num_residues(), 1);
 
-    Residue residue2("  G", 2, 'A');
+    Residue residue2("  G", 2, "A");
     chain.add_residue(residue2);
     EXPECT_EQ(chain.num_residues(), 2);
 }
@@ -85,14 +85,14 @@ TEST_F(ChainTest, Sequence) {
 }
 
 TEST_F(ChainTest, SequenceWithNonNucleotides) {
-    Chain chain('A');
-    auto c1 = Residue::create_from_atoms("  C", 1, 'A', ' ', {});
+    Chain chain("A");
+    auto c1 = Residue::create_from_atoms("  C", 1, "A", " ", {});
     chain.add_residue(c1);
 
-    auto unknown = Residue::create_from_atoms("XXX", 2, 'A', ' ', {});
+    auto unknown = Residue::create_from_atoms("XXX", 2, "A", " ", {});
     chain.add_residue(unknown);
 
-    auto g1 = Residue::create_from_atoms("  G", 3, 'A', ' ', {});
+    auto g1 = Residue::create_from_atoms("  G", 3, "A", " ", {});
     chain.add_residue(g1);
 
     std::string seq = chain.sequence();
@@ -108,14 +108,14 @@ TEST_F(ChainTest, Nucleotides) {
 }
 
 TEST_F(ChainTest, NucleotidesWithMixed) {
-    Chain chain('A');
-    auto c1 = Residue::create_from_atoms("  C", 1, 'A', ' ', {});
+    Chain chain("A");
+    auto c1 = Residue::create_from_atoms("  C", 1, "A", " ", {});
     chain.add_residue(c1);
 
-    auto unknown = Residue::create_from_atoms("XXX", 2, 'A', ' ', {});
+    auto unknown = Residue::create_from_atoms("XXX", 2, "A", " ", {});
     chain.add_residue(unknown);
 
-    auto g1 = Residue::create_from_atoms("  G", 3, 'A', ' ', {});
+    auto g1 = Residue::create_from_atoms("  G", 3, "A", " ", {});
     chain.add_residue(g1);
 
     auto nts = chain.nucleotides();
@@ -142,7 +142,7 @@ TEST_F(ChainTest, FromJsonLegacy) {
 
     Chain chain = Chain::from_json_legacy(j);
 
-    EXPECT_EQ(chain.chain_id(), 'B');
+    EXPECT_EQ(chain.chain_id(), "B");
     EXPECT_EQ(chain.num_residues(), 2);
 }
 
@@ -170,7 +170,7 @@ TEST_F(ChainTest, FromJsonModern) {
 
     Chain chain = Chain::from_json(j);
 
-    EXPECT_EQ(chain.chain_id(), 'C');
+    EXPECT_EQ(chain.chain_id(), "C");
     EXPECT_EQ(chain.num_residues(), 1);
 }
 
@@ -185,7 +185,7 @@ TEST_F(ChainTest, JsonModernRoundTrip) {
 
 // Edge cases
 TEST_F(ChainTest, EmptyChain) {
-    Chain chain('A');
+    Chain chain("A");
     EXPECT_EQ(chain.sequence(), "");
     EXPECT_TRUE(chain.nucleotides().empty());
     EXPECT_EQ(chain.num_atoms(), 0);

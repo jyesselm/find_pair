@@ -53,7 +53,7 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
     EXPECT_EQ(structure.num_atoms(), 2);
 
     // Check first atom
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();
@@ -65,7 +65,7 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
     EXPECT_EQ(atoms[0].name(), " C1'");
     // GEMMI trims residue names
     EXPECT_EQ(atoms[0].residue_name(), "C");
-    EXPECT_EQ(atoms[0].chain_id(), 'A');
+    EXPECT_EQ(atoms[0].chain_id(), "A");
     EXPECT_EQ(atoms[0].residue_seq(), 1);
     EXPECT_DOUBLE_EQ(atoms[0].position().x(), 1.0);
     EXPECT_DOUBLE_EQ(atoms[0].position().y(), 2.0);
@@ -88,7 +88,7 @@ HETATM    2  N1  SPM A  21      10.683  -8.783  22.839  1.00 40.13           N
     EXPECT_EQ(structure.num_atoms(), 2);
 
     // Check HETATM atom
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     // Should have residues 1 and 21
@@ -152,8 +152,8 @@ ATOM      2  C1'   G B   1       2.000   3.000   4.000  1.00 20.00           C
     Structure structure = parser.parse_string(pdb_content);
 
     EXPECT_EQ(structure.num_chains(), 2);
-    EXPECT_TRUE(structure.find_chain('A').has_value());
-    EXPECT_TRUE(structure.find_chain('B').has_value());
+    EXPECT_TRUE(structure.find_chain("A").has_value());
+    EXPECT_TRUE(structure.find_chain("B").has_value());
 }
 
 /**
@@ -169,7 +169,7 @@ ATOM      3  C1'   A A   3       3.000   4.000   5.000  1.00 20.00           C
     PdbParser parser;
     Structure structure = parser.parse_string(pdb_content);
 
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();
@@ -204,7 +204,7 @@ TEST(PdbParserTest, ParseRealPdbFile) {
     EXPECT_GT(structure.num_chains(), 0);
 
     // Verify we can find specific atoms
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();
@@ -251,7 +251,7 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
     PdbParser parser;
     Structure structure = parser.parse_string(pdb_content);
 
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();
@@ -277,7 +277,7 @@ ATOM      2  C1'   G A   2       2.000   3.000   4.000  1.00 20.00           C
     PdbParser parser;
     Structure structure = parser.parse_string(pdb_content);
 
-    auto chain = structure.find_chain('A');
+    auto chain = structure.find_chain("A");
     ASSERT_TRUE(chain.has_value());
 
     auto residues = chain.value().residues();

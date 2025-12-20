@@ -73,9 +73,9 @@ protected:
             ResidueInfo info;
             info.legacy_index = static_cast<int>(i + 1);
             info.residue_name = res->name();
-            info.chain_id = std::string(1, res->chain_id());
+            info.chain_id = res->chain_id();
             info.residue_seq = res->seq_num();
-            info.insertion_code = std::string(1, res->insertion());
+            info.insertion_code = res->insertion();
             residue_infos.push_back(info);
 
             json residue_json;

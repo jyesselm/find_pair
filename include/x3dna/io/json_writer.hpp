@@ -109,12 +109,12 @@ public:
      * @param residue_name Residue name (e.g., "  G")
      * @param chain_id Chain identifier
      * @param residue_seq Residue sequence number
-     * @param insertion Insertion code (default ' ')
+     * @param insertion Insertion code (default "")
      */
     void record_base_frame_calc(size_t residue_idx, char base_type, const std::filesystem::path& standard_template,
                                 double rms_fit, const std::vector<std::string>& matched_atoms,
-                                const std::string& residue_name = "", char chain_id = ' ', int residue_seq = 0,
-                                char insertion = ' ');
+                                const std::string& residue_name = "", const std::string& chain_id = "",
+                                int residue_seq = 0, const std::string& insertion = "");
 
     /**
      * @brief Record least-squares fitting details
@@ -126,12 +126,12 @@ public:
      * @param residue_name Residue name (e.g., "  G")
      * @param chain_id Chain identifier
      * @param residue_seq Residue sequence number
-     * @param insertion Insertion code (default ' ')
+     * @param insertion Insertion code (default "")
      */
     void record_ls_fitting(size_t residue_idx, size_t num_points, double rms_fit,
                            const geometry::Matrix3D& rotation_matrix, const geometry::Vector3D& translation,
-                           const std::string& residue_name = "", char chain_id = ' ', int residue_seq = 0,
-                           char insertion = ' ');
+                           const std::string& residue_name = "", const std::string& chain_id = "", int residue_seq = 0,
+                           const std::string& insertion = "");
 
     /**
      * @brief Record frame calculation with matched coordinates
@@ -144,12 +144,12 @@ public:
      * @param residue_name Residue name (e.g., "  G")
      * @param chain_id Chain identifier
      * @param residue_seq Residue sequence number
-     * @param insertion Insertion code (default ' ')
+     * @param insertion Insertion code (default "")
      */
     void record_frame_calc(size_t residue_idx, char base_type, const std::filesystem::path& template_file,
                            double rms_fit, const std::vector<geometry::Vector3D>& matched_std_xyz,
                            const std::vector<geometry::Vector3D>& matched_exp_xyz, const std::string& residue_name = "",
-                           char chain_id = ' ', int residue_seq = 0, char insertion = ' ');
+                           const std::string& chain_id = "", int residue_seq = 0, const std::string& insertion = "");
 
     /**
      * @brief Record base pair information
@@ -192,8 +192,8 @@ public:
      * @param model_num Model number
      */
     void record_removed_atom(const std::string& pdb_line, const std::string& reason, int atom_serial,
-                             const std::string& atom_name, const std::string& residue_name, char chain_id,
-                             int residue_seq, const geometry::Vector3D* xyz, int model_num);
+                             const std::string& atom_name, const std::string& residue_name,
+                             const std::string& chain_id, int residue_seq, const geometry::Vector3D* xyz, int model_num);
 
     /**
      * @brief Record summary of removed atoms

@@ -20,9 +20,9 @@ namespace io {
  */
 struct ResidueKey {
     std::string residue_name; ///< Residue name (e.g., "A", "G", "PSU")
-    char chain_id;            ///< Chain identifier
+    std::string chain_id;     ///< Chain identifier (string for CIF compatibility)
     int residue_seq;          ///< Residue sequence number
-    char insertion_code;      ///< Insertion code (usually ' ')
+    std::string insertion_code; ///< Insertion code (usually empty)
 
     /**
      * @brief Comparison operator for map ordering

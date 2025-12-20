@@ -367,7 +367,7 @@ TEST_F(PdbAtomValidationTest, AtomMetadata) {
         EXPECT_EQ(atom.residue_name(), atom_json["residue_name"].get<std::string>());
 
         std::string chain_str = atom_json["chain_id"].get<std::string>();
-        EXPECT_EQ(atom.chain_id(), chain_str[0]);
+        EXPECT_EQ(atom.chain_id(), chain_str);
 
         EXPECT_EQ(atom.residue_seq(), atom_json["residue_seq"].get<int>());
 

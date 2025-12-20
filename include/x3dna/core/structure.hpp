@@ -116,13 +116,13 @@ public:
      * @param atom_idx_map Map from (chain_id, residue_seq, insertion, atom_name) -> legacy_atom_idx
      * @param residue_idx_map Map from (chain_id, residue_seq, insertion) -> legacy_residue_idx
      */
-    void set_legacy_indices(const std::map<std::tuple<char, int, char, std::string>, int>& atom_idx_map,
-                            const std::map<std::tuple<char, int, char>, int>& residue_idx_map) {
+    void set_legacy_indices(const std::map<std::tuple<std::string, int, std::string, std::string>, int>& atom_idx_map,
+                            const std::map<std::tuple<std::string, int, std::string>, int>& residue_idx_map) {
         for (auto& chain : chains_) {
             for (auto& residue : chain.residues()) {
-                char chain_id = residue.chain_id();
+                const std::string& chain_id = residue.chain_id();
                 int residue_seq = residue.seq_num();
-                char insertion = residue.insertion();
+                const std::string& insertion = residue.insertion();
 
                 // Get legacy residue index for this residue
                 auto residue_key = std::make_tuple(chain_id, residue_seq, insertion);
@@ -215,7 +215,7 @@ public:
      * @param chain_id Chain identifier
      * @return Optional chain if found
      */
-    [[nodiscard]] std::optional<Chain> find_chain(char chain_id) const {
+    [[nodiscard]] std::optional<Chain> find_chain(const std::string& chain_id) const {
         for (const auto& chain : chains_) {
             if (chain.chain_id() == chain_id) {
                 return chain;
@@ -262,22 +262,21 @@ public:
         }
 
         // Group atoms by chain and residue
-        std::map<std::pair<char, int>, std::vector<Atom>> residue_atoms;
+        std::map<std::pair<std::string, int>, std::vector<Atom>> residue_atoms;
 
         for (const auto& atom_json : j["atoms"]) {
             Atom atom = Atom::from_json_legacy(atom_json);
-            char chain_id = atom.chain_id();
+            const std::string& chain_id = atom.chain_id();
             int residue_seq = atom.residue_seq();
-            std::string residue_name = atom.residue_name();
 
-            std::pair<char, int> key = {chain_id, residue_seq};
+            std::pair<std::string, int> key = {chain_id, residue_seq};
             residue_atoms[key].push_back(atom);
         }
 
         // Create chains and residues
-        std::map<char, Chain> chains;
+        std::map<std::string, Chain> chains;
         for (const auto& [key, atoms] : residue_atoms) {
-            char chain_id = key.first;
+            const std::string& chain_id = key.first;
             int residue_seq = key.second;
 
             if (atoms.empty()) {

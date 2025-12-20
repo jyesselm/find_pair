@@ -30,35 +30,35 @@ protected:
         structure_ = Structure("TEST");
 
         // Create chain A with a few residues
-        Chain chain_a('A');
+        Chain chain_a("A");
 
         // Residue 1: C (Cytosine)
-        Residue c1("  C", 1, 'A');
-        c1.add_atom(Atom(" C1'", Vector3D(0.0, 0.0, 0.0), "  C", 'A', 1));
-        c1.add_atom(Atom(" N1 ", Vector3D(1.0, 0.0, 0.0), "  C", 'A', 1));
-        c1.add_atom(Atom(" C2 ", Vector3D(2.0, 0.0, 0.0), "  C", 'A', 1));
-        c1.add_atom(Atom(" O2 ", Vector3D(3.0, 0.0, 0.0), "  C", 'A', 1));
-        c1.add_atom(Atom(" N3 ", Vector3D(4.0, 0.0, 0.0), "  C", 'A', 1));
-        c1.add_atom(Atom(" C4 ", Vector3D(5.0, 0.0, 0.0), "  C", 'A', 1));
-        c1.add_atom(Atom(" N4 ", Vector3D(6.0, 0.0, 0.0), "  C", 'A', 1));
-        c1.add_atom(Atom(" C5 ", Vector3D(7.0, 0.0, 0.0), "  C", 'A', 1));
-        c1.add_atom(Atom(" C6 ", Vector3D(8.0, 0.0, 0.0), "  C", 'A', 1));
+        Residue c1("  C", 1, "A");
+        c1.add_atom(Atom(" C1'", Vector3D(0.0, 0.0, 0.0), "  C", "A", 1));
+        c1.add_atom(Atom(" N1 ", Vector3D(1.0, 0.0, 0.0), "  C", "A", 1));
+        c1.add_atom(Atom(" C2 ", Vector3D(2.0, 0.0, 0.0), "  C", "A", 1));
+        c1.add_atom(Atom(" O2 ", Vector3D(3.0, 0.0, 0.0), "  C", "A", 1));
+        c1.add_atom(Atom(" N3 ", Vector3D(4.0, 0.0, 0.0), "  C", "A", 1));
+        c1.add_atom(Atom(" C4 ", Vector3D(5.0, 0.0, 0.0), "  C", "A", 1));
+        c1.add_atom(Atom(" N4 ", Vector3D(6.0, 0.0, 0.0), "  C", "A", 1));
+        c1.add_atom(Atom(" C5 ", Vector3D(7.0, 0.0, 0.0), "  C", "A", 1));
+        c1.add_atom(Atom(" C6 ", Vector3D(8.0, 0.0, 0.0), "  C", "A", 1));
         chain_a.add_residue(c1);
 
         // Residue 2: G (Guanine) - paired with C
-        Residue g1("  G", 2, 'A');
-        g1.add_atom(Atom(" C1'", Vector3D(0.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" N1 ", Vector3D(1.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" C2 ", Vector3D(2.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" N2 ", Vector3D(3.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" N3 ", Vector3D(4.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" C4 ", Vector3D(5.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" C5 ", Vector3D(6.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" C6 ", Vector3D(7.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" O6 ", Vector3D(8.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" N7 ", Vector3D(9.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" C8 ", Vector3D(10.0, 10.0, 0.0), "  G", 'A', 2));
-        g1.add_atom(Atom(" N9 ", Vector3D(11.0, 10.0, 0.0), "  G", 'A', 2));
+        Residue g1("  G", 2, "A");
+        g1.add_atom(Atom(" C1'", Vector3D(0.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" N1 ", Vector3D(1.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" C2 ", Vector3D(2.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" N2 ", Vector3D(3.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" N3 ", Vector3D(4.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" C4 ", Vector3D(5.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" C5 ", Vector3D(6.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" C6 ", Vector3D(7.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" O6 ", Vector3D(8.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" N7 ", Vector3D(9.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" C8 ", Vector3D(10.0, 10.0, 0.0), "  G", "A", 2));
+        g1.add_atom(Atom(" N9 ", Vector3D(11.0, 10.0, 0.0), "  G", "A", 2));
         chain_a.add_residue(g1);
 
         structure_.add_chain(chain_a);

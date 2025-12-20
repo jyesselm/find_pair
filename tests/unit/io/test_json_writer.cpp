@@ -46,9 +46,9 @@ TEST_F(JsonWriterTest, Constructor) {
 // PDB atoms recording
 TEST_F(JsonWriterTest, RecordPdbAtoms) {
     Structure structure("TEST");
-    Chain chain('A');
-    Residue residue("  C", 1, 'A');
-    residue.add_atom(Atom(" C1'", Vector3D(1.0, 2.0, 3.0), "  C", 'A', 1));
+    Chain chain("A");
+    Residue residue("  C", 1, "A");
+    residue.add_atom(Atom(" C1'", Vector3D(1.0, 2.0, 3.0), "  C", "A", 1));
     chain.add_residue(residue);
     structure.add_chain(chain);
 
@@ -154,7 +154,7 @@ TEST_F(JsonWriterTest, RecordBasePair) {
 // Removed atom recording
 TEST_F(JsonWriterTest, RecordRemovedAtom) {
     Vector3D xyz(1.0, 2.0, 3.0);
-    writer_->record_removed_atom("ATOM   1234  C1'  C   A   1 ", "line_too_short", 1234, " C1'", "  C", 'A', 1, &xyz,
+    writer_->record_removed_atom("ATOM   1234  C1'  C   A   1 ", "line_too_short", 1234, " C1'", "  C", "A", 1, &xyz,
                                  0);
 
     auto& json = writer_->json();

@@ -141,7 +141,7 @@ protected:
             EXPECT_EQ(atom.residue_name(), expected_residue) << "Residue name mismatch at index " << i;
 
             std::string chain_str = atom_json["chain_id"].get<std::string>();
-            EXPECT_EQ(atom.chain_id(), chain_str[0]) << "Chain ID mismatch at index " << i;
+            EXPECT_EQ(atom.chain_id(), chain_str) << "Chain ID mismatch at index " << i;
 
             int expected_seq = atom_json["residue_seq"].get<int>();
             EXPECT_EQ(atom.residue_seq(), expected_seq) << "Residue sequence mismatch at index " << i;
@@ -173,7 +173,7 @@ TEST_F(CoreObjectsIntegrationTest, StructureHierarchy) {
     size_t total_residues = 0;
 
     for (const auto& chain : structure.chains()) {
-        EXPECT_FALSE(chain.chain_id() == '\0') << "Chain has invalid ID";
+        EXPECT_FALSE(chain.chain_id().empty()) << "Chain has invalid ID";
         total_residues += chain.num_residues();
 
         for (const auto& residue : chain.residues()) {

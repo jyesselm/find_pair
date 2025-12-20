@@ -32,18 +32,18 @@ protected:
 // Test frame calculation for a single residue
 TEST_F(BaseFrameCalculatorTest, CalculateFrameForResidue) {
     // Create a test residue with ring atoms
-    Residue residue("  A", 1, 'A');
+    Residue residue("  A", 1, "A");
 
     // Add adenine ring atoms (simplified coordinates)
-    residue.add_atom(Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", 'A', 1));
+    residue.add_atom(Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", "A", 1));
 
     FrameCalculationResult result = calculator_->calculate_frame_const(residue);
 
@@ -62,18 +62,18 @@ TEST_F(BaseFrameCalculatorTest, CalculateFrameForResidue) {
 
 // Test that frame is stored in residue
 TEST_F(BaseFrameCalculatorTest, StoreFrameInResidue) {
-    Residue residue("  A", 1, 'A');
+    Residue residue("  A", 1, "A");
 
     // Add adenine ring atoms
-    residue.add_atom(Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", 'A', 1));
-    residue.add_atom(Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", 'A', 1));
+    residue.add_atom(Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", "A", 1));
+    residue.add_atom(Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", "A", 1));
 
     FrameCalculationResult result = calculator_->calculate_frame(residue);
 
@@ -89,27 +89,27 @@ TEST_F(BaseFrameCalculatorTest, StoreFrameInResidue) {
 // Test batch calculation for structure
 TEST_F(BaseFrameCalculatorTest, CalculateAllFrames) {
     Structure structure("TEST");
-    Chain chain('A');
+    Chain chain("A");
 
     // Add two residues
-    Residue residue1("  A", 1, 'A');
-    residue1.add_atom(Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", 'A', 1));
-    residue1.add_atom(Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", 'A', 1));
-    residue1.add_atom(Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", 'A', 1));
-    residue1.add_atom(Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", 'A', 1));
-    residue1.add_atom(Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", 'A', 1));
-    residue1.add_atom(Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", 'A', 1));
-    residue1.add_atom(Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", 'A', 1));
-    residue1.add_atom(Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", 'A', 1));
-    residue1.add_atom(Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", 'A', 1));
+    Residue residue1("  A", 1, "A");
+    residue1.add_atom(Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", "A", 1));
+    residue1.add_atom(Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", "A", 1));
+    residue1.add_atom(Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", "A", 1));
+    residue1.add_atom(Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", "A", 1));
+    residue1.add_atom(Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", "A", 1));
+    residue1.add_atom(Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", "A", 1));
+    residue1.add_atom(Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", "A", 1));
+    residue1.add_atom(Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", "A", 1));
+    residue1.add_atom(Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", "A", 1));
 
-    Residue residue2("  C", 2, 'A');
-    residue2.add_atom(Atom(" C4 ", Vector3D(0.0, 0.0, 0.0), "  C", 'A', 2));
-    residue2.add_atom(Atom(" N3 ", Vector3D(1.0, 0.0, 0.0), "  C", 'A', 2));
-    residue2.add_atom(Atom(" C2 ", Vector3D(2.0, 0.0, 0.0), "  C", 'A', 2));
-    residue2.add_atom(Atom(" N1 ", Vector3D(3.0, 0.0, 0.0), "  C", 'A', 2));
-    residue2.add_atom(Atom(" C6 ", Vector3D(4.0, 0.0, 0.0), "  C", 'A', 2));
-    residue2.add_atom(Atom(" C5 ", Vector3D(5.0, 0.0, 0.0), "  C", 'A', 2));
+    Residue residue2("  C", 2, "A");
+    residue2.add_atom(Atom(" C4 ", Vector3D(0.0, 0.0, 0.0), "  C", "A", 2));
+    residue2.add_atom(Atom(" N3 ", Vector3D(1.0, 0.0, 0.0), "  C", "A", 2));
+    residue2.add_atom(Atom(" C2 ", Vector3D(2.0, 0.0, 0.0), "  C", "A", 2));
+    residue2.add_atom(Atom(" N1 ", Vector3D(3.0, 0.0, 0.0), "  C", "A", 2));
+    residue2.add_atom(Atom(" C6 ", Vector3D(4.0, 0.0, 0.0), "  C", "A", 2));
+    residue2.add_atom(Atom(" C5 ", Vector3D(5.0, 0.0, 0.0), "  C", "A", 2));
 
     chain.add_residue(residue1);
     chain.add_residue(residue2);
@@ -125,8 +125,8 @@ TEST_F(BaseFrameCalculatorTest, CalculateAllFrames) {
 
 // Test error handling for invalid residue type
 TEST_F(BaseFrameCalculatorTest, InvalidResidueType) {
-    Residue invalid_residue("XXX", 1, 'A');
-    invalid_residue.add_atom(Atom(" C4 ", Vector3D(0.0, 0.0, 0.0), "XXX", 'A', 1));
+    Residue invalid_residue("XXX", 1, "A");
+    invalid_residue.add_atom(Atom(" C4 ", Vector3D(0.0, 0.0, 0.0), "XXX", "A", 1));
 
     FrameCalculationResult result = calculator_->calculate_frame_const(invalid_residue);
 

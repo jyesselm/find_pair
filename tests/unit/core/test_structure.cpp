@@ -20,20 +20,20 @@ protected:
         structure_ = Structure("TEST");
 
         // Chain A
-        Chain chain_a('A');
-        std::vector<Atom> c1_atoms = {Atom(" C1'", Vector3D(1, 2, 3), "  C", 'A', 1)};
-        auto c1 = Residue::create_from_atoms("  C", 1, 'A', ' ', c1_atoms);
+        Chain chain_a("A");
+        std::vector<Atom> c1_atoms = {Atom(" C1'", Vector3D(1, 2, 3), "  C", "A", 1)};
+        auto c1 = Residue::create_from_atoms("  C", 1, "A", " ", c1_atoms);
         chain_a.add_residue(c1);
 
-        std::vector<Atom> g1_atoms = {Atom(" C1'", Vector3D(4, 5, 6), "  G", 'A', 2)};
-        auto g1 = Residue::create_from_atoms("  G", 2, 'A', ' ', g1_atoms);
+        std::vector<Atom> g1_atoms = {Atom(" C1'", Vector3D(4, 5, 6), "  G", "A", 2)};
+        auto g1 = Residue::create_from_atoms("  G", 2, "A", " ", g1_atoms);
         chain_a.add_residue(g1);
         structure_.add_chain(chain_a);
 
         // Chain B
-        Chain chain_b('B');
-        std::vector<Atom> a1_atoms = {Atom(" C1'", Vector3D(7, 8, 9), "  A", 'B', 1)};
-        auto a1 = Residue::create_from_atoms("  A", 1, 'B', ' ', a1_atoms);
+        Chain chain_b("B");
+        std::vector<Atom> a1_atoms = {Atom(" C1'", Vector3D(7, 8, 9), "  A", "B", 1)};
+        auto a1 = Residue::create_from_atoms("  A", 1, "B", " ", a1_atoms);
         chain_b.add_residue(a1);
         structure_.add_chain(chain_b);
     }
@@ -61,7 +61,7 @@ TEST_F(StructureTest, AddChain) {
     Structure structure("TEST");
     EXPECT_EQ(structure.num_chains(), 0);
 
-    Chain chain('A');
+    Chain chain("A");
     structure.add_chain(chain);
     EXPECT_EQ(structure.num_chains(), 1);
 }
@@ -79,14 +79,14 @@ TEST_F(StructureTest, NumAtoms) {
 }
 
 TEST_F(StructureTest, FindChain) {
-    auto chain = structure_.find_chain('A');
+    auto chain = structure_.find_chain("A");
     ASSERT_TRUE(chain.has_value());
-    EXPECT_EQ(chain->chain_id(), 'A');
+    EXPECT_EQ(chain->chain_id(), "A");
     EXPECT_EQ(chain->num_residues(), 2);
 }
 
 TEST_F(StructureTest, FindChainNotFound) {
-    auto chain = structure_.find_chain('Z');
+    auto chain = structure_.find_chain("Z");
     EXPECT_FALSE(chain.has_value());
 }
 
@@ -196,10 +196,10 @@ TEST_F(StructureTest, EmptyStructure) {
 
 TEST_F(StructureTest, MultipleResiduesPerChain) {
     Structure structure("MULTI");
-    Chain chain('A');
+    Chain chain("A");
 
     for (int i = 1; i <= 5; ++i) {
-        Residue residue("  C", i, 'A');
+        Residue residue("  C", i, "A");
         residue.add_atom(Atom(" C1'", Vector3D(i, i, i)));
         chain.add_residue(residue);
     }

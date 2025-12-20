@@ -173,7 +173,7 @@ std::string InputFileWriter::format_residue_description(const core::Residue& res
     std::ostringstream seq_ss;
     seq_ss << residue.seq_num();
     std::string seq_str = seq_ss.str();
-    if (residue.insertion() != ' ' && residue.insertion() != '\0') {
+    if (!residue.insertion().empty()) {
         seq_str += residue.insertion();
     } else {
         seq_str += "_";

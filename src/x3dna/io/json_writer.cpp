@@ -188,12 +188,12 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
                 // Core fields (match legacy exactly)
                 atom_json["atom_name"] = atom.name();
                 atom_json["residue_name"] = atom.residue_name();
-                atom_json["chain_id"] = std::string(1, atom.chain_id());
+                atom_json["chain_id"] = atom.chain_id();
                 atom_json["residue_seq"] = atom.residue_seq();
 
-                // Insertion code (only if non-space, matches legacy format)
-                if (atom.insertion() != ' ') {
-                    atom_json["insertion"] = std::string(1, atom.insertion());
+                // Insertion code (only if non-empty, matches legacy format)
+                if (!atom.insertion().empty()) {
+                    atom_json["insertion"] = atom.insertion();
                 }
 
                 // Coordinates
@@ -268,7 +268,7 @@ void JsonWriter::record_residue_indices(const core::Structure& structure) {
 void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
                                         const std::filesystem::path& standard_template, double rms_fit,
                                         const std::vector<std::string>& matched_atoms, const std::string& residue_name,
-                                        char chain_id, int residue_seq, char insertion) {
+                                        const std::string& chain_id, int residue_seq, const std::string& insertion) {
     nlohmann::json record;
     record["type"] = "base_frame_calc";
     record["residue_idx"] = residue_idx;
@@ -282,10 +282,10 @@ void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
     if (!residue_name.empty()) {
         record["residue_name"] = residue_name;
     }
-    record["chain_id"] = std::string(1, chain_id);
+    record["chain_id"] = chain_id;
     record["residue_seq"] = residue_seq;
-    if (insertion != ' ') {
-        record["insertion"] = std::string(1, insertion);
+    if (!insertion.empty()) {
+        record["insertion"] = insertion;
     }
 
     record["standard_template"] = standard_template.string();
@@ -304,7 +304,8 @@ void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
 
 void JsonWriter::record_ls_fitting(size_t residue_idx, size_t num_points, double rms_fit,
                                    const geometry::Matrix3D& rotation_matrix, const geometry::Vector3D& translation,
-                                   const std::string& residue_name, char chain_id, int residue_seq, char insertion) {
+                                   const std::string& residue_name, const std::string& chain_id, int residue_seq,
+                                   const std::string& insertion) {
     nlohmann::json record;
     record["type"] = "ls_fitting";
     record["residue_idx"] = residue_idx;
@@ -316,10 +317,10 @@ void JsonWriter::record_ls_fitting(size_t residue_idx, size_t num_points, double
     if (!residue_name.empty()) {
         record["residue_name"] = residue_name;
     }
-    record["chain_id"] = std::string(1, chain_id);
+    record["chain_id"] = chain_id;
     record["residue_seq"] = residue_seq;
-    if (insertion != ' ') {
-        record["insertion"] = std::string(1, insertion);
+    if (!insertion.empty()) {
+        record["insertion"] = insertion;
     }
 
     record["num_points"] = num_points;
@@ -346,7 +347,8 @@ void JsonWriter::record_ls_fitting(size_t residue_idx, size_t num_points, double
 void JsonWriter::record_frame_calc(size_t residue_idx, char base_type, const std::filesystem::path& template_file,
                                    double rms_fit, const std::vector<geometry::Vector3D>& matched_std_xyz,
                                    const std::vector<geometry::Vector3D>& matched_exp_xyz,
-                                   const std::string& residue_name, char chain_id, int residue_seq, char insertion) {
+                                   const std::string& residue_name, const std::string& chain_id, int residue_seq,
+                                   const std::string& insertion) {
     if (matched_std_xyz.size() != matched_exp_xyz.size()) {
         throw std::invalid_argument("Matched coordinate arrays must have same size");
     }
@@ -363,10 +365,10 @@ void JsonWriter::record_frame_calc(size_t residue_idx, char base_type, const std
     if (!residue_name.empty()) {
         record["residue_name"] = residue_name;
     }
-    record["chain_id"] = std::string(1, chain_id);
+    record["chain_id"] = chain_id;
     record["residue_seq"] = residue_seq;
-    if (insertion != ' ') {
-        record["insertion"] = std::string(1, insertion);
+    if (!insertion.empty()) {
+        record["insertion"] = insertion;
     }
 
     record["template_file"] = template_file.string();
@@ -513,8 +515,9 @@ void JsonWriter::record_all_ref_frames(const core::Structure& structure) {
 }
 
 void JsonWriter::record_removed_atom(const std::string& pdb_line, const std::string& reason, int atom_serial,
-                                     const std::string& atom_name, const std::string& residue_name, char chain_id,
-                                     int residue_seq, const geometry::Vector3D* xyz, int model_num) {
+                                     const std::string& atom_name, const std::string& residue_name,
+                                     const std::string& chain_id, int residue_seq, const geometry::Vector3D* xyz,
+                                     int model_num) {
     nlohmann::json record;
     record["type"] = "removed_atom";
 
@@ -533,8 +536,8 @@ void JsonWriter::record_removed_atom(const std::string& pdb_line, const std::str
     if (!residue_name.empty()) {
         record["residue_name"] = residue_name;
     }
-    if (chain_id != ' ') {
-        record["chain_id"] = std::string(1, chain_id);
+    if (!chain_id.empty()) {
+        record["chain_id"] = chain_id;
     }
     if (residue_seq > 0) {
         record["residue_seq"] = residue_seq;

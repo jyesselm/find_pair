@@ -14,8 +14,8 @@ class AtomTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // Create test atoms
-        atom1_ = Atom(" C1'", Vector3D(1.0, 2.0, 3.0), "  C", 'A', 1);
-        atom2_ = Atom(" N3 ", Vector3D(4.0, 5.0, 6.0), "  G", 'A', 2);
+        atom1_ = Atom(" C1'", Vector3D(1.0, 2.0, 3.0), "  C", "A", 1);
+        atom2_ = Atom(" N3 ", Vector3D(4.0, 5.0, 6.0), "  G", "A", 2);
         atom3_ = Atom(" O2 ", Vector3D(0.0, 0.0, 0.0));
     }
 
@@ -30,7 +30,7 @@ TEST_F(AtomTest, DefaultConstructor) {
     EXPECT_EQ(atom.name(), "");
     EXPECT_EQ(atom.position(), Vector3D(0, 0, 0));
     EXPECT_EQ(atom.residue_name(), "");
-    EXPECT_EQ(atom.chain_id(), '\0');
+    EXPECT_EQ(atom.chain_id(), "");
     EXPECT_EQ(atom.residue_seq(), 0);
     EXPECT_EQ(atom.record_type(), 'A');
 }
@@ -45,7 +45,7 @@ TEST_F(AtomTest, FullConstructor) {
     EXPECT_EQ(atom1_.name(), " C1'");
     EXPECT_EQ(atom1_.position(), Vector3D(1.0, 2.0, 3.0));
     EXPECT_EQ(atom1_.residue_name(), "  C");
-    EXPECT_EQ(atom1_.chain_id(), 'A');
+    EXPECT_EQ(atom1_.chain_id(), "A");
     EXPECT_EQ(atom1_.residue_seq(), 1);
     EXPECT_EQ(atom1_.record_type(), 'A');
 }
@@ -54,7 +54,7 @@ TEST_F(AtomTest, FullConstructor) {
 TEST_F(AtomTest, BuilderBasic) {
     auto atom = Atom::create(" N1 ", Vector3D(5.0, 6.0, 7.0))
                     .residue_name("  A")
-                    .chain_id('B')
+                    .chain_id("B")
                     .residue_seq(10)
                     .record_type('H')
                     .build();
@@ -62,7 +62,7 @@ TEST_F(AtomTest, BuilderBasic) {
     EXPECT_EQ(atom.name(), " N1 ");
     EXPECT_EQ(atom.position(), Vector3D(5.0, 6.0, 7.0));
     EXPECT_EQ(atom.residue_name(), "  A");
-    EXPECT_EQ(atom.chain_id(), 'B');
+    EXPECT_EQ(atom.chain_id(), "B");
     EXPECT_EQ(atom.residue_seq(), 10);
     EXPECT_EQ(atom.record_type(), 'H');
 }
@@ -70,11 +70,11 @@ TEST_F(AtomTest, BuilderBasic) {
 TEST_F(AtomTest, BuilderAllFields) {
     auto atom = Atom::create(" CA ", Vector3D(1.0, 2.0, 3.0))
                     .residue_name("ALA")
-                    .chain_id('A')
+                    .chain_id("A")
                     .residue_seq(42)
                     .record_type('A')
                     .alt_loc('A')
-                    .insertion('B')
+                    .insertion("B")
                     .occupancy(0.75)
                     .atom_serial(100)
                     .model_number(1)
@@ -89,10 +89,10 @@ TEST_F(AtomTest, BuilderAllFields) {
 
     EXPECT_EQ(atom.name(), " CA ");
     EXPECT_EQ(atom.residue_name(), "ALA");
-    EXPECT_EQ(atom.chain_id(), 'A');
+    EXPECT_EQ(atom.chain_id(), "A");
     EXPECT_EQ(atom.residue_seq(), 42);
     EXPECT_EQ(atom.alt_loc(), 'A');
-    EXPECT_EQ(atom.insertion(), 'B');
+    EXPECT_EQ(atom.insertion(), "B");
     EXPECT_NEAR(atom.occupancy(), 0.75, 1e-9);
     EXPECT_EQ(atom.atom_serial(), 100);
     EXPECT_EQ(atom.model_number(), 1);
@@ -194,7 +194,7 @@ TEST_F(AtomTest, FromJsonLegacy) {
     EXPECT_EQ(atom.name(), " N3 ");
     EXPECT_EQ(atom.position(), Vector3D(4.0, 5.0, 6.0));
     EXPECT_EQ(atom.residue_name(), "  G");
-    EXPECT_EQ(atom.chain_id(), 'B');
+    EXPECT_EQ(atom.chain_id(), "B");
     EXPECT_EQ(atom.residue_seq(), 2);
     EXPECT_EQ(atom.record_type(), 'A');
 }
@@ -235,7 +235,7 @@ TEST_F(AtomTest, FromJsonModern) {
     EXPECT_EQ(atom.name(), " N3 ");
     EXPECT_EQ(atom.position(), Vector3D(4.0, 5.0, 6.0));
     EXPECT_EQ(atom.residue_name(), "  G");
-    EXPECT_EQ(atom.chain_id(), 'B');
+    EXPECT_EQ(atom.chain_id(), "B");
     EXPECT_EQ(atom.residue_seq(), 2);
     EXPECT_EQ(atom.record_type(), 'A');
 }
@@ -260,7 +260,7 @@ TEST_F(AtomTest, MinimalJsonLegacy) {
     EXPECT_EQ(atom.name(), " C1'");
     EXPECT_EQ(atom.position(), Vector3D(1.0, 2.0, 3.0));
     EXPECT_EQ(atom.residue_name(), "");
-    EXPECT_EQ(atom.chain_id(), '\0');
+    EXPECT_EQ(atom.chain_id(), "");
     EXPECT_EQ(atom.residue_seq(), 0);
 }
 

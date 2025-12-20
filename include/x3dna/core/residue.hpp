@@ -45,11 +45,10 @@ public:
      * @param name Residue name (e.g., "  C", "  G", "  A", "  T")
      * @param seq_num Sequence number
      * @param chain_id Chain identifier
-     * @param insertion Insertion code (PDB column 27, default ' ')
+     * @param insertion Insertion code (PDB column 27, default "")
      */
-    Residue(const std::string& name, int seq_num, char chain_id, char insertion = ' ')
-        : name_(name), one_letter_code_('?'), type_(ResidueType::UNKNOWN), is_purine_(false), seq_num_(seq_num),
-          chain_id_(chain_id), insertion_(insertion) {}
+    Residue(const std::string& name, int seq_num, const std::string& chain_id, const std::string& insertion = "")
+        : name_(name), one_letter_code_('?'), seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {}
 
     /**
      * @brief Create a Builder for fluent residue construction
@@ -58,7 +57,7 @@ public:
      * @param chain_id Chain ID (required)
      * @return Builder instance for fluent construction
      */
-    [[nodiscard]] static Builder create(const std::string& name, int seq_num, char chain_id);
+    [[nodiscard]] static Builder create(const std::string& name, int seq_num, const std::string& chain_id);
 
     /**
      * @brief Create a fully-initialized residue from PDB/CIF data
@@ -69,12 +68,12 @@ public:
      * @param name Three-letter residue name (e.g., "A", "ATP", "PSU")
      * @param sequence_number PDB sequence number
      * @param chain_id Chain identifier
-     * @param insertion_code Insertion code (default ' ')
+     * @param insertion_code Insertion code (default "")
      * @param atoms Vector of atoms in this residue
      * @return Residue with all properties initialized
      */
-    [[nodiscard]] static Residue create_from_atoms(const std::string& name, int sequence_number, char chain_id,
-                                                   char insertion_code, const std::vector<Atom>& atoms);
+    [[nodiscard]] static Residue create_from_atoms(const std::string& name, int sequence_number, const std::string& chain_id,
+                                                   const std::string& insertion_code, const std::vector<Atom>& atoms);
 
     // Getters
     [[nodiscard]] const std::string& name() const {
@@ -83,10 +82,10 @@ public:
     [[nodiscard]] int seq_num() const {
         return seq_num_;
     }
-    [[nodiscard]] char chain_id() const {
+    [[nodiscard]] const std::string& chain_id() const {
         return chain_id_;
     }
-    [[nodiscard]] char insertion() const {
+    [[nodiscard]] const std::string& insertion() const {
         return insertion_;
     }
     [[nodiscard]] const std::vector<Atom>& atoms() const {
@@ -205,31 +204,24 @@ public:
      * @return True if nucleotide (A, C, G, T, U or modified a, c, g, t, u, P)
      */
     [[nodiscard]] bool is_nucleotide() const {
-        char code = one_letter_code();
-        // Standard nucleotides
-        if (code == 'A' || code == 'C' || code == 'G' || code == 'T' || code == 'U' || code == 'I')
-            return true;
-        // Modified nucleotides (lowercase) and Pseudouridine (P)
-        if (code == 'a' || code == 'c' || code == 'g' || code == 't' || code == 'u' || code == 'P')
-            return true;
-        return false;
+        return classification_.is_nucleotide();
     }
 
     /**
-     * @brief Check if residue is a purine (stored value, not computed)
+     * @brief Check if residue is a purine (A, G, I)
      * @return true if purine (A, G, I), false otherwise
      */
     [[nodiscard]] bool is_purine() const {
-        return is_purine_;
+        return classification_.is_purine();
     }
 
     /**
      * @brief Get RY classification (Purine=1, Pyrimidine=0)
-     * Uses stored is_purine_ value
+     * Uses classification system
      * @return 1 for purines, 0 for pyrimidines, -1 for non-nucleotides
      */
     [[nodiscard]] int ry_classification() const {
-        if (is_purine_) {
+        if (classification_.is_purine()) {
             return 1; // Purine
         }
         // Check if it's a nucleotide
@@ -244,11 +236,11 @@ public:
      * @brief Get residue type
      */
     /**
-     * @brief Get residue type (stored value, not computed)
-     * @return ResidueType set by ResidueFactory at creation
+     * @brief Get residue type (derived from classification)
+     * @return ResidueType derived from classification
      */
     [[nodiscard]] ResidueType residue_type() const {
-        return type_;
+        return classification_.to_legacy_type();
     }
 
     /**
@@ -257,6 +249,62 @@ public:
      */
     [[nodiscard]] const typing::ResidueClassification& classification() const {
         return classification_;
+    }
+
+    /**
+     * @brief Check if this is a pyrimidine (C, T, U, or pseudouridine)
+     */
+    [[nodiscard]] bool is_pyrimidine() const {
+        return classification_.is_pyrimidine();
+    }
+
+    /**
+     * @brief Check if this is a protein residue (amino acid)
+     */
+    [[nodiscard]] bool is_protein() const {
+        return classification_.is_protein();
+    }
+
+    /**
+     * @brief Check if this is a water molecule
+     */
+    [[nodiscard]] bool is_water() const {
+        return classification_.is_water();
+    }
+
+    /**
+     * @brief Check if this is an ion
+     */
+    [[nodiscard]] bool is_ion() const {
+        return classification_.is_ion();
+    }
+
+    /**
+     * @brief Check if this is an RNA nucleotide
+     */
+    [[nodiscard]] bool is_rna() const {
+        return classification_.is_rna();
+    }
+
+    /**
+     * @brief Check if this is a DNA nucleotide
+     */
+    [[nodiscard]] bool is_dna() const {
+        return classification_.is_dna();
+    }
+
+    /**
+     * @brief Get the base type (ADENINE, CYTOSINE, etc.)
+     */
+    [[nodiscard]] typing::BaseType base_type() const {
+        return classification_.base_type;
+    }
+
+    /**
+     * @brief Get the molecule type (NucleicAcid, Protein, Solvent, Unknown)
+     */
+    [[nodiscard]] typing::MoleculeType molecule_type() const {
+        return classification_.molecule_type;
     }
 
     /**
@@ -299,7 +347,7 @@ public:
         nlohmann::json j;
         j["residue_name"] = name_;
         j["residue_seq"] = seq_num_;
-        j["chain_id"] = std::string(1, chain_id_);
+        j["chain_id"] = chain_id_;
         j["atoms"] = nlohmann::json::array();
         for (const auto& atom : atoms_) {
             j["atoms"].push_back(atom.to_json_legacy());
@@ -316,8 +364,7 @@ public:
     [[nodiscard]] static Residue from_json_legacy(const nlohmann::json& j) {
         std::string name = j.value("residue_name", "");
         int seq_num = j.value("residue_seq", 0);
-        std::string chain_str = j.value("chain_id", "");
-        char chain_id = chain_str.empty() ? '\0' : chain_str[0];
+        std::string chain_id = j.value("chain_id", "");
 
         // Parse atoms first
         std::vector<Atom> atoms;
@@ -328,7 +375,7 @@ public:
         }
 
         // Use create_from_atoms to properly initialize one_letter_code, type, etc.
-        Residue residue = create_from_atoms(name, seq_num, chain_id, ' ', atoms);
+        Residue residue = create_from_atoms(name, seq_num, chain_id, "", atoms);
 
         if (j.contains("reference_frame")) {
             residue.set_reference_frame(ReferenceFrame::from_json_legacy(j["reference_frame"]));
@@ -344,7 +391,7 @@ public:
         nlohmann::json j;
         j["name"] = name_;
         j["seq_num"] = seq_num_;
-        j["chain_id"] = std::string(1, chain_id_);
+        j["chain_id"] = chain_id_;
         j["atoms"] = nlohmann::json::array();
         for (const auto& atom : atoms_) {
             j["atoms"].push_back(atom.to_json());
@@ -361,8 +408,7 @@ public:
     [[nodiscard]] static Residue from_json(const nlohmann::json& j) {
         std::string name = j.value("name", "");
         int seq_num = j.value("seq_num", 0);
-        std::string chain_str = j.value("chain_id", "");
-        char chain_id = chain_str.empty() ? '\0' : chain_str[0];
+        std::string chain_id = j.value("chain_id", "");
 
         // Parse atoms first
         std::vector<Atom> atoms;
@@ -373,7 +419,7 @@ public:
         }
 
         // Use create_from_atoms to properly initialize one_letter_code, type, etc.
-        Residue residue = create_from_atoms(name, seq_num, chain_id, ' ', atoms);
+        Residue residue = create_from_atoms(name, seq_num, chain_id, "", atoms);
 
         if (j.contains("reference_frame")) {
             residue.set_reference_frame(ReferenceFrame::from_json(j["reference_frame"]));
@@ -387,11 +433,9 @@ private:
 
     std::string name_;                              // Residue name (e.g., "  C", "  G")
     char one_letter_code_ = '?';                    // One-letter code (stored, not computed)
-    ResidueType type_ = ResidueType::UNKNOWN;       // Residue type (stored, not computed)
-    bool is_purine_ = false;                        // Is purine flag (stored, not computed)
     int seq_num_ = 0;                               // Sequence number
-    char chain_id_ = '\0';                          // Chain identifier
-    char insertion_ = ' ';                          // Insertion code (PDB column 27)
+    std::string chain_id_;                          // Chain identifier
+    std::string insertion_;                         // Insertion code (PDB column 27)
     std::vector<Atom> atoms_;                       // Atoms in this residue
     std::optional<ReferenceFrame> reference_frame_; // Reference frame (if calculated)
     typing::ResidueClassification classification_;  // Full hierarchical classification
@@ -428,29 +472,19 @@ public:
      * @param seq_num Sequence number
      * @param chain_id Chain identifier
      */
-    Builder(const std::string& name, int seq_num, char chain_id) {
+    Builder(const std::string& name, int seq_num, const std::string& chain_id) {
         residue_.name_ = name;
         residue_.seq_num_ = seq_num;
         residue_.chain_id_ = chain_id;
     }
 
-    Builder& insertion(char ins) {
+    Builder& insertion(const std::string& ins) {
         residue_.insertion_ = ins;
         return *this;
     }
 
     Builder& one_letter_code(char code) {
         residue_.one_letter_code_ = code;
-        return *this;
-    }
-
-    Builder& type(ResidueType t) {
-        residue_.type_ = t;
-        return *this;
-    }
-
-    Builder& is_purine(bool purine) {
-        residue_.is_purine_ = purine;
         return *this;
     }
 
@@ -487,13 +521,13 @@ private:
 };
 
 // Inline implementation of create()
-inline Residue::Builder Residue::create(const std::string& name, int seq_num, char chain_id) {
+inline Residue::Builder Residue::create(const std::string& name, int seq_num, const std::string& chain_id) {
     return Builder(name, seq_num, chain_id);
 }
 
 // Inline implementation of create_from_atoms()
-inline Residue Residue::create_from_atoms(const std::string& name, int sequence_number, char chain_id,
-                                          char insertion_code, const std::vector<Atom>& atoms) {
+inline Residue Residue::create_from_atoms(const std::string& name, int sequence_number, const std::string& chain_id,
+                                          const std::string& insertion_code, const std::vector<Atom>& atoms) {
     // Helper to trim whitespace
     auto trim = [](const std::string& str) -> std::string {
         size_t start = str.find_first_not_of(" \t");
@@ -511,43 +545,10 @@ inline Residue Residue::create_from_atoms(const std::string& name, int sequence_
     // Get one-letter code from registry
     char one_letter = ModifiedNucleotideRegistry::get_one_letter_code(trimmed);
 
-    // Get base type from registry
-    ResidueType type = ResidueType::UNKNOWN;
-    auto type_opt = ModifiedNucleotideRegistry::get_base_type(trimmed);
-    if (type_opt.has_value()) {
-        type = type_opt.value();
-    } else {
-        // Check for water
-        if (trimmed == "HOH" || trimmed == "WAT") {
-            type = ResidueType::WATER;
-        }
-        // Check for common ions
-        else {
-            std::string upper = trimmed;
-            std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
-            if (upper == "MG" || upper == "NA" || upper == "CL" || upper == "K" || upper == "CA" || upper == "ZN" ||
-                upper == "FE" || upper == "MN") {
-                type = ResidueType::ION;
-            }
-        }
-    }
-
-    // Get is_purine from registry
-    bool purine = false;
-    auto is_purine_opt = ModifiedNucleotideRegistry::is_purine(trimmed);
-    if (is_purine_opt.has_value()) {
-        purine = is_purine_opt.value();
-    } else {
-        // Fallback to type-based determination
-        purine = (type == ResidueType::ADENINE || type == ResidueType::GUANINE || type == ResidueType::INOSINE);
-    }
-
     // Build and return residue
     return Residue::create(name, sequence_number, chain_id)
         .insertion(insertion_code)
         .one_letter_code(one_letter)
-        .type(type)
-        .is_purine(purine)
         .classification(classification)
         .atoms(atoms)
         .build();

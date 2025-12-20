@@ -95,9 +95,8 @@ core::Structure CifParser::convert_gemmi_structure(const gemmi::Structure& gemmi
     int model_number = 1;
 
     for (const gemmi::Chain& gemmi_chain : model.chains) {
-        // Get chain ID (use auth_* fields for PDB compatibility)
-        std::string chain_str = gemmi_chain.name;
-        char chain_id = chain_str.empty() ? ' ' : chain_str[0];
+        // Get chain ID (use full string for CIF compatibility)
+        std::string chain_id = gemmi_chain.name;
 
         for (const gemmi::Residue& gemmi_residue : gemmi_chain.residues) {
             // Get residue properties
@@ -107,10 +106,10 @@ core::Structure CifParser::convert_gemmi_structure(const gemmi::Structure& gemmi
             // Get sequence number (use auth_seq_id for PDB compatibility)
             int residue_seq = gemmi_residue.seqid.num.value;
 
-            // Get insertion code
-            char insertion = ' ';
+            // Get insertion code (convert char to string)
+            std::string insertion;
             if (gemmi_residue.seqid.icode != ' ' && gemmi_residue.seqid.icode != '\0') {
-                insertion = gemmi_residue.seqid.icode;
+                insertion = std::string(1, gemmi_residue.seqid.icode);
             }
 
             // Determine if this is a HETATM residue
@@ -343,7 +342,7 @@ core::Structure CifParser::build_structure_from_residues(
     const std::string& pdb_id, const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const {
 
     core::Structure structure(pdb_id);
-    std::map<char, core::Chain> chains;
+    std::map<std::string, core::Chain> chains;
 
     for (const auto& [key, atoms] : residue_atoms) {
         if (atoms.empty()) {

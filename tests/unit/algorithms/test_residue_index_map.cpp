@@ -29,35 +29,35 @@ protected:
         Structure structure;
 
         // Create chain A with 3 residues
-        Chain chain_a('A');
+        Chain chain_a("A");
 
         // Residue 1 (legacy idx 1)
-        Residue res1("A", 1, 'A');
+        Residue res1("A", 1, "A");
         res1.add_atom(create_atom(" N9 ", Vector3D(0, 0, 0), 1));
         chain_a.add_residue(res1);
 
         // Residue 2 (legacy idx 2)
-        Residue res2("G", 2, 'A');
+        Residue res2("G", 2, "A");
         res2.add_atom(create_atom(" N9 ", Vector3D(1, 0, 0), 2));
         chain_a.add_residue(res2);
 
         // Residue 3 (legacy idx 3)
-        Residue res3("C", 3, 'A');
+        Residue res3("C", 3, "A");
         res3.add_atom(create_atom(" N1 ", Vector3D(2, 0, 0), 3));
         chain_a.add_residue(res3);
 
         structure.add_chain(chain_a);
 
         // Create chain B with 2 residues (legacy idx continues from 4)
-        Chain chain_b('B');
+        Chain chain_b("B");
 
         // Residue 4 (legacy idx 4)
-        Residue res4("U", 1, 'B');
+        Residue res4("U", 1, "B");
         res4.add_atom(create_atom(" N1 ", Vector3D(3, 0, 0), 4));
         chain_b.add_residue(res4);
 
         // Residue 5 (legacy idx 5)
-        Residue res5("T", 2, 'B');
+        Residue res5("T", 2, "B");
         res5.add_atom(create_atom(" N1 ", Vector3D(4, 0, 0), 5));
         chain_b.add_residue(res5);
 

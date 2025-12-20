@@ -32,10 +32,10 @@ protected:
         frame2_ = ReferenceFrame(rot2, org2);
 
         // Create residues
-        res1_ = Residue("  A", 'A', 1);
+        res1_ = Residue("  A", 1, "A");
         res1_.set_reference_frame(frame1_);
 
-        res2_ = Residue("  T", 'T', 2);
+        res2_ = Residue("  T", 2, "A");
         res2_.set_reference_frame(frame2_);
 
         // Add N1/N9 atoms for dNN calculation
@@ -101,7 +101,7 @@ TEST_F(BasePairValidatorTest, SameResidue) {
 
 // Test residues without frames
 TEST_F(BasePairValidatorTest, NoFrames) {
-    Residue res_no_frame("  A", 'A', 3);
+    Residue res_no_frame("  A", 3, "A");
     ValidationResult result = validator_.validate(res1_, res_no_frame);
 
     // Should return invalid if no frame

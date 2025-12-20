@@ -75,12 +75,12 @@ TEST_F(StructureLegacyOrderTest, SpecificResidueIndicesMatchLegacy) {
 
     // Legacy index 946 = C (chain S, seq 113)
     EXPECT_EQ(res946->name(), "  C") << "Residue 946 should be C";
-    EXPECT_EQ(res946->chain_id(), 'S') << "Residue 946 should be in chain S";
+    EXPECT_EQ(res946->chain_id(), "S") << "Residue 946 should be in chain S";
     EXPECT_EQ(res946->seq_num(), 113) << "Residue 946 should have seq 113";
 
     // Legacy index 947 = U (chain S, seq 114)
     EXPECT_EQ(res947->name(), "  U") << "Residue 947 should be U";
-    EXPECT_EQ(res947->chain_id(), 'S') << "Residue 947 should be in chain S";
+    EXPECT_EQ(res947->chain_id(), "S") << "Residue 947 should be in chain S";
     EXPECT_EQ(res947->seq_num(), 114) << "Residue 947 should have seq 114";
 }
 
