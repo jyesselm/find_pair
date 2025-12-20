@@ -6,6 +6,7 @@
 #include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/algorithms/validation/overlap_calculator.hpp>
 #include <x3dna/core/atom.hpp>
+#include <x3dna/core/typing.hpp>
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
 #include <x3dna/algorithms/hydrogen_bond_finder.hpp>
 #include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.hpp>
@@ -206,11 +207,10 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
     // Do NOT use atom presence (e.g., C8) because some modified pyrimidines like 70U
     // have C8 as part of their modification but should still use N1
     char one_letter = residue.one_letter_code();
-    char upper_letter = static_cast<char>(std::toupper(static_cast<unsigned char>(one_letter)));
 
     // Purines: A, G, I (and their lowercase modified forms a, g, i)
     // Pyrimidines: C, T, U, P (and their lowercase modified forms c, t, u, p)
-    bool is_purine = (upper_letter == 'A' || upper_letter == 'G' || upper_letter == 'I');
+    bool is_purine = typing::is_purine_letter(one_letter);
 
     if (is_purine) {
         // Purine: find N9

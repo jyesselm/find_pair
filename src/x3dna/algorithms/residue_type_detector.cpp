@@ -5,6 +5,7 @@
 
 #include <x3dna/algorithms/residue_type_detector.hpp>
 #include <x3dna/core/constants.hpp>
+#include <x3dna/core/typing.hpp>
 #include <x3dna/geometry/least_squares_fitter.hpp>
 #include <algorithm>
 #include <cctype>
@@ -117,7 +118,7 @@ bool ResidueTypeDetector::is_in_nt_list(const std::string& res_name) {
 }
 
 bool ResidueTypeDetector::is_purine(core::ResidueType type) {
-    return constants::nucleotides::is_purine(type);
+    return core::typing::is_purine(type);
 }
 
 TypeDetectionResult ResidueTypeDetector::detect_type(const core::Residue& residue) {

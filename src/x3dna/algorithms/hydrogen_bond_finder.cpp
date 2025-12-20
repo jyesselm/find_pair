@@ -8,6 +8,7 @@
 #include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/typing.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <algorithm>
 #include <cmath>
@@ -65,7 +66,7 @@ void HydrogenBondFinder::count_simple(const core::Residue& res1, const core::Res
 std::vector<HydrogenBondResult> HydrogenBondFinder::find_hydrogen_bonds(const Residue& res1, const Residue& res2,
                                                                         double hb_lower, double hb_dist1) {
     auto detailed = find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1,
-                                                  validation_constants::HB_DEFAULT_DIST2);
+                                                 validation_constants::HB_DEFAULT_DIST2);
     return detailed.final_hbonds;
 }
 
@@ -134,8 +135,7 @@ DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(const Resid
             result.final_hbonds.push_back(hbond);
 
             // Count good H-bonds (type='-' and distance in valid range)
-            const bool is_good_hbond = hbond.type == '-' &&
-                                       hbond.distance >= validation_constants::HB_GOOD_MIN &&
+            const bool is_good_hbond = hbond.type == '-' && hbond.distance >= validation_constants::HB_GOOD_MIN &&
                                        hbond.distance <= validation_constants::HB_GOOD_MAX;
             if (is_good_hbond) {
                 result.num_good_hb++;
@@ -307,8 +307,7 @@ void HydrogenBondFinder::validate_hbonds(std::vector<HydrogenBondResult>& hbonds
         // Restore absolute distance (matches legacy line 3998: hb_dist[k] = fabs(hb_dist[k]))
         hbond.distance = std::abs(hbond.distance);
 
-        const bool is_good = hbond.type == '-' &&
-                             hbond.distance >= validation_constants::HB_GOOD_MIN &&
+        const bool is_good = hbond.type == '-' && hbond.distance >= validation_constants::HB_GOOD_MIN &&
                              hbond.distance <= validation_constants::HB_GOOD_MAX;
         if (is_good) {
             num_good_hb++;
@@ -318,7 +317,8 @@ void HydrogenBondFinder::validate_hbonds(std::vector<HydrogenBondResult>& hbonds
     // Second pass: apply filtering if there are good H-bonds
     if (num_good_hb > 0) {
         for (auto& hbond : hbonds) {
-            if (hbond.type == ' ') continue;
+            if (hbond.type == ' ')
+                continue;
 
             // Filter out H-bonds with distance exceeding max
             if (hbond.distance > validation_constants::HB_FILTER_MAX) {
@@ -327,11 +327,10 @@ void HydrogenBondFinder::validate_hbonds(std::vector<HydrogenBondResult>& hbonds
             }
 
             // Filter out non-standard H-bonds outside valid range
-            const bool is_nonstandard_invalid =
-                hbond.type == '*' &&
-                hbond.linkage_type != validation_constants::HB_LINKAGE_CONFLICT &&
-                (hbond.distance < validation_constants::HB_NONSTANDARD_MIN ||
-                 hbond.distance > validation_constants::HB_NONSTANDARD_MAX);
+            const bool is_nonstandard_invalid = hbond.type == '*' &&
+                                                hbond.linkage_type != validation_constants::HB_LINKAGE_CONFLICT &&
+                                                (hbond.distance < validation_constants::HB_NONSTANDARD_MIN ||
+                                                 hbond.distance > validation_constants::HB_NONSTANDARD_MAX);
 
             if (is_nonstandard_invalid) {
                 hbond.type = ' ';
@@ -344,7 +343,8 @@ namespace {
 // Helper to check if residue has a specific atom
 bool has_atom(const core::Residue& residue, const char* name) {
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == name) return true;
+        if (atom.name() == name)
+            return true;
     }
     return false;
 }
@@ -358,8 +358,10 @@ char determine_purine_type(const core::Residue& residue) {
 
 // Determine pyrimidine type (C, T, or U) from atoms
 char determine_pyrimidine_type(const core::Residue& residue) {
-    if (has_atom(residue, " N4 ")) return 'C';
-    if (has_atom(residue, " C5M") || has_atom(residue, " C7 ")) return 'T';
+    if (has_atom(residue, " N4 "))
+        return 'C';
+    if (has_atom(residue, " C5M") || has_atom(residue, " C7 "))
+        return 'T';
     return 'U';
 }
 
@@ -372,8 +374,12 @@ char determine_base_type_from_atoms(const core::Residue& residue) {
     const bool is_purine = has_n9 || (has_n1 && has_c6);
     const bool is_pyrimidine = has_n1 && !has_c6;
 
-    if (is_purine) return determine_purine_type(residue);
-    if (is_pyrimidine) return determine_pyrimidine_type(residue);
+    if (is_purine) {
+        return determine_purine_type(residue);
+    }
+    if (is_pyrimidine) {
+        return determine_pyrimidine_type(residue);
+    }
     return '?';
 }
 } // namespace
@@ -381,16 +387,28 @@ char determine_base_type_from_atoms(const core::Residue& residue) {
 char HydrogenBondFinder::get_base_type_for_hbond(const core::Residue& residue) {
     // Check one_letter_code first
     char code = residue.one_letter_code();
-    if (code != '?') return code;
+    if (code != '?') {
+        return code;
+    }
 
     // Try residue_type() for known types
     switch (residue.residue_type()) {
-        case core::ResidueType::ADENINE:  return 'A';
-        case core::ResidueType::CYTOSINE: return 'C';
-        case core::ResidueType::GUANINE:  return 'G';
-        case core::ResidueType::THYMINE:  return 'T';
-        case core::ResidueType::URACIL:   return 'U';
-        default: break;
+        case core::ResidueType::ADENINE:
+            return 'A';
+        case core::ResidueType::CYTOSINE:
+            return 'C';
+        case core::ResidueType::GUANINE:
+            return 'G';
+        case core::ResidueType::THYMINE:
+            return 'T';
+        case core::ResidueType::URACIL:
+            return 'U';
+        case core::ResidueType::INOSINE:
+            return 'I';
+        case core::ResidueType::PSEUDOURIDINE:
+            return 'P';
+        default:
+            break;
     }
 
     // Fall back to atom-based detection

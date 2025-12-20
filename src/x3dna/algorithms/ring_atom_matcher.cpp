@@ -5,6 +5,7 @@
 
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
 #include <x3dna/core/constants.hpp>
+#include <x3dna/core/typing.hpp>
 #include <algorithm>
 
 namespace x3dna {
@@ -101,7 +102,7 @@ std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Structu
 }
 
 bool RingAtomMatcher::is_purine(core::ResidueType type) {
-    return constants::nucleotides::is_purine(type);
+    return core::typing::is_purine(type);
 }
 
 } // namespace algorithms

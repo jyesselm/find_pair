@@ -5,6 +5,7 @@
 
 #include <x3dna/algorithms/quality_score_calculator.hpp>
 #include <x3dna/core/reference_frame.hpp>
+#include <x3dna/core/typing.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <cmath>
@@ -141,7 +142,8 @@ int QualityScoreCalculator::calculate_bp_type_id(const core::Residue& res1, cons
 
     // Get base pair type string (e.g., "AT", "GC")
     // Legacy uses: sprintf(bpi, "%c%c", toupper((int) bseq[i]), toupper((int) bseq[j]));
-    // Use one_letter_code() which is already set by ResidueFactory
+    // Note: Could use TypeRegistry::classify_residue(res.name()).canonical_code,
+    // but toupper on the stored one_letter_code is simpler and avoids registry lookup
     char base1 = static_cast<char>(std::toupper(static_cast<unsigned char>(res1.one_letter_code())));
     char base2 = static_cast<char>(std::toupper(static_cast<unsigned char>(res2.one_letter_code())));
     std::string bp_type = std::string(1, base1) + std::string(1, base2);

@@ -150,6 +150,12 @@ std::tuple<int, bool> count_ring_atoms(const core::Residue& residue) {
     return {count, has_purine};
 }
 
+// Check if one-letter code represents a purine base (A, G, I)
+[[nodiscard]] bool is_purine_letter(char letter) {
+    const char upper = static_cast<char>(std::toupper(static_cast<unsigned char>(letter)));
+    return upper == 'A' || upper == 'G' || upper == 'I';
+}
+
 // Detect purine atoms
 bool detect_purine_atoms(const core::Residue& residue) {
     bool has_n7 = false, has_c8 = false, has_n9 = false;
@@ -327,9 +333,7 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Res
         (residue_type == core::ResidueType::UNKNOWN || residue_type == core::ResidueType::AMINO_ACID ||
          residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check)) {
         if (has_ring_atoms) {
-            bool is_purine_by_letter = (one_letter == 'A' || one_letter == 'G' || one_letter == 'a' ||
-                                        one_letter == 'g');
-            if (has_purine_atoms || is_purine_by_letter) {
+            if (has_purine_atoms || is_purine_letter(one_letter)) {
                 residue_type = determine_purine_type(residue);
             } else {
                 residue_type = determine_pyrimidine_type(residue, one_letter);
