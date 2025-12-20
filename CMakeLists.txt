@@ -57,6 +57,9 @@ add_library(x3dna
     src/x3dna/core/structure_legacy_order.cpp
     src/x3dna/core/structure_legacy_order_impl.cpp
     src/x3dna/core/modified_nucleotide_registry.cpp
+    src/x3dna/core/typing/atom_classification.cpp
+    src/x3dna/core/typing/type_registry.cpp
+    src/x3dna/core/typing/residue_classification.cpp
     src/x3dna/algorithms/standard_base_templates.cpp
     src/x3dna/algorithms/ring_atom_matcher.cpp
     src/x3dna/algorithms/residue_type_detector.cpp
