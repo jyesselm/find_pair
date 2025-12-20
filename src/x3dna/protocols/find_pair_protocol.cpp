@@ -44,7 +44,7 @@ void FindPairProtocol::calculate_frames(core::Structure& structure) {
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
             for (const auto& atom : residue.atoms()) {
-                if (atom.name() == " O2'") {
+                if (atom.name() == "O2'") {
                     is_rna = true;
                     break;
                 }
@@ -111,7 +111,7 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure, const std
 
         // Check for modified nucleotides that have ring atoms
         if (!is_nucleotide && res_type == core::ResidueType::UNKNOWN) {
-            static const std::vector<std::string> common_ring_atoms = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
+            static const std::vector<std::string> common_ring_atoms = {"C4", "N3", "C2", "N1", "C6", "C5"};
             int ring_atom_count = 0;
             for (const auto& atom_name : common_ring_atoms) {
                 for (const auto& atom : residue->atoms()) {

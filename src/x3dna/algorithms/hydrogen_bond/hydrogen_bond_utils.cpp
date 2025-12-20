@@ -90,13 +90,23 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
         load_atom_list();
     }
 
-    if (atom_name.length() < 4) {
-        return 0; // UNK - need at least 4 chars for PDB format
+    // Handle both trimmed and padded names
+    // Pad to 4 characters following PDB convention if needed
+    std::string name = atom_name;
+    if (name.length() < 4) {
+        // For element-first names (e.g., "C1'", "N9"), pad with space at start
+        // For 2-letter element names (e.g., "CL"), keep them at positions 0-1
+        if (name.length() <= 2) {
+            name = " " + name;
+        }
+        while (name.length() < 4) {
+            name += " ";
+        }
     }
 
     // Match legacy aname2asym logic EXACTLY (lines 4160-4193 in cmn_fncs.c)
     // Step 1: Create pattern by replacing non-alphabetic with '.'
-    std::string aname_pattern = atom_name;
+    std::string aname_pattern = name;
     for (size_t i = 0; i < 4 && i < aname_pattern.length(); i++) {
         if (!std::isalpha(static_cast<unsigned char>(aname_pattern[i]))) {
             aname_pattern[i] = '.';
@@ -150,14 +160,23 @@ int AtomListUtils::get_atom_idx(const std::string& atom_name) {
 
 bool is_base_atom(const std::string& atom_name) {
     // Matches legacy is_baseatom (line 4652 in cmn_fncs.c)
-    // Base atoms: C5M or atoms matching pattern " HP" where H is not H or P
-    if (atom_name == " C5M") {
+    // Base atoms: C5M or atoms matching pattern where first letter is not H or P
+    // and second char is a digit
+    // Updated to work with trimmed atom names
+
+    // Trim the name for comparison
+    std::string name = atom_name;
+    name.erase(0, name.find_first_not_of(" \t\n\r"));
+    name.erase(name.find_last_not_of(" \t\n\r") + 1);
+
+    if (name == "C5M") {
         return true;
     }
 
-    // Pattern: space, character (not H or P), digit, space
-    if (atom_name.length() >= 4 && atom_name[0] == ' ' && atom_name[1] != 'H' && atom_name[1] != 'P' &&
-        std::isdigit(static_cast<unsigned char>(atom_name[2])) && atom_name[3] == ' ') {
+    // For trimmed names like "N1", "C2", "N9", etc.
+    // Pattern: letter (not H or P), digit, optional more chars
+    if (name.length() >= 2 && name[0] != 'H' && name[0] != 'P' &&
+        std::isdigit(static_cast<unsigned char>(name[1]))) {
         return true;
     }
 
@@ -167,10 +186,18 @@ bool is_base_atom(const std::string& atom_name) {
 bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std::string& hb_atoms) {
     // Match legacy good_hbatoms() logic EXACTLY (lines 3864-3877 in cmn_fncs.c)
 
+    // Trim atom names for comparison
+    std::string a1 = atom1, a2 = atom2;
+    a1.erase(0, a1.find_first_not_of(" \t\n\r"));
+    a1.erase(a1.find_last_not_of(" \t\n\r") + 1);
+    a2.erase(0, a2.find_first_not_of(" \t\n\r"));
+    a2.erase(a2.find_last_not_of(" \t\n\r") + 1);
+
     // Step 1: PO list check (matches legacy lines 3866-3870)
-    static const std::vector<std::string> PO = {" O1P", " O2P", " O3'", " O4'", " O5'", " N7 "};
-    bool atom1_in_po = std::find(PO.begin(), PO.end(), atom1) != PO.end();
-    bool atom2_in_po = std::find(PO.begin(), PO.end(), atom2) != PO.end();
+    // Updated to use trimmed names
+    static const std::vector<std::string> PO = {"O1P", "O2P", "O3'", "O4'", "O5'", "N7"};
+    bool atom1_in_po = std::find(PO.begin(), PO.end(), a1) != PO.end();
+    bool atom2_in_po = std::find(PO.begin(), PO.end(), a2) != PO.end();
     if (atom1_in_po && atom2_in_po) {
         return false;
     }
@@ -193,8 +220,8 @@ bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std
         }
     }
 
-    int idx1 = AtomListUtils::get_atom_idx(atom1);
-    int idx2 = AtomListUtils::get_atom_idx(atom2);
+    int idx1 = AtomListUtils::get_atom_idx(a1);
+    int idx2 = AtomListUtils::get_atom_idx(a2);
 
     // Legacy check: (idx1 == 2 || idx1 == 4 || idx2 == 2 || idx2 == 4) AND both in hb_idx
     bool at_least_one_on = (idx1 == 2 || idx1 == 4 || idx2 == 2 || idx2 == 4);

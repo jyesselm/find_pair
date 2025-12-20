@@ -29,12 +29,12 @@ std::string_view trim(std::string_view sv) {
 } // anonymous namespace
 
 ElementType AtomClassifier::get_element(const std::string& atom_name) {
-    if (atom_name.length() < 2) {
+    if (atom_name.empty()) {
         return ElementType::UNKNOWN;
     }
 
-    // PDB format: element is typically in column 2 (0-indexed position 1)
-    const char element_char = atom_name[1];
+    // For trimmed names, element is at position 0 (e.g., "C1'", "N3", "O2'")
+    const char element_char = atom_name[0];
 
     switch (element_char) {
         case 'C': return ElementType::CARBON;
@@ -48,11 +48,12 @@ ElementType AtomClassifier::get_element(const std::string& atom_name) {
 }
 
 int AtomClassifier::get_legacy_element_index(const std::string& atom_name) {
-    if (atom_name.length() < 2) {
+    if (atom_name.empty()) {
         return 0;
     }
 
-    const char element_char = atom_name[1];
+    // For trimmed names, element is at position 0
+    const char element_char = atom_name[0];
 
     switch (element_char) {
         case 'C': return 1;
@@ -67,14 +68,14 @@ int AtomClassifier::get_legacy_element_index(const std::string& atom_name) {
 
 bool AtomClassifier::is_backbone_atom(const std::string& atom_name) {
     static const std::set<std::string> backbone_atoms = {
-        " P  ", " OP1", " OP2", " O1P", " O2P", " O5'", " O3'"
+        "P", "OP1", "OP2", "O1P", "O2P", "O5'", "O3'"
     };
     return backbone_atoms.count(atom_name) > 0;
 }
 
 bool AtomClassifier::is_sugar_atom(const std::string& atom_name) {
     static const std::set<std::string> sugar_atoms = {
-        " C1'", " C2'", " C3'", " C4'", " C5'", " O4'", " O2'"
+        "C1'", "C2'", "C3'", "C4'", "C5'", "O4'", "O2'"
     };
     return sugar_atoms.count(atom_name) > 0;
 }
@@ -97,7 +98,7 @@ bool AtomClassifier::is_ring_atom(const std::string& atom_name) {
 
 bool AtomClassifier::is_mainchain_atom(const std::string& atom_name) {
     static const std::set<std::string> mainchain_atoms = {
-        " N  ", " CA ", " C  ", " O  ", " OXT"
+        "N", "CA", "C", "O", "OXT"
     };
     return mainchain_atoms.count(atom_name) > 0;
 }
@@ -106,8 +107,8 @@ bool AtomClassifier::is_sidechain_atom(const std::string& atom_name) {
     if (is_mainchain_atom(atom_name)) {
         return false;
     }
-    // Exclude hydrogens
-    if (atom_name.length() >= 2 && atom_name[1] == 'H') {
+    // Exclude hydrogens (trimmed names start with H)
+    if (!atom_name.empty() && atom_name[0] == 'H') {
         return false;
     }
     return true;
@@ -115,12 +116,13 @@ bool AtomClassifier::is_sidechain_atom(const std::string& atom_name) {
 
 bool AtomClassifier::can_form_hbond(const std::string& atom_name,
                                      const std::string& allowed_elements) {
-    if (atom_name.size() < 2) {
+    if (atom_name.empty()) {
         return false;
     }
 
+    // For trimmed names, element is at position 0
     std::string pattern(1, '.');
-    pattern += atom_name[1];
+    pattern += atom_name[0];
     pattern += '.';
 
     return allowed_elements.find(pattern) != std::string::npos;
@@ -134,22 +136,28 @@ bool AtomClassifier::can_form_hbond_pair(const std::string& atom1,
 }
 
 bool AtomClassifier::is_base_atom_for_hbond(const std::string& atom_name) {
-    if (atom_name == " C5M") {
+    // Trim the name for comparison
+    std::string name = atom_name;
+    name.erase(0, name.find_first_not_of(" \t\n\r"));
+    name.erase(name.find_last_not_of(" \t\n\r") + 1);
+
+    if (name == "C5M") {
         return true;
     }
 
-    if (atom_name.size() != 4) {
+    if (name.size() < 2) {
         return false;
     }
 
-    const char c1 = atom_name[1];
-    const char c2 = atom_name[2];
+    // For trimmed names like "N1", "C2", etc.
+    const char c0 = name[0];
+    const char c1 = name[1];
 
-    if (c1 == 'H' || c1 == 'P') {
+    if (c0 == 'H' || c0 == 'P') {
         return false;
     }
 
-    return std::isdigit(static_cast<unsigned char>(c2));
+    return std::isdigit(static_cast<unsigned char>(c1));
 }
 
 AtomClassification AtomClassifier::classify_nucleotide_atom(const std::string& atom_name) {

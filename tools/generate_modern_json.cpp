@@ -16,6 +16,7 @@
 #include <x3dna/core/structure.hpp>
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/io/json_writer.hpp>
+#include <x3dna/io/serializers.hpp>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/io/frame_json_recorder.hpp>
 #include <x3dna/algorithms/base_pair_finder.hpp>
@@ -188,9 +189,24 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
 
         // Stage 1: Atoms
         if (stage == "atoms" || stage == "all") {
-            structure.write_atoms_json(json_output_dir);
+            // Write atoms JSON using serializers
+            nlohmann::json record;
+            record["num_atoms"] = structure.num_atoms();
+            record["atoms"] = nlohmann::json::array();
+            for (const auto& chain : structure.chains()) {
+                for (const auto& residue : chain.residues()) {
+                    for (const auto& atom : residue.atoms()) {
+                        record["atoms"].push_back(AtomSerializer::to_json(atom));
+                    }
+                }
+            }
+            std::filesystem::path file = json_output_dir / "pdb_atoms" / (pdb_name + ".json");
+            std::filesystem::create_directories(file.parent_path());
+            std::ofstream out(file);
+            out << record.dump(2);
+
             if (verbose) {
-                std::cout << "  ✅ pdb_atoms/" << pdb_name << ".json (" << structure.num_atoms() << " atoms)\n";
+                std::cout << "  pdb_atoms/" << pdb_name << ".json (" << structure.num_atoms() << " atoms)\n";
             }
         }
 

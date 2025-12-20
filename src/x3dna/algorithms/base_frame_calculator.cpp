@@ -29,8 +29,9 @@ constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
 }};
 
 // Legacy RA_LIST order for ring atoms
-constexpr std::array<const char*, 9> RING_ATOM_NAMES = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
-                                                        " C5 ", " N7 ", " C8 ", " N9 "};
+// Trimmed atom names for internal comparison (names are stored trimmed)
+constexpr std::array<const char*, 9> RING_ATOM_NAMES = {"C4", "N3", "C2", "N1", "C6",
+                                                        "C5", "N7", "C8", "N9"};
 
 /**
  * @brief Check nucleotide type by RMSD (matches legacy check_nt_type_by_rmsd)
@@ -64,7 +65,7 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
 
     // Check for C1' or C1R atom
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " C1'" || atom.name() == " C1R") {
+        if (atom.name() == "C1'" || atom.name() == "C1R") {
             has_c1_prime = true;
             break;
         }
@@ -124,8 +125,8 @@ bool is_in_nt_list(const std::string& res_name) {
 
 // Count ring atoms in a residue
 std::tuple<int, bool> count_ring_atoms(const core::Residue& residue) {
-    static const std::vector<std::string> common_ring = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
-    static const std::vector<std::string> purine_ring = {" N7 ", " C8 ", " N9 "};
+    static const std::vector<std::string> common_ring = {"C4", "N3", "C2", "N1", "C6", "C5"};
+    static const std::vector<std::string> purine_ring = {"N7", "C8", "N9"};
 
     int count = 0;
     bool has_purine = false;
@@ -160,11 +161,11 @@ std::tuple<int, bool> count_ring_atoms(const core::Residue& residue) {
 bool detect_purine_atoms(const core::Residue& residue) {
     bool has_n7 = false, has_c8 = false, has_n9 = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " N7 ")
+        if (atom.name() == "N7")
             has_n7 = true;
-        if (atom.name() == " C8 ")
+        if (atom.name() == "C8")
             has_c8 = true;
-        if (atom.name() == " N9 ")
+        if (atom.name() == "N9")
             has_n9 = true;
     }
     return has_n7 || has_c8 || has_n9;
@@ -174,11 +175,11 @@ bool detect_purine_atoms(const core::Residue& residue) {
 core::ResidueType determine_purine_type(const core::Residue& residue) {
     bool has_o6 = false, has_n6 = false, has_n2 = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " O6 ")
+        if (atom.name() == "O6")
             has_o6 = true;
-        if (atom.name() == " N6 ")
+        if (atom.name() == "N6")
             has_n6 = true;
-        if (atom.name() == " N2 ")
+        if (atom.name() == "N2")
             has_n2 = true;
     }
     return (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE : core::ResidueType::ADENINE;
@@ -188,16 +189,16 @@ core::ResidueType determine_purine_type(const core::Residue& residue) {
 core::ResidueType determine_pyrimidine_type(const core::Residue& residue, char one_letter) {
     bool has_n4 = false, has_c5m = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " N4 ")
+        if (atom.name() == "N4")
             has_n4 = true;
-        if (atom.name() == " C5M" || atom.name() == " C7 ")
+        if (atom.name() == "C5M" || atom.name() == "C7")
             has_c5m = true;
     }
 
     // Check for pseudouridine
-    auto c1p = residue.find_atom(" C1'");
-    auto n1 = residue.find_atom(" N1 ");
-    auto c5 = residue.find_atom(" C5 ");
+    auto c1p = residue.find_atom("C1'");
+    auto n1 = residue.find_atom("N1");
+    auto c5 = residue.find_atom("C5");
     if (c1p && n1 && c5) {
         double dist_n1 = (c1p->position() - n1->position()).length();
         double dist_c5 = (c1p->position() - c5->position()).length();
@@ -443,7 +444,7 @@ void BaseFrameCalculator::set_template_path(const std::filesystem::path& templat
 bool BaseFrameCalculator::detect_rna(const core::Structure& structure) {
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
-            if (residue.find_atom(" O2'").has_value() || residue.find_atom(" O2*").has_value()) {
+            if (residue.find_atom("O2'").has_value() || residue.find_atom("O2*").has_value()) {
                 return true;
             }
         }

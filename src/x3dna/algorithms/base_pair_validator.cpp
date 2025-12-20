@@ -214,7 +214,7 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
 
     if (is_purine) {
         // Purine: find N9
-        auto n9 = residue.find_atom(" N9 ");
+        auto n9 = residue.find_atom("N9");
         if (n9.has_value()) {
             return n9->position();
         }
@@ -231,13 +231,13 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
         // Special case: for P/p bases, legacy uses C5
         char base = residue.one_letter_code();
         if (base == 'P' || base == 'p') {
-            auto c5 = residue.find_atom(" C5 ");
+            auto c5 = residue.find_atom("C5");
             if (c5.has_value()) {
                 return c5->position();
             }
         }
         // Otherwise, use N1
-        auto n1 = residue.find_atom(" N1 ");
+        auto n1 = residue.find_atom("N1");
         if (n1.has_value()) {
             return n1->position();
         }
@@ -296,23 +296,23 @@ char BasePairValidator::donor_acceptor(char base1, char base2, const std::string
     // CB_LIST = "ACGITU" (A=0, C=1, G=2, I=3, T=4, U=5)
     static const char* CB_LIST = "ACGITU";
     static const char* da_types[] = {"AD", "AX", "XD", "XX", "DA", "DX", "XA"};
-    static const char* bb_da[] = {" O1P", " O2P", " O5'", " O4'", " O3'", " O2'"};
+    static const char* bb_da[] = {"O1P", "O2P", "O5'", "O4'", "O3'", "O2'"};
     static const char bb_da_type[] = {'A', 'A', 'A', 'A', 'A', 'X'};
 
     // Base-specific atom patterns: [base_index][atom_index] = "atom_name_type"
-    // base_da[base_index][atom_index] format: " N9 _?" means N9 with type '?' (either)
+    // base_da[base_index][atom_index] format: "N9" with type '?' (either)
     static const char* base_da[6][6] = {// A (Adenine, index 0)
-                                        {" N9 ", " N7 ", " N6 ", " N1 ", " N3 ", nullptr},
+                                        {"N9", "N7", "N6", "N1", "N3", nullptr},
                                         // C (Cytosine, index 1)
-                                        {" N1 ", " O2 ", " N3 ", " N4 ", nullptr, nullptr},
+                                        {"N1", "O2", "N3", "N4", nullptr, nullptr},
                                         // G (Guanine, index 2)
-                                        {" N9 ", " N7 ", " O6 ", " N1 ", " N2 ", " N3 "},
+                                        {"N9", "N7", "O6", "N1", "N2", "N3"},
                                         // I (Inosine, index 3)
-                                        {" N9 ", " N7 ", " O6 ", " N1 ", " N3 ", nullptr},
+                                        {"N9", "N7", "O6", "N1", "N3", nullptr},
                                         // T (Thymine, index 4)
-                                        {" N1 ", " O2 ", " N3 ", " O4 ", nullptr, nullptr},
+                                        {"N1", "O2", "N3", "O4", nullptr, nullptr},
                                         // U (Uracil, index 5)
-                                        {" N1 ", " O2 ", " N3 ", " O4 ", nullptr, nullptr}};
+                                        {"N1", "O2", "N3", "O4", nullptr, nullptr}};
 
     // Base-specific atom types: [base_index][atom_index] = type
     static const char base_da_type[6][6] = {// A
@@ -344,12 +344,12 @@ char BasePairValidator::donor_acceptor(char base1, char base2, const std::string
         return hbatom_type; // Invalid base
     }
 
-    // Check backbone atoms first
+    // Check backbone atoms first (names are now trimmed)
     for (int i = 0; i < 6; ++i) {
-        if (atom1.length() >= 4 && atom1.substr(0, 4) == bb_da[i]) {
+        if (atom1 == bb_da[i]) {
             ia = bb_da_type[i];
         }
-        if (atom2.length() >= 4 && atom2.substr(0, 4) == bb_da[i]) {
+        if (atom2 == bb_da[i]) {
             ja = bb_da_type[i];
         }
     }
@@ -359,7 +359,7 @@ char BasePairValidator::donor_acceptor(char base1, char base2, const std::string
         for (int i = 0; i < 6; ++i) {
             if (base_da[inum][i] == nullptr)
                 break;
-            if (atom1.length() >= 4 && atom1.substr(0, 4) == base_da[inum][i]) {
+            if (atom1 == base_da[inum][i]) {
                 ia = base_da_type[inum][i];
                 break;
             }
@@ -370,7 +370,7 @@ char BasePairValidator::donor_acceptor(char base1, char base2, const std::string
         for (int i = 0; i < 6; ++i) {
             if (base_da[jnum][i] == nullptr)
                 break;
-            if (atom2.length() >= 4 && atom2.substr(0, 4) == base_da[jnum][i]) {
+            if (atom2 == base_da[jnum][i]) {
                 ja = base_da_type[jnum][i];
                 break;
             }
@@ -473,16 +473,17 @@ void BasePairValidator::load_atom_list(const std::string& /* x3dna_home - deprec
 
 bool BasePairValidator::is_base_atom(const std::string& atom_name) {
     // Matches legacy is_baseatom (line 4652 in cmn_fncs.c)
-    // Base atoms: C5M or atoms matching pattern " HP" where H is not H or P
-    if (atom_name == " C5M") {
+    // Base atoms: C5M or atoms matching pattern where first char is not H or P
+    // and second char is a digit
+    // Updated to work with trimmed atom names
+    if (atom_name == "C5M") {
         return true;
     }
 
-    // Pattern: space, character (not H or P), digit, space
-    // Legacy: atomname[0] == ' ' && strchr("HP", atomname[1]) == NULL
-    //         && isdigit(atomname[2]) && atomname[3] == ' '
-    if (atom_name.length() >= 4 && atom_name[0] == ' ' && atom_name[1] != 'H' && atom_name[1] != 'P' &&
-        std::isdigit(static_cast<unsigned char>(atom_name[2])) && atom_name[3] == ' ') {
+    // For trimmed names like "N1", "C2", "N9", etc.
+    // Pattern: letter (not H or P), digit, optional more chars
+    if (atom_name.length() >= 2 && atom_name[0] != 'H' && atom_name[0] != 'P' &&
+        std::isdigit(static_cast<unsigned char>(atom_name[1]))) {
         return true;
     }
 

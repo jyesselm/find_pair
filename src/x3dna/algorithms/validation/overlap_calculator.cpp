@@ -206,8 +206,8 @@ std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exo
 
     // Ring atoms: C4, N3, C2, N1, C6, C5, N7, C8, N9
     // Pyrimidines use 6 atoms, purines use 9
-    static const std::vector<std::string> RING_ATOMS_ALL = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
-                                                            " C5 ", " N7 ", " C8 ", " N9 "};
+    static const std::vector<std::string> RING_ATOMS_ALL = {"C4", "N3", "C2", "N1", "C6",
+                                                            "C5", "N7", "C8", "N9"};
 
     // Find ring atoms in residue
     std::vector<const core::Atom*> ring_atoms;

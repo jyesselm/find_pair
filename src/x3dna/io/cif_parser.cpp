@@ -155,8 +155,8 @@ core::Structure CifParser::convert_gemmi_structure(const gemmi::Structure& gemmi
                                    .b_factor(gemmi_atom.b_iso)
                                    .atom_serial(gemmi_atom.serial)
                                    .model_number(model_number)
-                                   .original_atom_name(original_atom_name)
-                                   .original_residue_name(original_residue_name);
+                                   .original_atom_name(atom_name)  // Use padded PDB format
+                                   .original_residue_name(residue_name);  // Use padded residue name
 
                 // Set element if available
                 if (gemmi_atom.element != gemmi::El::X) {

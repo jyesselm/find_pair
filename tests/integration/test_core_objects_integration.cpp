@@ -21,6 +21,7 @@
 #include <x3dna/core/base_pair.hpp>
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/io/json_writer.hpp>
+#include <x3dna/io/serializers.hpp>
 #include "integration_test_base.hpp"
 #include "test_data_discovery.hpp"
 #include <filesystem>
@@ -125,9 +126,9 @@ protected:
             const auto& atom_json = atoms_json[i];
             const auto& atom = structure_atoms[i];
 
-            // Compare atom name
+            // Compare atom name (use original name since JSON stores padded names)
             std::string expected_name = atom_json["atom_name"].get<std::string>();
-            EXPECT_EQ(atom.name(), expected_name) << "Atom name mismatch at index " << i;
+            EXPECT_EQ(atom.original_atom_name(), expected_name) << "Atom name mismatch at index " << i;
 
             // Compare coordinates
             std::vector<double> xyz = atom_json["xyz"].get<std::vector<double>>();
@@ -136,9 +137,9 @@ protected:
             EXPECT_NEAR(atom.position().y(), xyz[1], tolerance) << "Y coordinate mismatch at index " << i;
             EXPECT_NEAR(atom.position().z(), xyz[2], tolerance) << "Z coordinate mismatch at index " << i;
 
-            // Compare residue info
+            // Compare residue info (use original name since JSON stores padded names)
             std::string expected_residue = atom_json["residue_name"].get<std::string>();
-            EXPECT_EQ(atom.residue_name(), expected_residue) << "Residue name mismatch at index " << i;
+            EXPECT_EQ(atom.original_residue_name(), expected_residue) << "Residue name mismatch at index " << i;
 
             std::string chain_str = atom_json["chain_id"].get<std::string>();
             EXPECT_EQ(atom.chain_id(), chain_str) << "Chain ID mismatch at index " << i;
@@ -230,14 +231,14 @@ TEST_F(CoreObjectsIntegrationTest, StructureJsonRoundTrip) {
     Structure structure = parser.parse_file(pair.pdb_file);
 
     // Export to JSON (legacy format - returns flat structure with atoms array)
-    auto json = structure.to_json_legacy();
+    auto json = StructureSerializer::to_legacy_json(structure);
 
     // Verify JSON structure
     EXPECT_TRUE(json.contains("atoms"));
     EXPECT_TRUE(json["atoms"].is_array());
 
     // Load back from JSON
-    Structure restored = Structure::from_json_legacy(json);
+    Structure restored = StructureSerializer::from_legacy_json(json);
 
     // Verify round-trip
     EXPECT_EQ(structure.num_atoms(), restored.num_atoms()) << "Atom count mismatch after round-trip";
@@ -400,7 +401,7 @@ TEST_F(CoreObjectsIntegrationTest, LegacyJsonFormatCompatibility) {
     Structure structure = parser.parse_file(pair.pdb_file);
 
     // Export to legacy JSON format (returns flat structure, not calculations array)
-    auto our_json = structure.to_json_legacy();
+    auto our_json = StructureSerializer::to_legacy_json(structure);
 
     // Verify our JSON has correct structure
     EXPECT_TRUE(our_json.contains("atoms"));

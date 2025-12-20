@@ -87,7 +87,7 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
         for (const auto& chain : structure.chains()) {
             for (const auto& residue : chain.residues()) {
                 for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == " O2'") {
+                    if (atom.name() == "O2'") {
                         is_rna = true;
                         break;
                     }

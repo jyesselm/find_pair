@@ -62,7 +62,7 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
     auto atoms = residues[0].atoms();
     ASSERT_EQ(atoms.size(), 2);
 
-    EXPECT_EQ(atoms[0].name(), " C1'");
+    EXPECT_EQ(atoms[0].name(), "C1'");  // name() returns trimmed
     // GEMMI trims residue names
     EXPECT_EQ(atoms[0].residue_name(), "C");
     EXPECT_EQ(atoms[0].chain_id(), "A");
@@ -244,8 +244,8 @@ TEST(PdbParserTest, ErrorOnMalformedCoordinates) {
  */
 TEST(PdbParserTest, AtomNameNormalization) {
     std::string pdb_content =
-        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C  
-ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N  
+        R"(ATOM      1  C1'   C A   1       1.000   2.000   3.000  1.00 20.00           C
+ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
 )";
 
     PdbParser parser;
@@ -260,9 +260,12 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
     auto atoms = residues[0].atoms();
     ASSERT_GE(atoms.size(), 2);
 
-    // Atom names should be normalized to 4 characters
-    EXPECT_EQ(atoms[0].name().length(), 4);
-    EXPECT_EQ(atoms[1].name().length(), 4);
+    // Atom names are now trimmed; original names preserved for PDB output
+    EXPECT_EQ(atoms[0].name(), "C1'");
+    EXPECT_EQ(atoms[1].name(), "N1");
+    // Original names are preserved for round-trip
+    EXPECT_EQ(atoms[0].original_atom_name(), " C1'");
+    EXPECT_EQ(atoms[1].original_atom_name(), " N1 ");
 }
 
 /**

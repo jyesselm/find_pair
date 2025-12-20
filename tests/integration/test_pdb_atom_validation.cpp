@@ -9,6 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <x3dna/core/atom.hpp>
+#include <x3dna/io/serializers.hpp>
 #include "integration_test_base.hpp"
 #include "test_data_discovery.hpp"
 #include <filesystem>
@@ -23,6 +24,7 @@
 namespace x3dna::test {
 
 using namespace x3dna::core;
+using namespace x3dna::io;
 
 /**
  * @brief Compare atom data from PDB parsing with legacy JSON
@@ -63,7 +65,7 @@ protected:
         }
 
         for (const auto& atom_json : pdb_atoms_record["atoms"]) {
-            atoms.push_back(Atom::from_json_legacy(atom_json));
+            atoms.push_back(AtomSerializer::from_legacy_json(atom_json));
         }
 
         return atoms;
@@ -192,8 +194,8 @@ TEST_F(PdbAtomValidationTest, AtomJsonRoundTrip) {
     // Test round-trip for first 10 atoms
     size_t num_to_test = std::min(static_cast<size_t>(10), atoms.size());
     for (size_t i = 0; i < num_to_test; ++i) {
-        auto json = atoms[i].to_json_legacy();
-        Atom reconstructed = Atom::from_json_legacy(json);
+        auto json = AtomSerializer::to_legacy_json(atoms[i]);
+        Atom reconstructed = AtomSerializer::from_legacy_json(json);
 
         SCOPED_TRACE("Atom index " + std::to_string(i));
         compare_atoms(atoms[i], reconstructed, 1e-9);
@@ -362,9 +364,9 @@ TEST_F(PdbAtomValidationTest, AtomMetadata) {
 
         SCOPED_TRACE("Atom index " + std::to_string(i));
 
-        // Compare metadata
-        EXPECT_EQ(atom.name(), atom_json["atom_name"].get<std::string>());
-        EXPECT_EQ(atom.residue_name(), atom_json["residue_name"].get<std::string>());
+        // Compare metadata (use original names since JSON stores padded names)
+        EXPECT_EQ(atom.original_atom_name(), atom_json["atom_name"].get<std::string>());
+        EXPECT_EQ(atom.original_residue_name(), atom_json["residue_name"].get<std::string>());
 
         std::string chain_str = atom_json["chain_id"].get<std::string>();
         EXPECT_EQ(atom.chain_id(), chain_str);

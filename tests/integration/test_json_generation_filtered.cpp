@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/io/pdb_parser.hpp>
+#include <x3dna/io/serializers.hpp>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include "integration_test_base.hpp"
 #include "test_data_discovery.hpp"
@@ -85,9 +86,9 @@ protected:
 
             Structure structure = parser.parse_file(pair.pdb_file);
 
-            // Generate pdb_atoms record using Structure::to_json_legacy()
+            // Generate pdb_atoms record using StructureSerializer::to_legacy_json()
             // This uses the actual modernized code to generate the JSON from parsed PDB
-            nlohmann::json structure_json = structure.to_json_legacy();
+            nlohmann::json structure_json = StructureSerializer::to_legacy_json(structure);
 
             // Wrap in calculations array format (legacy JSON format)
             nlohmann::json pdb_atoms_record;

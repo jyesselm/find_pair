@@ -129,35 +129,6 @@ void JsonWriter::write_split_files(const std::filesystem::path& output_dir, bool
     }
 }
 
-void JsonWriter::load_pdb_lines() const {
-    if (pdb_lines_loaded_) {
-        return;
-    }
-
-    std::ifstream file(pdb_file_);
-    if (!file.is_open()) {
-        pdb_lines_loaded_ = true; // Mark as loaded even if failed
-        return;
-    }
-
-    std::string line;
-    while (std::getline(file, line)) {
-        pdb_lines_.push_back(line);
-    }
-
-    pdb_lines_loaded_ = true;
-}
-
-std::string JsonWriter::get_pdb_line(size_t line_number) const {
-    load_pdb_lines();
-
-    // line_number is 1-based
-    if (line_number > 0 && line_number <= pdb_lines_.size()) {
-        return pdb_lines_[line_number - 1];
-    }
-    return "";
-}
-
 void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
     nlohmann::json record;
     record["type"] = "pdb_atoms";
@@ -185,9 +156,9 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
                     atom_json["atom_idx"] = sequential_idx++;
                 }
 
-                // Core fields (match legacy exactly)
-                atom_json["atom_name"] = atom.name();
-                atom_json["residue_name"] = atom.residue_name();
+                // Core fields (match legacy exactly - use original padded names)
+                atom_json["atom_name"] = atom.original_atom_name();
+                atom_json["residue_name"] = atom.original_residue_name();
                 atom_json["chain_id"] = atom.chain_id();
                 atom_json["residue_seq"] = atom.residue_seq();
 
@@ -202,17 +173,6 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
 
                 // Record type (A for ATOM, H for HETATM)
                 atom_json["record_type"] = std::string(1, atom.record_type());
-
-                // Optional metadata (only if present)
-                if (atom.line_number() > 0) {
-                    atom_json["line_number"] = atom.line_number();
-
-                    // Add PDB line for debugging (like legacy code)
-                    std::string pdb_line = get_pdb_line(atom.line_number());
-                    if (!pdb_line.empty()) {
-                        atom_json["pdb_line"] = pdb_line;
-                    }
-                }
 
                 atoms_array.push_back(atom_json);
             }

@@ -7,12 +7,8 @@
 
 #include <string>
 #include <vector>
-#include <memory>
 #include <map>
 #include <tuple>
-#include <fstream>
-#include <filesystem>
-#include <nlohmann/json.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/structure_legacy_order.hpp>
@@ -222,139 +218,6 @@ public:
             }
         }
         return std::nullopt;
-    }
-
-    /**
-     * @brief Convert to legacy JSON format (pdb_atoms record)
-     */
-    [[nodiscard]] nlohmann::json to_json_legacy() const {
-        nlohmann::json j;
-        j["pdb_id"] = pdb_id_;
-        j["num_atoms"] = static_cast<long>(num_atoms());
-        j["num_residues"] = static_cast<long>(num_residues());
-        j["num_chains"] = static_cast<long>(num_chains());
-
-        // Collect all atoms from all chains
-        j["atoms"] = nlohmann::json::array();
-        long atom_idx = 1;
-        for (const auto& chain : chains_) {
-            for (const auto& residue : chain.residues()) {
-                for (const auto& atom : residue.atoms()) {
-                    auto atom_json = atom.to_json_legacy();
-                    atom_json["atom_idx"] = atom_idx++;
-                    j["atoms"].push_back(atom_json);
-                }
-            }
-        }
-
-        return j;
-    }
-
-    /**
-     * @brief Create Structure from legacy JSON format (pdb_atoms record)
-     */
-    [[nodiscard]] static Structure from_json_legacy(const nlohmann::json& j) {
-        std::string pdb_id = j.value("pdb_id", "");
-        Structure structure(pdb_id);
-
-        if (!j.contains("atoms") || !j["atoms"].is_array()) {
-            return structure;
-        }
-
-        // Group atoms by chain and residue
-        std::map<std::pair<std::string, int>, std::vector<Atom>> residue_atoms;
-
-        for (const auto& atom_json : j["atoms"]) {
-            Atom atom = Atom::from_json_legacy(atom_json);
-            const std::string& chain_id = atom.chain_id();
-            int residue_seq = atom.residue_seq();
-
-            std::pair<std::string, int> key = {chain_id, residue_seq};
-            residue_atoms[key].push_back(atom);
-        }
-
-        // Create chains and residues
-        std::map<std::string, Chain> chains;
-        for (const auto& [key, atoms] : residue_atoms) {
-            const std::string& chain_id = key.first;
-            int residue_seq = key.second;
-
-            if (atoms.empty()) {
-                continue;
-            }
-
-            std::string residue_name = atoms[0].residue_name();
-            Residue residue(residue_name, residue_seq, chain_id);
-
-            for (const auto& atom : atoms) {
-                residue.add_atom(atom);
-            }
-
-            if (chains.find(chain_id) == chains.end()) {
-                chains[chain_id] = Chain(chain_id);
-            }
-            chains[chain_id].add_residue(residue);
-        }
-
-        // Add chains to structure
-        for (auto& [chain_id, chain] : chains) {
-            structure.add_chain(chain);
-        }
-
-        return structure;
-    }
-
-    /**
-     * @brief Write atoms JSON to file (pdb_atoms format)
-     * @param output_dir Output directory where pdb_atoms/<pdb_id>.json will be written
-     */
-    void write_atoms_json(const std::filesystem::path& output_dir) const {
-        nlohmann::json record;
-        record["num_atoms"] = num_atoms();
-        record["atoms"] = nlohmann::json::array();
-
-        for (const auto& chain : chains_) {
-            for (const auto& residue : chain.residues()) {
-                for (const auto& atom : residue.atoms()) {
-                    record["atoms"].push_back(atom.to_json()); // Atom writes itself
-                }
-            }
-        }
-
-        // Write file
-        std::filesystem::path file = output_dir / "pdb_atoms" / (pdb_id_ + ".json");
-        std::filesystem::create_directories(file.parent_path());
-        std::ofstream out(file);
-        out << record.dump(2);
-    }
-
-    /**
-     * @brief Convert to modern JSON format
-     */
-    [[nodiscard]] nlohmann::json to_json() const {
-        nlohmann::json j;
-        j["pdb_id"] = pdb_id_;
-        j["chains"] = nlohmann::json::array();
-        for (const auto& chain : chains_) {
-            j["chains"].push_back(chain.to_json());
-        }
-        return j;
-    }
-
-    /**
-     * @brief Create Structure from modern JSON format
-     */
-    [[nodiscard]] static Structure from_json(const nlohmann::json& j) {
-        std::string pdb_id = j.value("pdb_id", "");
-        Structure structure(pdb_id);
-
-        if (j.contains("chains") && j["chains"].is_array()) {
-            for (const auto& chain_json : j["chains"]) {
-                structure.add_chain(Chain::from_json(chain_json));
-            }
-        }
-
-        return structure;
     }
 
 private:

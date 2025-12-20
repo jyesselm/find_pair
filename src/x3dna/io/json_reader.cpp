@@ -4,6 +4,7 @@
  */
 
 #include <x3dna/io/json_reader.hpp>
+#include <x3dna/io/serializers.hpp>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/base_pair.hpp>
 #include <fstream>
@@ -36,7 +37,7 @@ core::Structure JsonReader::read_structure(const std::filesystem::path& path) {
 core::Structure JsonReader::read_structure(const nlohmann::json& json) {
     // Modern format: direct Structure JSON
     if (json.contains("pdb_id") && json.contains("chains")) {
-        return core::Structure::from_json(json);
+        return StructureSerializer::from_json(json);
     }
 
     throw std::invalid_argument("JSON does not contain valid Structure data");
@@ -70,7 +71,7 @@ core::Structure JsonReader::read_structure_legacy(const nlohmann::json& json) {
         structure_json["pdb_id"] = pdb_name;
     }
 
-    return core::Structure::from_json_legacy(structure_json);
+    return StructureSerializer::from_legacy_json(structure_json);
 }
 
 std::vector<core::BasePair> JsonReader::read_base_pairs(const nlohmann::json& json) {

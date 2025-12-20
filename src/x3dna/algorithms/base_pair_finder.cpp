@@ -407,9 +407,9 @@ constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
     {{-1.289, 4.551, 0.000}}, // N9 (purine)
 }};
 
-// Legacy RA_LIST order for ring atoms
-constexpr std::array<const char*, 9> RING_ATOM_NAMES = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
-                                                        " C5 ", " N7 ", " C8 ", " N9 "};
+// Legacy RA_LIST order for ring atoms (using trimmed names)
+constexpr std::array<const char*, 9> RING_ATOM_NAMES = {"C4", "N3", "C2", "N1", "C6",
+                                                        "C5", "N7", "C8", "N9"};
 
 // Use constant from validation_constants.hpp
 using validation_constants::NT_RMSD_CUTOFF;
@@ -452,7 +452,7 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
     // Check for C1' or C1R atom (required by legacy)
     // Some nucleotides like NMN use C1R instead of C1'
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " C1'" || atom.name() == " C1R") {
+        if (atom.name() == "C1'" || atom.name() == "C1R") {
             has_c1_prime = true;
             break;
         }
@@ -480,8 +480,8 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
 
 // Additional helpers for is_nucleotide
 
-constexpr std::array<const char*, 6> COMMON_RING_ATOMS = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 "};
-constexpr std::array<const char*, 3> PURINE_RING_ATOMS = {" N7 ", " C8 ", " N9 "};
+constexpr std::array<const char*, 6> COMMON_RING_ATOMS = {"C4", "N3", "C2", "N1", "C6", "C5"};
+constexpr std::array<const char*, 3> PURINE_RING_ATOMS = {"N7", "C8", "N9"};
 
 bool is_standard_nucleotide(ResidueType type) {
     return type == ResidueType::ADENINE || type == ResidueType::CYTOSINE ||

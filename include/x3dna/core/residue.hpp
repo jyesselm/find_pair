@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <cctype>
 #include <limits>
-#include <nlohmann/json.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/core/residue_type.hpp>
@@ -159,8 +158,12 @@ public:
      * @return Optional atom if found
      */
     [[nodiscard]] std::optional<Atom> find_atom(const std::string& atom_name) const {
+        // Trim input for comparison since atom names are stored trimmed
+        std::string trimmed = atom_name;
+        trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r"));
+        trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
         for (const auto& atom : atoms_) {
-            if (atom.name() == atom_name) {
+            if (atom.name() == trimmed) {
                 return atom;
             }
         }
@@ -336,96 +339,6 @@ public:
         }
 
         return {min_idx, max_idx};
-    }
-
-    /**
-     * @brief Convert to legacy JSON format
-     * Note: Residues are typically represented as part of pdb_atoms records
-     * This creates a minimal representation for testing
-     */
-    [[nodiscard]] nlohmann::json to_json_legacy() const {
-        nlohmann::json j;
-        j["residue_name"] = name_;
-        j["residue_seq"] = seq_num_;
-        j["chain_id"] = chain_id_;
-        j["atoms"] = nlohmann::json::array();
-        for (const auto& atom : atoms_) {
-            j["atoms"].push_back(atom.to_json_legacy());
-        }
-        if (reference_frame_.has_value()) {
-            j["reference_frame"] = reference_frame_->to_json_legacy();
-        }
-        return j;
-    }
-
-    /**
-     * @brief Create Residue from legacy JSON format
-     */
-    [[nodiscard]] static Residue from_json_legacy(const nlohmann::json& j) {
-        std::string name = j.value("residue_name", "");
-        int seq_num = j.value("residue_seq", 0);
-        std::string chain_id = j.value("chain_id", "");
-
-        // Parse atoms first
-        std::vector<Atom> atoms;
-        if (j.contains("atoms") && j["atoms"].is_array()) {
-            for (const auto& atom_json : j["atoms"]) {
-                atoms.push_back(Atom::from_json_legacy(atom_json));
-            }
-        }
-
-        // Use create_from_atoms to properly initialize one_letter_code, type, etc.
-        Residue residue = create_from_atoms(name, seq_num, chain_id, "", atoms);
-
-        if (j.contains("reference_frame")) {
-            residue.set_reference_frame(ReferenceFrame::from_json_legacy(j["reference_frame"]));
-        }
-
-        return residue;
-    }
-
-    /**
-     * @brief Convert to modern JSON format
-     */
-    [[nodiscard]] nlohmann::json to_json() const {
-        nlohmann::json j;
-        j["name"] = name_;
-        j["seq_num"] = seq_num_;
-        j["chain_id"] = chain_id_;
-        j["atoms"] = nlohmann::json::array();
-        for (const auto& atom : atoms_) {
-            j["atoms"].push_back(atom.to_json());
-        }
-        if (reference_frame_.has_value()) {
-            j["reference_frame"] = reference_frame_->to_json();
-        }
-        return j;
-    }
-
-    /**
-     * @brief Create Residue from modern JSON format
-     */
-    [[nodiscard]] static Residue from_json(const nlohmann::json& j) {
-        std::string name = j.value("name", "");
-        int seq_num = j.value("seq_num", 0);
-        std::string chain_id = j.value("chain_id", "");
-
-        // Parse atoms first
-        std::vector<Atom> atoms;
-        if (j.contains("atoms") && j["atoms"].is_array()) {
-            for (const auto& atom_json : j["atoms"]) {
-                atoms.push_back(Atom::from_json(atom_json));
-            }
-        }
-
-        // Use create_from_atoms to properly initialize one_letter_code, type, etc.
-        Residue residue = create_from_atoms(name, seq_num, chain_id, "", atoms);
-
-        if (j.contains("reference_frame")) {
-            residue.set_reference_frame(ReferenceFrame::from_json(j["reference_frame"]));
-        }
-
-        return residue;
     }
 
 private:

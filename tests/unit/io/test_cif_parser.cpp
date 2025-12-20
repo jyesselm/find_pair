@@ -381,9 +381,12 @@ ATOM 2 N N1 C A 1 A 1 . . 1.100 2.100 3.100 1.00 20.00
     auto atoms = residues[0].atoms();
     ASSERT_GE(atoms.size(), 2);
 
-    // Atom names should be normalized to 4 characters
-    EXPECT_EQ(atoms[0].name().length(), 4);
-    EXPECT_EQ(atoms[1].name().length(), 4);
+    // Atom names are now trimmed; original names preserved for PDB output
+    EXPECT_EQ(atoms[0].name(), "C1'");
+    EXPECT_EQ(atoms[1].name(), "N1");
+    // Original names are preserved in PDB format for round-trip
+    EXPECT_EQ(atoms[0].original_atom_name(), " C1'");
+    EXPECT_EQ(atoms[1].original_atom_name(), " N1 ");
 }
 
 /**
@@ -426,12 +429,12 @@ ATOM 3 O OP2 G A 1 A 1 . . 1.200 2.200 3.200 1.00 20.00
     auto atoms = residues[0].atoms();
     ASSERT_EQ(atoms.size(), 3);
 
-    // P should become " P  "
-    EXPECT_EQ(atoms[0].name(), " P  ");
-    // OP1 should become O1P (in 4-char format: " O1P")
-    EXPECT_EQ(atoms[1].name(), " O1P");
-    // OP2 should become O2P (in 4-char format: " O2P")
-    EXPECT_EQ(atoms[2].name(), " O2P");
+    // P (trimmed name)
+    EXPECT_EQ(atoms[0].name(), "P");  // name() returns trimmed
+    // OP1 becomes O1P (trimmed)
+    EXPECT_EQ(atoms[1].name(), "O1P");
+    // OP2 becomes O2P (trimmed)
+    EXPECT_EQ(atoms[2].name(), "O2P");
 }
 
 /**

@@ -79,8 +79,12 @@ std::vector<std::string> RingAtomMatcher::get_ring_atom_names(core::ResidueType 
 
 std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Residue& residue,
                                                              const std::string& atom_name) {
+    // Trim input for comparison since atom names are stored trimmed
+    std::string trimmed = atom_name;
+    trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r"));
+    trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == atom_name) {
+        if (atom.name() == trimmed) {
             return atom;
         }
     }

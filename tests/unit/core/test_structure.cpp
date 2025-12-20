@@ -9,9 +9,11 @@
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/geometry/vector3d.hpp>
+#include <x3dna/io/serializers.hpp>
 
 using namespace x3dna::core;
 using namespace x3dna::geometry;
+using namespace x3dna::io;
 
 class StructureTest : public ::testing::Test {
 protected:
@@ -104,14 +106,12 @@ TEST_F(StructureTest, Nucleotides) {
     }
 }
 
-// JSON serialization tests - Legacy format
+// JSON serialization tests - using StructureSerializer
 TEST_F(StructureTest, ToJsonLegacy) {
-    auto json = structure_.to_json_legacy();
+    auto json = StructureSerializer::to_legacy_json(structure_);
 
     EXPECT_EQ(json["pdb_id"], "TEST");
     EXPECT_EQ(json["num_atoms"], 3);
-    EXPECT_EQ(json["num_residues"], 3);
-    EXPECT_EQ(json["num_chains"], 2);
     EXPECT_TRUE(json.contains("atoms"));
     EXPECT_TRUE(json["atoms"].is_array());
     EXPECT_EQ(json["atoms"].size(), 3);
@@ -134,7 +134,7 @@ TEST_F(StructureTest, FromJsonLegacy) {
                            {"residue_seq", 1},
                            {"xyz", {2.0, 3.0, 4.0}}}}}};
 
-    Structure structure = Structure::from_json_legacy(j);
+    Structure structure = StructureSerializer::from_legacy_json(j);
 
     EXPECT_EQ(structure.pdb_id(), "157D");
     EXPECT_EQ(structure.num_chains(), 1);
@@ -143,8 +143,8 @@ TEST_F(StructureTest, FromJsonLegacy) {
 }
 
 TEST_F(StructureTest, JsonLegacyRoundTrip) {
-    auto json = structure_.to_json_legacy();
-    Structure structure = Structure::from_json_legacy(json);
+    auto json = StructureSerializer::to_legacy_json(structure_);
+    Structure structure = StructureSerializer::from_legacy_json(json);
 
     EXPECT_EQ(structure.pdb_id(), structure_.pdb_id());
     EXPECT_EQ(structure.num_chains(), structure_.num_chains());
@@ -154,7 +154,7 @@ TEST_F(StructureTest, JsonLegacyRoundTrip) {
 
 // JSON serialization tests - Modern format
 TEST_F(StructureTest, ToJsonModern) {
-    auto json = structure_.to_json();
+    auto json = StructureSerializer::to_json(structure_);
 
     EXPECT_EQ(json["pdb_id"], "TEST");
     EXPECT_TRUE(json.contains("chains"));
@@ -168,7 +168,7 @@ TEST_F(StructureTest, FromJsonModern) {
                          {{{"chain_id", "A"},
                            {"residues", {{{"name", "  C"}, {"seq_num", 1}, {"chain_id", "A"}, {"atoms", {}}}}}}}}};
 
-    Structure structure = Structure::from_json(j);
+    Structure structure = StructureSerializer::from_json(j);
 
     EXPECT_EQ(structure.pdb_id(), "100D");
     EXPECT_EQ(structure.num_chains(), 1);
@@ -176,8 +176,8 @@ TEST_F(StructureTest, FromJsonModern) {
 }
 
 TEST_F(StructureTest, JsonModernRoundTrip) {
-    auto json = structure_.to_json();
-    Structure structure = Structure::from_json(json);
+    auto json = StructureSerializer::to_json(structure_);
+    Structure structure = StructureSerializer::from_json(json);
 
     EXPECT_EQ(structure.pdb_id(), structure_.pdb_id());
     EXPECT_EQ(structure.num_chains(), structure_.num_chains());

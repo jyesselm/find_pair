@@ -7,7 +7,6 @@
 
 #include <string>
 #include <vector>
-#include <nlohmann/json.hpp>
 #include <x3dna/core/residue.hpp>
 
 namespace x3dna {
@@ -134,67 +133,6 @@ public:
             }
         }
         return std::nullopt;
-    }
-
-    /**
-     * @brief Convert to legacy JSON format
-     */
-    [[nodiscard]] nlohmann::json to_json_legacy() const {
-        nlohmann::json j;
-        j["chain_id"] = chain_id_;
-        j["num_residues"] = static_cast<long>(residues_.size());
-        j["residues"] = nlohmann::json::array();
-        for (const auto& residue : residues_) {
-            j["residues"].push_back(residue.to_json_legacy());
-        }
-        return j;
-    }
-
-    /**
-     * @brief Create Chain from legacy JSON format
-     */
-    [[nodiscard]] static Chain from_json_legacy(const nlohmann::json& j) {
-        std::string chain_id = j.value("chain_id", "");
-
-        Chain chain(chain_id);
-
-        if (j.contains("residues") && j["residues"].is_array()) {
-            for (const auto& residue_json : j["residues"]) {
-                chain.add_residue(Residue::from_json_legacy(residue_json));
-            }
-        }
-
-        return chain;
-    }
-
-    /**
-     * @brief Convert to modern JSON format
-     */
-    [[nodiscard]] nlohmann::json to_json() const {
-        nlohmann::json j;
-        j["chain_id"] = chain_id_;
-        j["residues"] = nlohmann::json::array();
-        for (const auto& residue : residues_) {
-            j["residues"].push_back(residue.to_json());
-        }
-        return j;
-    }
-
-    /**
-     * @brief Create Chain from modern JSON format
-     */
-    [[nodiscard]] static Chain from_json(const nlohmann::json& j) {
-        std::string chain_id = j.value("chain_id", "");
-
-        Chain chain(chain_id);
-
-        if (j.contains("residues") && j["residues"].is_array()) {
-            for (const auto& residue_json : j["residues"]) {
-                chain.add_residue(Residue::from_json(residue_json));
-            }
-        }
-
-        return chain;
     }
 
 private:

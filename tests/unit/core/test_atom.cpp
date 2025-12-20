@@ -6,14 +6,16 @@
 #include <gtest/gtest.h>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/geometry/vector3d.hpp>
+#include <x3dna/io/serializers.hpp>
 
 using namespace x3dna::core;
 using namespace x3dna::geometry;
+using namespace x3dna::io;
 
 class AtomTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        // Create test atoms
+        // Create test atoms - names are now trimmed internally
         atom1_ = Atom(" C1'", Vector3D(1.0, 2.0, 3.0), "  C", "A", 1);
         atom2_ = Atom(" N3 ", Vector3D(4.0, 5.0, 6.0), "  G", "A", 2);
         atom3_ = Atom(" O2 ", Vector3D(0.0, 0.0, 0.0));
@@ -37,14 +39,19 @@ TEST_F(AtomTest, DefaultConstructor) {
 
 TEST_F(AtomTest, NamePositionConstructor) {
     Atom atom(" C1'", Vector3D(1.0, 2.0, 3.0));
-    EXPECT_EQ(atom.name(), " C1'");
+    // Names are now trimmed
+    EXPECT_EQ(atom.name(), "C1'");
+    EXPECT_EQ(atom.original_atom_name(), " C1'");
     EXPECT_EQ(atom.position(), Vector3D(1.0, 2.0, 3.0));
 }
 
 TEST_F(AtomTest, FullConstructor) {
-    EXPECT_EQ(atom1_.name(), " C1'");
+    // Names are now trimmed, original names preserved
+    EXPECT_EQ(atom1_.name(), "C1'");
+    EXPECT_EQ(atom1_.original_atom_name(), " C1'");
     EXPECT_EQ(atom1_.position(), Vector3D(1.0, 2.0, 3.0));
-    EXPECT_EQ(atom1_.residue_name(), "  C");
+    EXPECT_EQ(atom1_.residue_name(), "C");
+    EXPECT_EQ(atom1_.original_residue_name(), "  C");
     EXPECT_EQ(atom1_.chain_id(), "A");
     EXPECT_EQ(atom1_.residue_seq(), 1);
     EXPECT_EQ(atom1_.record_type(), 'A');
@@ -59,9 +66,11 @@ TEST_F(AtomTest, BuilderBasic) {
                     .record_type('H')
                     .build();
 
-    EXPECT_EQ(atom.name(), " N1 ");
+    // Names are trimmed
+    EXPECT_EQ(atom.name(), "N1");
+    EXPECT_EQ(atom.original_atom_name(), " N1 ");
     EXPECT_EQ(atom.position(), Vector3D(5.0, 6.0, 7.0));
-    EXPECT_EQ(atom.residue_name(), "  A");
+    EXPECT_EQ(atom.residue_name(), "A");
     EXPECT_EQ(atom.chain_id(), "B");
     EXPECT_EQ(atom.residue_seq(), 10);
     EXPECT_EQ(atom.record_type(), 'H');
@@ -78,7 +87,6 @@ TEST_F(AtomTest, BuilderAllFields) {
                     .occupancy(0.75)
                     .atom_serial(100)
                     .model_number(1)
-                    .line_number(500)
                     .b_factor(25.5)
                     .element("C")
                     .original_atom_name(" CA ")
@@ -87,7 +95,7 @@ TEST_F(AtomTest, BuilderAllFields) {
                     .legacy_residue_idx(10)
                     .build();
 
-    EXPECT_EQ(atom.name(), " CA ");
+    EXPECT_EQ(atom.name(), "CA");
     EXPECT_EQ(atom.residue_name(), "ALA");
     EXPECT_EQ(atom.chain_id(), "A");
     EXPECT_EQ(atom.residue_seq(), 42);
@@ -96,7 +104,6 @@ TEST_F(AtomTest, BuilderAllFields) {
     EXPECT_NEAR(atom.occupancy(), 0.75, 1e-9);
     EXPECT_EQ(atom.atom_serial(), 100);
     EXPECT_EQ(atom.model_number(), 1);
-    EXPECT_EQ(atom.line_number(), 500u);
     EXPECT_NEAR(atom.b_factor(), 25.5, 1e-9);
     EXPECT_EQ(atom.element(), "C");
     EXPECT_EQ(atom.legacy_atom_idx(), 50);
@@ -130,7 +137,7 @@ TEST_F(AtomTest, DistanceToSelf) {
     EXPECT_NEAR(dist, 0.0, 1e-9);
 }
 
-// Ring atom tests
+// Ring atom tests - names are now trimmed
 TEST_F(AtomTest, IsRingAtom) {
     EXPECT_TRUE(Atom(" N1 ", Vector3D(0, 0, 0)).is_ring_atom());
     EXPECT_TRUE(Atom(" C2 ", Vector3D(0, 0, 0)).is_ring_atom());
@@ -172,10 +179,11 @@ TEST_F(AtomTest, IsHydrogenBondAcceptor) {
     EXPECT_FALSE(Atom(" C1'", Vector3D(0, 0, 0)).is_hydrogen_bond_acceptor());
 }
 
-// JSON serialization tests - Legacy format
+// JSON serialization tests - using AtomSerializer
 TEST_F(AtomTest, ToJsonLegacy) {
-    auto json = atom1_.to_json_legacy();
+    auto json = AtomSerializer::to_legacy_json(atom1_);
 
+    // Original name is preserved in JSON output
     EXPECT_EQ(json["atom_name"], " C1'");
     std::vector<double> expected_xyz = {1.0, 2.0, 3.0};
     EXPECT_EQ(json["xyz"], expected_xyz);
@@ -189,20 +197,22 @@ TEST_F(AtomTest, FromJsonLegacy) {
     nlohmann::json j = {{"atom_name", " N3 "}, {"xyz", {4.0, 5.0, 6.0}}, {"residue_name", "  G"},
                         {"chain_id", "B"},     {"residue_seq", 2},       {"record_type", "A"}};
 
-    Atom atom = Atom::from_json_legacy(j);
+    Atom atom = AtomSerializer::from_legacy_json(j);
 
-    EXPECT_EQ(atom.name(), " N3 ");
+    // Names are trimmed on construction
+    EXPECT_EQ(atom.name(), "N3");
     EXPECT_EQ(atom.position(), Vector3D(4.0, 5.0, 6.0));
-    EXPECT_EQ(atom.residue_name(), "  G");
+    EXPECT_EQ(atom.residue_name(), "G");
     EXPECT_EQ(atom.chain_id(), "B");
     EXPECT_EQ(atom.residue_seq(), 2);
     EXPECT_EQ(atom.record_type(), 'A');
 }
 
 TEST_F(AtomTest, JsonLegacyRoundTrip) {
-    auto json = atom1_.to_json_legacy();
-    Atom atom = Atom::from_json_legacy(json);
+    auto json = AtomSerializer::to_legacy_json(atom1_);
+    Atom atom = AtomSerializer::from_legacy_json(json);
 
+    // Names are trimmed, so compare trimmed versions
     EXPECT_EQ(atom.name(), atom1_.name());
     EXPECT_EQ(atom.position(), atom1_.position());
     EXPECT_EQ(atom.residue_name(), atom1_.residue_name());
@@ -211,11 +221,11 @@ TEST_F(AtomTest, JsonLegacyRoundTrip) {
     EXPECT_EQ(atom.record_type(), atom1_.record_type());
 }
 
-// JSON serialization tests - Standard format (to_json uses legacy keys for compatibility)
+// JSON serialization tests - Modern format
 TEST_F(AtomTest, ToJsonModern) {
-    auto json = atom1_.to_json();
+    auto json = AtomSerializer::to_json(atom1_);
 
-    // to_json() uses legacy keys for compatibility with JSON validation
+    // to_json() uses original names for JSON output
     EXPECT_EQ(json["atom_name"], " C1'");
     std::vector<double> expected_xyz = {1.0, 2.0, 3.0};
     EXPECT_EQ(json["xyz"], expected_xyz);
@@ -226,23 +236,22 @@ TEST_F(AtomTest, ToJsonModern) {
 }
 
 TEST_F(AtomTest, FromJsonModern) {
-    // from_json() expects legacy keys to match to_json() output
     nlohmann::json j = {{"atom_name", " N3 "}, {"xyz", {4.0, 5.0, 6.0}}, {"residue_name", "  G"}, {"chain_id", "B"},
                         {"residue_seq", 2}, {"record_type", "A"}};
 
-    Atom atom = Atom::from_json(j);
+    Atom atom = AtomSerializer::from_json(j);
 
-    EXPECT_EQ(atom.name(), " N3 ");
+    EXPECT_EQ(atom.name(), "N3");
     EXPECT_EQ(atom.position(), Vector3D(4.0, 5.0, 6.0));
-    EXPECT_EQ(atom.residue_name(), "  G");
+    EXPECT_EQ(atom.residue_name(), "G");
     EXPECT_EQ(atom.chain_id(), "B");
     EXPECT_EQ(atom.residue_seq(), 2);
     EXPECT_EQ(atom.record_type(), 'A');
 }
 
 TEST_F(AtomTest, JsonModernRoundTrip) {
-    auto json = atom1_.to_json();
-    Atom atom = Atom::from_json(json);
+    auto json = AtomSerializer::to_json(atom1_);
+    Atom atom = AtomSerializer::from_json(json);
 
     EXPECT_EQ(atom.name(), atom1_.name());
     EXPECT_EQ(atom.position(), atom1_.position());
@@ -256,8 +265,8 @@ TEST_F(AtomTest, JsonModernRoundTrip) {
 TEST_F(AtomTest, MinimalJsonLegacy) {
     nlohmann::json j = {{"atom_name", " C1'"}, {"xyz", {1.0, 2.0, 3.0}}};
 
-    Atom atom = Atom::from_json_legacy(j);
-    EXPECT_EQ(atom.name(), " C1'");
+    Atom atom = AtomSerializer::from_legacy_json(j);
+    EXPECT_EQ(atom.name(), "C1'");
     EXPECT_EQ(atom.position(), Vector3D(1.0, 2.0, 3.0));
     EXPECT_EQ(atom.residue_name(), "");
     EXPECT_EQ(atom.chain_id(), "");
@@ -266,7 +275,19 @@ TEST_F(AtomTest, MinimalJsonLegacy) {
 
 TEST_F(AtomTest, AtomNameWithSpaces) {
     Atom atom("  P  ", Vector3D(0, 0, 0));
-    EXPECT_EQ(atom.name(), "  P  ");
-    // Ring atom check should handle spaces
+    // Name is trimmed
+    EXPECT_EQ(atom.name(), "P");
+    EXPECT_EQ(atom.original_atom_name(), "  P  ");
+    // Ring atom check uses trimmed name
     EXPECT_FALSE(atom.is_ring_atom());
+}
+
+// Test that trimmed names work for comparisons
+TEST_F(AtomTest, TrimmedNameComparisons) {
+    Atom atom1(" N1 ", Vector3D(0, 0, 0));
+    Atom atom2("N1", Vector3D(0, 0, 0));
+
+    // Both should have the same trimmed name
+    EXPECT_EQ(atom1.name(), atom2.name());
+    EXPECT_EQ(atom1.name(), "N1");
 }

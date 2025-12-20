@@ -8,9 +8,11 @@
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/geometry/vector3d.hpp>
+#include <x3dna/io/serializers.hpp>
 
 using namespace x3dna::core;
 using namespace x3dna::geometry;
+using namespace x3dna::io;
 
 class ChainTest : public ::testing::Test {
 protected:
@@ -122,9 +124,9 @@ TEST_F(ChainTest, NucleotidesWithMixed) {
     EXPECT_EQ(nts.size(), 2); // Only C and G
 }
 
-// JSON serialization tests - Legacy format
+// JSON serialization tests - using ChainSerializer
 TEST_F(ChainTest, ToJsonLegacy) {
-    auto json = chain_a_.to_json_legacy();
+    auto json = ChainSerializer::to_legacy_json(chain_a_);
 
     EXPECT_EQ(json["chain_id"], "A");
     EXPECT_EQ(json["num_residues"], 3);
@@ -140,15 +142,15 @@ TEST_F(ChainTest, FromJsonLegacy) {
                          {{{"residue_name", "  C"}, {"residue_seq", 1}, {"chain_id", "B"}, {"atoms", {}}},
                           {{"residue_name", "  G"}, {"residue_seq", 2}, {"chain_id", "B"}, {"atoms", {}}}}}};
 
-    Chain chain = Chain::from_json_legacy(j);
+    Chain chain = ChainSerializer::from_legacy_json(j);
 
     EXPECT_EQ(chain.chain_id(), "B");
     EXPECT_EQ(chain.num_residues(), 2);
 }
 
 TEST_F(ChainTest, JsonLegacyRoundTrip) {
-    auto json = chain_a_.to_json_legacy();
-    Chain chain = Chain::from_json_legacy(json);
+    auto json = ChainSerializer::to_legacy_json(chain_a_);
+    Chain chain = ChainSerializer::from_legacy_json(json);
 
     EXPECT_EQ(chain.chain_id(), chain_a_.chain_id());
     EXPECT_EQ(chain.num_residues(), chain_a_.num_residues());
@@ -157,7 +159,7 @@ TEST_F(ChainTest, JsonLegacyRoundTrip) {
 
 // JSON serialization tests - Modern format
 TEST_F(ChainTest, ToJsonModern) {
-    auto json = chain_a_.to_json();
+    auto json = ChainSerializer::to_json(chain_a_);
 
     EXPECT_EQ(json["chain_id"], "A");
     EXPECT_TRUE(json.contains("residues"));
@@ -168,15 +170,15 @@ TEST_F(ChainTest, FromJsonModern) {
     nlohmann::json j = {{"chain_id", "C"},
                         {"residues", {{{"name", "  A"}, {"seq_num", 1}, {"chain_id", "C"}, {"atoms", {}}}}}};
 
-    Chain chain = Chain::from_json(j);
+    Chain chain = ChainSerializer::from_json(j);
 
     EXPECT_EQ(chain.chain_id(), "C");
     EXPECT_EQ(chain.num_residues(), 1);
 }
 
 TEST_F(ChainTest, JsonModernRoundTrip) {
-    auto json = chain_a_.to_json();
-    Chain chain = Chain::from_json(json);
+    auto json = ChainSerializer::to_json(chain_a_);
+    Chain chain = ChainSerializer::from_json(json);
 
     EXPECT_EQ(chain.chain_id(), chain_a_.chain_id());
     EXPECT_EQ(chain.num_residues(), chain_a_.num_residues());

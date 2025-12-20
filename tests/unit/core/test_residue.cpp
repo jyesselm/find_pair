@@ -9,9 +9,11 @@
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
+#include <x3dna/io/serializers.hpp>
 
 using namespace x3dna::core;
 using namespace x3dna::geometry;
+using namespace x3dna::io;
 
 class ResidueTest : public ::testing::Test {
 protected:
@@ -63,9 +65,10 @@ TEST_F(ResidueTest, AddAtom) {
 }
 
 TEST_F(ResidueTest, FindAtom) {
+    // find_atom() accepts both padded and trimmed names
     auto atom = residue_c_.find_atom(" N1 ");
     ASSERT_TRUE(atom.has_value());
-    EXPECT_EQ(atom->name(), " N1 ");
+    EXPECT_EQ(atom->name(), "N1");  // name() returns trimmed
     EXPECT_EQ(atom->position(), Vector3D(2.0, 3.0, 4.0));
 }
 
@@ -136,9 +139,9 @@ TEST_F(ResidueTest, ReferenceFrame) {
     EXPECT_EQ(retrieved_frame.origin(), origin);
 }
 
-// JSON serialization tests - Legacy format
+// JSON serialization tests - using ResidueSerializer
 TEST_F(ResidueTest, ToJsonLegacy) {
-    auto json = residue_c_.to_json_legacy();
+    auto json = ResidueSerializer::to_legacy_json(residue_c_);
 
     EXPECT_EQ(json["residue_name"], "  C");
     EXPECT_EQ(json["residue_seq"], 1);
@@ -156,7 +159,7 @@ TEST_F(ResidueTest, FromJsonLegacy) {
                          {{{"atom_name", " C1'"}, {"xyz", {1.0, 2.0, 3.0}}},
                           {{"atom_name", " N9 "}, {"xyz", {2.0, 3.0, 4.0}}}}}};
 
-    Residue residue = Residue::from_json_legacy(j);
+    Residue residue = ResidueSerializer::from_legacy_json(j);
 
     EXPECT_EQ(residue.name(), "  G");
     EXPECT_EQ(residue.seq_num(), 2);
@@ -165,8 +168,8 @@ TEST_F(ResidueTest, FromJsonLegacy) {
 }
 
 TEST_F(ResidueTest, JsonLegacyRoundTrip) {
-    auto json = residue_c_.to_json_legacy();
-    Residue residue = Residue::from_json_legacy(json);
+    auto json = ResidueSerializer::to_legacy_json(residue_c_);
+    Residue residue = ResidueSerializer::from_legacy_json(json);
 
     EXPECT_EQ(residue.name(), residue_c_.name());
     EXPECT_EQ(residue.seq_num(), residue_c_.seq_num());
@@ -176,7 +179,7 @@ TEST_F(ResidueTest, JsonLegacyRoundTrip) {
 
 // JSON serialization tests - Modern format
 TEST_F(ResidueTest, ToJsonModern) {
-    auto json = residue_c_.to_json();
+    auto json = ResidueSerializer::to_json(residue_c_);
 
     EXPECT_EQ(json["name"], "  C");
     EXPECT_EQ(json["seq_num"], 1);
@@ -194,7 +197,7 @@ TEST_F(ResidueTest, FromJsonModern) {
                          {{{"atom_name", " C1'"}, {"xyz", {1.0, 2.0, 3.0}}},
                           {{"atom_name", " N9 "}, {"xyz", {2.0, 3.0, 4.0}}}}}};
 
-    Residue residue = Residue::from_json(j);
+    Residue residue = ResidueSerializer::from_json(j);
 
     EXPECT_EQ(residue.name(), "  A");
     EXPECT_EQ(residue.seq_num(), 3);
@@ -203,8 +206,8 @@ TEST_F(ResidueTest, FromJsonModern) {
 }
 
 TEST_F(ResidueTest, JsonModernRoundTrip) {
-    auto json = residue_c_.to_json();
-    Residue residue = Residue::from_json(json);
+    auto json = ResidueSerializer::to_json(residue_c_);
+    Residue residue = ResidueSerializer::from_json(json);
 
     EXPECT_EQ(residue.name(), residue_c_.name());
     EXPECT_EQ(residue.seq_num(), residue_c_.seq_num());
@@ -230,10 +233,10 @@ TEST_F(ResidueTest, ResidueWithReferenceFrame) {
 
     residue.set_reference_frame(frame);
 
-    auto json = residue.to_json_legacy();
+    auto json = ResidueSerializer::to_legacy_json(residue);
     EXPECT_TRUE(json.contains("reference_frame"));
 
-    Residue reconstructed = Residue::from_json_legacy(json);
+    Residue reconstructed = ResidueSerializer::from_legacy_json(json);
     ASSERT_TRUE(reconstructed.reference_frame().has_value());
     EXPECT_EQ(reconstructed.reference_frame()->origin(), origin);
 }

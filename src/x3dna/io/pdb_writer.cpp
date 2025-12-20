@@ -58,8 +58,9 @@ std::string PdbWriter::format_atom_line(const core::Atom& atom, int atom_serial)
     line << std::left << std::setw(6) << record_type;
     line << std::right << std::setw(5) << atom_serial;
     line << " ";
-    line << std::left << std::setw(4) << atom.name();
-    line << std::left << std::setw(3) << atom.residue_name();
+    // Use original padded names for proper PDB format
+    line << std::left << std::setw(4) << atom.original_atom_name();
+    line << std::left << std::setw(3) << atom.original_residue_name();
     line << " ";
     line << atom.chain_id();
     line << std::right << std::setw(4) << atom.residue_seq();

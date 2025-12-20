@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/io/pdb_parser.hpp> // Stage 3 - PDB parser
+#include <x3dna/io/serializers.hpp>
 // TODO: Add these includes as algorithms are implemented:
 // #include <x3dna/algorithms/base_frame_calculator.hpp>  // Stage 4
 // #include <x3dna/algorithms/base_pair_finder.hpp>  // Stage 5
@@ -91,7 +92,7 @@ protected:
                 auto pdb_atoms_records = find_records_by_type(legacy_json, "pdb_atoms");
                 if (!pdb_atoms_records.empty()) {
                     const auto& legacy_atoms = pdb_atoms_records[0];
-                    Structure legacy_structure = Structure::from_json_legacy(legacy_atoms);
+                    Structure legacy_structure = StructureSerializer::from_legacy_json(legacy_atoms);
 
                     // Compare atom counts (basic validation)
                     if (structure.num_atoms() != legacy_structure.num_atoms()) {
@@ -105,9 +106,9 @@ protected:
                 // We're using the parsed structure, not the legacy one
             }
 
-            // Generate pdb_atoms record using Structure::to_json_legacy()
+            // Generate pdb_atoms record using StructureSerializer::to_legacy_json()
             // This uses the actual modernized code to generate the JSON from parsed PDB
-            nlohmann::json structure_json = structure.to_json_legacy();
+            nlohmann::json structure_json = StructureSerializer::to_legacy_json(structure);
 
             // Wrap in calculations array format (legacy JSON format)
             nlohmann::json pdb_atoms_record;

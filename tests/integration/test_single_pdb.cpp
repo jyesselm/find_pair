@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <nlohmann/json.hpp>
 #include <x3dna/io/pdb_parser.hpp>
+#include <x3dna/io/serializers.hpp>
 #include <x3dna/core/structure.hpp>
 
 namespace fs = std::filesystem;
@@ -153,7 +154,7 @@ int main(int argc, char* argv[]) {
     metadata["version"] = "X3DNA Modernized C++ Library";
     gen_json["metadata"] = metadata;
 
-    nlohmann::json structure_json = structure.to_json_legacy();
+    nlohmann::json structure_json = x3dna::io::StructureSerializer::to_legacy_json(structure);
     nlohmann::json pdb_atoms_record;
     pdb_atoms_record["type"] = "pdb_atoms";
     pdb_atoms_record["num_atoms"] = structure_json["num_atoms"];

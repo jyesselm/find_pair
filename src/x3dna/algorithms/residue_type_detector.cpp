@@ -28,9 +28,9 @@ constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
     {{-1.289, 4.551, 0.000}}, // N9 (purine)
 }};
 
-// Legacy RA_LIST order for ring atoms
-constexpr std::array<const char*, 9> RING_ATOM_NAMES = {" C4 ", " N3 ", " C2 ", " N1 ", " C6 ",
-                                                        " C5 ", " N7 ", " C8 ", " N9 "};
+// Legacy RA_LIST order for ring atoms (trimmed for modern comparison)
+constexpr std::array<const char*, 9> RING_ATOM_NAMES = {"C4", "N3", "C2", "N1", "C6",
+                                                        "C5", "N7", "C8", "N9"};
 
 } // namespace
 
@@ -53,8 +53,8 @@ RmsdCheckResult ResidueTypeDetector::check_by_rmsd(const core::Residue& residue)
                                                              STANDARD_RING_GEOMETRY[i][2]));
 
                 // Count purine atoms (N7, C8, N9)
-                if (atom_name == std::string(" N7 ") || atom_name == std::string(" C8 ") ||
-                    atom_name == std::string(" N9 ")) {
+                if (atom_name == std::string("N7") || atom_name == std::string("C8") ||
+                    atom_name == std::string("N9")) {
                     purine_atom_count++;
                 }
 
@@ -66,7 +66,7 @@ RmsdCheckResult ResidueTypeDetector::check_by_rmsd(const core::Residue& residue)
     // Check for C1' or C1R (sugar atom)
     // Some nucleotides like NMN use C1R instead of C1'
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " C1'" || atom.name() == " C1R") {
+        if (atom.name() == "C1'" || atom.name() == "C1R") {
             has_c1_prime = true;
             break;
         }

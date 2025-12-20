@@ -16,6 +16,7 @@
 #include <x3dna/io/pdb_writer.hpp>
 #include <x3dna/io/json_reader.hpp>
 #include <x3dna/io/json_writer.hpp>
+#include <x3dna/io/serializers.hpp>
 #include "integration_test_base.hpp"
 #include "test_data_discovery.hpp"
 #include <filesystem>
@@ -138,11 +139,11 @@ TEST_F(IOIntegrationTest, PdbJsonRoundTrip) {
 
     EXPECT_GT(original.num_atoms(), 0) << "Original structure has no atoms";
 
-    // Export to JSON (using Structure's to_json_legacy)
-    auto json = original.to_json_legacy();
+    // Export to JSON (using StructureSerializer)
+    auto json = StructureSerializer::to_legacy_json(original);
 
     // Load back from JSON
-    Structure restored = Structure::from_json_legacy(json);
+    Structure restored = StructureSerializer::from_legacy_json(json);
 
     // Compare structures
     compare_structures(original, restored, 1e-6);
@@ -355,16 +356,16 @@ TEST_F(IOIntegrationTest, DataIntegrityRoundTrips) {
     size_t original_chain_count = original.num_chains();
 
     // Round-trip 1: PDB → JSON → Structure
-    auto json = original.to_json_legacy();
-    Structure from_json = Structure::from_json_legacy(json);
+    auto json = StructureSerializer::to_legacy_json(original);
+    Structure from_json = StructureSerializer::from_legacy_json(json);
 
     EXPECT_EQ(from_json.num_atoms(), original_atom_count);
     EXPECT_EQ(from_json.num_residues(), original_residue_count);
     EXPECT_EQ(from_json.num_chains(), original_chain_count);
 
     // Round-trip 2: Structure → JSON → Structure
-    auto json2 = from_json.to_json_legacy();
-    Structure from_json2 = Structure::from_json_legacy(json2);
+    auto json2 = StructureSerializer::to_legacy_json(from_json);
+    Structure from_json2 = StructureSerializer::from_legacy_json(json2);
 
     EXPECT_EQ(from_json2.num_atoms(), original_atom_count);
     EXPECT_EQ(from_json2.num_residues(), original_residue_count);

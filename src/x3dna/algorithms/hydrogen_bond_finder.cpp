@@ -47,7 +47,7 @@ void HydrogenBondFinder::count_simple(const core::Residue& res1, const core::Res
             bool atom1_is_base = hydrogen_bond::is_base_atom(a1.name());
             bool atom2_is_base = hydrogen_bond::is_base_atom(a2.name());
             bool both_base = atom1_is_base && atom2_is_base;
-            bool not_o2prime = (a1.name() != " O2'" && a2.name() != " O2'");
+            bool not_o2prime = (a1.name() != "O2'" && a2.name() != "O2'");
 
             if (both_base && not_o2prime) {
                 if (hydrogen_bond::good_hb_atoms(a1.name(), a2.name(), hb_atoms)) {
@@ -55,8 +55,8 @@ void HydrogenBondFinder::count_simple(const core::Residue& res1, const core::Res
                 }
             }
 
-            // Check if either atom is O2'
-            if (a1.name() == " O2'" || a2.name() == " O2'") {
+            // Check if either atom is O2' (using trimmed name)
+            if (a1.name() == "O2'" || a2.name() == "O2'") {
                 num_o2_hb++;
             }
         }
@@ -351,25 +351,25 @@ bool has_atom(const core::Residue& residue, const char* name) {
 
 // Determine purine type (A or G) from atoms
 char determine_purine_type(const core::Residue& residue) {
-    const bool has_o6 = has_atom(residue, " O6 ");
-    const bool has_n6 = has_atom(residue, " N6 ");
+    const bool has_o6 = has_atom(residue, "O6");
+    const bool has_n6 = has_atom(residue, "N6");
     return (has_o6 || !has_n6) ? 'G' : 'A';
 }
 
 // Determine pyrimidine type (C, T, or U) from atoms
 char determine_pyrimidine_type(const core::Residue& residue) {
-    if (has_atom(residue, " N4 "))
+    if (has_atom(residue, "N4"))
         return 'C';
-    if (has_atom(residue, " C5M") || has_atom(residue, " C7 "))
+    if (has_atom(residue, "C5M") || has_atom(residue, "C7"))
         return 'T';
     return 'U';
 }
 
 // Determine base type from atoms for unknown residues
 char determine_base_type_from_atoms(const core::Residue& residue) {
-    const bool has_n9 = has_atom(residue, " N9 ");
-    const bool has_n1 = has_atom(residue, " N1 ");
-    const bool has_c6 = has_atom(residue, " C6 ");
+    const bool has_n9 = has_atom(residue, "N9");
+    const bool has_n1 = has_atom(residue, "N1");
+    const bool has_c6 = has_atom(residue, "C6");
 
     const bool is_purine = has_n9 || (has_n1 && has_c6);
     const bool is_pyrimidine = has_n1 && !has_c6;

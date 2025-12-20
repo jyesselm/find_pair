@@ -312,10 +312,6 @@ private:
     // Split file storage: map from calculation type to array of records
     std::map<std::string, nlohmann::json> split_records_;
 
-    // PDB line cache for fast lookup
-    mutable std::vector<std::string> pdb_lines_;
-    mutable bool pdb_lines_loaded_ = false;
-
     // Index counters for tracking basepairs and hbonds
     // Legacy uses 1-based bp_idx, so start at 1
     size_t basepair_idx_counter_ = 1;
@@ -337,18 +333,6 @@ private:
      * @param record Record to add
      */
     void add_calculation_record(const nlohmann::json& record);
-
-    /**
-     * @brief Load PDB lines into cache (lazy loading)
-     */
-    void load_pdb_lines() const;
-
-    /**
-     * @brief Get PDB line by line number (from cache)
-     * @param line_number 1-based line number
-     * @return PDB line or empty string if not found
-     */
-    std::string get_pdb_line(size_t line_number) const;
 
     /**
      * @brief Escape string for JSON
