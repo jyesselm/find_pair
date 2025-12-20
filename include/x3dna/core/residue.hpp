@@ -16,6 +16,8 @@
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/core/residue_type.hpp>
 #include <x3dna/core/modified_nucleotide_registry.hpp>
+#include <x3dna/core/typing/residue_classification.hpp>
+#include <x3dna/core/typing/type_registry.hpp>
 
 namespace x3dna {
 namespace core {
@@ -250,6 +252,14 @@ public:
     }
 
     /**
+     * @brief Get full hierarchical classification of this residue
+     * @return ResidueClassification with molecule type, base type, categories, etc.
+     */
+    [[nodiscard]] const typing::ResidueClassification& classification() const {
+        return classification_;
+    }
+
+    /**
      * @brief Get atom range for this residue (start_atom, end_atom)
      *
      * Returns the minimum and maximum legacy_atom_idx values from all atoms
@@ -384,6 +394,7 @@ private:
     char insertion_ = ' ';                          // Insertion code (PDB column 27)
     std::vector<Atom> atoms_;                       // Atoms in this residue
     std::optional<ReferenceFrame> reference_frame_; // Reference frame (if calculated)
+    typing::ResidueClassification classification_;  // Full hierarchical classification
 
     /**
      * @brief Trim whitespace from residue name
@@ -443,6 +454,11 @@ public:
         return *this;
     }
 
+    Builder& classification(const typing::ResidueClassification& c) {
+        residue_.classification_ = c;
+        return *this;
+    }
+
     Builder& atoms(const std::vector<Atom>& atom_list) {
         residue_.atoms_ = atom_list;
         return *this;
@@ -489,6 +505,9 @@ inline Residue Residue::create_from_atoms(const std::string& name, int sequence_
 
     std::string trimmed = trim(name);
 
+    // Get full classification from TypeRegistry
+    auto classification = typing::TypeRegistry::instance().classify_residue(trimmed);
+
     // Get one-letter code from registry
     char one_letter = ModifiedNucleotideRegistry::get_one_letter_code(trimmed);
 
@@ -529,6 +548,7 @@ inline Residue Residue::create_from_atoms(const std::string& name, int sequence_
         .one_letter_code(one_letter)
         .type(type)
         .is_purine(purine)
+        .classification(classification)
         .atoms(atoms)
         .build();
 }

@@ -9,6 +9,7 @@
 #include <nlohmann/json.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/core/constants.hpp>
+#include <x3dna/core/typing/atom_classification.hpp>
 
 namespace x3dna {
 namespace core {
@@ -154,7 +155,7 @@ public:
      * @return True if ring atom
      */
     [[nodiscard]] bool is_ring_atom() const {
-        return constants::nucleotides::is_ring_atom(name_);
+        return typing::AtomClassifier::is_ring_atom(name_);
     }
 
     /**
@@ -175,6 +176,35 @@ public:
         const std::string trimmed = trim_name();
         // Common H-bond acceptors: O (O2, O4, O6), N (N3, N7)
         return (trimmed.find("O") == 0 || trimmed == "N3" || trimmed == "N7");
+    }
+
+    /**
+     * @brief Get full classification of this atom
+     * @return AtomClassification with element, location, and H-bond role
+     */
+    [[nodiscard]] typing::AtomClassification classification() const {
+        return typing::AtomClassifier::classify_nucleotide_atom(name_);
+    }
+
+    /**
+     * @brief Check if this is a backbone atom (P, OP1, OP2, O5', O3', etc.)
+     */
+    [[nodiscard]] bool is_backbone_atom() const {
+        return typing::AtomClassifier::is_backbone_atom(name_);
+    }
+
+    /**
+     * @brief Check if this is a sugar atom (C1', C2', C3', C4', C5', O4', etc.)
+     */
+    [[nodiscard]] bool is_sugar_atom() const {
+        return typing::AtomClassifier::is_sugar_atom(name_);
+    }
+
+    /**
+     * @brief Check if this is a nucleobase atom (N1, C2, N3, C4, C5, C6, etc.)
+     */
+    [[nodiscard]] bool is_nucleobase_atom() const {
+        return typing::AtomClassifier::is_nucleobase_atom(name_);
     }
 
     /**
