@@ -17,7 +17,7 @@
 
 namespace x3dna {
 namespace core {
-namespace poly {
+namespace structure {
 
 /**
  * @class IResidue
@@ -85,6 +85,6 @@ public:
     [[nodiscard]] bool is_ligand() const override { return false; }
 };
 
-} // namespace poly
+} // namespace structure
 } // namespace core
 } // namespace x3dna

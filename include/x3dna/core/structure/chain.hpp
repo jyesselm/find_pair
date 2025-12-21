@@ -8,11 +8,11 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <x3dna/core/residue/iresidue.hpp>
+#include <x3dna/core/structure/iresidue.hpp>
 
 namespace x3dna {
 namespace core {
-namespace poly {
+namespace structure {
 
 
 /**
@@ -194,6 +194,6 @@ private:
     std::vector<std::unique_ptr<IResidue>> residues_;
 };
 
-} // namespace poly
+} // namespace structure
 } // namespace core
 } // namespace x3dna

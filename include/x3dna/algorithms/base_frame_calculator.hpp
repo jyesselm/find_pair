@@ -12,7 +12,7 @@
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/reference_frame.hpp>
-#include <x3dna/core/residue/residue.hpp>  // Polymorphic types
+#include <x3dna/core/structure/residue.hpp>  // Polymorphic types
 #include <x3dna/algorithms/standard_base_templates.hpp>
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
 #include <x3dna/algorithms/residue_type_detector.hpp>
@@ -84,20 +84,20 @@ public:
      * @param residue IResidue to calculate frame for (must be nucleotide)
      * @return FrameCalculationResult with frame and metrics
      */
-    [[nodiscard]] FrameCalculationResult calculate_frame(core::poly::IResidue& residue);
+    [[nodiscard]] FrameCalculationResult calculate_frame(core::structure::IResidue& residue);
 
     /**
      * @brief Calculate frame for polymorphic residue without modifying it
      * @param residue IResidue to calculate frame for
      * @return FrameCalculationResult with frame and metrics
      */
-    [[nodiscard]] FrameCalculationResult calculate_frame_const(const core::poly::IResidue& residue) const;
+    [[nodiscard]] FrameCalculationResult calculate_frame_const(const core::structure::IResidue& residue) const;
 
     /**
      * @brief Calculate frames for all nucleotides in a polymorphic structure
      * @param structure Polymorphic Structure to calculate frames for
      */
-    void calculate_all_frames(core::poly::Structure& structure);
+    void calculate_all_frames(core::structure::Structure& structure);
 
     /**
      * @brief Set template path
@@ -158,7 +158,7 @@ public:
      * @param structure Polymorphic Structure to check
      * @return True if RNA detected (O2' atoms found), false if DNA
      */
-    [[nodiscard]] static bool detect_rna(const core::poly::Structure& structure);
+    [[nodiscard]] static bool detect_rna(const core::structure::Structure& structure);
 
 private:
     mutable StandardBaseTemplates templates_; // Mutable for caching (doesn't affect logical constness)
@@ -177,7 +177,7 @@ private:
      * @param residue IResidue to calculate frame for
      * @return FrameCalculationResult
      */
-    [[nodiscard]] FrameCalculationResult calculate_frame_impl(const core::poly::IResidue& residue) const;
+    [[nodiscard]] FrameCalculationResult calculate_frame_impl(const core::structure::IResidue& residue) const;
 };
 
 } // namespace algorithms

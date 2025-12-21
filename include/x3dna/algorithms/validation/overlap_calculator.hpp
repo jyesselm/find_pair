@@ -9,7 +9,7 @@
 #pragma once
 
 #include <x3dna/core/residue.hpp>
-#include <x3dna/core/residue/residue.hpp>  // Polymorphic types
+#include <x3dna/core/structure/residue.hpp>  // Polymorphic types
 #include <x3dna/geometry/vector3d.hpp>
 #include <vector>
 
@@ -56,7 +56,7 @@ public:
      * @param zave Average z-axis of the two reference frames
      * @return Overlap area in square Angstroms
      */
-    [[nodiscard]] static double calculate(const core::poly::IResidue& res1, const core::poly::IResidue& res2,
+    [[nodiscard]] static double calculate(const core::structure::IResidue& res1, const core::structure::IResidue& res2,
                                           const geometry::Vector3D& oave, const geometry::Vector3D& zave);
 
     /**
@@ -75,7 +75,7 @@ public:
      * @return Vector of 3D coordinates for ring + exocyclic atoms
      */
     [[nodiscard]] static std::vector<geometry::Vector3D> get_ring_coordinates_with_exocyclic(
-        const core::poly::IResidue& residue, const geometry::Vector3D& oave);
+        const core::structure::IResidue& residue, const geometry::Vector3D& oave);
 
     /**
      * @brief Calculate polygon intersection area

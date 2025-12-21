@@ -109,5 +109,51 @@ bool RingAtomMatcher::is_purine(core::ResidueType type) {
     return core::typing::is_purine(type);
 }
 
+// ============================================================================
+// Polymorphic implementations
+// ============================================================================
+
+MatchedAtoms RingAtomMatcher::match(const core::structure::IResidue& residue,
+                                    const core::Structure& standard_template,
+                                    std::optional<core::ResidueType> detected_type) {
+    MatchedAtoms result;
+
+    // Determine residue type from classification or detected type
+    core::ResidueType residue_type = detected_type.has_value()
+                                         ? detected_type.value()
+                                         : residue.classification().to_legacy_type();
+    std::vector<std::string> ring_atom_names = get_ring_atom_names(residue_type);
+
+    // Match atoms by name
+    for (const auto& atom_name : ring_atom_names) {
+        auto exp_atom = find_atom_by_name(residue, atom_name);
+        auto std_atom = find_atom_by_name(standard_template, atom_name);
+
+        bool is_matched = exp_atom.has_value() && std_atom.has_value();
+        if (is_matched) {
+            result.experimental.push_back(exp_atom.value());
+            result.standard.push_back(std_atom.value());
+            result.atom_names.push_back(atom_name);
+            result.num_matched++;
+        }
+    }
+
+    return result;
+}
+
+std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::structure::IResidue& residue,
+                                                              const std::string& atom_name) {
+    // Trim input for comparison since atom names are stored trimmed
+    std::string trimmed = atom_name;
+    trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r"));
+    trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
+    for (const auto& atom : residue.atoms()) {
+        if (atom.name() == trimmed) {
+            return atom;
+        }
+    }
+    return std::nullopt;
+}
+
 } // namespace algorithms
 } // namespace x3dna

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <x3dna/algorithms/base_pair_finder.hpp>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
-#include <x3dna/core/residue/residue.hpp>
+#include <x3dna/core/structure/residue.hpp>
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/geometry/vector3d.hpp>
@@ -16,17 +16,17 @@
 using namespace x3dna::algorithms;
 using namespace x3dna::geometry;
 
-// Use poly namespace types explicitly to avoid collisions with legacy types
+// Use structure namespace types explicitly to avoid collisions with legacy types
 using x3dna::core::Atom;
 using x3dna::core::ReferenceFrame;
-using x3dna::core::poly::IResidue;
-using x3dna::core::poly::INucleotide;
-using x3dna::core::poly::RNA;
-using x3dna::core::poly::DNA;
-using x3dna::core::poly::Protein;
-using x3dna::core::poly::Ligand;
-using x3dna::core::poly::Chain;
-using x3dna::core::poly::Structure;
+using x3dna::core::structure::IResidue;
+using x3dna::core::structure::INucleotide;
+using x3dna::core::structure::RNA;
+using x3dna::core::structure::DNA;
+using x3dna::core::structure::Protein;
+using x3dna::core::structure::Ligand;
+using x3dna::core::structure::Chain;
+using x3dna::core::structure::Structure;
 
 namespace {
 

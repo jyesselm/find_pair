@@ -10,18 +10,18 @@
 #include <vector>
 
 #include <x3dna/core/atom.hpp>
-#include <x3dna/core/residue/iresidue.hpp>
-#include <x3dna/core/residue/rna.hpp>
-#include <x3dna/core/residue/dna.hpp>
-#include <x3dna/core/residue/protein.hpp>
-#include <x3dna/core/residue/ligand.hpp>
+#include <x3dna/core/structure/iresidue.hpp>
+#include <x3dna/core/structure/rna.hpp>
+#include <x3dna/core/structure/dna.hpp>
+#include <x3dna/core/structure/protein.hpp>
+#include <x3dna/core/structure/ligand.hpp>
 #include <x3dna/core/typing/type_registry.hpp>
 #include <x3dna/core/modified_nucleotide_registry.hpp>
 #include <x3dna/core/string_utils.hpp>
 
 namespace x3dna {
 namespace core {
-namespace poly {
+namespace structure {
 
 
 /**
@@ -158,6 +158,6 @@ public:
     }
 };
 
-} // namespace poly
+} // namespace structure
 } // namespace core
 } // namespace x3dna

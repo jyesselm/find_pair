@@ -419,7 +419,7 @@ char HydrogenBondFinder::get_base_type_for_hbond(const core::Residue& residue) {
 
 namespace {
 // Helper to check if polymorphic residue has a specific atom
-bool has_atom_poly(const core::poly::IResidue& residue, const char* name) {
+bool has_atom_poly(const core::structure::IResidue& residue, const char* name) {
     for (const auto& atom : residue.atoms()) {
         if (atom.name() == name)
             return true;
@@ -428,14 +428,14 @@ bool has_atom_poly(const core::poly::IResidue& residue, const char* name) {
 }
 
 // Determine purine type (A or G) from atoms for polymorphic residue
-char determine_purine_type_poly(const core::poly::IResidue& residue) {
+char determine_purine_type_poly(const core::structure::IResidue& residue) {
     const bool has_o6 = has_atom_poly(residue, "O6");
     const bool has_n6 = has_atom_poly(residue, "N6");
     return (has_o6 || !has_n6) ? 'G' : 'A';
 }
 
 // Determine pyrimidine type (C, T, or U) from atoms for polymorphic residue
-char determine_pyrimidine_type_poly(const core::poly::IResidue& residue) {
+char determine_pyrimidine_type_poly(const core::structure::IResidue& residue) {
     if (has_atom_poly(residue, "N4"))
         return 'C';
     if (has_atom_poly(residue, "C5M") || has_atom_poly(residue, "C7"))
@@ -444,7 +444,7 @@ char determine_pyrimidine_type_poly(const core::poly::IResidue& residue) {
 }
 
 // Determine base type from atoms for unknown polymorphic residues
-char determine_base_type_from_atoms_poly(const core::poly::IResidue& residue) {
+char determine_base_type_from_atoms_poly(const core::structure::IResidue& residue) {
     const bool has_n9 = has_atom_poly(residue, "N9");
     const bool has_n1 = has_atom_poly(residue, "N1");
     const bool has_c6 = has_atom_poly(residue, "C6");
@@ -462,9 +462,9 @@ char determine_base_type_from_atoms_poly(const core::poly::IResidue& residue) {
 }
 
 // Get base type for H-bond detection from polymorphic residue
-char get_base_type_for_hbond_poly(const core::poly::IResidue& residue) {
+char get_base_type_for_hbond_poly(const core::structure::IResidue& residue) {
     // For nucleotides, use one_letter_code
-    const auto* nucleotide = dynamic_cast<const core::poly::INucleotide*>(&residue);
+    const auto* nucleotide = dynamic_cast<const core::structure::INucleotide*>(&residue);
     if (nucleotide) {
         char code = nucleotide->one_letter_code();
         if (code != '?') {
@@ -477,7 +477,7 @@ char get_base_type_for_hbond_poly(const core::poly::IResidue& residue) {
 }
 } // namespace
 
-void HydrogenBondFinder::count_simple(const core::poly::IResidue& res1, const core::poly::IResidue& res2,
+void HydrogenBondFinder::count_simple(const core::structure::IResidue& res1, const core::structure::IResidue& res2,
                                       double hb_lower, double hb_dist1, const std::string& hb_atoms,
                                       int& num_base_hb, int& num_o2_hb) {
     num_base_hb = 0;
@@ -511,16 +511,16 @@ void HydrogenBondFinder::count_simple(const core::poly::IResidue& res1, const co
     }
 }
 
-std::vector<HydrogenBondResult> HydrogenBondFinder::find_hydrogen_bonds(const core::poly::IResidue& res1,
-                                                                        const core::poly::IResidue& res2,
+std::vector<HydrogenBondResult> HydrogenBondFinder::find_hydrogen_bonds(const core::structure::IResidue& res1,
+                                                                        const core::structure::IResidue& res2,
                                                                         double hb_lower, double hb_dist1) {
     auto detailed = find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1,
                                                  validation_constants::HB_DEFAULT_DIST2);
     return detailed.final_hbonds;
 }
 
-DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(const core::poly::IResidue& res1,
-                                                                     const core::poly::IResidue& res2,
+DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(const core::structure::IResidue& res1,
+                                                                     const core::structure::IResidue& res2,
                                                                      double hb_lower, double hb_dist1,
                                                                      double hb_dist2) {
     DetailedHBondResult result;

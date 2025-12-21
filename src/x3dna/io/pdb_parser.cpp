@@ -8,7 +8,7 @@
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/constants.hpp>
 #include <x3dna/core/modified_nucleotide_registry.hpp>
-#include <x3dna/core/residue/residue.hpp>  // Polymorphic types
+#include <x3dna/core/structure/residue.hpp>  // Polymorphic types
 #include <gemmi/pdb.hpp>
 #include <gemmi/mmread.hpp>
 #include <gemmi/gz.hpp>
@@ -366,7 +366,7 @@ core::Structure PdbParser::build_structure_from_residues(
 
 // === Polymorphic Structure parsing ===
 
-core::poly::Structure PdbParser::parse_file_poly(const std::filesystem::path& path) {
+core::structure::Structure PdbParser::parse_file_poly(const std::filesystem::path& path) {
     if (!std::filesystem::exists(path)) {
         throw ParseError("PDB file does not exist: " + path.string());
     }
@@ -387,7 +387,7 @@ core::poly::Structure PdbParser::parse_file_poly(const std::filesystem::path& pa
         int legacy_residue_idx = 1;
 
         if (gemmi_struct.models.empty()) {
-            return core::poly::Structure(pdb_id);
+            return core::structure::Structure(pdb_id);
         }
 
         const gemmi::Model& model = gemmi_struct.models[0];
@@ -470,7 +470,7 @@ core::poly::Structure PdbParser::parse_file_poly(const std::filesystem::path& pa
     }
 }
 
-core::poly::Structure PdbParser::parse_stream_poly(std::istream& stream) {
+core::structure::Structure PdbParser::parse_stream_poly(std::istream& stream) {
     if (!stream.good()) {
         throw ParseError("Input stream is not valid");
     }
@@ -480,7 +480,7 @@ core::poly::Structure PdbParser::parse_stream_poly(std::istream& stream) {
     return parse_string_poly(buffer.str());
 }
 
-core::poly::Structure PdbParser::parse_string_poly(const std::string& content) {
+core::structure::Structure PdbParser::parse_string_poly(const std::string& content) {
     try {
         if (content.empty()) {
             throw ParseError("Empty PDB content");
@@ -501,7 +501,7 @@ core::poly::Structure PdbParser::parse_string_poly(const std::string& content) {
         int legacy_residue_idx = 1;
 
         if (gemmi_struct.models.empty()) {
-            return core::poly::Structure(pdb_id);
+            return core::structure::Structure(pdb_id);
         }
 
         const gemmi::Model& model = gemmi_struct.models[0];
@@ -584,14 +584,14 @@ core::poly::Structure PdbParser::parse_string_poly(const std::string& content) {
     }
 }
 
-core::poly::Structure PdbParser::build_poly_structure_from_residues(
+core::structure::Structure PdbParser::build_poly_structure_from_residues(
     const std::string& pdb_id,
     const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms,
     const std::map<ResidueKey, int>& legacy_idx_map,
     const std::vector<std::string>& chain_order) const {
 
-    core::poly::Structure structure(pdb_id);
-    std::map<std::string, core::poly::Chain> chains;
+    core::structure::Structure structure(pdb_id);
+    std::map<std::string, core::structure::Chain> chains;
 
     for (const auto& [key, atoms] : residue_atoms) {
         if (atoms.empty()) {
@@ -599,7 +599,7 @@ core::poly::Structure PdbParser::build_poly_structure_from_residues(
         }
 
         // Use ResidueFactory to create the appropriate polymorphic type
-        auto residue = core::poly::ResidueFactory::create(
+        auto residue = core::structure::ResidueFactory::create(
             key.residue_name, key.residue_seq, key.chain_id, key.insertion_code, atoms);
 
         // Set legacy_residue_idx from passed map

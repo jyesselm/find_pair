@@ -6,12 +6,12 @@
 #include <gtest/gtest.h>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/io/pdb_parser.hpp>
-#include <x3dna/core/residue/residue.hpp>
+#include <x3dna/core/structure/residue.hpp>
 #include <filesystem>
 
 using namespace x3dna::algorithms;
 using namespace x3dna::io;
-using namespace x3dna::core::poly;
+using namespace x3dna::core::structure;
 
 class BaseFrameCalculatorPolyTest : public ::testing::Test {
 protected:

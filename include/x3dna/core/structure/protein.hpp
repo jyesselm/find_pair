@@ -1,28 +1,29 @@
 /**
- * @file rna.hpp
- * @brief RNA nucleotide residue class
+ * @file protein.hpp
+ * @brief Protein (amino acid) residue class
  */
 
 #pragma once
 
 #include <limits>
-#include <x3dna/core/residue/iresidue.hpp>
+#include <x3dna/core/structure/iresidue.hpp>
 #include <x3dna/core/string_utils.hpp>
 
 namespace x3dna {
 namespace core {
-namespace poly {
+namespace structure {
+
 
 /**
- * @class RNA
- * @brief Represents an RNA nucleotide (A, G, C, U or modified)
+ * @class Protein
+ * @brief Represents a protein residue (amino acid)
  */
-class RNA final : public INucleotide {
+class Protein final : public IResidue {
 public:
-    RNA() = default;
+    Protein() = default;
 
-    RNA(const std::string& name, int seq_num, const std::string& chain_id,
-        const std::string& insertion = "")
+    Protein(const std::string& name, int seq_num, const std::string& chain_id,
+            const std::string& insertion = "")
         : name_(trim(name)), seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {}
 
     // === Identity (IResidue) ===
@@ -53,8 +54,11 @@ public:
     }
 
     // === Type queries (IResidue) ===
-    [[nodiscard]] bool is_rna() const override { return true; }
+    [[nodiscard]] bool is_nucleotide() const override { return false; }
+    [[nodiscard]] bool is_rna() const override { return false; }
     [[nodiscard]] bool is_dna() const override { return false; }
+    [[nodiscard]] bool is_protein() const override { return true; }
+    [[nodiscard]] bool is_ligand() const override { return false; }
 
     // === Legacy support (IResidue) ===
     [[nodiscard]] int legacy_residue_idx() const override { return legacy_residue_idx_; }
@@ -83,41 +87,12 @@ public:
 
     // === Clone (IResidue) ===
     [[nodiscard]] std::unique_ptr<IResidue> clone() const override {
-        return std::unique_ptr<IResidue>(new RNA(*this));
+        return std::unique_ptr<IResidue>(new Protein(*this));
     }
 
-    // === Nucleotide-specific (INucleotide) ===
-    [[nodiscard]] char one_letter_code() const override { return one_letter_code_; }
+    // === Protein-specific ===
+    [[nodiscard]] char one_letter_code() const { return one_letter_code_; }
     void set_one_letter_code(char code) { one_letter_code_ = code; }
-
-    [[nodiscard]] bool is_purine() const override { return classification_.is_purine(); }
-    [[nodiscard]] bool is_pyrimidine() const override { return classification_.is_pyrimidine(); }
-    [[nodiscard]] typing::BaseType base_type() const override { return classification_.base_type; }
-
-    [[nodiscard]] int ry_classification() const override {
-        if (is_purine()) return 1;
-        if (is_pyrimidine()) return 0;
-        return -1;
-    }
-
-    // === Reference frame (INucleotide) ===
-    [[nodiscard]] std::optional<ReferenceFrame> reference_frame() const override {
-        return reference_frame_;
-    }
-    void set_reference_frame(const ReferenceFrame& frame) override {
-        reference_frame_ = frame;
-    }
-
-    // === Ring atoms (INucleotide) ===
-    [[nodiscard]] std::vector<Atom> ring_atoms() const override {
-        std::vector<Atom> ring;
-        for (const auto& atom : atoms_) {
-            if (atom.is_ring_atom()) {
-                ring.push_back(atom);
-            }
-        }
-        return ring;
-    }
 
 private:
     std::string name_;
@@ -128,9 +103,8 @@ private:
     typing::ResidueClassification classification_;
     int legacy_residue_idx_ = 0;
     char one_letter_code_ = '?';
-    std::optional<ReferenceFrame> reference_frame_;
 };
 
-} // namespace poly
+} // namespace structure
 } // namespace core
 } // namespace x3dna

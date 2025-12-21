@@ -164,5 +164,108 @@ TypeDetectionResult ResidueTypeDetector::detect_type(const core::Residue& residu
     return result;
 }
 
+// ============================================================================
+// Polymorphic implementations
+// ============================================================================
+
+RmsdCheckResult ResidueTypeDetector::check_by_rmsd(const core::structure::IResidue& residue) {
+    std::vector<geometry::Vector3D> experimental_coords;
+    std::vector<geometry::Vector3D> standard_coords;
+    int purine_atom_count = 0;
+    bool has_c1_prime = false;
+
+    for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
+        const char* atom_name = RING_ATOM_NAMES[i];
+
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == atom_name) {
+                experimental_coords.push_back(atom.position());
+                standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
+                                                             STANDARD_RING_GEOMETRY[i][2]));
+
+                if (atom_name == std::string("N7") || atom_name == std::string("C8") ||
+                    atom_name == std::string("N9")) {
+                    purine_atom_count++;
+                }
+
+                break;
+            }
+        }
+    }
+
+    for (const auto& atom : residue.atoms()) {
+        if (atom.name() == "C1'" || atom.name() == "C1R") {
+            has_c1_prime = true;
+            break;
+        }
+    }
+
+    int nN = static_cast<int>(experimental_coords.size());
+    if (nN == 0 && !has_c1_prime) {
+        return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
+    }
+
+    if (experimental_coords.size() < 3) {
+        return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
+    }
+
+    std::vector<std::string> matched_names;
+    for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
+        const char* atom_name = RING_ATOM_NAMES[i];
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == atom_name) {
+                matched_names.push_back(std::string(atom_name));
+                break;
+            }
+        }
+    }
+
+    geometry::LeastSquaresFitter fitter;
+    try {
+        auto fit_result = fitter.fit(standard_coords, experimental_coords);
+        return {fit_result.rms, purine_atom_count > 0, matched_names, experimental_coords, standard_coords};
+    } catch (const std::exception&) {
+        return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
+    }
+}
+
+TypeDetectionResult ResidueTypeDetector::detect_type(const core::structure::IResidue& residue) {
+    TypeDetectionResult result;
+    result.detected_type = residue.classification().to_legacy_type();
+    result.used_fallback = false;
+    result.detection_method = "standard";
+
+    if (result.detected_type != core::ResidueType::UNKNOWN) {
+        return result;
+    }
+
+    std::string res_name = residue.name();
+    while (!res_name.empty() && res_name[0] == ' ')
+        res_name.erase(0, 1);
+    while (!res_name.empty() && res_name.back() == ' ')
+        res_name.pop_back();
+
+    if (is_in_nt_list(res_name)) {
+        result.detection_method = "nt_list";
+        return result;
+    }
+
+    auto rmsd_result = check_by_rmsd(residue);
+    result.rmsd = rmsd_result.rmsd;
+
+    if (rmsd_result.rmsd.has_value()) {
+        result.used_fallback = true;
+        result.detection_method = "rmsd";
+
+        if (rmsd_result.found_purine_atoms) {
+            result.detected_type = core::ResidueType::ADENINE;
+        } else {
+            result.detected_type = core::ResidueType::CYTOSINE;
+        }
+    }
+
+    return result;
+}
+
 } // namespace algorithms
 } // namespace x3dna

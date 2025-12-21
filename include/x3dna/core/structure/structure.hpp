@@ -9,11 +9,11 @@
 #include <string>
 #include <tuple>
 #include <vector>
-#include <x3dna/core/residue/chain.hpp>
+#include <x3dna/core/structure/chain.hpp>
 
 namespace x3dna {
 namespace core {
-namespace poly {
+namespace structure {
 
 
 /**
@@ -220,6 +220,6 @@ private:
     std::map<std::tuple<std::string, int, std::string>, char> residue_record_types_;
 };
 
-} // namespace poly
+} // namespace structure
 } // namespace core
 } // namespace x3dna

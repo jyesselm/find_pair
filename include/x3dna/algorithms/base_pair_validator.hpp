@@ -8,7 +8,7 @@
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/core/base_pair.hpp>
-#include <x3dna/core/residue/residue.hpp>  // Polymorphic types
+#include <x3dna/core/structure/residue.hpp>  // Polymorphic types
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
@@ -122,7 +122,7 @@ public:
      * @param res2 Second residue (must be nucleotide with reference frame)
      * @return ValidationResult with all validation details
      */
-    [[nodiscard]] ValidationResult validate(const core::poly::IResidue& res1, const core::poly::IResidue& res2) const;
+    [[nodiscard]] ValidationResult validate(const core::structure::IResidue& res1, const core::structure::IResidue& res2) const;
 
     /**
      * @brief Set validation parameters
@@ -157,7 +157,7 @@ public:
      * @param zave Average z-axis
      * @return Overlap area in Angstrom²
      */
-    [[nodiscard]] double calculate_overlap_area(const core::poly::IResidue& res1, const core::poly::IResidue& res2,
+    [[nodiscard]] double calculate_overlap_area(const core::structure::IResidue& res1, const core::structure::IResidue& res2,
                                                 const geometry::Vector3D& oave, const geometry::Vector3D& zave) const;
 
     /**
@@ -177,7 +177,7 @@ public:
      * @param residue Polymorphic residue to search
      * @return Position of N1 (pyrimidine) or N9 (purine) atom, or nullopt if not found
      */
-    [[nodiscard]] static std::optional<geometry::Vector3D> find_n1_n9_position(const core::poly::IResidue& residue);
+    [[nodiscard]] static std::optional<geometry::Vector3D> find_n1_n9_position(const core::structure::IResidue& residue);
 
 private:
     ValidationParameters params_;

@@ -138,7 +138,7 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
     return result;
 }
 
-ValidationResult BasePairValidator::validate(const core::poly::IResidue& res1, const core::poly::IResidue& res2) const {
+ValidationResult BasePairValidator::validate(const core::structure::IResidue& res1, const core::structure::IResidue& res2) const {
     ValidationResult result;
 
     // Skip if same residue
@@ -147,8 +147,8 @@ ValidationResult BasePairValidator::validate(const core::poly::IResidue& res1, c
     }
 
     // Both residues must be nucleotides with reference frames
-    const auto* nuc1 = dynamic_cast<const core::poly::INucleotide*>(&res1);
-    const auto* nuc2 = dynamic_cast<const core::poly::INucleotide*>(&res2);
+    const auto* nuc1 = dynamic_cast<const core::structure::INucleotide*>(&res1);
+    const auto* nuc2 = dynamic_cast<const core::structure::INucleotide*>(&res2);
     if (!nuc1 || !nuc2) {
         return result;
     }
@@ -373,9 +373,9 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
     return validation::OverlapCalculator::calculate(res1, res2, oave, zave);
 }
 
-std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const core::poly::IResidue& residue) {
+std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const core::structure::IResidue& residue) {
     // Polymorphic version - need to cast to INucleotide to get one_letter_code
-    const auto* nucleotide = dynamic_cast<const core::poly::INucleotide*>(&residue);
+    const auto* nucleotide = dynamic_cast<const core::structure::INucleotide*>(&residue);
     if (!nucleotide) {
         return std::nullopt;
     }
@@ -422,7 +422,7 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const core::poly:
     return std::nullopt;
 }
 
-double BasePairValidator::calculate_overlap_area(const core::poly::IResidue& res1, const core::poly::IResidue& res2,
+double BasePairValidator::calculate_overlap_area(const core::structure::IResidue& res1, const core::structure::IResidue& res2,
                                                  const Vector3D& oave, const Vector3D& zave) const {
     // Delegate to OverlapCalculator polymorphic version
     return validation::OverlapCalculator::calculate(res1, res2, oave, zave);

@@ -4,10 +4,10 @@
  */
 
 #include <gtest/gtest.h>
-#include <x3dna/core/residue/residue.hpp>
+#include <x3dna/core/structure/residue.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 
-using namespace x3dna::core::poly;
+using namespace x3dna::core::structure;
 using namespace x3dna::core;  // For Atom
 using namespace x3dna::geometry;
 

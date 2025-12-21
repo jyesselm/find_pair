@@ -1,29 +1,29 @@
 /**
- * @file protein.hpp
- * @brief Protein (amino acid) residue class
+ * @file ligand.hpp
+ * @brief Ligand residue class (water, ions, small molecules)
  */
 
 #pragma once
 
 #include <limits>
-#include <x3dna/core/residue/iresidue.hpp>
+#include <x3dna/core/structure/iresidue.hpp>
 #include <x3dna/core/string_utils.hpp>
 
 namespace x3dna {
 namespace core {
-namespace poly {
+namespace structure {
 
 
 /**
- * @class Protein
- * @brief Represents a protein residue (amino acid)
+ * @class Ligand
+ * @brief Represents a ligand residue (water, ion, or small molecule)
  */
-class Protein final : public IResidue {
+class Ligand final : public IResidue {
 public:
-    Protein() = default;
+    Ligand() = default;
 
-    Protein(const std::string& name, int seq_num, const std::string& chain_id,
-            const std::string& insertion = "")
+    Ligand(const std::string& name, int seq_num, const std::string& chain_id,
+           const std::string& insertion = "")
         : name_(trim(name)), seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {}
 
     // === Identity (IResidue) ===
@@ -57,8 +57,12 @@ public:
     [[nodiscard]] bool is_nucleotide() const override { return false; }
     [[nodiscard]] bool is_rna() const override { return false; }
     [[nodiscard]] bool is_dna() const override { return false; }
-    [[nodiscard]] bool is_protein() const override { return true; }
-    [[nodiscard]] bool is_ligand() const override { return false; }
+    [[nodiscard]] bool is_protein() const override { return false; }
+    [[nodiscard]] bool is_ligand() const override { return true; }
+
+    // === More specific ligand type queries ===
+    [[nodiscard]] bool is_water() const { return classification_.is_water(); }
+    [[nodiscard]] bool is_ion() const { return classification_.is_ion(); }
 
     // === Legacy support (IResidue) ===
     [[nodiscard]] int legacy_residue_idx() const override { return legacy_residue_idx_; }
@@ -87,12 +91,8 @@ public:
 
     // === Clone (IResidue) ===
     [[nodiscard]] std::unique_ptr<IResidue> clone() const override {
-        return std::unique_ptr<IResidue>(new Protein(*this));
+        return std::unique_ptr<IResidue>(new Ligand(*this));
     }
-
-    // === Protein-specific ===
-    [[nodiscard]] char one_letter_code() const { return one_letter_code_; }
-    void set_one_letter_code(char code) { one_letter_code_ = code; }
 
 private:
     std::string name_;
@@ -102,9 +102,8 @@ private:
     std::vector<Atom> atoms_;
     typing::ResidueClassification classification_;
     int legacy_residue_idx_ = 0;
-    char one_letter_code_ = '?';
 };
 
-} // namespace poly
+} // namespace structure
 } // namespace core
 } // namespace x3dna

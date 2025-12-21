@@ -6,7 +6,7 @@
 #include <x3dna/algorithms/base_pair_finder.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/chain.hpp>
-#include <x3dna/core/residue/residue.hpp>  // Polymorphic types
+#include <x3dna/core/structure/residue.hpp>  // Polymorphic types
 #include <x3dna/io/json_writer.hpp>
 #include <x3dna/geometry/least_squares_fitter.hpp>
 #include <x3dna/geometry/vector3d.hpp>
@@ -661,22 +661,22 @@ BasePair BasePairFinder::create_base_pair(int legacy_idx1, int legacy_idx2, cons
 // Polymorphic implementation
 // ============================================================================
 
-bool BasePairFinder::is_nucleotide(const core::poly::IResidue& residue) {
+bool BasePairFinder::is_nucleotide(const core::structure::IResidue& residue) {
     return residue.is_nucleotide();
 }
 
-bool BasePairFinder::can_participate_in_pairing_poly(const core::poly::IResidue* res) {
+bool BasePairFinder::can_participate_in_pairing_poly(const core::structure::IResidue* res) {
     if (!res)
         return false;
     if (!res->is_nucleotide())
         return false;
-    const auto* nuc = dynamic_cast<const core::poly::INucleotide*>(res);
+    const auto* nuc = dynamic_cast<const core::structure::INucleotide*>(res);
     if (!nuc)
         return false;
     return nuc->reference_frame().has_value();
 }
 
-std::vector<BasePair> BasePairFinder::find_pairs(core::poly::Structure& structure) {
+std::vector<BasePair> BasePairFinder::find_pairs(core::structure::Structure& structure) {
     switch (strategy_) {
         case PairFindingStrategy::BEST_PAIR:
             return find_best_pairs_poly(structure);
@@ -688,7 +688,7 @@ std::vector<BasePair> BasePairFinder::find_pairs(core::poly::Structure& structur
     return {};
 }
 
-std::vector<BasePair> BasePairFinder::find_pairs(const core::poly::Structure& structure) const {
+std::vector<BasePair> BasePairFinder::find_pairs(const core::structure::Structure& structure) const {
     switch (strategy_) {
         case PairFindingStrategy::BEST_PAIR:
             return find_best_pairs_poly(structure);
@@ -701,7 +701,7 @@ std::vector<BasePair> BasePairFinder::find_pairs(const core::poly::Structure& st
 }
 
 BasePairFinder::PolyResidueIndexMapping BasePairFinder::build_poly_residue_index_mapping(
-    const core::poly::Structure& structure) const {
+    const core::structure::Structure& structure) const {
     PolyResidueIndexMapping mapping;
 
     for (const auto& chain : structure) {
@@ -729,7 +729,7 @@ BasePairFinder::Phase1Results BasePairFinder::run_phase1_validation_poly(
         if (it1 == mapping.by_legacy_idx.end() || !it1->second) {
             continue;
         }
-        const core::poly::IResidue* res1 = it1->second;
+        const core::structure::IResidue* res1 = it1->second;
         if (!can_participate_in_pairing_poly(res1)) {
             continue;
         }
@@ -739,7 +739,7 @@ BasePairFinder::Phase1Results BasePairFinder::run_phase1_validation_poly(
             if (it2 == mapping.by_legacy_idx.end() || !it2->second) {
                 continue;
             }
-            const core::poly::IResidue* res2 = it2->second;
+            const core::structure::IResidue* res2 = it2->second;
             if (!can_participate_in_pairing_poly(res2)) {
                 continue;
             }
@@ -753,8 +753,8 @@ BasePairFinder::Phase1Results BasePairFinder::run_phase1_validation_poly(
 
             // Calculate and store bp_type_id
             // For polymorphic, we need to get residue types from the interface
-            const auto* nuc1 = dynamic_cast<const core::poly::INucleotide*>(res1);
-            const auto* nuc2 = dynamic_cast<const core::poly::INucleotide*>(res2);
+            const auto* nuc1 = dynamic_cast<const core::structure::INucleotide*>(res1);
+            const auto* nuc2 = dynamic_cast<const core::structure::INucleotide*>(res2);
             if (nuc1 && nuc2) {
                 // Use a simplified bp_type_id calculation for polymorphic
                 int bp_type_id = 0;
@@ -777,7 +777,7 @@ BasePairFinder::Phase1Results BasePairFinder::run_phase1_validation_poly(
 std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partner_poly(
     int legacy_idx1, const PolyPartnerSearchContext& ctx) const {
 
-    const core::poly::IResidue* res1 = ctx.mapping.get(legacy_idx1);
+    const core::structure::IResidue* res1 = ctx.mapping.get(legacy_idx1);
     if (!can_participate_in_pairing_poly(res1)) {
         return std::nullopt;
     }
@@ -791,7 +791,7 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             continue;
         }
 
-        const core::poly::IResidue* res2 = ctx.mapping.get(idx2);
+        const core::structure::IResidue* res2 = ctx.mapping.get(idx2);
         if (!can_participate_in_pairing_poly(res2)) {
             continue;
         }
@@ -825,8 +825,8 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
 }
 
 core::BasePair BasePairFinder::create_base_pair_poly(int legacy_idx1, int legacy_idx2,
-                                                      const core::poly::IResidue* res1,
-                                                      const core::poly::IResidue* res2,
+                                                      const core::structure::IResidue* res1,
+                                                      const core::structure::IResidue* res2,
                                                       const ValidationResult& result) const {
     // ALWAYS store smaller index first for consistency with legacy behavior
     size_t idx_small = static_cast<size_t>(std::min(legacy_idx1, legacy_idx2)) - 1;
@@ -837,12 +837,12 @@ core::BasePair BasePairFinder::create_base_pair_poly(int legacy_idx1, int legacy
     pair.set_finding_order_swapped(swapped);
 
     // Set frames - swap if we reordered the indices
-    const core::poly::IResidue* res_small = swapped ? res2 : res1;
-    const core::poly::IResidue* res_large = swapped ? res1 : res2;
+    const core::structure::IResidue* res_small = swapped ? res2 : res1;
+    const core::structure::IResidue* res_large = swapped ? res1 : res2;
 
     // Get frames from INucleotide interface
-    const auto* nuc_small = dynamic_cast<const core::poly::INucleotide*>(res_small);
-    const auto* nuc_large = dynamic_cast<const core::poly::INucleotide*>(res_large);
+    const auto* nuc_small = dynamic_cast<const core::structure::INucleotide*>(res_small);
+    const auto* nuc_large = dynamic_cast<const core::structure::INucleotide*>(res_large);
 
     if (nuc_small && nuc_small->reference_frame().has_value()) {
         pair.set_frame1(nuc_small->reference_frame().value());
@@ -868,8 +868,8 @@ core::BasePair BasePairFinder::create_base_pair_poly(int legacy_idx1, int legacy
 }
 
 bool BasePairFinder::try_select_mutual_pair_poly(int legacy_idx1, int legacy_idx2,
-                                                  const core::poly::IResidue* res1,
-                                                  const core::poly::IResidue* res2,
+                                                  const core::structure::IResidue* res1,
+                                                  const core::structure::IResidue* res2,
                                                   const ValidationResult& result,
                                                   const PolyPartnerSearchContext& ctx,
                                                   PairSelectionState& state) const {
@@ -897,7 +897,7 @@ bool BasePairFinder::try_select_mutual_pair_poly(int legacy_idx1, int legacy_idx
     return true;
 }
 
-std::vector<BasePair> BasePairFinder::find_best_pairs_poly(const core::poly::Structure& structure) const {
+std::vector<BasePair> BasePairFinder::find_best_pairs_poly(const core::structure::Structure& structure) const {
     PolyResidueIndexMapping mapping = build_poly_residue_index_mapping(structure);
     if (mapping.empty()) {
         return {};
@@ -918,7 +918,7 @@ std::vector<BasePair> BasePairFinder::find_best_pairs_poly(const core::poly::Str
             if (is_matched(idx1, state.matched_indices))
                 continue;
 
-            const core::poly::IResidue* res1 = mapping.get(idx1);
+            const core::structure::IResidue* res1 = mapping.get(idx1);
             if (!can_participate_in_pairing_poly(res1))
                 continue;
 
@@ -934,7 +934,7 @@ std::vector<BasePair> BasePairFinder::find_best_pairs_poly(const core::poly::Str
             const bool is_mutual = reverse.has_value() && reverse->first == idx1;
 
             if (is_mutual) {
-                const core::poly::IResidue* res2 = mapping.get(idx2);
+                const core::structure::IResidue* res2 = mapping.get(idx2);
                 if (res2) {
                     (void)try_select_mutual_pair_poly(idx1, idx2, res1, res2, result, ctx, state);
                 }
@@ -945,18 +945,18 @@ std::vector<BasePair> BasePairFinder::find_best_pairs_poly(const core::poly::Str
     return state.base_pairs;
 }
 
-std::vector<BasePair> BasePairFinder::find_all_pairs_poly(const core::poly::Structure& structure) const {
+std::vector<BasePair> BasePairFinder::find_all_pairs_poly(const core::structure::Structure& structure) const {
     std::vector<BasePair> base_pairs;
 
     // Get all nucleotides with frames
-    std::vector<std::pair<size_t, const core::poly::INucleotide*>> nucleotide_residues;
+    std::vector<std::pair<size_t, const core::structure::INucleotide*>> nucleotide_residues;
     size_t global_idx = 0;
 
     for (const auto& chain : structure) {
         for (size_t i = 0; i < chain.size(); ++i) {
             const auto& residue = chain[i];
             if (residue.is_nucleotide()) {
-                const auto* nuc = dynamic_cast<const core::poly::INucleotide*>(&residue);
+                const auto* nuc = dynamic_cast<const core::structure::INucleotide*>(&residue);
                 if (nuc && nuc->reference_frame().has_value()) {
                     nucleotide_residues.push_back({global_idx, nuc});
                 }

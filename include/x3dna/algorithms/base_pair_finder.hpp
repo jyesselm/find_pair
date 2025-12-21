@@ -8,7 +8,7 @@
 #include <x3dna/common_types.hpp>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/base_pair.hpp>
-#include <x3dna/core/residue/residue.hpp>  // Polymorphic types
+#include <x3dna/core/structure/residue.hpp>  // Polymorphic types
 #include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/algorithms/quality_score_calculator.hpp>
 #include <x3dna/algorithms/pair_candidate_cache.hpp>
@@ -66,12 +66,12 @@ public:
      * @param structure Polymorphic structure to search
      * @return Vector of found base pairs
      */
-    [[nodiscard]] std::vector<core::BasePair> find_pairs(core::poly::Structure& structure);
+    [[nodiscard]] std::vector<core::BasePair> find_pairs(core::structure::Structure& structure);
 
     /**
      * @brief Find base pairs in a polymorphic structure (const version)
      */
-    [[nodiscard]] std::vector<core::BasePair> find_pairs(const core::poly::Structure& structure) const;
+    [[nodiscard]] std::vector<core::BasePair> find_pairs(const core::structure::Structure& structure) const;
 
     /**
      * @brief Find base pairs and record validation results to JSON
@@ -122,7 +122,7 @@ public:
      * @param residue Polymorphic residue to check
      * @return True if residue is a nucleotide (delegates to IResidue::is_nucleotide())
      */
-    [[nodiscard]] static bool is_nucleotide(const core::poly::IResidue& residue);
+    [[nodiscard]] static bool is_nucleotide(const core::structure::IResidue& residue);
 
 private:
     // Core components
@@ -168,10 +168,10 @@ private:
 
     /** @brief Mapping between legacy indices and polymorphic residue pointers */
     struct PolyResidueIndexMapping {
-        std::map<int, const core::poly::IResidue*> by_legacy_idx;
+        std::map<int, const core::structure::IResidue*> by_legacy_idx;
         int max_legacy_idx = 0;
 
-        [[nodiscard]] const core::poly::IResidue* get(int legacy_idx) const {
+        [[nodiscard]] const core::structure::IResidue* get(int legacy_idx) const {
             auto it = by_legacy_idx.find(legacy_idx);
             return (it != by_legacy_idx.end()) ? it->second : nullptr;
         }
@@ -251,22 +251,22 @@ private:
     // Polymorphic private methods
     // ============================================================================
 
-    [[nodiscard]] std::vector<core::BasePair> find_best_pairs_poly(const core::poly::Structure& structure) const;
-    [[nodiscard]] std::vector<core::BasePair> find_all_pairs_poly(const core::poly::Structure& structure) const;
+    [[nodiscard]] std::vector<core::BasePair> find_best_pairs_poly(const core::structure::Structure& structure) const;
+    [[nodiscard]] std::vector<core::BasePair> find_all_pairs_poly(const core::structure::Structure& structure) const;
     [[nodiscard]] std::optional<std::pair<int, ValidationResult>> find_best_partner_poly(
         int legacy_idx, const PolyPartnerSearchContext& ctx) const;
 
-    [[nodiscard]] static bool can_participate_in_pairing_poly(const core::poly::IResidue* res);
+    [[nodiscard]] static bool can_participate_in_pairing_poly(const core::structure::IResidue* res);
 
-    [[nodiscard]] PolyResidueIndexMapping build_poly_residue_index_mapping(const core::poly::Structure& structure) const;
+    [[nodiscard]] PolyResidueIndexMapping build_poly_residue_index_mapping(const core::structure::Structure& structure) const;
     [[nodiscard]] Phase1Results run_phase1_validation_poly(const PolyResidueIndexMapping& mapping) const;
     [[nodiscard]] core::BasePair create_base_pair_poly(int legacy_idx1, int legacy_idx2,
-                                                        const core::poly::IResidue* res1,
-                                                        const core::poly::IResidue* res2,
+                                                        const core::structure::IResidue* res1,
+                                                        const core::structure::IResidue* res2,
                                                         const ValidationResult& result) const;
     [[nodiscard]] bool try_select_mutual_pair_poly(int legacy_idx1, int legacy_idx2,
-                                                    const core::poly::IResidue* res1,
-                                                    const core::poly::IResidue* res2,
+                                                    const core::structure::IResidue* res1,
+                                                    const core::structure::IResidue* res2,
                                                     const ValidationResult& result,
                                                     const PolyPartnerSearchContext& ctx,
                                                     PairSelectionState& state) const;

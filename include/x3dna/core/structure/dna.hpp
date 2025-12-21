@@ -6,12 +6,12 @@
 #pragma once
 
 #include <limits>
-#include <x3dna/core/residue/iresidue.hpp>
+#include <x3dna/core/structure/iresidue.hpp>
 #include <x3dna/core/string_utils.hpp>
 
 namespace x3dna {
 namespace core {
-namespace poly {
+namespace structure {
 
 
 /**
@@ -132,6 +132,6 @@ private:
     std::optional<ReferenceFrame> reference_frame_;
 };
 
-} // namespace poly
+} // namespace structure
 } // namespace core
 } // namespace x3dna

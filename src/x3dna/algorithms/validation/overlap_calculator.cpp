@@ -260,7 +260,7 @@ double OverlapCalculator::calculate(const core::Residue& res1, const core::Resid
     return calculate_impl(res1, res2, oave, zave);
 }
 
-double OverlapCalculator::calculate(const core::poly::IResidue& res1, const core::poly::IResidue& res2,
+double OverlapCalculator::calculate(const core::structure::IResidue& res1, const core::structure::IResidue& res2,
                                     const geometry::Vector3D& oave, const geometry::Vector3D& zave) {
     return calculate_impl(res1, res2, oave, zave);
 }
@@ -272,7 +272,7 @@ std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exo
 }
 
 std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exocyclic(
-    const core::poly::IResidue& residue, const geometry::Vector3D& oave) {
+    const core::structure::IResidue& residue, const geometry::Vector3D& oave) {
     return get_ring_coords_impl(residue, oave);
 }
 

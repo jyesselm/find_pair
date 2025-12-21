@@ -453,7 +453,7 @@ bool BaseFrameCalculator::detect_rna(const core::Structure& structure) {
 namespace {
 
 // Helper to check RMSD for polymorphic residue
-RmsdCheckResult check_nt_type_by_rmsd_poly(const core::poly::IResidue& residue) {
+RmsdCheckResult check_nt_type_by_rmsd_poly(const core::structure::IResidue& residue) {
     std::vector<geometry::Vector3D> experimental_coords;
     std::vector<geometry::Vector3D> standard_coords;
     int nN = 0;
@@ -518,7 +518,7 @@ RmsdCheckResult check_nt_type_by_rmsd_poly(const core::poly::IResidue& residue) 
 }
 
 // Count ring atoms in polymorphic residue
-std::tuple<int, bool> count_ring_atoms_poly(const core::poly::IResidue& residue) {
+std::tuple<int, bool> count_ring_atoms_poly(const core::structure::IResidue& residue) {
     static const std::vector<std::string> common_ring = {"C4", "N3", "C2", "N1", "C6", "C5"};
     static const std::vector<std::string> purine_ring = {"N7", "C8", "N9"};
 
@@ -546,7 +546,7 @@ std::tuple<int, bool> count_ring_atoms_poly(const core::poly::IResidue& residue)
 }
 
 // Detect purine atoms in polymorphic residue
-bool detect_purine_atoms_poly(const core::poly::IResidue& residue) {
+bool detect_purine_atoms_poly(const core::structure::IResidue& residue) {
     bool has_n7 = false, has_c8 = false, has_n9 = false;
     for (const auto& atom : residue.atoms()) {
         if (atom.name() == " N7 ")
@@ -560,7 +560,7 @@ bool detect_purine_atoms_poly(const core::poly::IResidue& residue) {
 }
 
 // Determine purine type from polymorphic residue
-core::ResidueType determine_purine_type_poly(const core::poly::IResidue& residue) {
+core::ResidueType determine_purine_type_poly(const core::structure::IResidue& residue) {
     bool has_o6 = false, has_n6 = false, has_n2 = false;
     for (const auto& atom : residue.atoms()) {
         if (atom.name() == " O6 ")
@@ -574,7 +574,7 @@ core::ResidueType determine_purine_type_poly(const core::poly::IResidue& residue
 }
 
 // Determine pyrimidine type from polymorphic residue
-core::ResidueType determine_pyrimidine_type_poly(const core::poly::IResidue& residue, char one_letter) {
+core::ResidueType determine_pyrimidine_type_poly(const core::structure::IResidue& residue, char one_letter) {
     bool has_n4 = false, has_c5m = false;
     for (const auto& atom : residue.atoms()) {
         if (atom.name() == " N4 ")
@@ -603,7 +603,7 @@ core::ResidueType determine_pyrimidine_type_poly(const core::poly::IResidue& res
 }
 
 // Try pyrimidine-only RMSD check for polymorphic residue
-std::optional<double> try_pyrimidine_rmsd_poly(const core::poly::IResidue& residue) {
+std::optional<double> try_pyrimidine_rmsd_poly(const core::structure::IResidue& residue) {
     std::vector<geometry::Vector3D> exp_coords;
     std::vector<geometry::Vector3D> std_coords;
 
@@ -634,11 +634,11 @@ std::optional<double> try_pyrimidine_rmsd_poly(const core::poly::IResidue& resid
 
 } // namespace
 
-FrameCalculationResult BaseFrameCalculator::calculate_frame(core::poly::IResidue& residue) {
+FrameCalculationResult BaseFrameCalculator::calculate_frame(core::structure::IResidue& residue) {
     FrameCalculationResult result = calculate_frame_impl(residue);
     if (result.is_valid) {
         // Set frame only on nucleotides
-        auto* nucleotide = dynamic_cast<core::poly::INucleotide*>(&residue);
+        auto* nucleotide = dynamic_cast<core::structure::INucleotide*>(&residue);
         if (nucleotide) {
             nucleotide->set_reference_frame(result.frame);
         }
@@ -646,11 +646,11 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame(core::poly::IResidue
     return result;
 }
 
-FrameCalculationResult BaseFrameCalculator::calculate_frame_const(const core::poly::IResidue& residue) const {
+FrameCalculationResult BaseFrameCalculator::calculate_frame_const(const core::structure::IResidue& residue) const {
     return calculate_frame_impl(residue);
 }
 
-FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::poly::IResidue& residue) const {
+FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::structure::IResidue& residue) const {
     FrameCalculationResult result;
     result.is_valid = false;
 
@@ -660,7 +660,7 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::pol
     }
 
     // Cast to INucleotide for nucleotide-specific methods
-    const auto* nucleotide = dynamic_cast<const core::poly::INucleotide*>(&residue);
+    const auto* nucleotide = dynamic_cast<const core::structure::INucleotide*>(&residue);
     if (!nucleotide) {
         return result;
     }
@@ -836,7 +836,7 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::pol
     return result;
 }
 
-void BaseFrameCalculator::calculate_all_frames(core::poly::Structure& structure) {
+void BaseFrameCalculator::calculate_all_frames(core::structure::Structure& structure) {
     for (auto& chain : structure) {
         for (auto& residue : chain) {
             if (!residue.is_nucleotide()) {
@@ -848,7 +848,7 @@ void BaseFrameCalculator::calculate_all_frames(core::poly::Structure& structure)
     }
 }
 
-bool BaseFrameCalculator::detect_rna(const core::poly::Structure& structure) {
+bool BaseFrameCalculator::detect_rna(const core::structure::Structure& structure) {
     for (const auto& chain : structure) {
         for (const auto& residue : chain) {
             if (residue.find_atom("O2'").has_value() || residue.find_atom("O2*").has_value()) {

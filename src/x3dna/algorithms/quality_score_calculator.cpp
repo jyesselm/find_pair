@@ -184,5 +184,92 @@ int QualityScoreCalculator::calculate_bp_type_id(const core::Residue& res1, cons
     return bp_type_id;
 }
 
+// ============================================================================
+// Polymorphic implementations
+// ============================================================================
+
+double QualityScoreCalculator::calculate_selection_score(const ValidationResult& result,
+                                                          const core::structure::INucleotide& res1,
+                                                          const core::structure::INucleotide& res2) const {
+    double adjusted_score = result.quality_score;
+    adjusted_score += adjust_pair_quality(result.hbonds);
+
+    int bp_type_id = calculate_bp_type_id(res1, res2, result);
+    if (bp_type_id == 2) {
+        adjusted_score += quality_constants::WC_PAIR_BONUS;
+    }
+
+    return adjusted_score;
+}
+
+int QualityScoreCalculator::calculate_bp_type_id(const core::structure::INucleotide& res1,
+                                                  const core::structure::INucleotide& res2,
+                                                  const ValidationResult& result) const {
+    int bp_type_id = -1;
+
+    if (!result.is_valid) {
+        return 0;
+    }
+
+    const bool has_standard_wc_geometry = result.dir_x > 0.0 && result.dir_y < 0.0 && result.dir_z < 0.0;
+    if (!has_standard_wc_geometry) {
+        return bp_type_id;
+    }
+
+    if (!res1.reference_frame().has_value() || !res2.reference_frame().has_value()) {
+        return bp_type_id;
+    }
+
+    core::ReferenceFrame frame1 = res1.reference_frame().value();
+    core::ReferenceFrame frame2 = res2.reference_frame().value();
+
+    if (result.dir_z <= 0.0) {
+        geometry::Matrix3D rot2 = frame2.rotation();
+        geometry::Vector3D y_col = rot2.column(1);
+        geometry::Vector3D z_col = rot2.column(2);
+        rot2.set_column(1, -y_col);
+        rot2.set_column(2, -z_col);
+        frame2 = core::ReferenceFrame(rot2, frame2.origin());
+    }
+
+    core::BasePairStepParameters params = param_calculator_.calculate_step_parameters(frame2, frame1);
+
+    // Match legacy bug
+    double shear = params.shift;
+    double stretch = params.slide;
+    double opening = params.twist;
+
+    char base1 = static_cast<char>(std::toupper(static_cast<unsigned char>(res1.one_letter_code())));
+    char base2 = static_cast<char>(std::toupper(static_cast<unsigned char>(res2.one_letter_code())));
+    std::string bp_type = std::string(1, base1) + std::string(1, base2);
+
+    const bool exceeds_thresholds = std::abs(stretch) > quality_constants::STRETCH_THRESHOLD ||
+                                    std::abs(opening) > quality_constants::OPENING_THRESHOLD;
+
+    if (exceeds_thresholds) {
+        return bp_type_id;
+    }
+
+    const bool is_wobble_range = std::abs(shear) >= quality_constants::WOBBLE_SHEAR_MIN &&
+                                 std::abs(shear) <= quality_constants::WOBBLE_SHEAR_MAX;
+
+    if (is_wobble_range) {
+        bp_type_id = 1;
+    }
+
+    const bool is_wc_shear_range = std::abs(shear) <= quality_constants::WC_SHEAR_MAX;
+
+    if (is_wc_shear_range) {
+        for (const auto& wc : WC_LIST) {
+            if (bp_type == wc) {
+                bp_type_id = 2;
+                break;
+            }
+        }
+    }
+
+    return bp_type_id;
+}
+
 } // namespace algorithms
 } // namespace x3dna

@@ -5,11 +5,11 @@
 
 #include <gtest/gtest.h>
 #include <x3dna/io/pdb_parser.hpp>
-#include <x3dna/core/residue/residue.hpp>
+#include <x3dna/core/structure/residue.hpp>
 #include <sstream>
 
 using namespace x3dna::io;
-using namespace x3dna::core::poly;  // Polymorphic types
+using namespace x3dna::core::structure;  // Polymorphic types
 
 class PdbParserPolyTest : public ::testing::Test {
 protected:
