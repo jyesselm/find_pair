@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/residue/residue.hpp>  // Polymorphic types
 #include <x3dna/core/atom.hpp>
 
 namespace x3dna {
@@ -98,6 +99,29 @@ public:
     [[nodiscard]] static DetailedHBondResult find_hydrogen_bonds_detailed(const core::Residue& res1,
                                                                           const core::Residue& res2, double hb_lower,
                                                                           double hb_dist1, double hb_dist2 = 4.5);
+
+    // === Polymorphic overloads ===
+
+    /**
+     * @brief Count H-bonds simply for polymorphic residues
+     */
+    static void count_simple(const core::poly::IResidue& res1, const core::poly::IResidue& res2, double hb_lower,
+                             double hb_dist1, const std::string& hb_atoms, int& num_base_hb, int& num_o2_hb);
+
+    /**
+     * @brief Find hydrogen bonds between two polymorphic residues
+     */
+    [[nodiscard]] static std::vector<HydrogenBondResult> find_hydrogen_bonds(const core::poly::IResidue& res1,
+                                                                             const core::poly::IResidue& res2,
+                                                                             double hb_lower, double hb_dist1);
+
+    /**
+     * @brief Find hydrogen bonds and return detailed comparison info for polymorphic residues
+     */
+    [[nodiscard]] static DetailedHBondResult find_hydrogen_bonds_detailed(const core::poly::IResidue& res1,
+                                                                          const core::poly::IResidue& res2,
+                                                                          double hb_lower, double hb_dist1,
+                                                                          double hb_dist2 = 4.5);
 
 private:
     /**

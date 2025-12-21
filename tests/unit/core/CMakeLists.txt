@@ -96,3 +96,39 @@ target_link_libraries(test_structure_legacy_order
 
 gtest_discover_tests(test_structure_legacy_order)
 
+add_executable(test_residue_hierarchy
+    test_residue_hierarchy.cpp
+)
+
+target_link_libraries(test_residue_hierarchy
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_residue_hierarchy)
+
+add_executable(test_chain_polymorphic
+    test_chain_polymorphic.cpp
+)
+
+target_link_libraries(test_chain_polymorphic
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_chain_polymorphic)
+
+add_executable(test_structure_polymorphic
+    test_structure_polymorphic.cpp
+)
+
+target_link_libraries(test_structure_polymorphic
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_structure_polymorphic)
+

@@ -16,6 +16,7 @@
 #include <map>
 #include <vector>
 #include <x3dna/core/structure.hpp>
+#include <x3dna/core/residue/residue.hpp>  // Polymorphic types
 #include <x3dna/core/atom.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/io/residue_key.hpp>
@@ -81,6 +82,32 @@ public:
      * @throws ParseError if content cannot be parsed
      */
     core::Structure parse_string(const std::string& content);
+
+    // === Polymorphic Structure parsing ===
+
+    /**
+     * @brief Parse PDB file to polymorphic Structure
+     * @param path Path to PDB file (.pdb or .pdb.gz)
+     * @return Polymorphic Structure object
+     * @throws ParseError if file cannot be read or parsed
+     */
+    core::poly::Structure parse_file_poly(const std::filesystem::path& path);
+
+    /**
+     * @brief Parse PDB stream to polymorphic Structure
+     * @param stream Input stream containing PDB data
+     * @return Polymorphic Structure object
+     * @throws ParseError if stream cannot be read or parsed
+     */
+    core::poly::Structure parse_stream_poly(std::istream& stream);
+
+    /**
+     * @brief Parse PDB string to polymorphic Structure
+     * @param content String containing PDB file content
+     * @return Polymorphic Structure object
+     * @throws ParseError if content cannot be parsed
+     */
+    core::poly::Structure parse_string_poly(const std::string& content);
 
     /**
      * @brief Set whether to include HETATM records
@@ -225,6 +252,20 @@ private:
                                                   const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms,
                                                   const std::map<ResidueKey, int>& legacy_idx_map,
                                                   const std::vector<std::string>& chain_order) const;
+
+    /**
+     * @brief Build polymorphic Structure from grouped residue atoms
+     * @param pdb_id Structure identifier
+     * @param residue_atoms Map of residue key to atoms
+     * @param legacy_idx_map Map of residue key to legacy index (preserves PDB file order)
+     * @param chain_order Vector of chain IDs in file encounter order
+     * @return Polymorphic Structure object
+     */
+    core::poly::Structure build_poly_structure_from_residues(
+        const std::string& pdb_id,
+        const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms,
+        const std::map<ResidueKey, int>& legacy_idx_map,
+        const std::vector<std::string>& chain_order) const;
 };
 
 } // namespace io

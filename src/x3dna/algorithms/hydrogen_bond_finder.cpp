@@ -415,5 +415,167 @@ char HydrogenBondFinder::get_base_type_for_hbond(const core::Residue& residue) {
     return determine_base_type_from_atoms(residue);
 }
 
+// === Polymorphic implementations ===
+
+namespace {
+// Helper to check if polymorphic residue has a specific atom
+bool has_atom_poly(const core::poly::IResidue& residue, const char* name) {
+    for (const auto& atom : residue.atoms()) {
+        if (atom.name() == name)
+            return true;
+    }
+    return false;
+}
+
+// Determine purine type (A or G) from atoms for polymorphic residue
+char determine_purine_type_poly(const core::poly::IResidue& residue) {
+    const bool has_o6 = has_atom_poly(residue, "O6");
+    const bool has_n6 = has_atom_poly(residue, "N6");
+    return (has_o6 || !has_n6) ? 'G' : 'A';
+}
+
+// Determine pyrimidine type (C, T, or U) from atoms for polymorphic residue
+char determine_pyrimidine_type_poly(const core::poly::IResidue& residue) {
+    if (has_atom_poly(residue, "N4"))
+        return 'C';
+    if (has_atom_poly(residue, "C5M") || has_atom_poly(residue, "C7"))
+        return 'T';
+    return 'U';
+}
+
+// Determine base type from atoms for unknown polymorphic residues
+char determine_base_type_from_atoms_poly(const core::poly::IResidue& residue) {
+    const bool has_n9 = has_atom_poly(residue, "N9");
+    const bool has_n1 = has_atom_poly(residue, "N1");
+    const bool has_c6 = has_atom_poly(residue, "C6");
+
+    const bool is_purine = has_n9 || (has_n1 && has_c6);
+    const bool is_pyrimidine = has_n1 && !has_c6;
+
+    if (is_purine) {
+        return determine_purine_type_poly(residue);
+    }
+    if (is_pyrimidine) {
+        return determine_pyrimidine_type_poly(residue);
+    }
+    return '?';
+}
+
+// Get base type for H-bond detection from polymorphic residue
+char get_base_type_for_hbond_poly(const core::poly::IResidue& residue) {
+    // For nucleotides, use one_letter_code
+    const auto* nucleotide = dynamic_cast<const core::poly::INucleotide*>(&residue);
+    if (nucleotide) {
+        char code = nucleotide->one_letter_code();
+        if (code != '?') {
+            return code;
+        }
+    }
+
+    // Fall back to atom-based detection
+    return determine_base_type_from_atoms_poly(residue);
+}
+} // namespace
+
+void HydrogenBondFinder::count_simple(const core::poly::IResidue& res1, const core::poly::IResidue& res2,
+                                      double hb_lower, double hb_dist1, const std::string& hb_atoms,
+                                      int& num_base_hb, int& num_o2_hb) {
+    num_base_hb = 0;
+    num_o2_hb = 0;
+
+    // Loop through all atom pairs
+    for (const auto& a1 : res1.atoms()) {
+        for (const auto& a2 : res2.atoms()) {
+            // Check distance
+            double dist = (a1.position() - a2.position()).length();
+
+            if (dist < hb_lower || dist > hb_dist1) {
+                continue;
+            }
+
+            bool atom1_is_base = hydrogen_bond::is_base_atom(a1.name());
+            bool atom2_is_base = hydrogen_bond::is_base_atom(a2.name());
+            bool both_base = atom1_is_base && atom2_is_base;
+            bool not_o2prime = (a1.name() != "O2'" && a2.name() != "O2'");
+
+            if (both_base && not_o2prime) {
+                if (hydrogen_bond::good_hb_atoms(a1.name(), a2.name(), hb_atoms)) {
+                    num_base_hb++;
+                }
+            }
+
+            if (a1.name() == "O2'" || a2.name() == "O2'") {
+                num_o2_hb++;
+            }
+        }
+    }
+}
+
+std::vector<HydrogenBondResult> HydrogenBondFinder::find_hydrogen_bonds(const core::poly::IResidue& res1,
+                                                                        const core::poly::IResidue& res2,
+                                                                        double hb_lower, double hb_dist1) {
+    auto detailed = find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1,
+                                                 validation_constants::HB_DEFAULT_DIST2);
+    return detailed.final_hbonds;
+}
+
+DetailedHBondResult HydrogenBondFinder::find_hydrogen_bonds_detailed(const core::poly::IResidue& res1,
+                                                                     const core::poly::IResidue& res2,
+                                                                     double hb_lower, double hb_dist1,
+                                                                     double hb_dist2) {
+    DetailedHBondResult result;
+
+    // Step 1: Find all potential H-bonds
+    for (const auto& atom1 : res1.atoms()) {
+        for (const auto& atom2 : res2.atoms()) {
+            Vector3D diff = atom1.position() - atom2.position();
+            double dist = diff.length();
+
+            if (dist < hb_lower || dist > hb_dist1) {
+                continue;
+            }
+
+            if (hydrogen_bond::good_hb_atoms(atom1.name(), atom2.name(), ".O.N")) {
+                HydrogenBondResult hbond;
+                hbond.donor_atom = atom1.name();
+                hbond.acceptor_atom = atom2.name();
+                hbond.distance = dist;
+                hbond.type = '-';
+                hbond.linkage_type = 0;
+                result.initial_hbonds.push_back(hbond);
+            }
+        }
+    }
+
+    if (result.initial_hbonds.empty()) {
+        return result;
+    }
+
+    // Step 2: Resolve conflicts
+    result.after_conflict_resolution = result.initial_hbonds;
+    resolve_conflicts(result.after_conflict_resolution, hb_lower, hb_dist2);
+
+    // Step 3: Validate H-bonds
+    result.after_validation = result.after_conflict_resolution;
+    char base1 = get_base_type_for_hbond_poly(res1);
+    char base2 = get_base_type_for_hbond_poly(res2);
+    validate_hbonds(result.after_validation, base1, base2);
+
+    // Step 4: Filter to only H-bonds with type != ' '
+    for (const auto& hbond : result.after_validation) {
+        if (hbond.type != ' ') {
+            result.final_hbonds.push_back(hbond);
+
+            const bool is_good_hbond = hbond.type == '-' && hbond.distance >= validation_constants::HB_GOOD_MIN &&
+                                       hbond.distance <= validation_constants::HB_GOOD_MAX;
+            if (is_good_hbond) {
+                result.num_good_hb++;
+            }
+        }
+    }
+
+    return result;
+}
+
 } // namespace algorithms
 } // namespace x3dna

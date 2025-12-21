@@ -111,9 +111,64 @@ void pia_fit(double minx, double miny, double mid, double sclx, double scly, con
 
 } // anonymous namespace
 
-double OverlapCalculator::calculate(const core::Residue& res1, const core::Residue& res2,
-                                    const geometry::Vector3D& oave, const geometry::Vector3D& zave) {
+// Helper function template to get ring coordinates - works with both Residue and IResidue
+namespace {
+template<typename ResidueType>
+std::vector<geometry::Vector3D> get_ring_coords_impl(const ResidueType& residue, const geometry::Vector3D& oave) {
+    std::vector<geometry::Vector3D> ring_coords;
 
+    // Ring atoms: C4, N3, C2, N1, C6, C5, N7, C8, N9
+    // Pyrimidines use 6 atoms, purines use 9
+    static const std::vector<std::string> RING_ATOMS_ALL = {"C4", "N3", "C2", "N1", "C6",
+                                                            "C5", "N7", "C8", "N9"};
+
+    // Find ring atoms in residue
+    std::vector<const core::Atom*> ring_atoms;
+    std::set<std::string> ring_atom_names;
+
+    for (const auto& ring_name : RING_ATOMS_ALL) {
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == ring_name) {
+                ring_atoms.push_back(&atom);
+                ring_atom_names.insert(atom.name());
+                break;
+            }
+        }
+    }
+
+    // For each ring atom, find ONE exocyclic atom (connected non-ring, non-hydrogen atom)
+    for (const auto* ring_atom : ring_atoms) {
+        const core::Atom* exocyclic_atom = nullptr;
+        double min_dist = validation_constants::BOND_DISTANCE;
+
+        for (const auto& atom : residue.atoms()) {
+            // Skip ring atoms
+            if (ring_atom_names.find(atom.name()) != ring_atom_names.end()) {
+                continue;
+            }
+            // Skip hydrogen atoms (matches legacy get_cntatom which skips idx==3)
+            // With trimmed atom names, check first character for 'H'
+            if (!atom.name().empty() && atom.name()[0] == 'H') {
+                continue;
+            }
+            double dist = (atom.position() - ring_atom->position()).length();
+            if (dist < min_dist && dist > validation_constants::MIN_ATOM_DISTANCE) {
+                min_dist = dist;
+                exocyclic_atom = &atom;
+            }
+        }
+
+        // Use exocyclic atom if found, otherwise use ring atom itself (matches legacy)
+        const core::Atom* atom_to_use = (exocyclic_atom != nullptr) ? exocyclic_atom : ring_atom;
+        ring_coords.push_back(atom_to_use->position() - oave);
+    }
+
+    return ring_coords;
+}
+
+template<typename ResidueType>
+double calculate_impl(const ResidueType& res1, const ResidueType& res2,
+                      const geometry::Vector3D& oave, const geometry::Vector3D& zave) {
     // Match legacy get_oarea() logic (org/src/ana_fncs.c lines 3327-3358)
     // Steps:
     // 1. Get ring atoms for both residues (with exocyclic atoms)
@@ -121,8 +176,8 @@ double OverlapCalculator::calculate(const core::Residue& res1, const core::Resid
     // 3. Calculate polygon intersection area
 
     // Step 1: Get ring coordinates with exocyclic atoms for both residues
-    std::vector<geometry::Vector3D> ring_coords1 = get_ring_coordinates_with_exocyclic(res1, oave);
-    std::vector<geometry::Vector3D> ring_coords2 = get_ring_coordinates_with_exocyclic(res2, oave);
+    std::vector<geometry::Vector3D> ring_coords1 = get_ring_coords_impl(res1, oave);
+    std::vector<geometry::Vector3D> ring_coords2 = get_ring_coords_impl(res2, oave);
 
     // Need at least 3 points to form a polygon
     if (ring_coords1.size() < 3 || ring_coords2.size() < 3) {
@@ -196,61 +251,29 @@ double OverlapCalculator::calculate(const core::Residue& res1, const core::Resid
     }
 
     // Step 3: Calculate polygon intersection area
-    return calculate_polygon_intersection(poly1, poly2);
+    return OverlapCalculator::calculate_polygon_intersection(poly1, poly2);
+}
+} // anonymous namespace
+
+double OverlapCalculator::calculate(const core::Residue& res1, const core::Residue& res2,
+                                    const geometry::Vector3D& oave, const geometry::Vector3D& zave) {
+    return calculate_impl(res1, res2, oave, zave);
 }
 
-std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exocyclic(const core::Residue& residue,
-                                                                                       const geometry::Vector3D& oave) {
+double OverlapCalculator::calculate(const core::poly::IResidue& res1, const core::poly::IResidue& res2,
+                                    const geometry::Vector3D& oave, const geometry::Vector3D& zave) {
+    return calculate_impl(res1, res2, oave, zave);
+}
 
-    std::vector<geometry::Vector3D> ring_coords;
+// Legacy get_ring_coordinates_with_exocyclic implementations delegate to template
+std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exocyclic(
+    const core::Residue& residue, const geometry::Vector3D& oave) {
+    return get_ring_coords_impl(residue, oave);
+}
 
-    // Ring atoms: C4, N3, C2, N1, C6, C5, N7, C8, N9
-    // Pyrimidines use 6 atoms, purines use 9
-    static const std::vector<std::string> RING_ATOMS_ALL = {"C4", "N3", "C2", "N1", "C6",
-                                                            "C5", "N7", "C8", "N9"};
-
-    // Find ring atoms in residue
-    std::vector<const core::Atom*> ring_atoms;
-    std::set<std::string> ring_atom_names;
-
-    for (const auto& ring_name : RING_ATOMS_ALL) {
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == ring_name) {
-                ring_atoms.push_back(&atom);
-                ring_atom_names.insert(atom.name());
-                break;
-            }
-        }
-    }
-
-    // For each ring atom, find ONE exocyclic atom (connected non-ring, non-hydrogen atom)
-    for (const auto* ring_atom : ring_atoms) {
-        const core::Atom* exocyclic_atom = nullptr;
-        double min_dist = validation_constants::BOND_DISTANCE;
-
-        for (const auto& atom : residue.atoms()) {
-            // Skip ring atoms
-            if (ring_atom_names.find(atom.name()) != ring_atom_names.end()) {
-                continue;
-            }
-            // Skip hydrogen atoms (matches legacy get_cntatom which skips idx==3)
-            // With trimmed atom names, check first character for 'H'
-            if (!atom.name().empty() && atom.name()[0] == 'H') {
-                continue;
-            }
-            double dist = (atom.position() - ring_atom->position()).length();
-            if (dist < min_dist && dist > validation_constants::MIN_ATOM_DISTANCE) {
-                min_dist = dist;
-                exocyclic_atom = &atom;
-            }
-        }
-
-        // Use exocyclic atom if found, otherwise use ring atom itself (matches legacy)
-        const core::Atom* atom_to_use = (exocyclic_atom != nullptr) ? exocyclic_atom : ring_atom;
-        ring_coords.push_back(atom_to_use->position() - oave);
-    }
-
-    return ring_coords;
+std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exocyclic(
+    const core::poly::IResidue& residue, const geometry::Vector3D& oave) {
+    return get_ring_coords_impl(residue, oave);
 }
 
 double OverlapCalculator::calculate_polygon_intersection(const std::vector<Point2D>& poly1,

@@ -8,6 +8,7 @@
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/constants.hpp>
 #include <x3dna/core/modified_nucleotide_registry.hpp>
+#include <x3dna/core/residue/residue.hpp>  // Polymorphic types
 #include <gemmi/pdb.hpp>
 #include <gemmi/mmread.hpp>
 #include <gemmi/gz.hpp>
@@ -357,6 +358,265 @@ core::Structure PdbParser::build_structure_from_residues(
         auto it = chains.find(chain_id);
         if (it != chains.end()) {
             structure.add_chain(it->second);
+        }
+    }
+
+    return structure;
+}
+
+// === Polymorphic Structure parsing ===
+
+core::poly::Structure PdbParser::parse_file_poly(const std::filesystem::path& path) {
+    if (!std::filesystem::exists(path)) {
+        throw ParseError("PDB file does not exist: " + path.string());
+    }
+
+    try {
+        gemmi::Structure gemmi_struct = gemmi::read_structure(gemmi::MaybeGzipped(path.string()));
+
+        std::string pdb_id = path.stem().string();
+        if (!gemmi_struct.name.empty()) {
+            pdb_id = gemmi_struct.name;
+        }
+
+        // Reuse the atom collection logic from convert_gemmi_structure
+        std::map<ResidueKey, std::vector<core::Atom>> residue_atoms;
+        std::vector<std::string> chain_order;
+        int legacy_atom_idx = 1;
+        std::map<ResidueKey, int> legacy_residue_idx_map;
+        int legacy_residue_idx = 1;
+
+        if (gemmi_struct.models.empty()) {
+            return core::poly::Structure(pdb_id);
+        }
+
+        const gemmi::Model& model = gemmi_struct.models[0];
+        int model_number = 1;
+
+        for (const gemmi::Chain& gemmi_chain : model.chains) {
+            std::string chain_id = gemmi_chain.name;
+
+            if (std::find(chain_order.begin(), chain_order.end(), chain_id) == chain_order.end()) {
+                chain_order.push_back(chain_id);
+            }
+
+            for (const gemmi::Residue& gemmi_residue : gemmi_chain.residues) {
+                std::string original_residue_name = gemmi_residue.name;
+                std::string residue_name = normalize_residue_name_from_gemmi(original_residue_name);
+                int residue_seq = gemmi_residue.seqid.num.value;
+
+                std::string insertion;
+                if (gemmi_residue.seqid.icode != ' ' && gemmi_residue.seqid.icode != '\0') {
+                    insertion = std::string(1, gemmi_residue.seqid.icode);
+                }
+
+                bool is_hetatm = (gemmi_residue.het_flag == 'H');
+
+                if (is_hetatm) {
+                    bool is_modified_nuc = is_modified_nucleotide_name(residue_name);
+                    if (!include_hetatm_ && !is_modified_nuc) {
+                        continue;
+                    }
+                    if (!include_waters_ && is_water(residue_name)) {
+                        continue;
+                    }
+                }
+
+                for (const gemmi::Atom& gemmi_atom : gemmi_residue.atoms) {
+                    char alt_loc = gemmi_atom.altloc;
+                    if (alt_loc == '\0') {
+                        alt_loc = ' ';
+                    }
+
+                    if (!check_alt_loc_filter(alt_loc)) {
+                        continue;
+                    }
+
+                    std::string original_atom_name = gemmi_atom.name;
+                    std::string atom_name = normalize_atom_name_from_gemmi(original_atom_name);
+
+                    auto builder = core::Atom::create(atom_name, geometry::Vector3D(gemmi_atom.pos.x, gemmi_atom.pos.y,
+                                                                                    gemmi_atom.pos.z))
+                                       .alt_loc(alt_loc)
+                                       .occupancy(gemmi_atom.occ)
+                                       .b_factor(gemmi_atom.b_iso)
+                                       .atom_serial(gemmi_atom.serial)
+                                       .model_number(model_number);
+
+                    if (gemmi_atom.element != gemmi::El::X) {
+                        builder.element(gemmi_atom.element.name());
+                    }
+
+                    core::Atom atom = builder.build();
+                    atom.set_legacy_atom_idx(legacy_atom_idx++);
+
+                    char record_type = is_hetatm ? 'H' : 'A';
+                    ResidueKey key{residue_name, chain_id, residue_seq, insertion, record_type};
+                    if (legacy_residue_idx_map.find(key) == legacy_residue_idx_map.end()) {
+                        legacy_residue_idx_map[key] = legacy_residue_idx++;
+                    }
+
+                    residue_atoms[key].push_back(atom);
+                }
+            }
+        }
+
+        return build_poly_structure_from_residues(pdb_id, residue_atoms, legacy_residue_idx_map, chain_order);
+
+    } catch (const ParseError&) {
+        throw;
+    } catch (const std::exception& e) {
+        throw ParseError("Error parsing PDB file " + path.string() + ": " + e.what());
+    }
+}
+
+core::poly::Structure PdbParser::parse_stream_poly(std::istream& stream) {
+    if (!stream.good()) {
+        throw ParseError("Input stream is not valid");
+    }
+
+    std::stringstream buffer;
+    buffer << stream.rdbuf();
+    return parse_string_poly(buffer.str());
+}
+
+core::poly::Structure PdbParser::parse_string_poly(const std::string& content) {
+    try {
+        if (content.empty()) {
+            throw ParseError("Empty PDB content");
+        }
+
+        gemmi::Structure gemmi_struct = gemmi::read_pdb_string(content, "input");
+
+        std::string pdb_id = gemmi_struct.name;
+        if (pdb_id.empty()) {
+            pdb_id = "unknown";
+        }
+
+        // Reuse the atom collection logic
+        std::map<ResidueKey, std::vector<core::Atom>> residue_atoms;
+        std::vector<std::string> chain_order;
+        int legacy_atom_idx = 1;
+        std::map<ResidueKey, int> legacy_residue_idx_map;
+        int legacy_residue_idx = 1;
+
+        if (gemmi_struct.models.empty()) {
+            return core::poly::Structure(pdb_id);
+        }
+
+        const gemmi::Model& model = gemmi_struct.models[0];
+        int model_number = 1;
+
+        for (const gemmi::Chain& gemmi_chain : model.chains) {
+            std::string chain_id = gemmi_chain.name;
+
+            if (std::find(chain_order.begin(), chain_order.end(), chain_id) == chain_order.end()) {
+                chain_order.push_back(chain_id);
+            }
+
+            for (const gemmi::Residue& gemmi_residue : gemmi_chain.residues) {
+                std::string original_residue_name = gemmi_residue.name;
+                std::string residue_name = normalize_residue_name_from_gemmi(original_residue_name);
+                int residue_seq = gemmi_residue.seqid.num.value;
+
+                std::string insertion;
+                if (gemmi_residue.seqid.icode != ' ' && gemmi_residue.seqid.icode != '\0') {
+                    insertion = std::string(1, gemmi_residue.seqid.icode);
+                }
+
+                bool is_hetatm = (gemmi_residue.het_flag == 'H');
+
+                if (is_hetatm) {
+                    bool is_modified_nuc = is_modified_nucleotide_name(residue_name);
+                    if (!include_hetatm_ && !is_modified_nuc) {
+                        continue;
+                    }
+                    if (!include_waters_ && is_water(residue_name)) {
+                        continue;
+                    }
+                }
+
+                for (const gemmi::Atom& gemmi_atom : gemmi_residue.atoms) {
+                    char alt_loc = gemmi_atom.altloc;
+                    if (alt_loc == '\0') {
+                        alt_loc = ' ';
+                    }
+
+                    if (!check_alt_loc_filter(alt_loc)) {
+                        continue;
+                    }
+
+                    std::string original_atom_name = gemmi_atom.name;
+                    std::string atom_name = normalize_atom_name_from_gemmi(original_atom_name);
+
+                    auto builder = core::Atom::create(atom_name, geometry::Vector3D(gemmi_atom.pos.x, gemmi_atom.pos.y,
+                                                                                    gemmi_atom.pos.z))
+                                       .alt_loc(alt_loc)
+                                       .occupancy(gemmi_atom.occ)
+                                       .b_factor(gemmi_atom.b_iso)
+                                       .atom_serial(gemmi_atom.serial)
+                                       .model_number(model_number);
+
+                    if (gemmi_atom.element != gemmi::El::X) {
+                        builder.element(gemmi_atom.element.name());
+                    }
+
+                    core::Atom atom = builder.build();
+                    atom.set_legacy_atom_idx(legacy_atom_idx++);
+
+                    char record_type = is_hetatm ? 'H' : 'A';
+                    ResidueKey key{residue_name, chain_id, residue_seq, insertion, record_type};
+                    if (legacy_residue_idx_map.find(key) == legacy_residue_idx_map.end()) {
+                        legacy_residue_idx_map[key] = legacy_residue_idx++;
+                    }
+
+                    residue_atoms[key].push_back(atom);
+                }
+            }
+        }
+
+        return build_poly_structure_from_residues(pdb_id, residue_atoms, legacy_residue_idx_map, chain_order);
+
+    } catch (const ParseError&) {
+        throw;
+    } catch (const std::exception& e) {
+        throw ParseError("Error parsing PDB content: " + std::string(e.what()));
+    }
+}
+
+core::poly::Structure PdbParser::build_poly_structure_from_residues(
+    const std::string& pdb_id,
+    const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms,
+    const std::map<ResidueKey, int>& legacy_idx_map,
+    const std::vector<std::string>& chain_order) const {
+
+    core::poly::Structure structure(pdb_id);
+    std::map<std::string, core::poly::Chain> chains;
+
+    for (const auto& [key, atoms] : residue_atoms) {
+        if (atoms.empty()) {
+            continue;
+        }
+
+        // Use ResidueFactory to create the appropriate polymorphic type
+        auto residue = core::poly::ResidueFactory::create(
+            key.residue_name, key.residue_seq, key.chain_id, key.insertion_code, atoms);
+
+        // Set legacy_residue_idx from passed map
+        residue->set_legacy_residue_idx(legacy_idx_map.at(key));
+
+        // Store record_type in Structure map
+        structure.set_residue_record_type(key.chain_id, key.residue_seq, key.insertion_code, key.record_type);
+
+        auto [it, inserted] = chains.try_emplace(key.chain_id, key.chain_id);
+        it->second.add_residue(std::move(residue));
+    }
+
+    // Add chains in file encounter order
+    for (const auto& chain_id : chain_order) {
+        auto it = chains.find(chain_id);
+        if (it != chains.end()) {
+            structure.add_chain(std::move(it->second));
         }
     }
 
