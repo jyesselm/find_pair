@@ -296,15 +296,17 @@ def compare_frames(legacy_records: List[Dict], modern_records: List[Dict],
         if leg_num != mod_num:
             mismatches['num_matched_atoms'] = {'legacy': leg_num, 'modern': mod_num}
 
-        # Compare matched_atoms
+        # Compare matched_atoms (trim atom names for consistent comparison)
         leg_atoms = leg_rec.get('matched_atoms', [])
         mod_atoms = mod_rec.get('matched_atoms', [])
-        if set(leg_atoms) != set(mod_atoms):
+        leg_atoms_trimmed = set(trim_string(atom) for atom in leg_atoms)
+        mod_atoms_trimmed = set(trim_string(atom) for atom in mod_atoms)
+        if leg_atoms_trimmed != mod_atoms_trimmed:
             mismatches['matched_atoms'] = {
                 'legacy': leg_atoms,
                 'modern': mod_atoms,
-                'only_legacy': list(set(leg_atoms) - set(mod_atoms)),
-                'only_modern': list(set(mod_atoms) - set(leg_atoms))
+                'only_legacy': list(leg_atoms_trimmed - mod_atoms_trimmed),
+                'only_modern': list(mod_atoms_trimmed - leg_atoms_trimmed)
             }
         
         # Compare standard_template (compare only filename, not full path)

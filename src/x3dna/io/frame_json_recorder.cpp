@@ -29,10 +29,7 @@ size_t FrameJsonRecorder::record_base_frame_calc(core::Structure& structure, Jso
             continue;
         }
 
-        int legacy_residue_idx = 0;
-        if (!residue->atoms().empty()) {
-            legacy_residue_idx = residue->atoms()[0].legacy_residue_idx();
-        }
+        int legacy_residue_idx = residue->legacy_residue_idx();
 
         if (legacy_residue_idx <= 0) {
             continue;
@@ -65,10 +62,7 @@ size_t FrameJsonRecorder::record_ls_fitting(core::Structure& structure, JsonWrit
             continue;
         }
 
-        int legacy_residue_idx = 0;
-        if (!residue->atoms().empty()) {
-            legacy_residue_idx = residue->atoms()[0].legacy_residue_idx();
-        }
+        int legacy_residue_idx = residue->legacy_residue_idx();
 
         if (legacy_residue_idx <= 0) {
             continue;
@@ -100,10 +94,7 @@ size_t FrameJsonRecorder::record_frame_calc(core::Structure& structure, JsonWrit
             continue;
         }
 
-        int legacy_residue_idx = 0;
-        if (!residue->atoms().empty()) {
-            legacy_residue_idx = residue->atoms()[0].legacy_residue_idx();
-        }
+        int legacy_residue_idx = residue->legacy_residue_idx();
 
         if (legacy_residue_idx <= 0) {
             continue;

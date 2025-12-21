@@ -23,13 +23,14 @@ struct ResidueKey {
     std::string chain_id;     ///< Chain identifier (string for CIF compatibility)
     int residue_seq;          ///< Residue sequence number
     std::string insertion_code; ///< Insertion code (usually empty)
+    char record_type;         ///< PDB record type: 'A' for ATOM, 'H' for HETATM
 
     /**
      * @brief Comparison operator for map ordering
      */
     bool operator<(const ResidueKey& other) const {
-        return std::tie(chain_id, residue_seq, insertion_code, residue_name) <
-               std::tie(other.chain_id, other.residue_seq, other.insertion_code, other.residue_name);
+        return std::tie(chain_id, residue_seq, insertion_code, residue_name, record_type) <
+               std::tie(other.chain_id, other.residue_seq, other.insertion_code, other.residue_name, other.record_type);
     }
 
     /**
@@ -37,7 +38,7 @@ struct ResidueKey {
      */
     bool operator==(const ResidueKey& other) const {
         return residue_name == other.residue_name && chain_id == other.chain_id && residue_seq == other.residue_seq &&
-               insertion_code == other.insertion_code;
+               insertion_code == other.insertion_code && record_type == other.record_type;
     }
 };
 

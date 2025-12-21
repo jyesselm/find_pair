@@ -125,15 +125,17 @@ public:
                 auto residue_it = residue_idx_map.find(residue_key);
                 int legacy_residue_idx = (residue_it != residue_idx_map.end()) ? residue_it->second : 0;
 
-                // Set legacy indices on all atoms in this residue
+                // Set legacy_residue_idx on the residue itself
+                if (legacy_residue_idx > 0) {
+                    residue.set_legacy_residue_idx(legacy_residue_idx);
+                }
+
+                // Set legacy atom indices
                 for (auto& atom : residue.atoms()) {
                     auto atom_key = std::make_tuple(chain_id, residue_seq, insertion, atom.name());
                     auto atom_it = atom_idx_map.find(atom_key);
                     if (atom_it != atom_idx_map.end()) {
                         atom.set_legacy_atom_idx(atom_it->second);
-                    }
-                    if (legacy_residue_idx > 0) {
-                        atom.set_legacy_residue_idx(legacy_residue_idx);
                     }
                 }
             }
@@ -220,11 +222,40 @@ public:
         return std::nullopt;
     }
 
+    /**
+     * @brief Set record type for a residue
+     * @param chain_id Chain identifier
+     * @param seq_num Sequence number
+     * @param insertion Insertion code
+     * @param record_type 'A' for ATOM, 'H' for HETATM
+     */
+    void set_residue_record_type(const std::string& chain_id, int seq_num, const std::string& insertion,
+                                 char record_type) {
+        residue_record_types_[std::make_tuple(chain_id, seq_num, insertion)] = record_type;
+    }
+
+    /**
+     * @brief Get record type for a residue
+     * @param chain_id Chain identifier
+     * @param seq_num Sequence number
+     * @param insertion Insertion code
+     * @return 'A' for ATOM, 'H' for HETATM (default 'A' if not found)
+     */
+    [[nodiscard]] char get_residue_record_type(const std::string& chain_id, int seq_num,
+                                               const std::string& insertion) const {
+        auto key = std::make_tuple(chain_id, seq_num, insertion);
+        auto it = residue_record_types_.find(key);
+        return (it != residue_record_types_.end()) ? it->second : 'A';
+    }
+
 private:
     std::string pdb_id_;        // PDB identifier
     std::vector<Chain> chains_; // Chains in this structure
     // Note: Base pairs are NOT part of Structure - they are derived/calculated data
     // and should be managed separately (e.g., in algorithms/protocols)
+
+    // Map from (chain_id, seq_num, insertion) to record_type ('A' or 'H')
+    std::map<std::tuple<std::string, int, std::string>, char> residue_record_types_;
 };
 
 } // namespace core

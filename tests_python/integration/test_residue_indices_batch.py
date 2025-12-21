@@ -26,9 +26,12 @@ from scripts.test_utils import (
     load_valid_pdbs_fast
 )
 
-def generate_legacy_residue_indices(pdb_id: str, pdb_file: Path, output_dir: Path, 
+def generate_legacy_residue_indices(pdb_id: str, pdb_file: Path, output_dir: Path,
                                    legacy_exe: Path, project_root: Path) -> Tuple[bool, str]:
-    """Generate legacy residue_indices JSON."""
+    """Generate legacy residue_indices JSON - reuse existing files if available.
+
+    Legacy JSON can be cached since legacy code doesn't change.
+    """
     return generate_legacy_json(
         pdb_id, pdb_file, output_dir, legacy_exe, project_root,
         record_types=["residue_indices"]
@@ -36,7 +39,10 @@ def generate_legacy_residue_indices(pdb_id: str, pdb_file: Path, output_dir: Pat
 
 def generate_modern_residue_indices(pdb_id: str, pdb_file: Path, output_dir: Path,
                                    modern_exe: Path) -> Tuple[bool, str]:
-    """Generate modern residue_indices JSON."""
+    """Generate modern residue_indices JSON - ALWAYS regenerates from current build.
+
+    Modern JSON is always regenerated to catch regressions in the current build.
+    """
     return generate_modern_json(pdb_id, pdb_file, output_dir, modern_exe, stage="residue_indices")
 
 def compare_residue_indices_json(legacy_file: Path, modern_file: Path) -> Tuple[bool, Dict]:

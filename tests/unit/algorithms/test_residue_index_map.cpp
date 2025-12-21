@@ -17,11 +17,9 @@ using namespace x3dna::geometry;
 
 class ResidueIndexMapTest : public ::testing::Test {
 protected:
-    // Helper to create an atom with legacy residue index
-    Atom create_atom(const std::string& name, const Vector3D& pos, int legacy_idx) {
-        Atom atom(name, pos);
-        atom.set_legacy_residue_idx(legacy_idx);
-        return atom;
+    // Helper to create an atom (legacy_residue_idx is now set on Residue, not Atom)
+    Atom create_atom(const std::string& name, const Vector3D& pos, int /*legacy_idx*/) {
+        return Atom(name, pos);
     }
 
     // Create a simple structure for testing
@@ -34,16 +32,19 @@ protected:
         // Residue 1 (legacy idx 1)
         Residue res1("A", 1, "A");
         res1.add_atom(create_atom(" N9 ", Vector3D(0, 0, 0), 1));
+        res1.set_legacy_residue_idx(1);
         chain_a.add_residue(res1);
 
         // Residue 2 (legacy idx 2)
         Residue res2("G", 2, "A");
         res2.add_atom(create_atom(" N9 ", Vector3D(1, 0, 0), 2));
+        res2.set_legacy_residue_idx(2);
         chain_a.add_residue(res2);
 
         // Residue 3 (legacy idx 3)
         Residue res3("C", 3, "A");
         res3.add_atom(create_atom(" N1 ", Vector3D(2, 0, 0), 3));
+        res3.set_legacy_residue_idx(3);
         chain_a.add_residue(res3);
 
         structure.add_chain(chain_a);
@@ -54,11 +55,13 @@ protected:
         // Residue 4 (legacy idx 4)
         Residue res4("U", 1, "B");
         res4.add_atom(create_atom(" N1 ", Vector3D(3, 0, 0), 4));
+        res4.set_legacy_residue_idx(4);
         chain_b.add_residue(res4);
 
         // Residue 5 (legacy idx 5)
         Residue res5("T", 2, "B");
         res5.add_atom(create_atom(" N1 ", Vector3D(4, 0, 0), 5));
+        res5.set_legacy_residue_idx(5);
         chain_b.add_residue(res5);
 
         structure.add_chain(chain_b);

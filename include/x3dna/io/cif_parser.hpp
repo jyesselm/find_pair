@@ -218,10 +218,14 @@ private:
      * @brief Build Structure from grouped residue atoms
      * @param pdb_id Structure identifier
      * @param residue_atoms Map of residue key to atoms
+     * @param legacy_idx_map Map of residue key to legacy index (preserves PDB file order)
+     * @param chain_order Vector of chain IDs in file encounter order
      * @return Structure object
      */
-    core::Structure build_structure_from_residues(
-        const std::string& pdb_id, const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const;
+    core::Structure build_structure_from_residues(const std::string& pdb_id,
+                                                  const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms,
+                                                  const std::map<ResidueKey, int>& legacy_idx_map,
+                                                  const std::vector<std::string>& chain_order) const;
 };
 
 } // namespace io

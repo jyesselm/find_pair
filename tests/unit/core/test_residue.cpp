@@ -20,16 +20,16 @@ protected:
     void SetUp() override {
         // Create a cytosine residue with atoms
         residue_c_ = Residue("  C", 1, "A");
-        residue_c_.add_atom(Atom(" C1'", Vector3D(1.0, 2.0, 3.0), "  C", "A", 1));
-        residue_c_.add_atom(Atom(" N1 ", Vector3D(2.0, 3.0, 4.0), "  C", "A", 1));
-        residue_c_.add_atom(Atom(" C2 ", Vector3D(3.0, 4.0, 5.0), "  C", "A", 1));
-        residue_c_.add_atom(Atom(" N3 ", Vector3D(4.0, 5.0, 6.0), "  C", "A", 1));
+        residue_c_.add_atom(Atom(" C1'", Vector3D(1.0, 2.0, 3.0)));
+        residue_c_.add_atom(Atom(" N1 ", Vector3D(2.0, 3.0, 4.0)));
+        residue_c_.add_atom(Atom(" C2 ", Vector3D(3.0, 4.0, 5.0)));
+        residue_c_.add_atom(Atom(" N3 ", Vector3D(4.0, 5.0, 6.0)));
 
         // Create a guanine residue
         residue_g_ = Residue("  G", 2, "A");
-        residue_g_.add_atom(Atom(" C1'", Vector3D(5.0, 6.0, 7.0), "  G", "A", 2));
-        residue_g_.add_atom(Atom(" N9 ", Vector3D(6.0, 7.0, 8.0), "  G", "A", 2));
-        residue_g_.add_atom(Atom(" C4 ", Vector3D(7.0, 8.0, 9.0), "  G", "A", 2));
+        residue_g_.add_atom(Atom(" C1'", Vector3D(5.0, 6.0, 7.0)));
+        residue_g_.add_atom(Atom(" N9 ", Vector3D(6.0, 7.0, 8.0)));
+        residue_g_.add_atom(Atom(" C4 ", Vector3D(7.0, 8.0, 9.0)));
     }
 
     Residue residue_c_;
@@ -47,7 +47,7 @@ TEST_F(ResidueTest, DefaultConstructor) {
 
 TEST_F(ResidueTest, NameSeqNumChainConstructor) {
     Residue residue("  A", 10, "B");
-    EXPECT_EQ(residue.name(), "  A");
+    EXPECT_EQ(residue.name(), "A"); // Names are trimmed on construction
     EXPECT_EQ(residue.seq_num(), 10);
     EXPECT_EQ(residue.chain_id(), "B");
 }
@@ -68,7 +68,7 @@ TEST_F(ResidueTest, FindAtom) {
     // find_atom() accepts both padded and trimmed names
     auto atom = residue_c_.find_atom(" N1 ");
     ASSERT_TRUE(atom.has_value());
-    EXPECT_EQ(atom->name(), "N1");  // name() returns trimmed
+    EXPECT_EQ(atom->name(), "N1"); // name() returns trimmed
     EXPECT_EQ(atom->position(), Vector3D(2.0, 3.0, 4.0));
 }
 
@@ -143,7 +143,7 @@ TEST_F(ResidueTest, ReferenceFrame) {
 TEST_F(ResidueTest, ToJsonLegacy) {
     auto json = ResidueSerializer::to_legacy_json(residue_c_);
 
-    EXPECT_EQ(json["residue_name"], "  C");
+    EXPECT_EQ(json["residue_name"], "C"); // Names are trimmed
     EXPECT_EQ(json["residue_seq"], 1);
     EXPECT_EQ(json["chain_id"], "A");
     EXPECT_TRUE(json.contains("atoms"));
@@ -161,7 +161,7 @@ TEST_F(ResidueTest, FromJsonLegacy) {
 
     Residue residue = ResidueSerializer::from_legacy_json(j);
 
-    EXPECT_EQ(residue.name(), "  G");
+    EXPECT_EQ(residue.name(), "G"); // Names are trimmed on construction
     EXPECT_EQ(residue.seq_num(), 2);
     EXPECT_EQ(residue.chain_id(), "B");
     EXPECT_EQ(residue.num_atoms(), 2);
@@ -181,7 +181,7 @@ TEST_F(ResidueTest, JsonLegacyRoundTrip) {
 TEST_F(ResidueTest, ToJsonModern) {
     auto json = ResidueSerializer::to_json(residue_c_);
 
-    EXPECT_EQ(json["name"], "  C");
+    EXPECT_EQ(json["name"], "C"); // Names are trimmed
     EXPECT_EQ(json["seq_num"], 1);
     EXPECT_EQ(json["chain_id"], "A");
     EXPECT_TRUE(json.contains("atoms"));
@@ -199,7 +199,7 @@ TEST_F(ResidueTest, FromJsonModern) {
 
     Residue residue = ResidueSerializer::from_json(j);
 
-    EXPECT_EQ(residue.name(), "  A");
+    EXPECT_EQ(residue.name(), "A"); // Names are trimmed on construction
     EXPECT_EQ(residue.seq_num(), 3);
     EXPECT_EQ(residue.chain_id(), "C");
     EXPECT_EQ(residue.num_atoms(), 2);

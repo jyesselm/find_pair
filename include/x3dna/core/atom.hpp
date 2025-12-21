@@ -22,8 +22,8 @@ namespace core {
  * After construction, atoms are largely immutable except for legacy index metadata
  * which may be set during post-processing.
  *
- * Note: Atom names are stored TRIMMED for consistent comparisons. The original
- * padded name is stored in original_atom_name_ for JSON output compatibility.
+ * Note: Atom names are trimmed on construction and stored without padding.
+ * The original PDB 4-character format is not preserved (no longer needed after removing original_atom_name_).
  */
 class Atom {
 public:
@@ -34,28 +34,17 @@ public:
      */
     Atom() = default;
 
-    /**
-     * @brief Constructor with name and position
-     * @param name Atom name (e.g., " C1'", " N3 ") - will be trimmed
-     * @param position 3D position vector
-     */
-    Atom(const std::string& name, const geometry::Vector3D& position)
-        : name_(trim(name)), original_atom_name_(name), position_(position) {}
+    Atom(const Atom& other) = default;
+    Atom(Atom&& other) noexcept = default;
+    Atom& operator=(const Atom& other) = default;
+    Atom& operator=(Atom&& other) noexcept = default;
 
     /**
-     * @brief Constructor with full metadata
-     * @param name Atom name - will be trimmed
+     * @brief Constructor with name and position
+     * @param name Atom name (will be trimmed, e.g., " C1'" becomes "C1'", " N3 " becomes "N3")
      * @param position 3D position vector
-     * @param residue_name Residue name (e.g., "  C", "  G") - will be trimmed
-     * @param chain_id Chain identifier (e.g., "A", "B", "AA" for CIF) - will be trimmed
-     * @param residue_seq Residue sequence number
-     * @param record_type PDB record type (e.g., 'A' for ATOM, 'H' for HETATM)
      */
-    Atom(const std::string& name, const geometry::Vector3D& position, const std::string& residue_name,
-         const std::string& chain_id, int residue_seq, char record_type = 'A')
-        : name_(trim(name)), original_atom_name_(name), position_(position),
-          residue_name_(trim(residue_name)), original_residue_name_(residue_name),
-          chain_id_(trim(chain_id)), residue_seq_(residue_seq), record_type_(record_type) {}
+    Atom(const std::string& name, const geometry::Vector3D& position) : name_(trim(name)), position_(position) {}
 
     /**
      * @brief Create a Builder for fluent atom construction
@@ -68,59 +57,27 @@ public:
     // Getters (all const, returning const references where appropriate)
 
     /**
-     * @brief Get trimmed atom name (for comparisons)
+     * @brief Get atom name (trimmed, without padding)
      */
     [[nodiscard]] const std::string& name() const {
         return name_;
     }
 
     /**
-     * @brief Get original padded atom name (for JSON output)
+     * @brief Check if atom name matches (case-sensitive, handles both trimmed and padded input)
+     * @param name_to_match Name to match against (can be trimmed like "C1'" or padded like " C1'")
+     * @return True if names match after trimming
      */
-    [[nodiscard]] const std::string& original_atom_name() const {
-        return original_atom_name_;
+    [[nodiscard]] bool name_matches(const std::string& name_to_match) const {
+        return name_ == trim(name_to_match);
     }
 
     [[nodiscard]] const geometry::Vector3D& position() const {
         return position_;
     }
 
-    /**
-     * @brief Get trimmed residue name (for comparisons)
-     */
-    [[nodiscard]] const std::string& residue_name() const {
-        return residue_name_;
-    }
-
-    /**
-     * @brief Get original padded residue name (for JSON output)
-     */
-    [[nodiscard]] const std::string& original_residue_name() const {
-        return original_residue_name_;
-    }
-
-    /**
-     * @brief Get trimmed chain ID
-     */
-    [[nodiscard]] const std::string& chain_id() const {
-        return chain_id_;
-    }
-
-    [[nodiscard]] int residue_seq() const {
-        return residue_seq_;
-    }
-    [[nodiscard]] char record_type() const {
-        return record_type_;
-    }
     [[nodiscard]] char alt_loc() const {
         return alt_loc_;
-    }
-
-    /**
-     * @brief Get trimmed insertion code
-     */
-    [[nodiscard]] const std::string& insertion() const {
-        return insertion_;
     }
 
     [[nodiscard]] double occupancy() const {
@@ -141,9 +98,6 @@ public:
     [[nodiscard]] int legacy_atom_idx() const {
         return legacy_atom_idx_;
     }
-    [[nodiscard]] int legacy_residue_idx() const {
-        return legacy_residue_idx_;
-    }
 
     // Post-construction setters for parsing workflow
     // These are retained because the values depend on filtering/ordering decisions
@@ -161,13 +115,6 @@ public:
      */
     void set_legacy_atom_idx(int legacy_atom_idx) {
         legacy_atom_idx_ = legacy_atom_idx;
-    }
-
-    /**
-     * @brief Set legacy residue index (for post-construction index fixing)
-     */
-    void set_legacy_residue_idx(int legacy_residue_idx) {
-        legacy_residue_idx_ = legacy_residue_idx;
     }
 
     /**
@@ -237,23 +184,15 @@ public:
 private:
     friend class Builder;
 
-    std::string name_;                  // Trimmed atom name (for comparisons)
-    std::string original_atom_name_;    // Original atom name with padding (for JSON output)
-    geometry::Vector3D position_;       // 3D coordinates
-    std::string residue_name_;          // Trimmed residue name (for comparisons)
-    std::string original_residue_name_; // Original residue name with padding (for JSON output)
-    std::string chain_id_;              // Chain identifier (trimmed)
-    int residue_seq_ = 0;               // Residue sequence number
-    char record_type_ = 'A';            // PDB record type ('A' = ATOM, 'H' = HETATM)
-    char alt_loc_ = ' ';                // Alternate location indicator (PDB column 17)
-    std::string insertion_;             // Insertion code (trimmed)
-    double occupancy_ = 1.0;            // Occupancy (PDB columns 55-60, default 1.0)
-    int atom_serial_ = 0;               // Atom serial number (PDB column 7-11)
-    int model_number_ = 0;              // Model number (from MODEL record, 0 if none)
-    double b_factor_ = 0.0;             // B-factor/temperature factor (PDB column 61-66)
-    std::string element_;               // Element symbol (PDB column 77-78)
-    int legacy_atom_idx_ = 0;           // Legacy atom index for direct comparison (0 if not set)
-    int legacy_residue_idx_ = 0;        // Legacy residue index for direct comparison (0 if not set)
+    std::string name_;            // Atom name (trimmed, without padding)
+    geometry::Vector3D position_; // 3D coordinates
+    char alt_loc_ = ' ';          // Alternate location indicator (PDB column 17)
+    double occupancy_ = 1.0;      // Occupancy (PDB columns 55-60, default 1.0)
+    int atom_serial_ = 0;         // Atom serial number (PDB column 7-11)
+    int model_number_ = 0;        // Model number (from MODEL record, 0 if none)
+    double b_factor_ = 0.0;       // B-factor/temperature factor (PDB column 61-66)
+    std::string element_;         // Element symbol (PDB column 77-78)
+    int legacy_atom_idx_ = 0;     // Legacy atom index for direct comparison (0 if not set)
 };
 
 /**
@@ -261,56 +200,27 @@ private:
  * @brief Fluent builder for constructing Atom objects
  *
  * Usage:
- *   auto atom = Atom::create("CA", position)
- *       .residue_name("ALA")
- *       .chain_id("A")
- *       .residue_seq(42)
+ *   auto atom = Atom::create(" CA ", position)
+ *       .alt_loc('A')
+ *       .occupancy(1.0)
  *       .build();
  *
- * Note: All string values are automatically trimmed. Original values are preserved
- * for JSON output compatibility.
+ * Note: Atom names are trimmed on construction, so " CA " becomes "CA".
  */
 class Atom::Builder {
 public:
     /**
      * @brief Constructor with required fields
-     * @param name Atom name (will be trimmed, original stored)
+     * @param name Atom name (will be trimmed)
      * @param position 3D position
      */
     Builder(const std::string& name, const geometry::Vector3D& position) {
         atom_.name_ = trim(name);
-        atom_.original_atom_name_ = name;
         atom_.position_ = position;
-    }
-
-    Builder& residue_name(const std::string& name) {
-        atom_.residue_name_ = trim(name);
-        atom_.original_residue_name_ = name;
-        return *this;
-    }
-
-    Builder& chain_id(const std::string& id) {
-        atom_.chain_id_ = trim(id);
-        return *this;
-    }
-
-    Builder& residue_seq(int seq) {
-        atom_.residue_seq_ = seq;
-        return *this;
-    }
-
-    Builder& record_type(char type) {
-        atom_.record_type_ = type;
-        return *this;
     }
 
     Builder& alt_loc(char loc) {
         atom_.alt_loc_ = loc;
-        return *this;
-    }
-
-    Builder& insertion(const std::string& ins) {
-        atom_.insertion_ = trim(ins);
         return *this;
     }
 
@@ -339,33 +249,8 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Set original atom name explicitly (for parser normalization)
-     *
-     * This is used when the parser normalizes atom names (e.g., O1' → O4').
-     * The normalized name should be set via the constructor, and the original
-     * pre-normalization name can be set here.
-     */
-    Builder& original_atom_name(const std::string& name) {
-        atom_.original_atom_name_ = name;
-        return *this;
-    }
-
-    /**
-     * @brief Set original residue name explicitly (for parser normalization)
-     */
-    Builder& original_residue_name(const std::string& name) {
-        atom_.original_residue_name_ = name;
-        return *this;
-    }
-
     Builder& legacy_atom_idx(int idx) {
         atom_.legacy_atom_idx_ = idx;
-        return *this;
-    }
-
-    Builder& legacy_residue_idx(int idx) {
-        atom_.legacy_residue_idx_ = idx;
         return *this;
     }
 

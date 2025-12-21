@@ -21,15 +21,15 @@ protected:
         // Create a test experimental residue (adenine)
         // Use create_from_atoms for proper residue type initialization
         std::vector<Atom> exp_atoms = {
-            Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", "A", 1),
-            Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", "A", 1),
-            Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", "A", 1),
-            Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", "A", 1),
-            Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", "A", 1),
-            Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", "A", 1),
-            Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", "A", 1),
-            Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", "A", 1),
-            Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", "A", 1)
+            Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000)),
+            Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000)),
+            Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000)),
+            Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000)),
+            Atom(" C6 ", Vector3D(0.369, 1.398, 0.000)),
+            Atom(" C5 ", Vector3D(0.071, 2.771, 0.000)),
+            Atom(" N7 ", Vector3D(0.877, 3.902, 0.000)),
+            Atom(" C8 ", Vector3D(0.024, 4.897, 0.000)),
+            Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000))
         };
         experimental_residue_ = Residue::create_from_atoms("  A", 1, "A", "", exp_atoms);
 
@@ -37,17 +37,17 @@ protected:
         standard_template_ = Structure("ATOMIC_A");
         Chain chain("A");
         std::vector<Atom> template_atoms = {
-            Atom(" C1'", Vector3D(-2.479, 5.346, 0.000), "  A", "A", 1),
-            Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000), "  A", "A", 1),
-            Atom(" C8 ", Vector3D(0.024, 4.897, 0.000), "  A", "A", 1),
-            Atom(" N7 ", Vector3D(0.877, 3.902, 0.000), "  A", "A", 1),
-            Atom(" C5 ", Vector3D(0.071, 2.771, 0.000), "  A", "A", 1),
-            Atom(" C6 ", Vector3D(0.369, 1.398, 0.000), "  A", "A", 1),
-            Atom(" N6 ", Vector3D(1.611, 0.909, 0.000), "  A", "A", 1),
-            Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000), "  A", "A", 1),
-            Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000), "  A", "A", 1),
-            Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000), "  A", "A", 1),
-            Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000), "  A", "A", 1)
+            Atom(" C1'", Vector3D(-2.479, 5.346, 0.000)),
+            Atom(" N9 ", Vector3D(-1.291, 4.498, 0.000)),
+            Atom(" C8 ", Vector3D(0.024, 4.897, 0.000)),
+            Atom(" N7 ", Vector3D(0.877, 3.902, 0.000)),
+            Atom(" C5 ", Vector3D(0.071, 2.771, 0.000)),
+            Atom(" C6 ", Vector3D(0.369, 1.398, 0.000)),
+            Atom(" N6 ", Vector3D(1.611, 0.909, 0.000)),
+            Atom(" N1 ", Vector3D(-0.668, 0.532, 0.000)),
+            Atom(" C2 ", Vector3D(-1.912, 1.023, 0.000)),
+            Atom(" N3 ", Vector3D(-2.320, 2.290, 0.000)),
+            Atom(" C4 ", Vector3D(-1.267, 3.124, 0.000))
         };
         auto template_residue = Residue::create_from_atoms("  A", 1, "A", "", template_atoms);
 
@@ -74,22 +74,22 @@ TEST_F(RingAtomMatcherTest, MatchPyrimidineAtoms) {
     Residue cytosine("  C", 1, "A");
 
     // Add pyrimidine ring atoms: 6 atoms
-    cytosine.add_atom(Atom(" C4 ", Vector3D(0.0, 0.0, 0.0), "  C", "A", 1));
-    cytosine.add_atom(Atom(" N3 ", Vector3D(1.0, 0.0, 0.0), "  C", "A", 1));
-    cytosine.add_atom(Atom(" C2 ", Vector3D(2.0, 0.0, 0.0), "  C", "A", 1));
-    cytosine.add_atom(Atom(" N1 ", Vector3D(3.0, 0.0, 0.0), "  C", "A", 1));
-    cytosine.add_atom(Atom(" C6 ", Vector3D(4.0, 0.0, 0.0), "  C", "A", 1));
-    cytosine.add_atom(Atom(" C5 ", Vector3D(5.0, 0.0, 0.0), "  C", "A", 1));
+    cytosine.add_atom(Atom(" C4 ", Vector3D(0.0, 0.0, 0.0)));
+    cytosine.add_atom(Atom(" N3 ", Vector3D(1.0, 0.0, 0.0)));
+    cytosine.add_atom(Atom(" C2 ", Vector3D(2.0, 0.0, 0.0)));
+    cytosine.add_atom(Atom(" N1 ", Vector3D(3.0, 0.0, 0.0)));
+    cytosine.add_atom(Atom(" C6 ", Vector3D(4.0, 0.0, 0.0)));
+    cytosine.add_atom(Atom(" C5 ", Vector3D(5.0, 0.0, 0.0)));
 
     Structure template_c("ATOMIC_C");
     Chain chain("A");
     Residue template_residue("  C", 1, "A");
-    template_residue.add_atom(Atom(" C4 ", Vector3D(0.0, 0.0, 0.0), "  C", "A", 1));
-    template_residue.add_atom(Atom(" N3 ", Vector3D(1.0, 0.0, 0.0), "  C", "A", 1));
-    template_residue.add_atom(Atom(" C2 ", Vector3D(2.0, 0.0, 0.0), "  C", "A", 1));
-    template_residue.add_atom(Atom(" N1 ", Vector3D(3.0, 0.0, 0.0), "  C", "A", 1));
-    template_residue.add_atom(Atom(" C6 ", Vector3D(4.0, 0.0, 0.0), "  C", "A", 1));
-    template_residue.add_atom(Atom(" C5 ", Vector3D(5.0, 0.0, 0.0), "  C", "A", 1));
+    template_residue.add_atom(Atom(" C4 ", Vector3D(0.0, 0.0, 0.0)));
+    template_residue.add_atom(Atom(" N3 ", Vector3D(1.0, 0.0, 0.0)));
+    template_residue.add_atom(Atom(" C2 ", Vector3D(2.0, 0.0, 0.0)));
+    template_residue.add_atom(Atom(" N1 ", Vector3D(3.0, 0.0, 0.0)));
+    template_residue.add_atom(Atom(" C6 ", Vector3D(4.0, 0.0, 0.0)));
+    template_residue.add_atom(Atom(" C5 ", Vector3D(5.0, 0.0, 0.0)));
     chain.add_residue(template_residue);
     template_c.add_chain(chain);
 
@@ -102,16 +102,16 @@ TEST_F(RingAtomMatcherTest, MatchPyrimidineAtoms) {
 // Test RNA matching (includes C1')
 TEST_F(RingAtomMatcherTest, MatchRNAAtoms) {
     Residue rna_residue("  A", 1, "A");
-    rna_residue.add_atom(Atom(" C1'", Vector3D(0.0, 0.0, 0.0), "  A", "A", 1));
-    rna_residue.add_atom(Atom(" C4 ", Vector3D(1.0, 0.0, 0.0), "  A", "A", 1));
-    rna_residue.add_atom(Atom(" N3 ", Vector3D(2.0, 0.0, 0.0), "  A", "A", 1));
+    rna_residue.add_atom(Atom(" C1'", Vector3D(0.0, 0.0, 0.0)));
+    rna_residue.add_atom(Atom(" C4 ", Vector3D(1.0, 0.0, 0.0)));
+    rna_residue.add_atom(Atom(" N3 ", Vector3D(2.0, 0.0, 0.0)));
 
     Structure template_rna("ATOMIC_A_RNA");
     Chain chain("A");
     Residue template_residue("  A", 1, "A");
-    template_residue.add_atom(Atom(" C1'", Vector3D(0.0, 0.0, 0.0), "  A", "A", 1));
-    template_residue.add_atom(Atom(" C4 ", Vector3D(1.0, 0.0, 0.0), "  A", "A", 1));
-    template_residue.add_atom(Atom(" N3 ", Vector3D(2.0, 0.0, 0.0), "  A", "A", 1));
+    template_residue.add_atom(Atom(" C1'", Vector3D(0.0, 0.0, 0.0)));
+    template_residue.add_atom(Atom(" C4 ", Vector3D(1.0, 0.0, 0.0)));
+    template_residue.add_atom(Atom(" N3 ", Vector3D(2.0, 0.0, 0.0)));
     chain.add_residue(template_residue);
     template_rna.add_chain(chain);
 
@@ -135,11 +135,11 @@ TEST_F(RingAtomMatcherTest, MatchRNAAtoms) {
 TEST_F(RingAtomMatcherTest, MatchWithMissingAtoms) {
     Residue incomplete_residue("  A", 1, "A");
     // Only add 5 atoms (missing 4)
-    incomplete_residue.add_atom(Atom(" C4 ", Vector3D(0.0, 0.0, 0.0), "  A", "A", 1));
-    incomplete_residue.add_atom(Atom(" N3 ", Vector3D(1.0, 0.0, 0.0), "  A", "A", 1));
-    incomplete_residue.add_atom(Atom(" C2 ", Vector3D(2.0, 0.0, 0.0), "  A", "A", 1));
-    incomplete_residue.add_atom(Atom(" N1 ", Vector3D(3.0, 0.0, 0.0), "  A", "A", 1));
-    incomplete_residue.add_atom(Atom(" C6 ", Vector3D(4.0, 0.0, 0.0), "  A", "A", 1));
+    incomplete_residue.add_atom(Atom(" C4 ", Vector3D(0.0, 0.0, 0.0)));
+    incomplete_residue.add_atom(Atom(" N3 ", Vector3D(1.0, 0.0, 0.0)));
+    incomplete_residue.add_atom(Atom(" C2 ", Vector3D(2.0, 0.0, 0.0)));
+    incomplete_residue.add_atom(Atom(" N1 ", Vector3D(3.0, 0.0, 0.0)));
+    incomplete_residue.add_atom(Atom(" C6 ", Vector3D(4.0, 0.0, 0.0)));
 
     MatchedAtoms matched = RingAtomMatcher::match(incomplete_residue, standard_template_);
 

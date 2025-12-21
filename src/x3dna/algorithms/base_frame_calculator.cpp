@@ -63,9 +63,9 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
         }
     }
 
-    // Check for C1' or C1R atom
+    // Check for C1' or C1R atom (use padded names for comparison)
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == "C1'" || atom.name() == "C1R") {
+        if (atom.name() == " C1'" || atom.name() == "C1R ") {
             has_c1_prime = true;
             break;
         }
@@ -161,11 +161,11 @@ std::tuple<int, bool> count_ring_atoms(const core::Residue& residue) {
 bool detect_purine_atoms(const core::Residue& residue) {
     bool has_n7 = false, has_c8 = false, has_n9 = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == "N7")
+        if (atom.name() == " N7 ")
             has_n7 = true;
-        if (atom.name() == "C8")
+        if (atom.name() == " C8 ")
             has_c8 = true;
-        if (atom.name() == "N9")
+        if (atom.name() == " N9 ")
             has_n9 = true;
     }
     return has_n7 || has_c8 || has_n9;
@@ -175,11 +175,11 @@ bool detect_purine_atoms(const core::Residue& residue) {
 core::ResidueType determine_purine_type(const core::Residue& residue) {
     bool has_o6 = false, has_n6 = false, has_n2 = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == "O6")
+        if (atom.name() == " O6 ")
             has_o6 = true;
-        if (atom.name() == "N6")
+        if (atom.name() == " N6 ")
             has_n6 = true;
-        if (atom.name() == "N2")
+        if (atom.name() == " N2 ")
             has_n2 = true;
     }
     return (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE : core::ResidueType::ADENINE;
@@ -189,9 +189,9 @@ core::ResidueType determine_purine_type(const core::Residue& residue) {
 core::ResidueType determine_pyrimidine_type(const core::Residue& residue, char one_letter) {
     bool has_n4 = false, has_c5m = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == "N4")
+        if (atom.name() == " N4 ")
             has_n4 = true;
-        if (atom.name() == "C5M" || atom.name() == "C7")
+        if (atom.name() == "C5M " || atom.name() == " C7 ")
             has_c5m = true;
     }
 
@@ -381,10 +381,6 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Res
             }
             const auto& std_coord = rmsd_check.matched_standard_coords[i];
             core::Atom std_atom = core::Atom::create(atom_name, geometry::Vector3D(std_coord.x(), std_coord.y(), std_coord.z()))
-                                  .residue_name("")
-                                  .chain_id("")
-                                  .residue_seq(0)
-                                  .record_type('A')
                                   .build();
             matched.standard.push_back(std_atom);
         }

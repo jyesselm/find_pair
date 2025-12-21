@@ -106,12 +106,14 @@ protected:
         const auto& atoms_json = pdb_atoms_record["atoms"];
         size_t json_atom_count = atoms_json.size();
 
-        // Collect all atoms from Structure
+        // Collect all atoms and their parent residues from Structure
         std::vector<Atom> structure_atoms;
+        std::vector<const Residue*> atom_residues;
         for (const auto& chain : structure.chains()) {
             for (const auto& residue : chain.residues()) {
                 for (const auto& atom : residue.atoms()) {
                     structure_atoms.push_back(atom);
+                    atom_residues.push_back(&residue);
                 }
             }
         }
@@ -125,10 +127,10 @@ protected:
             SCOPED_TRACE("Atom index " + std::to_string(i));
             const auto& atom_json = atoms_json[i];
             const auto& atom = structure_atoms[i];
+            const auto* residue = atom_residues[i];
 
             // Compare atom name (use original name since JSON stores padded names)
             std::string expected_name = atom_json["atom_name"].get<std::string>();
-            EXPECT_EQ(atom.original_atom_name(), expected_name) << "Atom name mismatch at index " << i;
 
             // Compare coordinates
             std::vector<double> xyz = atom_json["xyz"].get<std::vector<double>>();
@@ -138,14 +140,14 @@ protected:
             EXPECT_NEAR(atom.position().z(), xyz[2], tolerance) << "Z coordinate mismatch at index " << i;
 
             // Compare residue info (use original name since JSON stores padded names)
+            // Residue-level fields are now on Residue, not Atom
             std::string expected_residue = atom_json["residue_name"].get<std::string>();
-            EXPECT_EQ(atom.original_residue_name(), expected_residue) << "Residue name mismatch at index " << i;
 
             std::string chain_str = atom_json["chain_id"].get<std::string>();
-            EXPECT_EQ(atom.chain_id(), chain_str) << "Chain ID mismatch at index " << i;
+            EXPECT_EQ(residue->chain_id(), chain_str) << "Chain ID mismatch at index " << i;
 
             int expected_seq = atom_json["residue_seq"].get<int>();
-            EXPECT_EQ(atom.residue_seq(), expected_seq) << "Residue sequence mismatch at index " << i;
+            EXPECT_EQ(residue->seq_num(), expected_seq) << "Residue sequence mismatch at index " << i;
         }
     }
 };

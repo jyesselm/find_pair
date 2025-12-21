@@ -17,6 +17,7 @@
 #include <x3dna/core/modified_nucleotide_registry.hpp>
 #include <x3dna/core/typing/residue_classification.hpp>
 #include <x3dna/core/typing/type_registry.hpp>
+#include <x3dna/core/string_utils.hpp>
 
 namespace x3dna {
 namespace core {
@@ -41,13 +42,17 @@ public:
 
     /**
      * @brief Constructor with name, sequence number, chain ID, and insertion code
-     * @param name Residue name (e.g., "  C", "  G", "  A", "  T")
+     * @param name Residue name (e.g., "C", "G", "A", "T", "ADE", "GUA", etc.) - will be trimmed
      * @param seq_num Sequence number
      * @param chain_id Chain identifier
      * @param insertion Insertion code (PDB column 27, default "")
      */
     Residue(const std::string& name, int seq_num, const std::string& chain_id, const std::string& insertion = "")
-        : name_(name), one_letter_code_('?'), seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {}
+        : name_(trim(name)), seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {
+        // Auto-initialize classification and one_letter_code from trimmed name
+        classification_ = typing::TypeRegistry::instance().classify_residue(name_);
+        one_letter_code_ = ModifiedNucleotideRegistry::get_one_letter_code(name_);
+    }
 
     /**
      * @brief Create a Builder for fluent residue construction
@@ -71,8 +76,9 @@ public:
      * @param atoms Vector of atoms in this residue
      * @return Residue with all properties initialized
      */
-    [[nodiscard]] static Residue create_from_atoms(const std::string& name, int sequence_number, const std::string& chain_id,
-                                                   const std::string& insertion_code, const std::vector<Atom>& atoms);
+    [[nodiscard]] static Residue create_from_atoms(const std::string& name, int sequence_number,
+                                                   const std::string& chain_id, const std::string& insertion_code,
+                                                   const std::vector<Atom>& atoms);
 
     // Getters
     [[nodiscard]] const std::string& name() const {
@@ -154,16 +160,26 @@ public:
 
     /**
      * @brief Find an atom by name
-     * @param atom_name Atom name (e.g., " C1'", " N3 ")
+     * @param atom_name Atom name (can be trimmed or padded, e.g., "C1'" or " C1'")
      * @return Optional atom if found
      */
     [[nodiscard]] std::optional<Atom> find_atom(const std::string& atom_name) const {
-        // Trim input for comparison since atom names are stored trimmed
-        std::string trimmed = atom_name;
-        trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r"));
-        trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
+        // Atom names are stored in PDB 4-character format, so compare directly
+        // or normalize the search key to match
         for (const auto& atom : atoms_) {
-            if (atom.name() == trimmed) {
+            if (atom.name() == atom_name) {
+                return atom;
+            }
+            // Also check trimmed version for convenience
+            std::string trimmed = atom_name;
+            trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r"));
+            trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
+
+            std::string atom_trimmed = atom.name();
+            atom_trimmed.erase(0, atom_trimmed.find_first_not_of(" \t\n\r"));
+            atom_trimmed.erase(atom_trimmed.find_last_not_of(" \t\n\r") + 1);
+
+            if (atom_trimmed == trimmed) {
                 return atom;
             }
         }
@@ -341,10 +357,26 @@ public:
         return {min_idx, max_idx};
     }
 
+    /**
+     * @brief Get legacy residue index (1-based indexing from legacy code)
+     * @return Legacy residue index for backward compatibility
+     */
+    [[nodiscard]] int legacy_residue_idx() const {
+        return legacy_residue_idx_;
+    }
+
+    /**
+     * @brief Set legacy residue index
+     * @param idx Legacy residue index (1-based)
+     */
+    void set_legacy_residue_idx(int idx) {
+        legacy_residue_idx_ = idx;
+    }
+
 private:
     friend class Builder;
 
-    std::string name_;                              // Residue name (e.g., "  C", "  G")
+    std::string name_;                              // Residue name (typically trimmed, e.g., "A", "ADE", "PSU")
     char one_letter_code_ = '?';                    // One-letter code (stored, not computed)
     int seq_num_ = 0;                               // Sequence number
     std::string chain_id_;                          // Chain identifier
@@ -352,16 +384,7 @@ private:
     std::vector<Atom> atoms_;                       // Atoms in this residue
     std::optional<ReferenceFrame> reference_frame_; // Reference frame (if calculated)
     typing::ResidueClassification classification_;  // Full hierarchical classification
-
-    /**
-     * @brief Trim whitespace from residue name
-     */
-    [[nodiscard]] std::string trim_name() const {
-        std::string trimmed = name_;
-        trimmed.erase(0, trimmed.find_first_not_of(" \t"));
-        trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
-        return trimmed;
-    }
+    int legacy_residue_idx_ = 0;                    // Legacy 1-based residue index for backward compatibility
 };
 
 /**
@@ -381,12 +404,12 @@ class Residue::Builder {
 public:
     /**
      * @brief Constructor with required fields
-     * @param name Residue name
+     * @param name Residue name (will be trimmed, e.g., "  A" becomes "A")
      * @param seq_num Sequence number
      * @param chain_id Chain identifier
      */
     Builder(const std::string& name, int seq_num, const std::string& chain_id) {
-        residue_.name_ = name;
+        residue_.name_ = trim(name);
         residue_.seq_num_ = seq_num;
         residue_.chain_id_ = chain_id;
     }
@@ -418,6 +441,11 @@ public:
 
     Builder& add_atom(const Atom& atom) {
         residue_.atoms_.push_back(atom);
+        return *this;
+    }
+
+    Builder& legacy_residue_idx(int idx) {
+        residue_.legacy_residue_idx_ = idx;
         return *this;
     }
 
@@ -458,8 +486,10 @@ inline Residue Residue::create_from_atoms(const std::string& name, int sequence_
     // Get one-letter code from registry
     char one_letter = ModifiedNucleotideRegistry::get_one_letter_code(trimmed);
 
-    // Build and return residue
-    return Residue::create(name, sequence_number, chain_id)
+    // Build and return residue with trimmed name
+    // Note: legacy_residue_idx is not set here - it should be set by the caller
+    // after construction using set_legacy_residue_idx() if needed
+    return Residue::create(trimmed, sequence_number, chain_id)
         .insertion(insertion_code)
         .one_letter_code(one_letter)
         .classification(classification)

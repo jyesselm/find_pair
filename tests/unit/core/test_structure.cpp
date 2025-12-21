@@ -23,19 +23,19 @@ protected:
 
         // Chain A
         Chain chain_a("A");
-        std::vector<Atom> c1_atoms = {Atom(" C1'", Vector3D(1, 2, 3), "  C", "A", 1)};
-        auto c1 = Residue::create_from_atoms("  C", 1, "A", " ", c1_atoms);
+        std::vector<Atom> c1_atoms = {Atom(" C1'", Vector3D(1, 2, 3))};
+        auto c1 = Residue::create_from_atoms("  C", 1, "A", "", c1_atoms);
         chain_a.add_residue(c1);
 
-        std::vector<Atom> g1_atoms = {Atom(" C1'", Vector3D(4, 5, 6), "  G", "A", 2)};
-        auto g1 = Residue::create_from_atoms("  G", 2, "A", " ", g1_atoms);
+        std::vector<Atom> g1_atoms = {Atom(" C1'", Vector3D(4, 5, 6))};
+        auto g1 = Residue::create_from_atoms("  G", 2, "A", "", g1_atoms);
         chain_a.add_residue(g1);
         structure_.add_chain(chain_a);
 
         // Chain B
         Chain chain_b("B");
-        std::vector<Atom> a1_atoms = {Atom(" C1'", Vector3D(7, 8, 9), "  A", "B", 1)};
-        auto a1 = Residue::create_from_atoms("  A", 1, "B", " ", a1_atoms);
+        std::vector<Atom> a1_atoms = {Atom(" C1'", Vector3D(7, 8, 9))};
+        auto a1 = Residue::create_from_atoms("  A", 1, "B", "", a1_atoms);
         chain_b.add_residue(a1);
         structure_.add_chain(chain_b);
     }

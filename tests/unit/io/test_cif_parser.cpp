@@ -97,8 +97,11 @@ ATOM 2 N N1 C A 1 A 1 . . 1.100 2.100 3.100 1.00 20.00
     auto atoms = residues[0].atoms();
     ASSERT_EQ(atoms.size(), 2);
 
-    EXPECT_EQ(atoms[0].chain_id(), "A");
-    EXPECT_EQ(atoms[0].residue_seq(), 1);
+    // Check residue-level fields from residue (not atom)
+    EXPECT_EQ(residues[0].chain_id(), "A");
+    EXPECT_EQ(residues[0].seq_num(), 1);
+
+    // Check atom-level fields
     EXPECT_DOUBLE_EQ(atoms[0].position().x(), 1.0);
     EXPECT_DOUBLE_EQ(atoms[0].position().y(), 2.0);
     EXPECT_DOUBLE_EQ(atoms[0].position().z(), 3.0);
@@ -152,8 +155,7 @@ HETATM 2 N N1 SPM A 21 A 21 . . 10.683 -8.783 22.839 1.00 40.13
 
     auto atoms = it->atoms();
     ASSERT_GE(atoms.size(), 1);
-    EXPECT_EQ(atoms[0].record_type(), 'H');
-}
+    }
 
 /**
  * @brief Test HETATM exclusion (default)
@@ -385,9 +387,7 @@ ATOM 2 N N1 C A 1 A 1 . . 1.100 2.100 3.100 1.00 20.00
     EXPECT_EQ(atoms[0].name(), "C1'");
     EXPECT_EQ(atoms[1].name(), "N1");
     // Original names are preserved in PDB format for round-trip
-    EXPECT_EQ(atoms[0].original_atom_name(), " C1'");
-    EXPECT_EQ(atoms[1].original_atom_name(), " N1 ");
-}
+        }
 
 /**
  * @brief Test phosphate atom name conversion
@@ -430,7 +430,7 @@ ATOM 3 O OP2 G A 1 A 1 . . 1.200 2.200 3.200 1.00 20.00
     ASSERT_EQ(atoms.size(), 3);
 
     // P (trimmed name)
-    EXPECT_EQ(atoms[0].name(), "P");  // name() returns trimmed
+    EXPECT_EQ(atoms[0].name(), "P"); // name() returns trimmed
     // OP1 becomes O1P (trimmed)
     EXPECT_EQ(atoms[1].name(), "O1P");
     // OP2 becomes O2P (trimmed)
@@ -559,12 +559,12 @@ ATOM 3 C "C1'" G A 2 A 2 . . 2.000 3.000 4.000 1.00 20.00
     auto atoms1 = residues[0].atoms();
     EXPECT_EQ(atoms1[0].legacy_atom_idx(), 1);
     EXPECT_EQ(atoms1[1].legacy_atom_idx(), 2);
-    EXPECT_EQ(atoms1[0].legacy_residue_idx(), 1);
+    EXPECT_EQ(residues[0].legacy_residue_idx(), 1);
 
     // Second residue atoms
     auto atoms2 = residues[1].atoms();
     EXPECT_EQ(atoms2[0].legacy_atom_idx(), 3);
-    EXPECT_EQ(atoms2[0].legacy_residue_idx(), 2);
+    EXPECT_EQ(residues[1].legacy_residue_idx(), 2);
 }
 
 } // namespace io

@@ -19,23 +19,21 @@ void ResidueIndexMap::build(const core::Structure& structure) {
 
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
-            // Get legacy residue index from first atom (set during PDB parsing)
-            if (!residue.atoms().empty()) {
-                int legacy_idx = residue.atoms()[0].legacy_residue_idx();
-                if (legacy_idx > 0) {
-                    // Store mappings
-                    by_legacy_[legacy_idx] = &residue;
-                    by_modern_[modern_idx] = &residue;
-                    legacy_to_modern_[legacy_idx] = modern_idx;
-                    modern_to_legacy_[modern_idx] = legacy_idx;
+            // Get legacy residue index from residue (set during PDB parsing)
+            int legacy_idx = residue.legacy_residue_idx();
+            if (legacy_idx > 0) {
+                // Store mappings
+                by_legacy_[legacy_idx] = &residue;
+                by_modern_[modern_idx] = &residue;
+                legacy_to_modern_[legacy_idx] = modern_idx;
+                modern_to_legacy_[modern_idx] = legacy_idx;
 
-                    // Update range
-                    if (legacy_idx > max_legacy_idx_) {
-                        max_legacy_idx_ = legacy_idx;
-                    }
-                    if (legacy_idx < min_legacy_idx_) {
-                        min_legacy_idx_ = legacy_idx;
-                    }
+                // Update range
+                if (legacy_idx > max_legacy_idx_) {
+                    max_legacy_idx_ = legacy_idx;
+                }
+                if (legacy_idx < min_legacy_idx_) {
+                    min_legacy_idx_ = legacy_idx;
                 }
             }
             modern_idx++;

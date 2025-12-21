@@ -71,7 +71,8 @@ TEST_F(ChainTest, NumAtoms) {
 TEST_F(ChainTest, FindResidue) {
     auto residue = chain_a_.find_residue(2);
     ASSERT_TRUE(residue.has_value());
-    EXPECT_EQ(residue->name(), "  G");
+    // create_from_atoms() trims names, so name() returns trimmed version
+    EXPECT_EQ(residue->name(), "G");
     EXPECT_EQ(residue->seq_num(), 2);
 }
 

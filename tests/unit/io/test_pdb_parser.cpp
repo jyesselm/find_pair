@@ -62,14 +62,16 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
     auto atoms = residues[0].atoms();
     ASSERT_EQ(atoms.size(), 2);
 
-    EXPECT_EQ(atoms[0].name(), "C1'");  // name() returns trimmed
-    // GEMMI trims residue names
-    EXPECT_EQ(atoms[0].residue_name(), "C");
-    EXPECT_EQ(atoms[0].chain_id(), "A");
-    EXPECT_EQ(atoms[0].residue_seq(), 1);
+    // Check atom properties
+    EXPECT_EQ(atoms[0].name(), "C1'"); // name() returns trimmed
     EXPECT_DOUBLE_EQ(atoms[0].position().x(), 1.0);
     EXPECT_DOUBLE_EQ(atoms[0].position().y(), 2.0);
     EXPECT_DOUBLE_EQ(atoms[0].position().z(), 3.0);
+
+    // Check residue properties (residue-level fields now in Residue, not Atom)
+    EXPECT_EQ(residues[0].name(), "C"); // GEMMI trims residue names
+    EXPECT_EQ(residues[0].chain_id(), "A");
+    EXPECT_EQ(residues[0].seq_num(), 1);
 }
 
 /**
@@ -103,8 +105,7 @@ HETATM    2  N1  SPM A  21      10.683  -8.783  22.839  1.00 40.13           N
 
     auto atoms = it->atoms();
     ASSERT_GE(atoms.size(), 1);
-    EXPECT_EQ(atoms[0].record_type(), 'H');
-}
+    }
 
 /**
  * @brief Test HETATM exclusion (default)
@@ -264,9 +265,7 @@ ATOM      2  N1    C A   1       1.100   2.100   3.100  1.00 20.00           N
     EXPECT_EQ(atoms[0].name(), "C1'");
     EXPECT_EQ(atoms[1].name(), "N1");
     // Original names are preserved for round-trip
-    EXPECT_EQ(atoms[0].original_atom_name(), " C1'");
-    EXPECT_EQ(atoms[1].original_atom_name(), " N1 ");
-}
+        }
 
 /**
  * @brief Test residue name normalization

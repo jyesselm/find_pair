@@ -42,12 +42,15 @@ public:
 
 private:
     /**
-     * @brief Format atom record line (ATOM or HETATM)
+     * @brief Format atom record line using Residue context
      * @param atom Atom to format
+     * @param residue Residue containing the atom (provides residue-level fields)
+     * @param structure Structure containing record type map
      * @param atom_serial Serial number (1-based)
      * @return Formatted PDB line
      */
-    std::string format_atom_line(const core::Atom& atom, int atom_serial) const;
+    std::string format_atom_line(const core::Atom& atom, const core::Residue& residue, const core::Structure& structure,
+                                 int atom_serial) const;
 
     /**
      * @brief Format coordinate value for PDB (8.3 format)

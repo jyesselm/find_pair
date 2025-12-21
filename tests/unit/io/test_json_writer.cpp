@@ -48,7 +48,7 @@ TEST_F(JsonWriterTest, RecordPdbAtoms) {
     Structure structure("TEST");
     Chain chain("A");
     Residue residue("  C", 1, "A");
-    residue.add_atom(Atom(" C1'", Vector3D(1.0, 2.0, 3.0), "  C", "A", 1));
+    residue.add_atom(Atom(" C1'", Vector3D(1.0, 2.0, 3.0)));
     chain.add_residue(residue);
     structure.add_chain(chain);
 
@@ -67,8 +67,8 @@ TEST_F(JsonWriterTest, RecordPdbAtoms) {
             EXPECT_EQ(record["atoms"].size(), 1);
 
             const auto& atom = record["atoms"][0];
-            EXPECT_EQ(atom["atom_name"], " C1'");
-            EXPECT_EQ(atom["residue_name"], "  C");
+            EXPECT_EQ(atom["atom_name"], "C1'");
+            EXPECT_EQ(atom["residue_name"], "C");
             break;
         }
     }

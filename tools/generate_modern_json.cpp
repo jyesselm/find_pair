@@ -111,14 +111,14 @@ BackboneData extract_backbone_data(const Structure& structure) {
     BackboneData backbone;
 
     // Iterate through all chains and residues to get backbone atoms
-    // Use legacy_residue_idx from atoms (matches how pairs are indexed)
+    // Use legacy_residue_idx from residue (matches how pairs are indexed)
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
             if (residue.atoms().empty())
                 continue;
 
-            // Get legacy residue index from first atom (matches how pairs are indexed)
-            int legacy_idx = residue.atoms()[0].legacy_residue_idx();
+            // Get legacy residue index from residue (matches how pairs are indexed)
+            int legacy_idx = residue.legacy_residue_idx();
             if (legacy_idx <= 0)
                 continue;
 
@@ -189,21 +189,10 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
 
         // Stage 1: Atoms
         if (stage == "atoms" || stage == "all") {
-            // Write atoms JSON using serializers
-            nlohmann::json record;
-            record["num_atoms"] = structure.num_atoms();
-            record["atoms"] = nlohmann::json::array();
-            for (const auto& chain : structure.chains()) {
-                for (const auto& residue : chain.residues()) {
-                    for (const auto& atom : residue.atoms()) {
-                        record["atoms"].push_back(AtomSerializer::to_json(atom));
-                    }
-                }
-            }
-            std::filesystem::path file = json_output_dir / "pdb_atoms" / (pdb_name + ".json");
-            std::filesystem::create_directories(file.parent_path());
-            std::ofstream out(file);
-            out << record.dump(2);
+            // Use JsonWriter to record atoms (ensures correct record_type from Structure map)
+            JsonWriter writer(pdb_file);
+            writer.record_pdb_atoms(structure);
+            writer.write_split_files(json_output_dir, true);
 
             if (verbose) {
                 std::cout << "  pdb_atoms/" << pdb_name << ".json (" << structure.num_atoms() << " atoms)\n";

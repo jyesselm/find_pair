@@ -23,13 +23,7 @@ protected:
         Chain chain("A");
         Residue residue("  C", 1, "A");
 
-        auto atom = Atom::create(" C1'", Vector3D(1.234, 5.678, 9.012))
-                        .residue_name("  C")
-                        .chain_id("A")
-                        .residue_seq(1)
-                        .occupancy(1.0)
-                        .b_factor(20.5)
-                        .build();
+        auto atom = Atom::create(" C1'", Vector3D(1.234, 5.678, 9.012)).occupancy(1.0).b_factor(20.5).build();
         residue.add_atom(atom);
 
         chain.add_residue(residue);

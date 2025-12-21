@@ -9,6 +9,7 @@ Uses x3dna_json_compare module for all comparison logic.
 
 import json
 import shutil
+import subprocess
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Dict, List, Tuple, Optional
@@ -27,14 +28,18 @@ from scripts.test_utils import (
     load_valid_pdbs_fast
 )
 
-def generate_legacy_frames(pdb_id: str, pdb_file: Path, output_dir: Path, 
+def generate_legacy_frames(pdb_id: str, pdb_file: Path, output_dir: Path,
                            legacy_exe: Path, project_root: Path) -> Tuple[bool, str]:
-    """Generate legacy frames JSON - check existing files first, regenerate if needed."""
+    """Generate legacy frames JSON - reuse existing files if available.
+
+    Legacy JSON can be cached since legacy code doesn't change. This is different
+    from modern JSON which should ALWAYS be regenerated to test the current build.
+    """
     try:
         legacy_output = output_dir / "legacy"
         legacy_output.mkdir(parents=True, exist_ok=True)
-        
-        # Check if legacy frames JSON already exist
+
+        # Check if legacy frames JSON already exist (caching is OK for legacy)
         base_frame_file = project_root / "data" / "json_legacy" / "base_frame_calc" / f"{pdb_id}.json"
         frame_calc_file = project_root / "data" / "json_legacy" / "frame_calc" / f"{pdb_id}.json"
         ls_fitting_file = project_root / "data" / "json_legacy" / "ls_fitting" / f"{pdb_id}.json"
@@ -114,11 +119,16 @@ def generate_legacy_frames(pdb_id: str, pdb_file: Path, output_dir: Path,
 
 def generate_modern_frames(pdb_id: str, pdb_file: Path, output_dir: Path,
                           modern_exe: Path) -> Tuple[bool, str]:
-    """Generate modern frames JSON."""
+    """Generate modern frames JSON - ALWAYS regenerates from current build.
+
+    Modern JSON is always regenerated to catch regressions in the current build.
+    Never reuses cached files.
+    """
     try:
         modern_output = output_dir / "modern"
         modern_output.mkdir(parents=True, exist_ok=True)
-        
+
+        # ALWAYS regenerate modern JSON to test current build
         cmd = [str(modern_exe), str(pdb_file), str(modern_output), "--stage=frames"]
         result = subprocess.run(
             cmd,

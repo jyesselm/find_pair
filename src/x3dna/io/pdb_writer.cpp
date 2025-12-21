@@ -30,7 +30,7 @@ void PdbWriter::write_stream(const core::Structure& structure, std::ostream& str
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
             for (const auto& atom : residue.atoms()) {
-                std::string line = format_atom_line(atom, atom_serial++);
+                std::string line = format_atom_line(atom, residue, structure, atom_serial++);
                 stream << line << "\n";
             }
         }
@@ -46,25 +46,38 @@ std::string PdbWriter::to_string(const core::Structure& structure) {
     return stream.str();
 }
 
-std::string PdbWriter::format_atom_line(const core::Atom& atom, int atom_serial) const {
+std::string PdbWriter::format_atom_line(const core::Atom& atom, const core::Residue& residue,
+                                        const core::Structure& structure, int atom_serial) const {
     std::ostringstream line;
 
-    // Determine record type
-    std::string record_type = (atom.record_type() == 'H') ? "HETATM" : "ATOM  ";
+    // Get record type from Structure map
+    char rec_type = structure.get_residue_record_type(residue.chain_id(), residue.seq_num(), residue.insertion());
+    std::string record_type = (rec_type == 'H') ? "HETATM" : "ATOM  ";
 
-    // Format: RECORD_TYPE SERIAL NAME RESNAME CHAIN RESSEQ X Y Z OCCUPANCY B_FACTOR
-    // Columns: 1-6, 7-11, 13-16, 18-20, 22, 23-26, 31-38, 39-46, 47-54, 55-60, 61-66
+    // Format: RECORD_TYPE SERIAL NAME RESNAME CHAIN RESSEQ INSERTION X Y Z OCCUPANCY B_FACTOR
+    // Columns: 1-6, 7-11, 13-16, 18-20, 22, 23-26, 27, 31-38, 39-46, 47-54, 55-60, 61-66
 
     line << std::left << std::setw(6) << record_type;
     line << std::right << std::setw(5) << atom_serial;
     line << " ";
-    // Use original padded names for proper PDB format
-    line << std::left << std::setw(4) << atom.original_atom_name();
-    line << std::left << std::setw(3) << atom.original_residue_name();
+    // Use atom name (already in PDB 4-character format)
+    line << std::left << std::setw(4) << atom.name();
+    // Use residue name (pad to 3 characters if needed)
+    std::string res_name = residue.name();
+    if (res_name.length() < 3) {
+        res_name = " " + res_name;
+    }
+    line << std::left << std::setw(3) << res_name.substr(0, 3);
     line << " ";
-    line << atom.chain_id();
-    line << std::right << std::setw(4) << atom.residue_seq();
-    line << "    ";
+    // Use chain_id from Residue context
+    const auto& chain_id = residue.chain_id();
+    line << (chain_id.empty() ? " " : chain_id.substr(0, 1));
+    // Use seq_num from Residue context
+    line << std::right << std::setw(4) << residue.seq_num();
+    // Use insertion code from Residue context (PDB column 27)
+    const auto& insertion = residue.insertion();
+    line << (insertion.empty() ? " " : insertion.substr(0, 1));
+    line << "   ";
 
     // Coordinates (8.3 format)
     const auto& pos = atom.position();

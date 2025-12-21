@@ -9,12 +9,17 @@ Fixtures provided:
 - valid_pdbs_fast: List of fast-running PDB IDs from valid_pdbs_fast.json
 - temp_output_dir: Temporary directory cleaned up after each test
 
+Environment Variables:
+- FORCE_MODERN_REGEN: Set to '0' to allow caching modern JSON (default: '1' = always regenerate)
+  Modern JSON should ALWAYS be regenerated to test current build. Legacy JSON can be cached.
+
 See docs/TESTING_GUIDE.md for testing workflow documentation.
 """
 import pytest
 import sys
 import json
 import shutil
+import os
 from pathlib import Path
 from typing import Tuple, Optional, List
 
@@ -247,6 +252,11 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "slow: Tests that take a long time")
     config.addinivalue_line("markers", "requires_legacy: Requires legacy executable")
     config.addinivalue_line("markers", "requires_modern: Requires modern executable")
+
+    # Ensure FORCE_MODERN_REGEN is set (default to '1' = always regenerate)
+    # This ensures tests always use the current build, not cached files
+    if 'FORCE_MODERN_REGEN' not in os.environ:
+        os.environ['FORCE_MODERN_REGEN'] = '1'
 
 
 def pytest_collection_modifyitems(config, items):

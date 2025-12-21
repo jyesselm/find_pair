@@ -137,46 +137,73 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
     size_t total_atoms = structure.num_atoms();
     record["num_atoms"] = total_atoms;
 
-    // Build atoms array
-    nlohmann::json atoms_array = nlohmann::json::array();
-    size_t sequential_idx = 1; // Fallback for atoms without legacy mapping
+    // Build atoms array - collect all atoms with their legacy_atom_idx
+    // If atoms have legacy_atom_idx (from parsers), use it to preserve PDB file order
+    // Otherwise, keep structure order (for synthetic structures in tests)
+    struct AtomWithContext {
+        int legacy_idx;
+        const core::Atom* atom;
+        const core::Residue* residue;
+        const core::Chain* chain;
+    };
+    std::vector<AtomWithContext> all_atoms;
+    bool has_any_legacy_idx = false;
 
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
             for (const auto& atom : residue.atoms()) {
-                nlohmann::json atom_json;
-
-                // Use legacy_atom_idx for atom_idx to match legacy exactly (1-based)
-                int legacy_atom_idx = atom.legacy_atom_idx();
-
-                if (legacy_atom_idx > 0) {
-                    atom_json["atom_idx"] = legacy_atom_idx;
-                } else {
-                    // Fallback for atoms without legacy mapping
-                    atom_json["atom_idx"] = sequential_idx++;
+                int legacy_idx = atom.legacy_atom_idx();
+                if (legacy_idx > 0) {
+                    has_any_legacy_idx = true;
                 }
-
-                // Core fields (match legacy exactly - use original padded names)
-                atom_json["atom_name"] = atom.original_atom_name();
-                atom_json["residue_name"] = atom.original_residue_name();
-                atom_json["chain_id"] = atom.chain_id();
-                atom_json["residue_seq"] = atom.residue_seq();
-
-                // Insertion code (only if non-empty, matches legacy format)
-                if (!atom.insertion().empty()) {
-                    atom_json["insertion"] = atom.insertion();
-                }
-
-                // Coordinates
-                const auto& pos = atom.position();
-                atom_json["xyz"] = nlohmann::json::array({pos.x(), pos.y(), pos.z()});
-
-                // Record type (A for ATOM, H for HETATM)
-                atom_json["record_type"] = std::string(1, atom.record_type());
-
-                atoms_array.push_back(atom_json);
+                all_atoms.push_back({legacy_idx, &atom, &residue, &chain});
             }
         }
+    }
+
+    // Only sort if we have legacy indices (from real PDB files)
+    // Synthetic structures (tests) don't have legacy indices, keep natural order
+    if (has_any_legacy_idx) {
+        std::sort(all_atoms.begin(), all_atoms.end(), [](const AtomWithContext& a, const AtomWithContext& b) {
+            // Atoms without legacy_idx (0) go to end
+            if (a.legacy_idx == 0 && b.legacy_idx == 0)
+                return false;
+            if (a.legacy_idx == 0)
+                return false;
+            if (b.legacy_idx == 0)
+                return true;
+            return a.legacy_idx < b.legacy_idx;
+        });
+    }
+
+    // Build JSON array in legacy order
+    nlohmann::json atoms_array = nlohmann::json::array();
+    for (const auto& atom_ctx : all_atoms) {
+        nlohmann::json atom_json;
+
+        atom_json["atom_idx"] = atom_ctx.legacy_idx;
+        atom_json["legacy_atom_idx"] = atom_ctx.legacy_idx; // For comparison code
+        atom_json["atom_name"] = atom_ctx.atom->name();
+
+        // Get record_type from Structure map
+        char record_type = structure.get_residue_record_type(atom_ctx.chain->chain_id(), atom_ctx.residue->seq_num(),
+                                                             atom_ctx.residue->insertion());
+        atom_json["record_type"] = std::string(1, record_type);
+
+        atom_json["residue_name"] = atom_ctx.residue->name();
+        atom_json["chain_id"] = atom_ctx.chain->chain_id();
+        atom_json["residue_seq"] = atom_ctx.residue->seq_num();
+
+        // Insertion code (only if non-empty, matches legacy format)
+        if (!atom_ctx.residue->insertion().empty()) {
+            atom_json["insertion"] = atom_ctx.residue->insertion();
+        }
+
+        // Coordinates
+        const auto& pos = atom_ctx.atom->position();
+        atom_json["xyz"] = nlohmann::json::array({pos.x(), pos.y(), pos.z()});
+
+        atoms_array.push_back(atom_json);
     }
 
     record["atoms"] = atoms_array;
@@ -575,9 +602,9 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
 void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dorg, double dNN, double plane_angle,
                                         double d_v, double overlap_area) {
     // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
-    // Also, legacy outputs BOTH (i,j) and (j,i) - so we need to output both pairs
+    // Legacy only outputs (i, j) where i < j (verified from legacy JSON analysis)
 
-    // Output first pair (i, j) with 1-based indices
+    // Output pair (i, j) with 1-based indices
     nlohmann::json record;
     record["type"] = "distance_checks";
     record["base_i"] = static_cast<long>(base_i + 1); // Convert to 1-based
@@ -598,15 +625,6 @@ void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dor
     record["values"] = values;
 
     add_calculation_record(record);
-
-    // Legacy also outputs the reversed pair (j, i)
-    nlohmann::json record_reversed;
-    record_reversed["type"] = "distance_checks";
-    record_reversed["base_i"] = static_cast<long>(base_j + 1); // Swap: j becomes i
-    record_reversed["base_j"] = static_cast<long>(base_i + 1); // Swap: i becomes j
-    record_reversed["values"] = values;                        // Same values
-
-    add_calculation_record(record_reversed);
 }
 
 void JsonWriter::record_hbond_list(size_t base_i, size_t base_j, const std::vector<core::hydrogen_bond>& hbonds) {

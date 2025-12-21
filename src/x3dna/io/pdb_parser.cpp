@@ -87,6 +87,7 @@ core::Structure PdbParser::parse_string(const std::string& content) {
 // Convert GEMMI Structure to our Structure
 core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi_struct, const std::string& pdb_id) {
     std::map<ResidueKey, std::vector<core::Atom>> residue_atoms;
+    std::vector<std::string> chain_order; // Track chain order as first encountered
 
     // Legacy indices: assign sequentially as atoms are encountered (1-based)
     int legacy_atom_idx = 1;
@@ -103,6 +104,11 @@ core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi
     for (const gemmi::Chain& gemmi_chain : model.chains) {
         // Get chain ID (use full string for CIF compatibility)
         std::string chain_id = gemmi_chain.name;
+
+        // Track chain order on first encounter
+        if (std::find(chain_order.begin(), chain_order.end(), chain_id) == chain_order.end()) {
+            chain_order.push_back(chain_id);
+        }
 
         for (const gemmi::Residue& gemmi_residue : gemmi_chain.residues) {
             // Get residue properties
@@ -151,18 +157,11 @@ core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi
                 // Create atom using Builder pattern
                 auto builder = core::Atom::create(atom_name, geometry::Vector3D(gemmi_atom.pos.x, gemmi_atom.pos.y,
                                                                                 gemmi_atom.pos.z))
-                                   .residue_name(residue_name)
-                                   .chain_id(chain_id)
-                                   .residue_seq(residue_seq)
-                                   .record_type(is_hetatm ? 'H' : 'A')
                                    .alt_loc(alt_loc)
-                                   .insertion(insertion)
                                    .occupancy(gemmi_atom.occ)
                                    .b_factor(gemmi_atom.b_iso)
                                    .atom_serial(gemmi_atom.serial)
-                                   .model_number(model_number)
-                                   .original_atom_name(atom_name)  // Use padded PDB format
-                                   .original_residue_name(residue_name);  // Use padded residue name
+                                   .model_number(model_number);
 
                 // Set element if available
                 if (gemmi_atom.element != gemmi::El::X) {
@@ -174,12 +173,13 @@ core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi
                 // Assign legacy atom index
                 atom.set_legacy_atom_idx(legacy_atom_idx++);
 
-                // Assign legacy residue index
-                ResidueKey key{residue_name, chain_id, residue_seq, insertion};
+                // Track legacy residue index (will be set on Residue later)
+                // Convert het_flag to record_type: 'H' for HETATM, 'A' for ATOM
+                char record_type = is_hetatm ? 'H' : 'A';
+                ResidueKey key{residue_name, chain_id, residue_seq, insertion, record_type};
                 if (legacy_residue_idx_map.find(key) == legacy_residue_idx_map.end()) {
                     legacy_residue_idx_map[key] = legacy_residue_idx++;
                 }
-                atom.set_legacy_residue_idx(legacy_residue_idx_map[key]);
 
                 // Add to residue group
                 residue_atoms[key].push_back(atom);
@@ -187,7 +187,7 @@ core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi
         }
     }
 
-    return build_structure_from_residues(pdb_id, residue_atoms);
+    return build_structure_from_residues(pdb_id, residue_atoms, legacy_residue_idx_map, chain_order);
 }
 
 // Normalize atom name from GEMMI format to legacy PDB 4-character format
@@ -328,7 +328,8 @@ std::string PdbParser::normalize_residue_name(const std::string& name) const {
 }
 
 core::Structure PdbParser::build_structure_from_residues(
-    const std::string& pdb_id, const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms) const {
+    const std::string& pdb_id, const std::map<ResidueKey, std::vector<core::Atom>>& residue_atoms,
+    const std::map<ResidueKey, int>& legacy_idx_map, const std::vector<std::string>& chain_order) const {
 
     core::Structure structure(pdb_id);
     std::map<std::string, core::Chain> chains;
@@ -341,12 +342,22 @@ core::Structure PdbParser::build_structure_from_residues(
         core::Residue residue = core::Residue::create_from_atoms(key.residue_name, key.residue_seq, key.chain_id,
                                                                  key.insertion_code, atoms);
 
+        // Set legacy_residue_idx from passed map (preserves PDB file order)
+        residue.set_legacy_residue_idx(legacy_idx_map.at(key));
+
+        // Store record_type in Structure map instead of on Residue
+        structure.set_residue_record_type(key.chain_id, key.residue_seq, key.insertion_code, key.record_type);
+
         auto [it, inserted] = chains.try_emplace(key.chain_id, key.chain_id);
         it->second.add_residue(residue);
     }
 
-    for (auto& [chain_id, chain] : chains) {
-        structure.add_chain(chain);
+    // Add chains in file encounter order (passed from parsing)
+    for (const auto& chain_id : chain_order) {
+        auto it = chains.find(chain_id);
+        if (it != chains.end()) {
+            structure.add_chain(it->second);
+        }
     }
 
     return structure;

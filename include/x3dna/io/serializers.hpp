@@ -35,22 +35,33 @@ class AtomSerializer {
 public:
     /**
      * @brief Convert Atom to legacy JSON format (pdb_atoms record)
+     * @param atom The atom to serialize
+     * @param residue Residue context (required for residue-level fields)
      */
-    [[nodiscard]] static nlohmann::json to_legacy_json(const core::Atom& atom) {
+    [[nodiscard]] static nlohmann::json to_legacy_json(const core::Atom& atom, const core::Residue& residue) {
         nlohmann::json j;
-        // Use original names for JSON output to match legacy format
-        j["atom_name"] = atom.original_atom_name();
+        // Use atom name (already in PDB 4-character format)
+        j["atom_name"] = atom.name();
         j["xyz"] = {atom.position().x(), atom.position().y(), atom.position().z()};
-        j["residue_name"] = atom.original_residue_name().empty() ? atom.residue_name() : atom.original_residue_name();
-        j["chain_id"] = atom.chain_id();
-        j["residue_seq"] = atom.residue_seq();
-        j["record_type"] = (atom.record_type() == '\0') ? "" : std::string(1, atom.record_type());
+
+        // Use residue context for residue-level fields
+        j["residue_name"] = residue.name();
+        j["chain_id"] = residue.chain_id();
+        j["residue_seq"] = residue.seq_num();
+
+        // Determine record_type from residue classification
+        bool is_hetatm = !residue.is_nucleotide() ||
+                         (residue.one_letter_code() >= 'a' && residue.one_letter_code() <= 'z');
+        j["record_type"] = is_hetatm ? "H" : "A";
 
         if (atom.alt_loc() != ' ' && atom.alt_loc() != '\0') {
             j["alt_loc"] = std::string(1, atom.alt_loc());
         }
-        if (!atom.insertion().empty()) {
-            j["insertion"] = atom.insertion();
+
+        // Use residue insertion
+        const std::string& insertion = residue.insertion();
+        if (!insertion.empty()) {
+            j["insertion"] = insertion;
         }
 
         // Add debug information
@@ -73,54 +84,60 @@ public:
 
     /**
      * @brief Convert Atom to modern JSON format
+     * @param atom The atom to serialize
+     * @param residue Residue context (required for residue-level fields)
      */
-    [[nodiscard]] static nlohmann::json to_json(const core::Atom& atom) {
+    [[nodiscard]] static nlohmann::json to_json(const core::Atom& atom, const core::Residue& residue) {
         nlohmann::json j;
 
         // Use legacy_atom_idx for atom_idx to match legacy exactly (1-based)
         int legacy_atom_idx = atom.legacy_atom_idx();
         j["atom_idx"] = legacy_atom_idx > 0 ? legacy_atom_idx : 0;
 
-        // Core fields - use original names for JSON output
-        j["atom_name"] = atom.original_atom_name();
-        j["residue_name"] = atom.original_residue_name().empty() ? atom.residue_name() : atom.original_residue_name();
-        j["chain_id"] = atom.chain_id();
-        j["residue_seq"] = atom.residue_seq();
+        // Core fields - use atom name (already in PDB 4-character format)
+        j["atom_name"] = atom.name();
+
+        // Use residue context for residue-level fields
+        j["residue_name"] = residue.name();
+        j["chain_id"] = residue.chain_id();
+        j["residue_seq"] = residue.seq_num();
 
         // Insertion code (only if non-empty)
-        if (!atom.insertion().empty()) {
-            j["insertion"] = atom.insertion();
+        const std::string& insertion = residue.insertion();
+        if (!insertion.empty()) {
+            j["insertion"] = insertion;
         }
 
         // Coordinates
         j["xyz"] = nlohmann::json::array({atom.position().x(), atom.position().y(), atom.position().z()});
 
-        // Record type
-        j["record_type"] = std::string(1, atom.record_type());
+        // Determine record_type from residue classification
+        bool is_hetatm = !residue.is_nucleotide() ||
+                         (residue.one_letter_code() >= 'a' && residue.one_letter_code() <= 'z');
+        j["record_type"] = is_hetatm ? "H" : "A";
 
         return j;
     }
 
     /**
      * @brief Create Atom from legacy JSON format
+     * Note: Residue-level fields (residue_name, chain_id, residue_seq, insertion) are ignored.
+     *       These fields should be obtained from the parent Residue object.
      */
     [[nodiscard]] static core::Atom from_legacy_json(const nlohmann::json& j) {
         std::string name = j.value("atom_name", "");
         std::vector<double> xyz = j.value("xyz", std::vector<double>{0.0, 0.0, 0.0});
         geometry::Vector3D position(xyz[0], xyz[1], xyz[2]);
 
-        std::string residue_name = j.value("residue_name", "");
-        std::string chain_id = j.value("chain_id", "");
-        int residue_seq = j.value("residue_seq", 0);
-        std::string record_str = j.value("record_type", "A");
-        char record_type = record_str.empty() ? 'A' : record_str[0];
-
-        // Atom constructor will trim names automatically
-        return core::Atom(name, position, residue_name, chain_id, residue_seq, record_type);
+        // Create atom with per-atom fields only
+        // Note: record_type is now determined from residue classification, not stored on atom
+        return core::Atom(name, position);
     }
 
     /**
      * @brief Create Atom from modern JSON format
+     * Note: Residue-level fields (residue_name, chain_id, residue_seq, insertion) are ignored.
+     *       These fields should be obtained from the parent Residue object.
      */
     [[nodiscard]] static core::Atom from_json(const nlohmann::json& j) {
         return from_legacy_json(j); // Same format for now
@@ -177,8 +194,9 @@ public:
         j["residue_seq"] = residue.seq_num();
         j["chain_id"] = residue.chain_id();
         j["atoms"] = nlohmann::json::array();
+        // Pass residue context to ensure atoms use residue's fields
         for (const auto& atom : residue.atoms()) {
-            j["atoms"].push_back(AtomSerializer::to_legacy_json(atom));
+            j["atoms"].push_back(AtomSerializer::to_legacy_json(atom, residue));
         }
         if (residue.reference_frame().has_value()) {
             j["reference_frame"] = ReferenceFrameSerializer::to_legacy_json(residue.reference_frame().value());
@@ -195,8 +213,9 @@ public:
         j["seq_num"] = residue.seq_num();
         j["chain_id"] = residue.chain_id();
         j["atoms"] = nlohmann::json::array();
+        // Pass residue context to ensure atoms use residue's fields
         for (const auto& atom : residue.atoms()) {
-            j["atoms"].push_back(AtomSerializer::to_json(atom));
+            j["atoms"].push_back(AtomSerializer::to_json(atom, residue));
         }
         if (residue.reference_frame().has_value()) {
             j["reference_frame"] = ReferenceFrameSerializer::to_json(residue.reference_frame().value());
@@ -211,7 +230,23 @@ public:
         std::string name = j.value("residue_name", "");
         int seq_num = j.value("residue_seq", 0);
         std::string chain_id = j.value("chain_id", "");
+        std::string insertion = j.value("insertion", "");
 
+        // Trim name for classification lookup
+        auto trim = [](const std::string& str) -> std::string {
+            size_t start = str.find_first_not_of(" \t");
+            if (start == std::string::npos)
+                return "";
+            size_t end = str.find_last_not_of(" \t");
+            return str.substr(start, end - start + 1);
+        };
+        std::string trimmed = trim(name);
+
+        // Get classification and one-letter code from trimmed name
+        auto classification = core::typing::TypeRegistry::instance().classify_residue(trimmed);
+        char one_letter = core::ModifiedNucleotideRegistry::get_one_letter_code(trimmed);
+
+        // Collect atoms
         std::vector<core::Atom> atoms;
         if (j.contains("atoms") && j["atoms"].is_array()) {
             for (const auto& atom_json : j["atoms"]) {
@@ -219,8 +254,15 @@ public:
             }
         }
 
-        core::Residue residue = core::Residue::create_from_atoms(name, seq_num, chain_id, "", atoms);
+        // Build residue preserving exact name from JSON
+        core::Residue residue = core::Residue::create(name, seq_num, chain_id)
+                                    .insertion(insertion)
+                                    .one_letter_code(one_letter)
+                                    .classification(classification)
+                                    .atoms(atoms)
+                                    .build();
 
+        // Add reference frame if present
         if (j.contains("reference_frame")) {
             residue.set_reference_frame(ReferenceFrameSerializer::from_legacy_json(j["reference_frame"]));
         }
@@ -235,7 +277,23 @@ public:
         std::string name = j.value("name", "");
         int seq_num = j.value("seq_num", 0);
         std::string chain_id = j.value("chain_id", "");
+        std::string insertion = j.value("insertion", "");
 
+        // Trim name for classification lookup
+        auto trim = [](const std::string& str) -> std::string {
+            size_t start = str.find_first_not_of(" \t");
+            if (start == std::string::npos)
+                return "";
+            size_t end = str.find_last_not_of(" \t");
+            return str.substr(start, end - start + 1);
+        };
+        std::string trimmed = trim(name);
+
+        // Get classification and one-letter code from trimmed name
+        auto classification = core::typing::TypeRegistry::instance().classify_residue(trimmed);
+        char one_letter = core::ModifiedNucleotideRegistry::get_one_letter_code(trimmed);
+
+        // Collect atoms
         std::vector<core::Atom> atoms;
         if (j.contains("atoms") && j["atoms"].is_array()) {
             for (const auto& atom_json : j["atoms"]) {
@@ -243,8 +301,15 @@ public:
             }
         }
 
-        core::Residue residue = core::Residue::create_from_atoms(name, seq_num, chain_id, "", atoms);
+        // Build residue preserving exact name from JSON
+        core::Residue residue = core::Residue::create(name, seq_num, chain_id)
+                                    .insertion(insertion)
+                                    .one_letter_code(one_letter)
+                                    .classification(classification)
+                                    .atoms(atoms)
+                                    .build();
 
+        // Add reference frame if present
         if (j.contains("reference_frame")) {
             residue.set_reference_frame(ReferenceFrameSerializer::from_json(j["reference_frame"]));
         }
@@ -338,7 +403,7 @@ public:
         for (const auto& chain : structure.chains()) {
             for (const auto& residue : chain.residues()) {
                 for (const auto& atom : residue.atoms()) {
-                    j["atoms"].push_back(AtomSerializer::to_legacy_json(atom));
+                    j["atoms"].push_back(AtomSerializer::to_legacy_json(atom, residue));
                 }
             }
         }
@@ -367,13 +432,20 @@ public:
         core::Structure structure(pdb_id);
 
         if (j.contains("atoms") && j["atoms"].is_array()) {
-            // Group atoms by chain and residue
-            std::map<std::string, std::map<std::tuple<int, std::string>, std::vector<core::Atom>>> chain_residue_atoms;
+            // Group atoms by chain and residue using JSON metadata
+            std::map<std::string, std::map<std::tuple<std::string, int, std::string>, std::vector<core::Atom>>>
+                chain_residue_atoms;
 
             for (const auto& atom_json : j["atoms"]) {
                 core::Atom atom = AtomSerializer::from_legacy_json(atom_json);
-                std::string chain_id = atom.chain_id();
-                auto residue_key = std::make_tuple(atom.residue_seq(), atom.insertion());
+
+                // Extract residue-level fields from JSON (not from atom)
+                std::string chain_id = atom_json.value("chain_id", "");
+                std::string residue_name = atom_json.value("residue_name", "");
+                int seq_num = atom_json.value("residue_seq", 0);
+                std::string insertion = atom_json.value("insertion", "");
+
+                auto residue_key = std::make_tuple(residue_name, seq_num, insertion);
                 chain_residue_atoms[chain_id][residue_key].push_back(atom);
             }
 
@@ -382,11 +454,11 @@ public:
                 core::Chain chain(chain_id);
                 for (const auto& [residue_key, atoms] : residue_atoms) {
                     if (!atoms.empty()) {
-                        std::string residue_name = atoms[0].residue_name();
-                        int seq_num = std::get<0>(residue_key);
-                        std::string insertion = std::get<1>(residue_key);
-                        core::Residue residue = core::Residue::create_from_atoms(
-                            residue_name, seq_num, chain_id, insertion, atoms);
+                        std::string residue_name = std::get<0>(residue_key);
+                        int seq_num = std::get<1>(residue_key);
+                        std::string insertion = std::get<2>(residue_key);
+                        core::Residue residue = core::Residue::create_from_atoms(residue_name, seq_num, chain_id,
+                                                                                 insertion, atoms);
                         chain.add_residue(residue);
                     }
                 }

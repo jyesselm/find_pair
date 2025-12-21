@@ -127,11 +127,8 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure, const std
         }
 
         if (is_nucleotide) {
-            // Get legacy_residue_idx from atoms
-            int legacy_residue_idx = 0;
-            if (!residue->atoms().empty()) {
-                legacy_residue_idx = residue->atoms()[0].legacy_residue_idx();
-            }
+            // Get legacy_residue_idx from residue
+            int legacy_residue_idx = residue->legacy_residue_idx();
 
             if (legacy_residue_idx <= 0) {
                 continue;

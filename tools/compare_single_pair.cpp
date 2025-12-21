@@ -168,13 +168,11 @@ int main(int argc, char* argv[]) {
 
     for (auto& chain : structure.chains()) {
         for (auto& residue : chain.residues()) {
-            if (!residue.atoms().empty()) {
-                int legacy_idx = residue.atoms()[0].legacy_residue_idx();
-                if (legacy_idx == base_i)
-                    res1 = &residue;
-                if (legacy_idx == base_j)
-                    res2 = &residue;
-            }
+            int legacy_idx = residue.legacy_residue_idx();
+            if (legacy_idx == base_i)
+                res1 = &residue;
+            if (legacy_idx == base_j)
+                res2 = &residue;
         }
     }
 

@@ -25,13 +25,18 @@ from scripts.test_utils import (
     load_valid_pdbs_fast
 )
 
-def generate_legacy_atoms(pdb_id: str, pdb_file: Path, output_dir: Path, 
+def generate_legacy_atoms(pdb_id: str, pdb_file: Path, output_dir: Path,
                           legacy_exe: Path, project_root: Path) -> Tuple[bool, str]:
-    """Generate legacy atoms JSON."""
+    """Generate legacy atoms JSON - reuse existing files if available.
+
+    Legacy JSON can be cached since legacy code doesn't change. This is different
+    from modern JSON which should ALWAYS be regenerated to test the current build.
+    """
     # Use shared utility - note: pdb_atoms is stored differently
     legacy_output = output_dir / "legacy"
     legacy_output.mkdir(parents=True, exist_ok=True)
-    
+
+    # Check if legacy atoms JSON already exists (caching is OK for legacy)
     legacy_json = project_root / "data" / "json_legacy" / "pdb_atoms" / f"{pdb_id}.json"
     if legacy_json.exists():
         shutil.copy2(legacy_json, legacy_output / f"{pdb_id}.json")
@@ -53,7 +58,11 @@ def generate_legacy_atoms(pdb_id: str, pdb_file: Path, output_dir: Path,
 
 def generate_modern_atoms(pdb_id: str, pdb_file: Path, output_dir: Path,
                           modern_exe: Path) -> Tuple[bool, str]:
-    """Generate modern atoms JSON."""
+    """Generate modern atoms JSON - ALWAYS regenerates from current build.
+
+    Modern JSON is always regenerated to catch regressions in the current build.
+    Never reuses cached files.
+    """
     return generate_modern_json(pdb_id, pdb_file, output_dir, modern_exe, stage="atoms")
 
 def compare_atoms_json(legacy_file: Path, modern_file: Path) -> Tuple[bool, Dict]:

@@ -26,7 +26,8 @@ using namespace x3dna::core;
 // ============================================================================
 
 bool BasePairFinder::can_participate_in_pairing(const Residue* res) {
-    if (!res) return false;
+    if (!res)
+        return false;
     return is_nucleotide(*res) && res->reference_frame().has_value();
 }
 
@@ -72,11 +73,9 @@ std::vector<BasePair> BasePairFinder::find_pairs_with_recording(Structure& struc
     return {};
 }
 
-bool BasePairFinder::try_select_mutual_pair(int legacy_idx1, int legacy_idx2,
-                                             const Residue* res1, const Residue* res2,
-                                             const ValidationResult& result,
-                                             const PartnerSearchContext& ctx,
-                                             PairSelectionState& state) const {
+bool BasePairFinder::try_select_mutual_pair(int legacy_idx1, int legacy_idx2, const Residue* res1, const Residue* res2,
+                                            const ValidationResult& result, const PartnerSearchContext& ctx,
+                                            PairSelectionState& state) const {
     // Verify pair is valid in Phase 1 results
     const auto* phase1_result = ctx.phase1.get_result(legacy_idx1, legacy_idx2);
     if (!phase1_result) {
@@ -87,8 +86,7 @@ bool BasePairFinder::try_select_mutual_pair(int legacy_idx1, int legacy_idx2,
 
     if (!phase1_result->is_valid) {
         std::cerr << "Error: Attempted to select invalid pair (" << legacy_idx1 << ", " << legacy_idx2
-                  << "). is_valid=" << phase1_result->is_valid
-                  << ", d_v_check=" << phase1_result->d_v_check
+                  << "). is_valid=" << phase1_result->is_valid << ", d_v_check=" << phase1_result->d_v_check
                   << ", d_v=" << phase1_result->d_v << "\n";
         return false;
     }
@@ -122,13 +120,16 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::
         state.pairs_found_this_iteration.clear();
 
         for (int idx1 = 1; idx1 <= mapping.max_legacy_idx; ++idx1) {
-            if (is_matched(idx1, state.matched_indices)) continue;
+            if (is_matched(idx1, state.matched_indices))
+                continue;
 
             const Residue* res1 = mapping.get(idx1);
-            if (!can_participate_in_pairing(res1)) continue;
+            if (!can_participate_in_pairing(res1))
+                continue;
 
             auto best = find_best_partner(idx1, ctx);
-            if (!best.has_value()) continue;
+            if (!best.has_value())
+                continue;
 
             int idx2 = best->first;
             const ValidationResult& result = best->second;
@@ -148,8 +149,7 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::
             if (writer) {
                 int best_j_for_i = idx2;
                 int best_i_for_j = reverse.has_value() ? reverse->first : 0;
-                writer->record_mutual_best_decision(idx1, idx2, best_j_for_i, best_i_for_j,
-                                                    is_mutual, is_mutual);
+                writer->record_mutual_best_decision(idx1, idx2, best_j_for_i, best_i_for_j, is_mutual, is_mutual);
             }
         }
 
@@ -240,30 +240,32 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
     for (int idx2 = 1; idx2 <= ctx.mapping.max_legacy_idx; ++idx2) {
         // Skip self or already matched
         if (idx2 == legacy_idx1 || is_matched(idx2, ctx.matched_indices)) {
-            if (collect) candidates.emplace_back(idx2, false, std::numeric_limits<double>::max(), 0);
+            if (collect)
+                candidates.emplace_back(idx2, false, std::numeric_limits<double>::max(), 0);
             continue;
         }
 
         const Residue* res2 = ctx.mapping.get(idx2);
         if (!can_participate_in_pairing(res2)) {
-            if (collect) candidates.emplace_back(idx2, false, std::numeric_limits<double>::max(), 0);
+            if (collect)
+                candidates.emplace_back(idx2, false, std::numeric_limits<double>::max(), 0);
             continue;
         }
 
         // Get validation result from Phase 1 or compute on the fly
         const auto* phase1_result = ctx.phase1.get_result(legacy_idx1, idx2);
-        ValidationResult fallback_result;  // Stays in scope for the loop iteration
+        ValidationResult fallback_result; // Stays in scope for the loop iteration
 
         if (!phase1_result) {
-            fallback_result = (legacy_idx1 < idx2)
-                ? validator_.validate(*res1, *res2)
-                : validator_.validate(*res2, *res1);
+            fallback_result = (legacy_idx1 < idx2) ? validator_.validate(*res1, *res2)
+                                                   : validator_.validate(*res2, *res1);
             phase1_result = &fallback_result;
         }
 
         const ValidationResult& result = *phase1_result;
         if (!result.is_valid) {
-            if (collect) candidates.emplace_back(idx2, true, std::numeric_limits<double>::max(), 0);
+            if (collect)
+                candidates.emplace_back(idx2, true, std::numeric_limits<double>::max(), 0);
             continue;
         }
 
@@ -408,8 +410,7 @@ constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
 }};
 
 // Legacy RA_LIST order for ring atoms (using trimmed names)
-constexpr std::array<const char*, 9> RING_ATOM_NAMES = {"C4", "N3", "C2", "N1", "C6",
-                                                        "C5", "N7", "C8", "N9"};
+constexpr std::array<const char*, 9> RING_ATOM_NAMES = {"C4", "N3", "C2", "N1", "C6", "C5", "N7", "C8", "N9"};
 
 // Use constant from validation_constants.hpp
 using validation_constants::NT_RMSD_CUTOFF;
@@ -484,9 +485,8 @@ constexpr std::array<const char*, 6> COMMON_RING_ATOMS = {"C4", "N3", "C2", "N1"
 constexpr std::array<const char*, 3> PURINE_RING_ATOMS = {"N7", "C8", "N9"};
 
 bool is_standard_nucleotide(ResidueType type) {
-    return type == ResidueType::ADENINE || type == ResidueType::CYTOSINE ||
-           type == ResidueType::GUANINE || type == ResidueType::THYMINE ||
-           type == ResidueType::URACIL;
+    return type == ResidueType::ADENINE || type == ResidueType::CYTOSINE || type == ResidueType::GUANINE ||
+           type == ResidueType::THYMINE || type == ResidueType::URACIL;
 }
 
 bool is_recognized_modified_nucleotide(ResidueType type) {
@@ -499,16 +499,17 @@ bool needs_rmsd_validation(ResidueType type) {
 
 bool residue_has_atom(const Residue& residue, const char* atom_name) {
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == atom_name) return true;
+        if (atom.name() == atom_name)
+            return true;
     }
     return false;
 }
 
-template<size_t N>
-int count_matching_atoms(const Residue& residue, const std::array<const char*, N>& atom_names) {
+template <size_t N> int count_matching_atoms(const Residue& residue, const std::array<const char*, N>& atom_names) {
     int count = 0;
     for (const auto& name : atom_names) {
-        if (residue_has_atom(residue, name)) count++;
+        if (residue_has_atom(residue, name))
+            count++;
     }
     return count;
 }
@@ -518,7 +519,8 @@ bool passes_rmsd_nucleotide_check(const Residue& residue) {
     const int purine_count = count_matching_atoms(residue, PURINE_RING_ATOMS);
     const int total_ring_atoms = common_count + purine_count;
 
-    if (total_ring_atoms < 3) return false;
+    if (total_ring_atoms < 3)
+        return false;
 
     auto rmsd = check_nt_type_by_rmsd(residue);
     return rmsd.has_value() && *rmsd <= NT_RMSD_CUTOFF;
@@ -530,10 +532,12 @@ bool BasePairFinder::is_nucleotide(const Residue& residue) {
     const ResidueType type = residue.residue_type();
 
     // Standard nucleotides (A, C, G, T, U)
-    if (is_standard_nucleotide(type)) return true;
+    if (is_standard_nucleotide(type))
+        return true;
 
     // Explicitly recognized modified nucleotides
-    if (is_recognized_modified_nucleotide(type)) return true;
+    if (is_recognized_modified_nucleotide(type))
+        return true;
 
     // Unknown or noncanonical residues need RMSD validation
     if (needs_rmsd_validation(type)) {
@@ -561,13 +565,11 @@ BasePairFinder::ResidueIndexMapping BasePairFinder::build_residue_index_mapping(
 
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
-            if (!residue.atoms().empty()) {
-                int legacy_idx = residue.atoms()[0].legacy_residue_idx();
-                if (legacy_idx > 0) {
-                    mapping.by_legacy_idx[legacy_idx] = &residue;
-                    if (legacy_idx > mapping.max_legacy_idx) {
-                        mapping.max_legacy_idx = legacy_idx;
-                    }
+            int legacy_idx = residue.legacy_residue_idx();
+            if (legacy_idx > 0) {
+                mapping.by_legacy_idx[legacy_idx] = &residue;
+                if (legacy_idx > mapping.max_legacy_idx) {
+                    mapping.max_legacy_idx = legacy_idx;
                 }
             }
         }
