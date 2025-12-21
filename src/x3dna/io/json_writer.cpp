@@ -199,6 +199,9 @@ void JsonWriter::record_pdb_atoms(const core::Structure& structure) {
             atom_json["insertion"] = atom_ctx.residue->insertion();
         }
 
+        // Unique residue identifier
+        atom_json["res_id"] = atom_ctx.residue->res_id();
+
         // Coordinates
         const auto& pos = atom_ctx.atom->position();
         atom_json["xyz"] = nlohmann::json::array({pos.x(), pos.y(), pos.z()});
@@ -241,6 +244,7 @@ void JsonWriter::record_residue_indices(const core::Structure& structure) {
 
         nlohmann::json entry;
         entry["residue_idx"] = static_cast<int>(i + 1); // 1-based residue index
+        entry["res_id"] = residue->res_id();
         entry["start_atom"] = start_atom;
         entry["end_atom"] = end_atom;
         seidx_array.push_back(entry);
@@ -274,6 +278,13 @@ void JsonWriter::record_base_frame_calc(size_t residue_idx, char base_type,
     if (!insertion.empty()) {
         record["insertion"] = insertion;
     }
+
+    // Construct res_id from components
+    std::string res_id = chain_id + "-" + residue_name + "-" + std::to_string(residue_seq);
+    if (!insertion.empty()) {
+        res_id += insertion;
+    }
+    record["res_id"] = res_id;
 
     record["standard_template"] = standard_template.string();
     record["rms_fit"] = format_double(rms_fit);
@@ -309,6 +320,13 @@ void JsonWriter::record_ls_fitting(size_t residue_idx, size_t num_points, double
     if (!insertion.empty()) {
         record["insertion"] = insertion;
     }
+
+    // Construct res_id from components
+    std::string res_id = chain_id + "-" + residue_name + "-" + std::to_string(residue_seq);
+    if (!insertion.empty()) {
+        res_id += insertion;
+    }
+    record["res_id"] = res_id;
 
     record["num_points"] = num_points;
     record["rms_fit"] = format_double(rms_fit);
@@ -357,6 +375,13 @@ void JsonWriter::record_frame_calc(size_t residue_idx, char base_type, const std
     if (!insertion.empty()) {
         record["insertion"] = insertion;
     }
+
+    // Construct res_id from components
+    std::string res_id = chain_id + "-" + residue_name + "-" + std::to_string(residue_seq);
+    if (!insertion.empty()) {
+        res_id += insertion;
+    }
+    record["res_id"] = res_id;
 
     record["template_file"] = template_file.string();
     record["rms_fit"] = format_double(rms_fit);
@@ -432,11 +457,30 @@ void JsonWriter::record_base_pair(const core::BasePair& pair) {
     add_calculation_record(record);
 }
 
-void JsonWriter::record_bpstep_params(size_t bp_idx1, size_t bp_idx2, const core::BasePairStepParameters& params) {
+void JsonWriter::record_bpstep_params(size_t bp_idx1, size_t bp_idx2, const core::BasePairStepParameters& params,
+                                      const core::BasePair* pair1, const core::BasePair* pair2) {
     nlohmann::json record;
     record["type"] = "bpstep_params";
     record["bp_idx1"] = bp_idx1;
     record["bp_idx2"] = bp_idx2;
+
+    // Add res_ids from base pairs if provided
+    if (pair1) {
+        if (!pair1->res_id1().empty()) {
+            record["res_id_1i"] = pair1->res_id1();
+        }
+        if (!pair1->res_id2().empty()) {
+            record["res_id_1j"] = pair1->res_id2();
+        }
+    }
+    if (pair2) {
+        if (!pair2->res_id1().empty()) {
+            record["res_id_2i"] = pair2->res_id1();
+        }
+        if (!pair2->res_id2().empty()) {
+            record["res_id_2j"] = pair2->res_id2();
+        }
+    }
 
     // 6 parameters: Shift, Slide, Rise, Tilt, Roll, Twist
     record["shift"] = format_double(params.shift);
@@ -454,11 +498,30 @@ void JsonWriter::record_bpstep_params(size_t bp_idx1, size_t bp_idx2, const core
     add_calculation_record(record);
 }
 
-void JsonWriter::record_helical_params(size_t bp_idx1, size_t bp_idx2, const core::HelicalParameters& params) {
+void JsonWriter::record_helical_params(size_t bp_idx1, size_t bp_idx2, const core::HelicalParameters& params,
+                                       const core::BasePair* pair1, const core::BasePair* pair2) {
     nlohmann::json record;
     record["type"] = "helical_params";
     record["bp_idx1"] = bp_idx1;
     record["bp_idx2"] = bp_idx2;
+
+    // Add res_ids from base pairs if provided
+    if (pair1) {
+        if (!pair1->res_id1().empty()) {
+            record["res_id_1i"] = pair1->res_id1();
+        }
+        if (!pair1->res_id2().empty()) {
+            record["res_id_1j"] = pair1->res_id2();
+        }
+    }
+    if (pair2) {
+        if (!pair2->res_id1().empty()) {
+            record["res_id_2i"] = pair2->res_id1();
+        }
+        if (!pair2->res_id2().empty()) {
+            record["res_id_2j"] = pair2->res_id2();
+        }
+    }
 
     // 6 parameters: x_displacement, y_displacement, rise, inclination, tip, twist
     record["x_displacement"] = format_double(params.x_displacement);
@@ -548,7 +611,8 @@ void JsonWriter::record_removed_atoms_summary(size_t num_removed) {
 
 void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_valid, int bp_type_id, double dir_x,
                                         double dir_y, double dir_z, const std::array<double, 5>& rtn_val,
-                                        const algorithms::ValidationParameters& params) {
+                                        const algorithms::ValidationParameters& params,
+                                        const std::string& res_id_i, const std::string& res_id_j) {
     // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
     // Legacy pair_validation records use 1-based indices (e.g., base_i=1 to 20 for 20 residues)
     nlohmann::json record;
@@ -557,6 +621,14 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
     record["base_j"] = static_cast<long>(base_j + 1);         // Convert to 1-based for legacy
     record["is_valid"] = static_cast<long>(is_valid ? 1 : 0); // Legacy uses long
     record["bp_type_id"] = static_cast<long>(bp_type_id);
+
+    // Unique residue identifiers
+    if (!res_id_i.empty()) {
+        record["res_id_i"] = res_id_i;
+    }
+    if (!res_id_j.empty()) {
+        record["res_id_j"] = res_id_j;
+    }
 
     // Direction vectors (nested object, matches legacy format)
     nlohmann::json dir_vectors;
@@ -600,7 +672,8 @@ void JsonWriter::record_pair_validation(size_t base_i, size_t base_j, bool is_va
 }
 
 void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dorg, double dNN, double plane_angle,
-                                        double d_v, double overlap_area) {
+                                        double d_v, double overlap_area,
+                                        const std::string& res_id_i, const std::string& res_id_j) {
     // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
     // Legacy only outputs (i, j) where i < j (verified from legacy JSON analysis)
 
@@ -609,6 +682,14 @@ void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dor
     record["type"] = "distance_checks";
     record["base_i"] = static_cast<long>(base_i + 1); // Convert to 1-based
     record["base_j"] = static_cast<long>(base_j + 1); // Convert to 1-based
+
+    // Unique residue identifiers
+    if (!res_id_i.empty()) {
+        record["res_id_i"] = res_id_i;
+    }
+    if (!res_id_j.empty()) {
+        record["res_id_j"] = res_id_j;
+    }
 
     // Values (nested object, matches legacy format)
     nlohmann::json values;
@@ -627,13 +708,22 @@ void JsonWriter::record_distance_checks(size_t base_i, size_t base_j, double dor
     add_calculation_record(record);
 }
 
-void JsonWriter::record_hbond_list(size_t base_i, size_t base_j, const std::vector<core::hydrogen_bond>& hbonds) {
+void JsonWriter::record_hbond_list(size_t base_i, size_t base_j, const std::vector<core::hydrogen_bond>& hbonds,
+                                   const std::string& res_id_i, const std::string& res_id_j) {
     // NOTE: We receive 0-based indices, but need to output 1-based for legacy compatibility
     nlohmann::json record;
     record["type"] = "hbond_list";
     record["base_i"] = static_cast<long>(base_i + 1); // Convert to 1-based for legacy
     record["base_j"] = static_cast<long>(base_j + 1); // Convert to 1-based for legacy
     record["num_hbonds"] = hbonds.size();
+
+    // Unique residue identifiers
+    if (!res_id_i.empty()) {
+        record["res_id_i"] = res_id_i;
+    }
+    if (!res_id_j.empty()) {
+        record["res_id_j"] = res_id_j;
+    }
 
     nlohmann::json hbonds_array = nlohmann::json::array();
     // Legacy records ALL H-bonds including invalid ones (type=' ')

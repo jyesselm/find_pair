@@ -3,10 +3,14 @@ Hydrogen bond list comparison utilities.
 
 Compares hbond_list records between legacy and modern JSON outputs.
 Each hbond_list record contains detailed hydrogen bond information for a base pair.
+
+Uses res_id-based matching for stable comparison that doesn't depend on index ordering.
 """
 
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass, field
+from .res_id_utils import get_res_id_i, get_res_id_j, make_pair_key
+from .step_comparison import build_residue_idx_to_res_id_map
 
 
 @dataclass
@@ -31,7 +35,8 @@ class HBondListComparison:
     total_legacy: int = 0
     total_modern: int = 0
     common_count: int = 0
-    pair_comparisons: Dict[Tuple[int, int], HBondComparison] = field(
+    matched_count: int = 0
+    pair_comparisons: Dict[Tuple, HBondComparison] = field(
         default_factory=dict
     )
 
@@ -124,7 +129,6 @@ def compare_pair_hbonds(
             )
 
     # Check for mismatches in common H-bonds (distance differences within tolerance)
-    # This handles cases where H-bonds match but distances differ slightly
     legacy_by_key = {}
     modern_by_key = {}
 
@@ -143,7 +147,6 @@ def compare_pair_hbonds(
         if leg_key in common_keys:
             continue  # Exact match
 
-        # Check if there's a modern H-bond with same atoms and type but different distance
         atoms_sorted = leg_key[:2]
         hb_type = leg_key[3]
         leg_dist = leg_key[2]
@@ -154,7 +157,6 @@ def compare_pair_hbonds(
                 and mod_key[3] == hb_type
                 and abs(mod_key[2] - leg_dist) > tolerance
             ):
-                # Found a mismatch - same atoms/type but different distance
                 result.mismatched_hbonds.append(
                     {
                         "donor_atom": (
@@ -178,67 +180,124 @@ def compare_pair_hbonds(
     return result
 
 
+def get_hbond_pair_key(rec: Dict, residue_map: Optional[Dict[int, str]] = None) -> Optional[Tuple[str, str]]:
+    """
+    Get normalized pair key for an hbond_list record.
+
+    Uses res_id_i/res_id_j if available (modern JSON), otherwise falls back
+    to constructing from base_i/base_j using the residue map.
+
+    Args:
+        rec: hbond_list record
+        residue_map: Optional mapping from residue_idx -> res_id
+
+    Returns:
+        Normalized (res_id_1, res_id_2) tuple or None
+    """
+    # Try res_id fields first (modern JSON)
+    res_id_i = get_res_id_i(rec)
+    res_id_j = get_res_id_j(rec)
+
+    if res_id_i and res_id_j:
+        return make_pair_key(res_id_i, res_id_j)
+
+    # Fall back to constructing from base_i/base_j using residue map
+    if residue_map:
+        base_i = rec.get('base_i')
+        base_j = rec.get('base_j')
+        if base_i is not None and base_j is not None:
+            res_id_i = residue_map.get(base_i)
+            res_id_j = residue_map.get(base_j)
+            if res_id_i and res_id_j:
+                return make_pair_key(res_id_i, res_id_j)
+
+    return None
+
+
 def compare_hbond_lists(
-    legacy_records: List[Dict], modern_records: List[Dict], tolerance: float = 1e-6,
-    ignore_count_mismatch: bool = True
+    legacy_records: List[Dict],
+    modern_records: List[Dict],
+    tolerance: float = 1e-6,
+    ignore_count_mismatch: bool = True,
+    legacy_atoms: Optional[List[Dict]] = None,
 ) -> HBondListComparison:
     """
     Compare hbond_list records between legacy and modern JSON.
+
+    Uses res_id-based matching for stable comparison when available.
+    Falls back to index-based matching when res_id is not available.
 
     Args:
         legacy_records: List of legacy hbond_list records
         modern_records: List of modern hbond_list records
         tolerance: Tolerance for floating point comparisons
         ignore_count_mismatch: If True, don't flag num_hbonds differences as mismatches
-                              (modern consistently finds fewer H-bonds due to stricter criteria)
+        legacy_atoms: Optional legacy pdb_atoms records for res_id resolution
 
     Returns:
         HBondListComparison result
     """
-    # Deduplicate legacy records (legacy has duplicate record bug - generates extra copies)
-    seen_pairs = set()
-    legacy_dedup = []
-    for rec in legacy_records:
-        norm_pair = (min(rec['base_i'], rec['base_j']), max(rec['base_i'], rec['base_j']))
-        if norm_pair in seen_pairs:
-            continue
-        seen_pairs.add(norm_pair)
-        legacy_dedup.append(rec)
-    
-    # Deduplicate modern records (modern generates both (i,j) and (j,i))
-    seen_pairs_modern = set()
-    modern_dedup = []
-    for rec in modern_records:
-        norm_pair = (min(rec['base_i'], rec['base_j']), max(rec['base_i'], rec['base_j']))
-        if norm_pair in seen_pairs_modern:
-            continue
-        seen_pairs_modern.add(norm_pair)
-        modern_dedup.append(rec)
-    
     result = HBondListComparison()
 
-    # Build maps by normalized (base_i, base_j)
+    # Build residue map from legacy atoms
+    residue_map = {}
+    if legacy_atoms:
+        residue_map = build_residue_idx_to_res_id_map(legacy_atoms)
+
+    # Deduplicate records
+    def dedup_records(records: List[Dict], use_res_id: bool = False) -> List[Dict]:
+        seen = set()
+        deduped = []
+        for rec in records:
+            if rec.get("type") != "hbond_list":
+                continue
+
+            if use_res_id:
+                key = get_hbond_pair_key(rec, residue_map if not use_res_id else None)
+            else:
+                base_i = rec.get('base_i')
+                base_j = rec.get('base_j')
+                if base_i is not None and base_j is not None:
+                    key = normalize_pair(base_i, base_j)
+                else:
+                    key = None
+
+            if key and key not in seen:
+                seen.add(key)
+                deduped.append(rec)
+
+        return deduped
+
+    legacy_dedup = dedup_records(legacy_records, use_res_id=False)
+    modern_dedup = dedup_records(modern_records, use_res_id=True)
+
+    # Build maps - try res_id-based matching first
     legacy_map = {}
     modern_map = {}
 
+    # For legacy, use residue_map to construct res_id keys
     for rec in legacy_dedup:
-        if rec.get("type") != "hbond_list":
-            continue
-        base_i = rec.get("base_i")
-        base_j = rec.get("base_j")
-        if base_i is not None and base_j is not None:
-            key = normalize_pair(base_i, base_j)
+        key = get_hbond_pair_key(rec, residue_map)
+        if key:
             legacy_map[key] = rec
+        else:
+            # Fall back to index-based key
+            base_i = rec.get('base_i')
+            base_j = rec.get('base_j')
+            if base_i is not None and base_j is not None:
+                legacy_map[('idx', base_i, base_j)] = rec
 
-    # Modern now uses 1-based indices (same as legacy)
-    for rec in modern_records:
-        if rec.get("type") != "hbond_list":
-            continue
-        base_i = rec.get("base_i")
-        base_j = rec.get("base_j")
-        if base_i is not None and base_j is not None:
-            key = normalize_pair(base_i, base_j)
+    # For modern, use res_id directly
+    for rec in modern_dedup:
+        key = get_hbond_pair_key(rec, None)
+        if key:
             modern_map[key] = rec
+        else:
+            # Fall back to index-based key
+            base_i = rec.get('base_i')
+            base_j = rec.get('base_j')
+            if base_i is not None and base_j is not None:
+                modern_map[('idx', base_i, base_j)] = rec
 
     result.total_legacy = len(legacy_map)
     result.total_modern = len(modern_map)
@@ -254,8 +313,9 @@ def compare_hbond_lists(
         leg_rec = legacy_map[key]
         result.missing_in_modern.append(
             {
-                "base_i": key[0],
-                "base_j": key[1],
+                "pair_key": key,
+                "base_i": leg_rec.get('base_i'),
+                "base_j": leg_rec.get('base_j'),
                 "legacy_record": leg_rec,
                 "num_hbonds": leg_rec.get("num_hbonds", 0),
             }
@@ -266,14 +326,16 @@ def compare_hbond_lists(
         mod_rec = modern_map[key]
         result.extra_in_modern.append(
             {
-                "base_i": key[0],
-                "base_j": key[1],
+                "pair_key": key,
+                "base_i": mod_rec.get('base_i'),
+                "base_j": mod_rec.get('base_j'),
                 "modern_record": mod_rec,
                 "num_hbonds": mod_rec.get("num_hbonds", 0),
             }
         )
 
     # Compare common pairs
+    matched_count = 0
     for key in common_keys:
         leg_rec = legacy_map[key]
         mod_rec = modern_map[key]
@@ -285,25 +347,25 @@ def compare_hbond_lists(
         result.pair_comparisons[key] = pair_comp
 
         # Check for mismatches
-        # When ignore_count_mismatch is True, we accept all H-bond differences
-        # since modern code has stricter detection criteria.
-        # Pairs are still tracked but won't be counted as mismatches.
-        # TODO: Improve H-bond detection algorithm in future versions
         if ignore_count_mismatch:
-            # Still record the pair for informational purposes, but don't flag as mismatch
             has_mismatch = False
+            matched_count += 1
         else:
             has_mismatch = (
-            pair_comp.missing_in_modern
-            or pair_comp.extra_in_modern
-            or pair_comp.mismatched_hbonds
-            or not pair_comp.num_hbonds_match
+                pair_comp.missing_in_modern
+                or pair_comp.extra_in_modern
+                or pair_comp.mismatched_hbonds
+                or not pair_comp.num_hbonds_match
             )
+            if not has_mismatch:
+                matched_count += 1
+
         if has_mismatch:
             result.mismatched_pairs.append(
                 {
-                    "base_i": key[0],
-                    "base_j": key[1],
+                    "pair_key": key,
+                    "base_i": leg_rec.get('base_i'),
+                    "base_j": leg_rec.get('base_j'),
                     "legacy_num_hbonds": leg_rec.get("num_hbonds", 0),
                     "modern_num_hbonds": mod_rec.get("num_hbonds", 0),
                     "comparison": pair_comp,
@@ -311,5 +373,7 @@ def compare_hbond_lists(
                     "modern_record": mod_rec,
                 }
             )
+
+    result.matched_count = matched_count
 
     return result

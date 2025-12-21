@@ -201,6 +201,10 @@ std::vector<BasePair> BasePairFinder::find_all_pairs(const Structure& structure)
             if (result.is_valid) {
                 BasePair pair(idx1, idx2, result.bp_type);
 
+                // Set unique residue identifiers
+                pair.set_res_id1(res1->res_id());
+                pair.set_res_id2(res2->res_id());
+
                 if (res1->reference_frame().has_value()) {
                     pair.set_frame1(res1->reference_frame().value());
                 }
@@ -336,11 +340,16 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
         // (Recording both (i,j) and (j,i) doubles the file size unnecessarily)
         if (result.is_valid && legacy_idx1 < legacy_idx2) {
             writer->record_pair_validation(base_i, base_j, result.is_valid, bp_type_id, result.dir_x, result.dir_y,
-                                           result.dir_z, rtn_val, validator_.parameters());
+                                           result.dir_z, rtn_val, validator_.parameters(),
+                                           res1->res_id(), res2->res_id());
 
             // Record base_pair for the same pairs as pair_validation (matches legacy behavior)
             // Analysis confirmed legacy pair_validation and base_pair have IDENTICAL pairs
             BasePair pair(base_i, base_j, result.bp_type);
+
+            // Set unique residue identifiers
+            pair.set_res_id1(res1->res_id());
+            pair.set_res_id2(res2->res_id());
 
             // Set reference frames
             if (res1->reference_frame().has_value()) {
@@ -372,7 +381,7 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
         size_t base_i = static_cast<size_t>(legacy_idx1 - 1);
         size_t base_j = static_cast<size_t>(legacy_idx2 - 1);
         writer->record_distance_checks(base_i, base_j, result.dorg, result.dNN, result.plane_angle, result.d_v,
-                                       result.overlap_area);
+                                       result.overlap_area, res1->res_id(), res2->res_id());
     }
 
     // Record hydrogen bonds if present
@@ -380,7 +389,7 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
         // Use 0-based indices for consistency with base_frame_calc
         size_t base_i = static_cast<size_t>(legacy_idx1 - 1);
         size_t base_j = static_cast<size_t>(legacy_idx2 - 1);
-        writer->record_hbond_list(base_i, base_j, result.hbonds);
+        writer->record_hbond_list(base_i, base_j, result.hbonds, res1->res_id(), res2->res_id());
     }
 }
 
@@ -633,6 +642,14 @@ BasePair BasePairFinder::create_base_pair(int legacy_idx1, int legacy_idx2, cons
     // Set frames - swap if we reordered the indices
     const Residue* res_small = swapped ? res2 : res1;
     const Residue* res_large = swapped ? res1 : res2;
+
+    // Set unique residue identifiers
+    if (res_small) {
+        pair.set_res_id1(res_small->res_id());
+    }
+    if (res_large) {
+        pair.set_res_id2(res_large->res_id());
+    }
 
     if (res_small && res_small->reference_frame().has_value()) {
         pair.set_frame1(res_small->reference_frame().value());

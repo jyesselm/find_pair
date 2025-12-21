@@ -108,6 +108,9 @@ public:
             j["insertion"] = insertion;
         }
 
+        // Unique residue identifier
+        j["res_id"] = residue.res_id();
+
         // Coordinates
         j["xyz"] = nlohmann::json::array({atom.position().x(), atom.position().y(), atom.position().z()});
 
@@ -212,6 +215,7 @@ public:
         j["name"] = residue.name();
         j["seq_num"] = residue.seq_num();
         j["chain_id"] = residue.chain_id();
+        j["res_id"] = residue.res_id();
         j["atoms"] = nlohmann::json::array();
         // Pass residue context to ensure atoms use residue's fields
         for (const auto& atom : residue.atoms()) {

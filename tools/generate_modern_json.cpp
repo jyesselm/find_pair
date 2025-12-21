@@ -311,11 +311,11 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                         // Use 1-based sequential position indices (matching legacy)
                         size_t bp_idx1 = i + 1;
                         size_t bp_idx2 = i + 2;
-                        writer.record_bpstep_params(bp_idx1, bp_idx2, step_params);
+                        writer.record_bpstep_params(bp_idx1, bp_idx2, step_params, &pair1, &pair2);
 
                         // Calculate helical parameters using same frames
                         auto helical_params = param_calc.calculate_helical_parameters_impl(bp1_frame, bp2_frame);
-                        writer.record_helical_params(bp_idx1, bp_idx2, helical_params);
+                        writer.record_helical_params(bp_idx1, bp_idx2, helical_params, &pair1, &pair2);
 
                         valid_steps++;
                     }

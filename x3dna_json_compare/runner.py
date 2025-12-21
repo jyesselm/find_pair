@@ -20,6 +20,7 @@ import multiprocessing
 from .json_comparison import JsonComparator
 from .output import OutputFormatter, ValidationSummary
 from .pdb_list import get_pdb_list
+from .rebuild import regenerate_modern_json
 
 
 # Linear stages in legacy execution order (12 stages)
@@ -98,16 +99,31 @@ STAGE_JSON_DIRS = {
 
 def _validate_single_pdb(args) -> Dict[str, Any]:
     """Worker function for parallel validation (must be top-level for pickling)."""
-    pdb_id, project_root_str, comparator_kwargs, check_types = args
+    pdb_id, project_root_str, comparator_kwargs, check_types, skip_regeneration = args
     project_root = Path(project_root_str)
-    
+
+    # Regenerate modern JSON before comparison (unless skipped)
+    if not skip_regeneration:
+        regen_result = regenerate_modern_json(pdb_id, project_root)
+        if regen_result["status"] != "success":
+            return {
+                'pdb_id': pdb_id,
+                'status': 'error',
+                'has_differences': True,
+                'errors': [f"Regeneration failed: {regen_result['message']}"],
+                'warnings': [],
+                'atom_comparison': None,
+                'frame_comparison': None,
+                'hbond_comparison': None,
+            }
+
     # Create comparator for this process
     comparator = JsonComparator(**comparator_kwargs)
-    
+
     legacy_file = project_root / 'data' / 'json_legacy' / f'{pdb_id}.json'
     modern_file = project_root / 'data' / 'json' / f'{pdb_id}.json'
     pdb_file = project_root / 'data' / 'pdb' / f'{pdb_id}.pdb'
-    
+
     result = comparator.compare_files(legacy_file, modern_file, pdb_file, pdb_id)
     
     # Check for stage-specific differences
@@ -285,9 +301,10 @@ class ValidationRunner:
                  checkpoint_file: Path = None,
                  resume: bool = False,
                  clean_on_match: bool = False,
+                 skip_regeneration: bool = False,
                  **comparator_kwargs):
         """Initialize validation runner.
-        
+
         Args:
             project_root: Project root directory (default: current working directory)
             stages: List of stages to validate (atoms, frames, hbonds, pairs, steps)
@@ -300,6 +317,7 @@ class ValidationRunner:
             checkpoint_file: Path to checkpoint file for resume support
             resume: If True, skip PDBs that already passed in checkpoint
             clean_on_match: If True, delete modern JSON files that match legacy
+            skip_regeneration: If True, skip regenerating modern JSON before comparison
             **comparator_kwargs: Additional arguments for JsonComparator
         """
         self.project_root = Path(project_root) if project_root else Path.cwd()
@@ -313,6 +331,7 @@ class ValidationRunner:
         self.checkpoint_file = checkpoint_file
         self.resume = resume
         self.clean_on_match = clean_on_match
+        self.skip_regeneration = skip_regeneration
         
         # Build comparator kwargs from stages
         self.comparator_kwargs, self.check_types = self._build_comparator_kwargs(stages, comparator_kwargs)
@@ -596,12 +615,27 @@ class ValidationRunner:
     
     def _validate_single_sequential(self, pdb_id: str) -> Dict[str, Any]:
         """Validate single PDB (sequential mode)."""
+        # Regenerate modern JSON before comparison (unless skipped)
+        if not self.skip_regeneration:
+            regen_result = regenerate_modern_json(pdb_id, self.project_root)
+            if regen_result["status"] != "success":
+                return {
+                    'pdb_id': pdb_id,
+                    'status': 'error',
+                    'has_differences': True,
+                    'errors': [f"Regeneration failed: {regen_result['message']}"],
+                    'atom_comparison': None,
+                    'frame_comparison': None,
+                    'hbond_comparison': None,
+                    'full_result': None,
+                }
+
         comparator = JsonComparator(**self.comparator_kwargs)
-        
+
         legacy_file = self.project_root / 'data' / 'json_legacy' / f'{pdb_id}.json'
         modern_file = self.project_root / 'data' / 'json' / f'{pdb_id}.json'
         pdb_file = self.project_root / 'data' / 'pdb' / f'{pdb_id}.pdb'
-        
+
         result = comparator.compare_files(legacy_file, modern_file, pdb_file, pdb_id)
         
         # Check for stage-specific differences (same logic as _validate_single_pdb)
@@ -637,10 +671,10 @@ class ValidationRunner:
     def _validate_parallel(self, pdb_ids: List[str]) -> List[tuple]:
         """Validate PDBs in parallel."""
         results = []
-        
+
         # Prepare arguments for worker function
         args_list = [
-            (pdb_id, str(self.project_root), self.comparator_kwargs, self.check_types)
+            (pdb_id, str(self.project_root), self.comparator_kwargs, self.check_types, self.skip_regeneration)
             for pdb_id in pdb_ids
         ]
         

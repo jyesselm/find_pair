@@ -24,6 +24,7 @@ from .runner import ValidationRunner
 from .pdb_list import get_pdb_list, load_test_set
 from .json_comparison import JsonComparator
 from .config import load_config
+from .rebuild import rebuild_cli
 
 
 @click.group()
@@ -56,11 +57,13 @@ def main():
               help='Delete modern JSON files that match legacy (save disk space)')
 @click.option('--skip-hbonds', is_flag=True,
               help='Skip H-bond validation (known detection differences)')
+@click.option('--skip-regen', is_flag=True,
+              help='Skip regenerating modern JSON before comparison (use existing files)')
 @click.option('--project-root', type=click.Path(path_type=Path, exists=True),
               help='Project root directory (default: current directory)')
 def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
              stop_on_first, diff, diff_file, checkpoint, resume, clean_on_match,
-             skip_hbonds, project_root):
+             skip_hbonds, skip_regen, project_root):
     """Validate legacy vs modern JSON outputs.
     
     \b
@@ -144,6 +147,7 @@ def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
         checkpoint_file=checkpoint,
         resume=resume,
         clean_on_match=clean_on_match,
+        skip_regeneration=skip_regen,
     )
     
     # Get PDB list
@@ -404,6 +408,10 @@ def compare(pdb_ids, verbose, output, test_set, workers, project_root):
         click.echo(report)
     
     sys.exit(1 if any(r.has_differences() for r in results.values()) else 0)
+
+
+# Add rebuild commands to main CLI
+main.add_command(rebuild_cli, name='rebuild')
 
 
 if __name__ == '__main__':

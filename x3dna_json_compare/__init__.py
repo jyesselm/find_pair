@@ -33,6 +33,10 @@ from .runner import ValidationRunner
 from .output import OutputFormatter, ValidationSummary
 from .pdb_list import get_pdb_list, load_valid_pdbs_fast, load_test_set
 from .executables import find_executables, generate_modern_json, generate_legacy_json
+from .res_id_utils import (
+    get_res_id, get_res_id_i, get_res_id_j, get_pair_res_ids,
+    get_step_res_ids, make_pair_key
+)
 
 __all__ = [
     # Models
@@ -73,6 +77,13 @@ __all__ = [
     'find_executables',
     'generate_modern_json',
     'generate_legacy_json',
+    # res_id utilities
+    'get_res_id',
+    'get_res_id_i',
+    'get_res_id_j',
+    'get_pair_res_ids',
+    'get_step_res_ids',
+    'make_pair_key',
 ]
 
 __version__ = '1.0.0'

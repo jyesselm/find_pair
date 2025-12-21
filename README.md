@@ -341,20 +341,20 @@ The `org/` directory contains the original X3DNA code. Legacy output serves as t
 
 **Location:** `data/json_legacy/`
 
-#### Method 1: Using Python Script (Recommended)
+#### Method 1: Using CLI (Recommended)
 
 ```bash
 # Single PDB
-python3 scripts/rebuild_json.py regenerate 1H4S --legacy-only
+fp2-validate rebuild regenerate 1H4S --legacy-only
 
 # Multiple PDB
-python3 scripts/rebuild_json.py regenerate 1H4S 2BNA 3DNA --legacy-only
+fp2-validate rebuild regenerate 1H4S 2BNA 3DNA --legacy-only
 
 # Using test set
-python3 scripts/rebuild_json.py regenerate --test-set 100 --legacy-only
+fp2-validate rebuild regenerate --test-set 100 --legacy-only
 
 # All available PDBs
-python3 scripts/rebuild_json.py regenerate --legacy-only
+fp2-validate rebuild regenerate --legacy-only
 ```
 
 #### Method 2: Direct Executable
@@ -391,17 +391,17 @@ Modern code output is compared against legacy output to verify correctness.
 #                   validation, selection, steps, helical, all
 ```
 
-#### Method 2: Using Python Script
+#### Method 2: Using CLI
 
 ```bash
 # Single PDB (all stages)
-python3 scripts/rebuild_json.py regenerate 1H4S --modern-only
+fp2-validate rebuild regenerate 1H4S --modern-only
 
 # Multiple PDBs
-python3 scripts/rebuild_json.py regenerate 1H4S 2BNA 3DNA --modern-only
+fp2-validate rebuild regenerate 1H4S 2BNA 3DNA --modern-only
 
 # Using test set
-python3 scripts/rebuild_json.py regenerate --test-set 100 --modern-only
+fp2-validate rebuild regenerate --test-set 100 --modern-only
 ```
 
 #### Method 3: Using find_pair_app
@@ -421,16 +421,16 @@ This creates:
 
 ```bash
 # Single PDB
-python3 scripts/rebuild_json.py regenerate 1H4S
+fp2-validate rebuild regenerate 1H4S
 
 # Multiple PDBs
-python3 scripts/rebuild_json.py regenerate 1H4S 2BNA 3DNA
+fp2-validate rebuild regenerate 1H4S 2BNA 3DNA
 
 # Using test set
-python3 scripts/rebuild_json.py regenerate --test-set 100
+fp2-validate rebuild regenerate --test-set 100
 
 # All available PDBs
-python3 scripts/rebuild_json.py regenerate
+fp2-validate rebuild regenerate
 ```
 
 ---
@@ -513,20 +513,20 @@ make org-release
 
 # 2. Generate JSON for a new PDB
 cp /path/to/new.pdb data/pdb/
-python3 scripts/rebuild_json.py regenerate new --legacy-only
-python3 scripts/rebuild_json.py regenerate new --modern-only
+fp2-validate rebuild regenerate new --legacy-only
+fp2-validate rebuild regenerate new --modern-only
 
 # 3. Compare outputs
-python3 scripts/compare_json.py compare new --verbose
+fp2-validate compare new --verbose
 
 # 4. If differences found, fix modern code and repeat
 #    ... edit src/x3dna/*.cpp ...
 make release
-python3 scripts/rebuild_json.py regenerate new --modern-only
-python3 scripts/compare_json.py compare new --verbose
+fp2-validate rebuild regenerate new --modern-only
+fp2-validate compare new --verbose
 
 # 5. Once matching, validate against full test set
-python3 scripts/compare_json.py compare --test-set 100
+fp2-validate validate core --test-set 100
 ```
 
 ---
@@ -740,9 +740,10 @@ The primary testing method is JSON regression testing, which ensures modern code
 
 1. **Edit modern code** (`src/x3dna/` or `include/x3dna/`)
 2. **Build**: `make release`
-3. **Generate modern JSON**: `python3 scripts/rebuild_json.py regenerate <PDB> --modern-only`
-4. **Compare with legacy**: `python3 scripts/compare_json.py compare <PDB>`
-5. **Fix differences** → Repeat until 100% match
+3. **Validate** (auto-regenerates modern JSON): `fp2-validate validate core --pdb <PDB>`
+4. **Fix differences** → Repeat until 100% match
+
+**Note**: `fp2-validate validate` automatically regenerates modern JSON before comparison. Use `--skip-regen` if you want to skip regeneration.
 
 ### Key Principles
 
@@ -791,27 +792,29 @@ python3 scripts/compare_json.py generate-test-sets
 python3 scripts/compare_json.py generate-test-sets --force  # Overwrite existing
 ```
 
-### `rebuild_json.py` - Regenerate, Validate, and Clean JSON
+### `fp2-validate rebuild` - Regenerate, Validate, and Clean JSON
 
 Unified tool for managing JSON files.
 
 ```bash
 # Regenerate JSON files
-python3 scripts/rebuild_json.py regenerate 1H4S              # Single PDB (both)
-python3 scripts/rebuild_json.py regenerate 1H4S --legacy-only   # Legacy only
-python3 scripts/rebuild_json.py regenerate 1H4S --modern-only   # Modern only
-python3 scripts/rebuild_json.py regenerate --test-set 100    # Test set
+fp2-validate rebuild regenerate 1H4S              # Single PDB (both)
+fp2-validate rebuild regenerate 1H4S --legacy-only   # Legacy only
+fp2-validate rebuild regenerate 1H4S --modern-only   # Modern only
+fp2-validate rebuild regenerate --test-set 100    # Test set
 
 # Validate JSON files
-python3 scripts/rebuild_json.py validate
-python3 scripts/rebuild_json.py validate --legacy-dir data/json_legacy --modern-dir data/json
+fp2-validate rebuild validate-json
+fp2-validate rebuild validate-json --legacy-dir data/json_legacy --modern-dir data/json
 
 # Clean invalid/empty JSON files
-python3 scripts/rebuild_json.py clean           # Dry run
-python3 scripts/rebuild_json.py clean --execute # Actually remove files
+fp2-validate rebuild clean           # Dry run
+fp2-validate rebuild clean --execute # Actually remove files
 ```
 
-For more detailed documentation, see `scripts/README.md` and [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md).
+**Note**: `fp2-validate validate` automatically regenerates modern JSON before comparison. Use `--skip-regen` to skip regeneration.
+
+For more detailed documentation, see [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md).
 
 ## Project Structure
 
@@ -832,8 +835,7 @@ find_pair_2/
 │   ├── unit/              # Unit tests
 │   └── integration/       # Integration tests
 ├── scripts/                # Essential Python scripts
-│   ├── compare_json.py    # Main JSON comparison tool
-│   ├── rebuild_json.py    # JSON regeneration tool
+│   ├── compare_json.py    # Standalone JSON comparison tool
 │   ├── download_pdbs.py   # PDB download utility
 │   └── cluster/           # Cluster computing scripts
 ├── resources/              # Runtime resources
@@ -876,9 +878,9 @@ find_pair_2/
 - `data/json_legacy/` - Legacy JSON output (reference)
 
 **Scripts & Tools:**
-- `scripts/` - Essential Python tools (compare_json.py, rebuild_json.py, test_utils.py)
-- `tools/` - Utility programs (C++ tools and Python tools like download_pdbs.py, find_slow_pdbs.py)
-- `x3dna_json_compare/` - Python comparison library
+- `scripts/` - Essential Python tools (compare_json.py, download_pdbs.py)
+- `tools/` - Utility programs (C++ tools and Python tools like find_slow_pdbs.py)
+- `x3dna_json_compare/` - Python comparison and validation library (includes rebuild module)
 
 **Testing:**
 - `tests/unit/` - C++ unit tests
@@ -980,15 +982,15 @@ make info
 ### Test Failures
 
 1. Ensure both legacy and modern JSON files exist
-2. Regenerate JSON files if needed: `python3 scripts/rebuild_json.py regenerate <PDB>`
+2. Regenerate JSON files if needed: `fp2-validate rebuild regenerate <PDB>`
 3. Check tolerance values in comparison tools
-4. Use verbose output: `python3 scripts/compare_json.py compare <PDB> --verbose`
+4. Use verbose output: `fp2-validate compare <PDB> --verbose`
 
 ### JSON Comparison Issues
 
-1. **Missing files**: Regenerate with `python3 scripts/rebuild_json.py regenerate <PDB>`
-2. **Invalid JSON**: Validate with `python3 scripts/rebuild_json.py validate`
-3. **Threading issues**: Use `--threads 1` for single-threaded execution
+1. **Missing files**: Regenerate with `fp2-validate rebuild regenerate <PDB>`
+2. **Invalid JSON**: Validate with `fp2-validate rebuild validate-json`
+3. **Threading issues**: Use `--workers 1` for single-threaded execution
 
 ## License
 

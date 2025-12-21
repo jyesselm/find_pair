@@ -68,22 +68,26 @@ fp2-validate validate 3 --pdb 1EHZ -v         # Single PDB, verbose
 # Run pytest
 pytest tests_python/
 
-# Regenerate JSON files (always use rebuild_json.py CLI)
-python3 scripts/rebuild_json.py regenerate --test-set fast --modern-only   # Fast PDBs, modern only
-python3 scripts/rebuild_json.py regenerate --test-set 100                  # 100-PDB test set, both
-python3 scripts/rebuild_json.py regenerate 1EHZ 2BNA                       # Specific PDBs
+# Regenerate JSON files (use fp2-validate rebuild)
+fp2-validate rebuild regenerate --test-set fast --modern-only   # Fast PDBs, modern only
+fp2-validate rebuild regenerate --test-set 100                  # 100-PDB test set, both
+fp2-validate rebuild regenerate 1EHZ 2BNA                       # Specific PDBs
 ```
 
-### Current Test Results
+**Note**: By default, `fp2-validate validate` automatically regenerates modern JSON before comparison. Use `--skip-regen` to skip regeneration and use existing files.
+
+### Current Test Results (December 2024)
+
+**res_id Matching**: Comparison now uses stable `res_id` identifiers (format: `chain-name-seq[ins]`, e.g., "A-G-1", "A-C-10A") for matching records between legacy and modern JSON. This ensures accurate matching regardless of index ordering differences.
 
 **Fast PDB Set (3602 PDBs) - Core Stages (excludes H-bonds):**
 
 | Stage | Pass Rate | Notes |
 |-------|-----------|-------|
-| Core (all except H-bonds) | 99.0% (3566/3602) | Recommended validation |
-| Pairs | 99.9% (3598/3602) | 4 failures |
-| Frames | 99.7% (3591/3602) | 11 failures |
-| Steps | 99.4% (3579/3602) | 23 failures (legacy JSON indexing issues) |
+| Core (all except H-bonds) | 98.9% (3563/3602) | Recommended validation |
+| Pairs | 99.9% (3599/3602) | 3 failures |
+| Frames | 99.5% (3585/3602) | 17 failures |
+| Steps | 99.4% (3582/3602) | 20 failures |
 
 **100-PDB Test Set:**
 
@@ -91,7 +95,7 @@ python3 scripts/rebuild_json.py regenerate 1EHZ 2BNA                       # Spe
 |-------|-----------|-------|
 | 1: Atoms | 100% (100/100) | All pass |
 | 2: Residue Indices | 100% (100/100) | All pass |
-| 3-5: Frames | 100% (100/100) | All pass |
+| 3-5: Frames | 99% (99/100) | 1 failure (6OZK) |
 | 6-7: Pair Validation | 100% (100/100) | All pass |
 | 8: H-bond List | 46% (46/100) | Known issue: modern uses stricter H-bond criteria |
 | 9: Base Pair | 100% (100/100) | All pass |
@@ -191,9 +195,15 @@ Analysis of 1VQ5 (ribosome, 1535 pairs, 1157 steps):
 - `HelixOrganizer` - Helix organization and step ordering
 - `HydrogenBondFinder` - H-bond detection with donor/acceptor validation
 
-### Recent Refactoring (December 2024)
+### Recent Changes (December 2024)
 
-Removed ~1,700 LOC of dead/redundant code:
+**res_id Comparison Matching**: Updated Python comparison modules to use stable `res_id` identifiers:
+- `x3dna_json_compare/step_comparison.py` - Added `build_residue_idx_to_res_id_map()` for legacy res_id construction
+- `x3dna_json_compare/base_pair_comparison.py` - Uses res_id for matching base pairs
+- `x3dna_json_compare/hbond_comparison.py` - Uses res_id for matching H-bond lists
+- `x3dna_json_compare/res_id_utils.py` - Shared utilities for res_id extraction
+
+**Removed ~1,700 LOC of dead/redundant code:**
 - HelixDetector (redundant with HelixOrganizer)
 - HydrogenBondCounter (consolidated into HydrogenBondFinder)
 - Helix submodule files (extracted but never integrated)
@@ -212,9 +222,10 @@ Removed ~1,700 LOC of dead/redundant code:
 
 ## Key Files for Debugging
 
-- `scripts/compare_json.py` - Main JSON comparison tool
-- `scripts/rebuild_json.py` - Regenerate JSON files
 - `x3dna_json_compare/cli.py` - fp2-validate CLI entry point
+- `x3dna_json_compare/rebuild.py` - JSON regeneration module
+- `x3dna_json_compare/runner.py` - Validation runner (auto-regenerates before comparison)
+- `scripts/compare_json.py` - Standalone JSON comparison tool
 - `docs/CODE_FLOW.md` - Detailed algorithm flow
 - `docs/TESTING_GUIDE.md` - Complete testing reference
 

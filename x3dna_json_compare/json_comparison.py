@@ -734,9 +734,10 @@ class JsonComparator:
                 # Don't fail comparison if PDB can't be loaded
                 pdb_reader = None
         
-        # Extract legacy atoms (needed for both atom and frame comparison)
+        # Extract legacy atoms (needed for atom, frame, pairs, steps, and hbond comparison)
+        # Required for res_id-based matching
         legacy_atoms = []
-        if self.compare_atoms or self.compare_frames:
+        if self.compare_atoms or self.compare_frames or self.compare_pairs or self.compare_steps or self.compare_hbond_list:
             legacy_atoms = self._extract_atoms(legacy_json, legacy_file)
         
         # Compare atoms
@@ -786,11 +787,19 @@ class JsonComparator:
                 frames_match = False
         
         # Compare step parameters (warn if frames don't match)
+        # Extract base_pairs early for res_id-based step matching
+        legacy_base_pairs = []
+        if self.compare_steps or self.compare_pairs:
+            try:
+                legacy_base_pairs = self._extract_base_pair_records(legacy_json, legacy_file)
+            except Exception:
+                pass  # Will fall back to index-based matching
+
         if self.compare_steps:
             try:
                 legacy_steps = self._extract_step_records(legacy_json, legacy_file)
                 modern_steps = self._extract_step_records(modern_json, modern_file)
-                
+
                 if legacy_steps or modern_steps:
                     # If frames don't match, warn but still do step comparison
                     if not frames_match and frame_comparison:
@@ -800,31 +809,41 @@ class JsonComparator:
                             f"{len(frame_comparison.missing_residues)} missing residues). "
                             f"Results may be unreliable."
                         )
-                    
+
+                    # Prepare atoms for res_id matching (legacy_atoms already extracted above)
+                    legacy_atoms_for_steps = legacy_atoms if legacy_atoms else []
+                    # Wrap in pdb_atoms structure if needed
+                    if legacy_atoms_for_steps and isinstance(legacy_atoms_for_steps[0], dict) and 'atoms' not in legacy_atoms_for_steps[0]:
+                        legacy_atoms_for_steps = [{'atoms': legacy_atoms_for_steps}]
+
                     # Compare bpstep_params
                     legacy_bpstep = [r for r in legacy_steps if r.get('type') == 'bpstep_params']
                     modern_bpstep = [r for r in modern_steps if r.get('type') == 'bpstep_params']
-                    
+
                     bpstep_comparison = None
                     if legacy_bpstep or modern_bpstep:
                         bpstep_comparison = compare_step_parameters(
-                            legacy_bpstep, modern_bpstep, 
+                            legacy_bpstep, modern_bpstep,
                             parameter_type="bpstep_params",
-                            frame_comparison=frame_comparison  # Pass frame comparison to verify frames first
+                            frame_comparison=frame_comparison,
+                            legacy_pairs=legacy_base_pairs,
+                            legacy_atoms=legacy_atoms_for_steps
                         )
-                    
+
                     # Compare helical_params
                     legacy_helical = [r for r in legacy_steps if r.get('type') == 'helical_params']
                     modern_helical = [r for r in modern_steps if r.get('type') == 'helical_params']
-                    
+
                     helical_comparison = None
                     if legacy_helical or modern_helical:
                         helical_comparison = compare_step_parameters(
-                            legacy_helical, modern_helical, 
+                            legacy_helical, modern_helical,
                             parameter_type="helical_params",
-                            frame_comparison=frame_comparison  # Pass frame comparison to verify frames first
+                            frame_comparison=frame_comparison,
+                            legacy_pairs=legacy_base_pairs,
+                            legacy_atoms=legacy_atoms_for_steps
                         )
-                    
+
                     # Store both comparison types separately (unified approach)
                     if bpstep_comparison:
                         result.step_comparison = bpstep_comparison
@@ -852,12 +871,20 @@ class JsonComparator:
         # Compare base_pair records (from calculate_more_bppars - pairs that pass all checks)
         if self.compare_pairs:
             try:
-                legacy_base_pairs = self._extract_base_pair_records(legacy_json, legacy_file)
+                # Use legacy_base_pairs already extracted for step comparison if available
+                if not legacy_base_pairs:
+                    legacy_base_pairs = self._extract_base_pair_records(legacy_json, legacy_file)
                 modern_base_pairs = self._extract_base_pair_records(modern_json, modern_file)
-                
+
+                # Prepare atoms for res_id matching
+                legacy_atoms_for_pairs = legacy_atoms if legacy_atoms else []
+                if legacy_atoms_for_pairs and isinstance(legacy_atoms_for_pairs[0], dict) and 'atoms' not in legacy_atoms_for_pairs[0]:
+                    legacy_atoms_for_pairs = [{'atoms': legacy_atoms_for_pairs}]
+
                 if legacy_base_pairs or modern_base_pairs:
                     base_pair_comparison = compare_base_pairs(
-                        legacy_base_pairs, modern_base_pairs, self.tolerance
+                        legacy_base_pairs, modern_base_pairs, self.tolerance,
+                        legacy_atoms=legacy_atoms_for_pairs
                     )
                     result.base_pair_comparison = base_pair_comparison
             except Exception as e:
@@ -892,11 +919,17 @@ class JsonComparator:
             try:
                 legacy_hbond_lists = self._extract_hbond_list_records(legacy_json, legacy_file)
                 modern_hbond_lists = self._extract_hbond_list_records(modern_json, modern_file)
-                
+
+                # Prepare atoms for res_id matching
+                legacy_atoms_for_hbonds = legacy_atoms if legacy_atoms else []
+                if legacy_atoms_for_hbonds and isinstance(legacy_atoms_for_hbonds[0], dict) and 'atoms' not in legacy_atoms_for_hbonds[0]:
+                    legacy_atoms_for_hbonds = [{'atoms': legacy_atoms_for_hbonds}]
+
                 if legacy_hbond_lists or modern_hbond_lists:
                     hbond_list_comparison = compare_hbond_lists(
                         legacy_hbond_lists, modern_hbond_lists, self.tolerance,
-                        ignore_count_mismatch=self.hbond_ignore_count_mismatch
+                        ignore_count_mismatch=self.hbond_ignore_count_mismatch,
+                        legacy_atoms=legacy_atoms_for_hbonds
                     )
                     result.hbond_list_comparison = hbond_list_comparison
             except Exception as e:

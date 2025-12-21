@@ -4,9 +4,8 @@ Step parameter comparison utilities.
 Provides functions to compare step parameters (bpstep_params, helical_params)
 between legacy and modern JSON outputs.
 
-Uses mst_org position matching to handle cases where legacy and modern
-compute steps in different orders (e.g., due to five2three algorithm
-vs sequential ordering at helix boundaries).
+Uses res_id-based matching for stable, order-invariant comparison.
+Falls back to mst_org position matching when res_id is not available.
 """
 
 from typing import Dict, List, Tuple, Optional
@@ -14,12 +13,13 @@ from pathlib import Path
 from dataclasses import dataclass, field
 import numpy as np
 from .models import FrameComparison, FrameMismatch
+from .res_id_utils import get_step_res_ids, make_pair_key
 
 
 @dataclass
 class StepComparison:
     """Result of step parameter comparison.
-    
+
     Can represent either bpstep_params or helical_params comparison.
     Use UnifiedStepComparison to store both types together.
     """
@@ -27,186 +27,386 @@ class StepComparison:
     mismatched_steps: List[Dict] = field(default_factory=list)
     total_legacy: int = 0
     total_modern: int = 0
+    matched_count: int = 0
     parameter_type: str = "bpstep_params"  # "bpstep_params" or "helical_params"
 
 
+def build_residue_idx_to_res_id_map(atoms_records: List[Dict]) -> Dict[int, str]:
+    """
+    Build a mapping from residue_idx (1-based) to res_id string.
+
+    Args:
+        atoms_records: List of pdb_atoms records (first record has 'atoms' array)
+
+    Returns:
+        Dict mapping residue_idx -> res_id string
+    """
+    if not atoms_records:
+        return {}
+
+    # Legacy pdb_atoms has structure: [{num_atoms: N, atoms: [...]}]
+    atoms = []
+    for rec in atoms_records:
+        if 'atoms' in rec:
+            atoms = rec['atoms']
+            break
+
+    if not atoms:
+        return {}
+
+    # Build mapping by processing atoms in order
+    residue_map = {}
+    seen_residues = set()
+    current_residue_idx = 0
+
+    for atom in atoms:
+        chain_id = str(atom.get('chain_id', '')).strip()
+        res_name = str(atom.get('residue_name', '')).strip()
+        res_seq = atom.get('residue_seq', 0)
+        insertion = str(atom.get('insertion', '')).strip() if 'insertion' in atom else ''
+
+        key = (chain_id, res_seq, insertion)
+        if key not in seen_residues:
+            seen_residues.add(key)
+            current_residue_idx += 1
+
+            # Build res_id
+            if insertion:
+                res_id = f"{chain_id}-{res_name}-{res_seq}{insertion}"
+            else:
+                res_id = f"{chain_id}-{res_name}-{res_seq}"
+
+            residue_map[current_residue_idx] = res_id
+
+    return residue_map
+
+
+def get_step_key_from_res_ids(step: Dict) -> Optional[Tuple[Tuple[str, str], Tuple[str, str]]]:
+    """
+    Get a normalized step key from res_id fields.
+
+    A step connects two base pairs, each with two residues.
+    The key is ((pair1_res_ids), (pair2_res_ids)) where each pair is normalized.
+
+    Args:
+        step: Step record with res_id_1i, res_id_1j, res_id_2i, res_id_2j fields
+
+    Returns:
+        Tuple of ((res_id_1a, res_id_1b), (res_id_2a, res_id_2b)) or None
+    """
+    res_ids = get_step_res_ids(step)
+    if None in res_ids:
+        return None
+
+    res_id_1i, res_id_1j, res_id_2i, res_id_2j = res_ids
+
+    # Normalize each pair
+    pair1_key = make_pair_key(res_id_1i, res_id_1j)
+    pair2_key = make_pair_key(res_id_2i, res_id_2j)
+
+    if pair1_key is None or pair2_key is None:
+        return None
+
+    # Normalize pair order (smaller pair first)
+    if pair1_key <= pair2_key:
+        return (pair1_key, pair2_key)
+    else:
+        return (pair2_key, pair1_key)
+
+
+def get_legacy_step_key(
+    step: Dict,
+    legacy_pairs: List[Dict],
+    residue_map: Dict[int, str]
+) -> Optional[Tuple[Tuple[str, str], Tuple[str, str]]]:
+    """
+    Get step key for legacy record using bp_idx and residue mapping.
+
+    Args:
+        step: Legacy step record with bp_idx1, bp_idx2
+        legacy_pairs: List of legacy base_pair records
+        residue_map: Mapping from residue_idx -> res_id
+
+    Returns:
+        Step key or None if cannot be computed
+    """
+    bp_idx1 = step.get('bp_idx1')
+    bp_idx2 = step.get('bp_idx2')
+
+    if bp_idx1 is None or bp_idx2 is None:
+        return None
+
+    # bp_idx is 1-based
+    idx1 = bp_idx1 - 1
+    idx2 = bp_idx2 - 1
+
+    if idx1 < 0 or idx1 >= len(legacy_pairs) or idx2 < 0 or idx2 >= len(legacy_pairs):
+        return None
+
+    pair1 = legacy_pairs[idx1]
+    pair2 = legacy_pairs[idx2]
+
+    # Get base_i, base_j for each pair (these are residue indices)
+    base_i1 = pair1.get('base_i')
+    base_j1 = pair1.get('base_j')
+    base_i2 = pair2.get('base_i')
+    base_j2 = pair2.get('base_j')
+
+    if None in (base_i1, base_j1, base_i2, base_j2):
+        return None
+
+    # Convert to res_id using residue map
+    res_id_1i = residue_map.get(base_i1)
+    res_id_1j = residue_map.get(base_j1)
+    res_id_2i = residue_map.get(base_i2)
+    res_id_2j = residue_map.get(base_j2)
+
+    if None in (res_id_1i, res_id_1j, res_id_2i, res_id_2j):
+        return None
+
+    # Build normalized key
+    pair1_key = make_pair_key(res_id_1i, res_id_1j)
+    pair2_key = make_pair_key(res_id_2i, res_id_2j)
+
+    if pair1_key is None or pair2_key is None:
+        return None
+
+    if pair1_key <= pair2_key:
+        return (pair1_key, pair2_key)
+    else:
+        return (pair2_key, pair1_key)
+
+
 def compare_step_parameters(
-    legacy_records: List[Dict], 
+    legacy_records: List[Dict],
     modern_records: List[Dict],
     parameter_type: str = "bpstep_params",  # or "helical_params"
-    frame_comparison: Optional[FrameComparison] = None  # Optional: verify frames match first
+    frame_comparison: Optional[FrameComparison] = None,
+    legacy_pairs: Optional[List[Dict]] = None,
+    legacy_atoms: Optional[List[Dict]] = None,
 ) -> StepComparison:
     """
     Compare step parameters between legacy and modern JSON.
-    
-    Step parameters are calculated FROM reference frames. If frames don't match,
-    step parameters cannot match either. It's recommended to verify frames match
-    before comparing step parameters.
-    
+
+    Uses bp_idx-based matching for compatibility with legacy comparison.
+    Falls back to mst_org position matching when bp_idx matching has many mismatches.
+
+    Note: res_id fields are available in modern JSON for informational purposes,
+    but matching is done by bp_idx since step bp_idx refers to the helix-organized
+    order, not the original base_pair list order.
+
     Args:
         legacy_records: List of legacy step parameter records
         modern_records: List of modern step parameter records
         parameter_type: Type of parameters to compare ("bpstep_params" or "helical_params")
-        frame_comparison: Optional FrameComparison result - if provided, will verify
-                         frames match before comparing steps
-        
+        frame_comparison: Optional FrameComparison result
+        legacy_pairs: Legacy base_pair records (unused, kept for API compatibility)
+        legacy_atoms: Legacy pdb_atoms records (unused, kept for API compatibility)
+
     Returns:
-        StepComparison result with a flag indicating if frames matched
+        StepComparison result
     """
     result = StepComparison(parameter_type=parameter_type)
-    
-    # Warn if frames don't match (step parameters depend on frames)
-    # Note: Warning is added in json_comparison.py, but we store frame status here too
-    if frame_comparison:
-        if frame_comparison.mismatched_calculations or frame_comparison.missing_residues:
-            # Step parameters depend on frames - if frames don't match, 
-            # step parameter differences are expected
-            pass  # Warning already added in json_comparison.py
-    
-    # Build maps by bp_idx1, bp_idx2 (or equivalent indices)
+
+    # Filter records by type
+    legacy_steps = [r for r in legacy_records if r.get('type') == parameter_type]
+    modern_steps = [r for r in modern_records if r.get('type') == parameter_type]
+
+    result.total_legacy = len(legacy_steps)
+    result.total_modern = len(modern_steps)
+
+    # Use bp_idx matching (standard approach for steps)
+    # Note: res_id matching doesn't work well for steps because bp_idx refers
+    # to helix-organized order, not base_pair list order
+    mismatches = _compare_by_bp_idx_with_position_fallback(
+        legacy_steps, modern_steps, parameter_type
+    )
+    result.mismatched_steps = mismatches
+    result.matched_count = min(len(legacy_steps), len(modern_steps)) - len(mismatches)
+
+    return result
+
+
+def _compare_by_res_id(
+    legacy_steps: List[Dict],
+    modern_steps: List[Dict],
+    legacy_pairs: List[Dict],
+    residue_map: Dict[int, str],
+    parameter_type: str,
+    tolerance: float = 5e-4
+) -> Tuple[List[Dict], int]:
+    """
+    Compare steps by matching on res_id.
+
+    Returns:
+        Tuple of (mismatches list, matched count)
+    """
+    # Build maps keyed by res_id step key
+    legacy_by_key = {}
+    modern_by_key = {}
+
+    for step in legacy_steps:
+        key = get_legacy_step_key(step, legacy_pairs, residue_map)
+        if key:
+            legacy_by_key[key] = step
+
+    for step in modern_steps:
+        key = get_step_key_from_res_ids(step)
+        if key:
+            modern_by_key[key] = step
+
+    # Find common keys
+    common_keys = set(legacy_by_key.keys()) & set(modern_by_key.keys())
+
+    # Define parameter fields
+    if parameter_type == "bpstep_params":
+        param_fields = ['shift', 'slide', 'rise', 'tilt', 'roll', 'twist']
+        legacy_params_key = 'params'
+    else:  # helical_params
+        param_fields = ['x_displacement', 'y_displacement', 'rise', 'inclination', 'tip', 'twist']
+        legacy_params_key = 'params'
+
+    mismatches = []
+    matched_count = 0
+
+    for key in common_keys:
+        leg_step = legacy_by_key[key]
+        mod_step = modern_by_key[key]
+
+        step_mismatches = {}
+
+        for i, field in enumerate(param_fields):
+            # Get legacy value
+            if parameter_type == "bpstep_params":
+                leg_params = leg_step.get("params", {})
+                leg_val = leg_params.get(field.capitalize()) if isinstance(leg_params, dict) else None
+            else:  # helical_params
+                leg_params = leg_step.get("params", [])
+                leg_val = leg_params[i] if isinstance(leg_params, list) and i < len(leg_params) else None
+
+            mod_val = mod_step.get(field)
+
+            if leg_val is None or mod_val is None:
+                continue
+
+            # Check normal match
+            if abs(float(leg_val) - float(mod_val)) <= tolerance:
+                continue
+
+            # Check sign-inverted match (step computed in opposite direction)
+            if abs(float(leg_val) + float(mod_val)) <= tolerance:
+                continue
+
+            # Mismatch
+            step_mismatches[field] = {
+                'legacy': leg_val,
+                'modern': mod_val,
+                'diff': abs(float(leg_val) - float(mod_val))
+            }
+
+        if step_mismatches:
+            mismatches.append({
+                'step_key': key,
+                'bp_idx1': leg_step.get('bp_idx1'),
+                'bp_idx2': leg_step.get('bp_idx2'),
+                'mismatches': step_mismatches,
+                'legacy_record': leg_step,
+                'modern_record': mod_step
+            })
+        else:
+            matched_count += 1
+
+    return mismatches, matched_count
+
+
+def _compare_by_bp_idx_with_position_fallback(
+    legacy_steps: List[Dict],
+    modern_steps: List[Dict],
+    parameter_type: str,
+    tolerance: float = 5e-4
+) -> List[Dict]:
+    """
+    Compare steps by bp_idx first, then fall back to position matching.
+
+    This is the legacy comparison method, kept for backwards compatibility
+    when res_id data is not available.
+    """
+    # Build maps by bp_idx1, bp_idx2
     legacy_map = {}
     modern_map = {}
-    
-    for rec in legacy_records:
-        if rec.get('type') != parameter_type:
-            continue
+
+    for rec in legacy_steps:
         bp_idx1 = rec.get('bp_idx1')
         bp_idx2 = rec.get('bp_idx2')
         if bp_idx1 is not None and bp_idx2 is not None:
             key = (bp_idx1, bp_idx2)
-            legacy_map[key] = rec.copy() if rec else rec
-    
-    for rec in modern_records:
-        if rec.get('type') != parameter_type:
-            continue
+            legacy_map[key] = rec
+
+    for rec in modern_steps:
         bp_idx1 = rec.get('bp_idx1')
         bp_idx2 = rec.get('bp_idx2')
         if bp_idx1 is not None and bp_idx2 is not None:
             key = (bp_idx1, bp_idx2)
-            modern_map[key] = rec.copy() if rec else rec
-    
-    result.total_legacy = len(legacy_map)
-    result.total_modern = len(modern_map)
-    
-    legacy_keys = set(legacy_map.keys())
-    modern_keys = set(modern_map.keys())
-    common_keys = legacy_keys & modern_keys
-    
-    # Find missing steps
-    for key in legacy_keys - modern_keys:
-        result.missing_steps.append({
-            'bp_idx1': key[0],
-            'bp_idx2': key[1],
-            'legacy_record': legacy_map[key]
-        })
-    
-    # Compare common steps
-    # Both legacy and modern output at %.6f precision. Due to numerical differences
-    # in calculations and coordinate transforms, small differences are expected.
-    # Use 5e-4 tolerance to account for floating-point precision in trig calculations.
-    tolerance = 5e-4
-    param_fields = []
-    
+            modern_map[key] = rec
+
+    common_keys = set(legacy_map.keys()) & set(modern_map.keys())
+
+    # Define parameter fields
     if parameter_type == "bpstep_params":
-        # Legacy uses capitalized names in params dict, modern uses lowercase direct fields
         param_fields = ['shift', 'slide', 'rise', 'tilt', 'roll', 'twist']
-        legacy_params_key = 'params'  # Legacy has params dict with capitalized keys
-    elif parameter_type == "helical_params":
+    else:
         param_fields = ['x_displacement', 'y_displacement', 'rise', 'inclination', 'tip', 'twist']
-        legacy_params_key = 'params'  # Legacy has params array
-    
+
+    mismatches = []
+
     for key in common_keys:
         leg_rec = legacy_map[key]
         mod_rec = modern_map[key]
 
-        mismatches = {}
-        all_normal_or_inverted = True  # Track if all params are consistently normal or sign-inverted
+        step_mismatches = {}
 
-        # Compare parameters
-        for field in param_fields:
+        for i, field in enumerate(param_fields):
             if parameter_type == "bpstep_params":
-                # Legacy: params['Shift'], modern: shift (lowercase)
                 leg_val = None
                 if 'params' in leg_rec and isinstance(leg_rec['params'], dict):
                     leg_val = leg_rec['params'].get(field.capitalize())
-                elif field in leg_rec:
-                    leg_val = leg_rec[field]
-
                 mod_val = mod_rec.get(field)
-            else:  # helical_params
-                # Legacy: params array [x_displacement, y_displacement, rise, inclination, tip, twist]
-                # Modern: individual fields
+            else:
                 leg_val = None
                 if 'params' in leg_rec and isinstance(leg_rec['params'], list):
-                    idx_map = {
-                        'x_displacement': 0,
-                        'y_displacement': 1,
-                        'rise': 2,
-                        'inclination': 3,
-                        'tip': 4,
-                        'twist': 5
-                    }
-                    if field in idx_map and len(leg_rec['params']) > idx_map[field]:
-                        leg_val = leg_rec['params'][idx_map[field]]
-                elif field in leg_rec:
-                    leg_val = leg_rec[field]
-
+                    leg_val = leg_rec['params'][i] if i < len(leg_rec['params']) else None
                 mod_val = mod_rec.get(field)
 
             if leg_val is not None and mod_val is not None:
-                # Check normal match
-                normal_match = abs(float(leg_val) - float(mod_val)) <= tolerance
-                # Check sign-inverted match (step computed in opposite direction)
-                inverted_match = abs(float(leg_val) + float(mod_val)) <= tolerance
-
-                if not normal_match and not inverted_match:
-                    # Neither normal nor inverted - actual mismatch
-                    all_normal_or_inverted = False
-                    mismatches[field] = {
-                        'legacy': leg_val,
-                        'modern': mod_val,
-                        'diff': abs(float(leg_val) - float(mod_val))
-                    }
-        
-        # Compare midstep frames if present
-        if 'mst_org' in leg_rec and 'midstep_frame' in mod_rec:
-            leg_org = leg_rec.get('mst_org')
-            mod_org = mod_rec.get('midstep_frame', {}).get('org')
-            if leg_org and mod_org:
-                for i in range(3):
-                    if abs(float(leg_org[i]) - float(mod_org[i])) > tolerance:
-                        mismatches[f'mst_org[{i}]'] = {
-                            'legacy': leg_org[i],
-                            'modern': mod_org[i],
-                            'diff': abs(float(leg_org[i]) - float(mod_org[i]))
+                if abs(float(leg_val) - float(mod_val)) > tolerance:
+                    if abs(float(leg_val) + float(mod_val)) > tolerance:
+                        step_mismatches[field] = {
+                            'legacy': leg_val,
+                            'modern': mod_val,
+                            'diff': abs(float(leg_val) - float(mod_val))
                         }
-        
-        if mismatches:
-            result.mismatched_steps.append({
+
+        if step_mismatches:
+            mismatches.append({
                 'bp_idx1': key[0],
                 'bp_idx2': key[1],
-                'mismatches': mismatches,
+                'mismatches': step_mismatches,
                 'legacy_record': leg_rec,
                 'modern_record': mod_rec
             })
-    
+
     # If bp_idx matching has errors, try mst_org position matching
-    # This handles cases where legacy and modern compute steps in different orders
-    # or where legacy JSON has bp_idx indexing inconsistencies
-    if len(result.mismatched_steps) > 0:
-        position_mismatches, position_match_count = _match_steps_by_position(
+    if len(mismatches) > 0:
+        position_mismatches, _ = _match_steps_by_position(
             list(legacy_map.values()),
             list(modern_map.values()),
             parameter_type,
             tolerance
         )
-        # Use position matching results if they reduce the number of mismatches
-        # Position matching handles sign-inversion and can match steps even when
-        # bp_idx ordering differs between legacy and modern
-        if len(position_mismatches) < len(result.mismatched_steps):
-            result.mismatched_steps = position_mismatches
+        if len(position_mismatches) < len(mismatches):
+            mismatches = position_mismatches
 
-    return result
+    return mismatches
 
 
 def _match_steps_by_position(
@@ -218,25 +418,14 @@ def _match_steps_by_position(
     """
     Match steps by mst_org (midstep origin) position.
 
-    Legacy stores mst_org and modern stores midstep_frame.org - both represent
-    the midpoint origin of the step calculation. Steps using the same pair
-    combination will have matching positions.
-
-    Args:
-        legacy_steps: Legacy step records
-        modern_steps: Modern step records
-        parameter_type: "bpstep_params" or "helical_params"
-        tolerance: Parameter tolerance
-
-    Returns:
-        Tuple of (list of mismatched steps, number of position matches found)
+    This is a fallback matching method when res_id and bp_idx matching fail.
     """
     mismatches = []
 
     # Extract mst_org positions
     leg_orgs = []
     for step in legacy_steps:
-        mst = step.get("mst_org") if parameter_type == "bpstep_params" else step.get("mst_org")
+        mst = step.get("mst_org")
         if mst:
             leg_orgs.append((step, np.array(mst)))
         else:
@@ -252,8 +441,6 @@ def _match_steps_by_position(
             mod_orgs.append((step, None))
 
     # Match steps by mst_org position
-    # Use 1.0 Angstrom threshold to handle legacy JSON indexing inconsistencies
-    # while still ensuring we match steps computing similar pair combinations
     MST_DIST_THRESHOLD = 1.0
     mod_used = set()
     matched_pairs = []
@@ -277,25 +464,23 @@ def _match_steps_by_position(
             mod_used.add(best_mi)
             matched_pairs.append((lstep, mod_orgs[best_mi][0]))
 
-    # Define parameter fields based on type
+    # Define parameter fields
     if parameter_type == "bpstep_params":
         param_fields = ['shift', 'slide', 'rise', 'tilt', 'roll', 'twist']
         legacy_keys = ['Shift', 'Slide', 'Rise', 'Tilt', 'Roll', 'Twist']
-    else:  # helical_params
+    else:
         param_fields = ['x_displacement', 'y_displacement', 'rise', 'inclination', 'tip', 'twist']
-        legacy_keys = None  # Uses array indexing
+        legacy_keys = None
 
     # Compare parameters for matched steps
     for lstep, mstep in matched_pairs:
         step_mismatches = {}
-        sign_inverted_match = True
 
         for i, field in enumerate(param_fields):
-            # Get legacy value
             if parameter_type == "bpstep_params":
                 leg_params = lstep.get("params", {})
                 leg_val = leg_params.get(legacy_keys[i]) if isinstance(leg_params, dict) else None
-            else:  # helical_params
+            else:
                 leg_params = lstep.get("params", [])
                 leg_val = leg_params[i] if isinstance(leg_params, list) and i < len(leg_params) else None
 
@@ -308,20 +493,17 @@ def _match_steps_by_position(
             if abs(leg_val - mod_val) <= tolerance:
                 continue
 
-            # Check sign-inverted match (step computed in opposite direction)
+            # Check sign-inverted match
             if abs(leg_val + mod_val) <= tolerance:
                 continue
 
-            # Neither normal nor inverted match
-            sign_inverted_match = False
             step_mismatches[field] = {
                 'legacy': leg_val,
                 'modern': mod_val,
                 'diff': abs(leg_val - mod_val)
             }
 
-        # Only report errors if neither normal nor sign-inverted match
-        if step_mismatches and not sign_inverted_match:
+        if step_mismatches:
             mismatches.append({
                 'bp_idx1': lstep.get('bp_idx1'),
                 'bp_idx2': lstep.get('bp_idx2'),
@@ -344,27 +526,13 @@ def compare_steps_by_residue_pairs(
     """
     Compare step parameters by matching steps that use the same residue pairs.
 
-    This handles cases where legacy and modern have different helix organization
-    (different bp_idx ordering) but compute steps for the same underlying pairs.
-
-    Args:
-        legacy_steps: Legacy step parameter records
-        modern_steps: Modern step parameter records
-        legacy_pairs: Legacy base_pair records (to get residue info)
-        modern_pairs: Modern base_pair records (to get residue info)
-        parameter_type: "bpstep_params" or "helical_params"
-        tolerance: Parameter comparison tolerance
-
-    Returns:
-        Tuple of (mismatches, matched_count, total_comparable)
+    This is a legacy function kept for backwards compatibility.
+    Prefer compare_step_parameters with res_id matching.
     """
-
     def get_step_residue_key(step: Dict, pairs: List[Dict]) -> Optional[Tuple]:
-        """Get residue pair key for a step: ((base_i1, base_j1), (base_i2, base_j2))"""
         bp_idx1 = step.get('bp_idx1', 0)
         bp_idx2 = step.get('bp_idx2', 0)
 
-        # bp_idx is 1-based, convert to 0-based for list indexing
         idx1 = bp_idx1 - 1
         idx2 = bp_idx2 - 1
 
@@ -374,7 +542,6 @@ def compare_steps_by_residue_pairs(
         pair1 = pairs[idx1]
         pair2 = pairs[idx2]
 
-        # Get residue indices (base_i, base_j) for each pair
         res1 = (pair1.get('base_i'), pair1.get('base_j'))
         res2 = (pair2.get('base_i'), pair2.get('base_j'))
 
@@ -383,7 +550,6 @@ def compare_steps_by_residue_pairs(
 
         return (res1, res2)
 
-    # Build maps from residue key to step record
     legacy_by_residues = {}
     for step in legacy_steps:
         key = get_step_residue_key(step, legacy_pairs)
@@ -396,14 +562,12 @@ def compare_steps_by_residue_pairs(
         if key:
             modern_by_residues[key] = step
 
-    # Find common residue pair combinations
     common_keys = set(legacy_by_residues.keys()) & set(modern_by_residues.keys())
 
-    # Define parameter fields
     if parameter_type == "bpstep_params":
         param_fields = ['shift', 'slide', 'rise', 'tilt', 'roll', 'twist']
         legacy_param_keys = ['Shift', 'Slide', 'Rise', 'Tilt', 'Roll', 'Twist']
-    else:  # helical_params
+    else:
         param_fields = ['x_displacement', 'y_displacement', 'rise', 'inclination', 'tip', 'twist']
         legacy_param_keys = None
 
@@ -416,7 +580,6 @@ def compare_steps_by_residue_pairs(
         step_mismatches = {}
 
         for i, field in enumerate(param_fields):
-            # Get legacy value
             if parameter_type == "bpstep_params":
                 leg_params = lstep.get("params", {})
                 leg_val = leg_params.get(legacy_param_keys[i]) if isinstance(leg_params, dict) else None
@@ -429,7 +592,6 @@ def compare_steps_by_residue_pairs(
             if leg_val is None or mod_val is None:
                 continue
 
-            # Check match
             if abs(float(leg_val) - float(mod_val)) > tolerance:
                 step_mismatches[field] = {
                     'legacy': leg_val,
@@ -448,4 +610,3 @@ def compare_steps_by_residue_pairs(
             matched_count += 1
 
     return mismatches, matched_count, len(common_keys)
-

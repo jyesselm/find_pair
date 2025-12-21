@@ -162,16 +162,22 @@ public:
      * @param bp_idx1 First base pair index (0-based)
      * @param bp_idx2 Second base pair index (0-based)
      * @param params Base pair step parameters
+     * @param pair1 Optional first base pair (to extract res_ids)
+     * @param pair2 Optional second base pair (to extract res_ids)
      */
-    void record_bpstep_params(size_t bp_idx1, size_t bp_idx2, const core::BasePairStepParameters& params);
+    void record_bpstep_params(size_t bp_idx1, size_t bp_idx2, const core::BasePairStepParameters& params,
+                              const core::BasePair* pair1 = nullptr, const core::BasePair* pair2 = nullptr);
 
     /**
      * @brief Record helical parameters
      * @param bp_idx1 First base pair index (0-based)
      * @param bp_idx2 Second base pair index (0-based)
      * @param params Helical parameters
+     * @param pair1 Optional first base pair (to extract res_ids)
+     * @param pair2 Optional second base pair (to extract res_ids)
      */
-    void record_helical_params(size_t bp_idx1, size_t bp_idx2, const core::HelicalParameters& params);
+    void record_helical_params(size_t bp_idx1, size_t bp_idx2, const core::HelicalParameters& params,
+                               const core::BasePair* pair1 = nullptr, const core::BasePair* pair2 = nullptr);
 
     /**
      * @brief Record all reference frames
@@ -213,10 +219,13 @@ public:
      * @param rtn_val Return values array (5 values: [0]=dorg, [1]=d_v, [2]=plane_angle, [3]=dNN,
      * [4]=quality_score)
      * @param params Validation parameters (for thresholds)
+     * @param res_id_i Unique residue identifier for first base (optional)
+     * @param res_id_j Unique residue identifier for second base (optional)
      */
     void record_pair_validation(size_t base_i, size_t base_j, bool is_valid, int bp_type_id, double dir_x, double dir_y,
                                 double dir_z, const std::array<double, 5>& rtn_val,
-                                const algorithms::ValidationParameters& params);
+                                const algorithms::ValidationParameters& params,
+                                const std::string& res_id_i = "", const std::string& res_id_j = "");
 
     /**
      * @brief Record distance checks (matches legacy format)
@@ -227,17 +236,22 @@ public:
      * @param plane_angle Angle between z-axes
      * @param d_v Vertical distance
      * @param overlap_area Overlap area
+     * @param res_id_i Unique residue identifier for first base (optional)
+     * @param res_id_j Unique residue identifier for second base (optional)
      */
     void record_distance_checks(size_t base_i, size_t base_j, double dorg, double dNN, double plane_angle, double d_v,
-                                double overlap_area);
+                                double overlap_area, const std::string& res_id_i = "", const std::string& res_id_j = "");
 
     /**
      * @brief Record hydrogen bond list
      * @param base_i First base index (0-based)
      * @param base_j Second base index (0-based)
      * @param hbonds Vector of hydrogen bond information
+     * @param res_id_i Unique residue identifier for first base (optional)
+     * @param res_id_j Unique residue identifier for second base (optional)
      */
-    void record_hbond_list(size_t base_i, size_t base_j, const std::vector<core::hydrogen_bond>& hbonds);
+    void record_hbond_list(size_t base_i, size_t base_j, const std::vector<core::hydrogen_bond>& hbonds,
+                           const std::string& res_id_i = "", const std::string& res_id_j = "");
 
     /**
      * @brief Record the original base pair selection from find_bestpair

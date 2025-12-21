@@ -254,7 +254,7 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         if (json_writer_) {
             size_t bp_idx1 = i + 1; // Convert 0-based vector index to 1-based base pair index
             size_t bp_idx2 = i + 2; // Next pair index (1-based)
-            json_writer_->record_bpstep_params(bp_idx1, bp_idx2, step_params);
+            json_writer_->record_bpstep_params(bp_idx1, bp_idx2, step_params, &pair1, &pair2);
         }
 
         // Calculate helical parameters
@@ -266,7 +266,7 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         if (json_writer_) {
             size_t bp_idx1 = i + 1; // Convert 0-based vector index to 1-based base pair index
             size_t bp_idx2 = i + 2; // Next pair index (1-based)
-            json_writer_->record_helical_params(bp_idx1, bp_idx2, helical_params);
+            json_writer_->record_helical_params(bp_idx1, bp_idx2, helical_params, &pair1, &pair2);
         }
     }
 
@@ -284,7 +284,7 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
             if (json_writer_) {
                 size_t bp_idx1 = base_pairs_.size(); // Last pair (1-based)
                 size_t bp_idx2 = 1;                  // First pair (1-based)
-                json_writer_->record_bpstep_params(bp_idx1, bp_idx2, step_params);
+                json_writer_->record_bpstep_params(bp_idx1, bp_idx2, step_params, &pair1, &pair2);
             }
 
             auto helical_params = param_calculator_.calculate_helical_parameters(pair1, pair2);
@@ -294,7 +294,7 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
             if (json_writer_) {
                 size_t bp_idx1 = base_pairs_.size(); // Last pair (1-based)
                 size_t bp_idx2 = 1;                  // First pair (1-based)
-                json_writer_->record_helical_params(bp_idx1, bp_idx2, helical_params);
+                json_writer_->record_helical_params(bp_idx1, bp_idx2, helical_params, &pair1, &pair2);
             }
         }
     }

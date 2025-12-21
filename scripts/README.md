@@ -30,19 +30,20 @@ fp2-validate hbonds               # Alias for: fp2-validate validate hbonds
 fp2-validate pairs                # Alias for: fp2-validate validate pairs
 fp2-validate steps                # Alias for: fp2-validate validate steps
 
+# Rebuild commands
+fp2-validate rebuild regenerate 1EHZ      # Regenerate both legacy and modern
+fp2-validate rebuild regenerate --modern-only  # Modern only
+fp2-validate rebuild validate-json        # Validate existing JSON files
+fp2-validate rebuild clean --execute      # Remove invalid/empty JSON
+
 # Info commands
 fp2-validate info                 # Show environment info
 fp2-validate list-pdbs            # List available PDBs
 ```
 
-## Core Scripts (Still Active)
+**Note**: `fp2-validate validate` automatically regenerates modern JSON before comparison. Use `--skip-regen` to skip regeneration.
 
-### JSON Management
-- **`rebuild_json.py`** - Generate/regenerate JSON files
-  ```bash
-  python3 scripts/rebuild_json.py regenerate --modern-only
-  python3 scripts/rebuild_json.py regenerate --legacy-only
-  ```
+## Core Scripts (Still Active)
 
 ### Data Management
 - **`download_pdbs.py`** - Download PDB files from RCSB
@@ -89,7 +90,7 @@ Archived scripts are in `archive/`:
 ```
 scripts/
 ├── README.md                # This file
-├── rebuild_json.py          # JSON generation
+├── compare_json.py          # Standalone JSON comparison tool
 ├── download_pdbs.py         # PDB download
 ├── create_fast_pdbs_json.py # Data prep
 ├── find_slow_pdbs.py        # Data categorization
@@ -105,3 +106,5 @@ scripts/
     ├── testing/             # test_*.py
     └── debug/               # debug_*.py
 ```
+
+**Note**: JSON rebuilding is now part of `x3dna_json_compare` package. Use `fp2-validate rebuild` commands.

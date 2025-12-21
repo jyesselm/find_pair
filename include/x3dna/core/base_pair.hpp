@@ -46,6 +46,8 @@ private:
     // Private member variables (declared first to help IntelliSense)
     size_t residue_idx1_ = 0;                   // Index of first residue
     size_t residue_idx2_ = 0;                   // Index of second residue
+    std::string res_id1_;                       // Unique residue identifier for first residue (chain-name-seq[ins])
+    std::string res_id2_;                       // Unique residue identifier for second residue (chain-name-seq[ins])
     BasePairType type_ = BasePairType::UNKNOWN; // Base pair type
     std::string bp_type_;                       // Base pair type string (e.g., "CG", "AT")
     std::optional<ReferenceFrame> frame1_;      // Reference frame for first residue
@@ -122,6 +124,12 @@ public:
     [[nodiscard]] size_t residue_idx2() const {
         return residue_idx2_;
     }
+    [[nodiscard]] const std::string& res_id1() const {
+        return res_id1_;
+    }
+    [[nodiscard]] const std::string& res_id2() const {
+        return res_id2_;
+    }
     [[nodiscard]] BasePairType type() const {
         return type_;
     }
@@ -191,6 +199,12 @@ public:
     }
     void set_residue_idx2(size_t idx) {
         residue_idx2_ = idx;
+    }
+    void set_res_id1(const std::string& res_id) {
+        res_id1_ = res_id;
+    }
+    void set_res_id2(const std::string& res_id) {
+        res_id2_ = res_id;
     }
     void set_type(BasePairType type) {
         type_ = type;
@@ -278,6 +292,14 @@ public:
         j["base_i"] = static_cast<long>(residue_idx1_);
         j["base_j"] = static_cast<long>(residue_idx2_);
         j["bp_type"] = bp_type_;
+
+        // Unique residue identifiers (invariant to parsing order)
+        if (!res_id1_.empty()) {
+            j["res_id_i"] = res_id1_;
+        }
+        if (!res_id2_.empty()) {
+            j["res_id_j"] = res_id2_;
+        }
 
         if (frame1_.has_value()) {
             j["orien_i"] = frame1_->rotation().to_json_legacy();

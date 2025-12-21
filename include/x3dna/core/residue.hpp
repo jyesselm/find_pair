@@ -93,6 +93,24 @@ public:
     [[nodiscard]] const std::string& insertion() const {
         return insertion_;
     }
+
+    /**
+     * @brief Get unique residue identifier
+     * @return String in format "chain_id-res_name-res_num" or "chain_id-res_name-res_numX" if insertion code exists
+     *
+     * Examples:
+     *   "A-G-5"    (chain A, guanine, position 5, no insertion)
+     *   "A-C-10A"  (chain A, cytosine, position 10, insertion code A)
+     *   "B-PSU-25" (chain B, pseudouridine, position 25)
+     */
+    [[nodiscard]] std::string res_id() const {
+        std::string id = chain_id_ + "-" + name_ + "-" + std::to_string(seq_num_);
+        if (!insertion_.empty()) {
+            id += insertion_;
+        }
+        return id;
+    }
+
     [[nodiscard]] const std::vector<Atom>& atoms() const {
         return atoms_;
     }
