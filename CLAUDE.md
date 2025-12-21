@@ -161,6 +161,33 @@ Analysis of 1VQ5 (ribosome, 1535 pairs, 1157 steps):
 | 10 | Bestpair Selection | `fp2-validate validate 10` |
 | 11-12 | Step/Helical Params | `fp2-validate validate steps` |
 
+### Comparison Targets
+
+The validation system supports multiple comparison targets. Each target corresponds to a directory under `data/`:
+
+| Target | Directory | Description |
+|--------|-----------|-------------|
+| `legacy` | `data/json_legacy/` | Legacy C code output (X3DNA v2.4 reference) - default |
+| `baseline` | `data/json_baseline/` | Snapshot of modern output for regression testing |
+
+```bash
+# Compare against legacy (default)
+fp2-validate validate core --test-set 100
+
+# Compare against baseline
+fp2-validate validate core --test-set 100 --target baseline
+
+# List available targets
+fp2-validate targets
+
+# Create/update baseline from current modern output
+fp2-validate baseline create          # Create new baseline
+fp2-validate baseline update --force  # Overwrite existing baseline
+fp2-validate baseline status          # Show baseline status
+```
+
+**Baseline workflow**: Use baseline for regression testing. After making changes, compare against baseline to detect unintended changes. Update baseline when intentional changes are made.
+
 ## Architecture
 
 ### Two-Phase Pipeline
@@ -182,8 +209,9 @@ Analysis of 1VQ5 (ribosome, 1535 pairs, 1157 steps):
 - `apps/` - Main executables (find_pair_app, analyze_app)
 - `tools/` - Utilities (generate_modern_json)
 - `x3dna_json_compare/` - Python comparison library
-- `data/json/` - Modern JSON output
+- `data/json/` - Modern JSON output (generated)
 - `data/json_legacy/` - Legacy JSON output (reference)
+- `data/json_baseline/` - Baseline snapshot for regression testing
 - `resources/templates/` - Base frame templates (Atomic_*.pdb)
 
 ### Core Algorithm Classes
@@ -196,6 +224,12 @@ Analysis of 1VQ5 (ribosome, 1535 pairs, 1157 steps):
 - `HydrogenBondFinder` - H-bond detection with donor/acceptor validation
 
 ### Recent Changes (December 2024)
+
+**Comparison Targets System**: Generalized comparison to support multiple targets (legacy, baseline, etc.):
+- `x3dna_json_compare/targets.py` - ComparisonTarget class and target registry
+- `x3dna_json_compare/runner.py` - Updated to accept `--target` parameter
+- `x3dna_json_compare/cli.py` - Added `targets` and `baseline` commands
+- Supports comparing modern output against any target directory under `data/json_<target>/`
 
 **res_id Comparison Matching**: Updated Python comparison modules to use stable `res_id` identifiers:
 - `x3dna_json_compare/step_comparison.py` - Added `build_residue_idx_to_res_id_map()` for legacy res_id construction

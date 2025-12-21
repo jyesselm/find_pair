@@ -21,6 +21,7 @@ from .json_comparison import JsonComparator
 from .output import OutputFormatter, ValidationSummary
 from .pdb_list import get_pdb_list
 from .rebuild import regenerate_modern_json
+from .targets import get_target, ComparisonTarget
 
 
 # Linear stages in legacy execution order (12 stages)
@@ -99,7 +100,7 @@ STAGE_JSON_DIRS = {
 
 def _validate_single_pdb(args) -> Dict[str, Any]:
     """Worker function for parallel validation (must be top-level for pickling)."""
-    pdb_id, project_root_str, comparator_kwargs, check_types, skip_regeneration = args
+    pdb_id, project_root_str, comparator_kwargs, check_types, skip_regeneration, target_dir = args
     project_root = Path(project_root_str)
 
     # Regenerate modern JSON before comparison (unless skipped)
@@ -120,11 +121,12 @@ def _validate_single_pdb(args) -> Dict[str, Any]:
     # Create comparator for this process
     comparator = JsonComparator(**comparator_kwargs)
 
-    legacy_file = project_root / 'data' / 'json_legacy' / f'{pdb_id}.json'
+    # Use target directory (e.g., json_legacy, json_baseline)
+    target_file = project_root / 'data' / target_dir / f'{pdb_id}.json'
     modern_file = project_root / 'data' / 'json' / f'{pdb_id}.json'
     pdb_file = project_root / 'data' / 'pdb' / f'{pdb_id}.pdb'
 
-    result = comparator.compare_files(legacy_file, modern_file, pdb_file, pdb_id)
+    result = comparator.compare_files(target_file, modern_file, pdb_file, pdb_id)
     
     # Check for stage-specific differences
     stage_has_diff = False
@@ -292,6 +294,7 @@ class ValidationRunner:
     def __init__(self,
                  project_root: Path = None,
                  stages: List[str] = None,
+                 target: str = "legacy",
                  workers: int = None,
                  quiet: bool = False,
                  verbose: bool = False,
@@ -308,6 +311,7 @@ class ValidationRunner:
         Args:
             project_root: Project root directory (default: current working directory)
             stages: List of stages to validate (atoms, frames, hbonds, pairs, steps)
+            target: Comparison target name (legacy, baseline, etc.)
             workers: Number of parallel workers (default: CPU count)
             quiet: Suppress all output except exit code
             verbose: Show per-PDB results
@@ -316,11 +320,12 @@ class ValidationRunner:
             diff_file: Custom path for differences file
             checkpoint_file: Path to checkpoint file for resume support
             resume: If True, skip PDBs that already passed in checkpoint
-            clean_on_match: If True, delete modern JSON files that match legacy
+            clean_on_match: If True, delete modern JSON files that match target
             skip_regeneration: If True, skip regenerating modern JSON before comparison
             **comparator_kwargs: Additional arguments for JsonComparator
         """
         self.project_root = Path(project_root) if project_root else Path.cwd()
+        self.target = get_target(target)
         self.stages = stages or ['all']
         self.workers = workers or min(multiprocessing.cpu_count(), 10)
         self.quiet = quiet
@@ -632,11 +637,12 @@ class ValidationRunner:
 
         comparator = JsonComparator(**self.comparator_kwargs)
 
-        legacy_file = self.project_root / 'data' / 'json_legacy' / f'{pdb_id}.json'
+        # Use target directory (e.g., json_legacy, json_baseline)
+        target_file = self.target.get_path(self.project_root) / f'{pdb_id}.json'
         modern_file = self.project_root / 'data' / 'json' / f'{pdb_id}.json'
         pdb_file = self.project_root / 'data' / 'pdb' / f'{pdb_id}.pdb'
 
-        result = comparator.compare_files(legacy_file, modern_file, pdb_file, pdb_id)
+        result = comparator.compare_files(target_file, modern_file, pdb_file, pdb_id)
         
         # Check for stage-specific differences (same logic as _validate_single_pdb)
         stage_has_diff = False
@@ -674,7 +680,8 @@ class ValidationRunner:
 
         # Prepare arguments for worker function
         args_list = [
-            (pdb_id, str(self.project_root), self.comparator_kwargs, self.check_types, self.skip_regeneration)
+            (pdb_id, str(self.project_root), self.comparator_kwargs, self.check_types,
+             self.skip_regeneration, self.target.directory)
             for pdb_id in pdb_ids
         ]
         

@@ -25,6 +25,7 @@ from .pdb_list import get_pdb_list, load_test_set
 from .json_comparison import JsonComparator
 from .config import load_config
 from .rebuild import rebuild_cli
+from .targets import list_targets, get_target, target_exists, create_baseline, BUILTIN_TARGETS
 
 
 @click.group()
@@ -59,11 +60,13 @@ def main():
               help='Skip H-bond validation (known detection differences)')
 @click.option('--skip-regen', is_flag=True,
               help='Skip regenerating modern JSON before comparison (use existing files)')
+@click.option('--target', '-t', default='legacy',
+              help='Comparison target (legacy, baseline, etc.)')
 @click.option('--project-root', type=click.Path(path_type=Path, exists=True),
               help='Project root directory (default: current directory)')
 def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
              stop_on_first, diff, diff_file, checkpoint, resume, clean_on_match,
-             skip_hbonds, skip_regen, project_root):
+             skip_hbonds, skip_regen, target, project_root):
     """Validate legacy vs modern JSON outputs.
     
     \b
@@ -134,10 +137,20 @@ def validate(stages, pdb, max_count, test_set, workers, quiet, verbose,
         elif 'hbonds' in stages_list:
             stages_list = [s for s in stages_list if s != 'hbonds']
 
+    # Validate target exists
+    try:
+        target_obj = get_target(target)
+    except ValueError as e:
+        if not quiet:
+            click.echo(f"Error: {e}", err=True)
+            click.echo(f"Available targets: {', '.join(BUILTIN_TARGETS.keys())}", err=True)
+        sys.exit(1)
+
     # Create runner
     runner = ValidationRunner(
         project_root=project_root,
         stages=stages_list,
+        target=target,
         workers=workers,
         quiet=quiet,
         verbose=verbose,
@@ -412,6 +425,111 @@ def compare(pdb_ids, verbose, output, test_set, workers, project_root):
 
 # Add rebuild commands to main CLI
 main.add_command(rebuild_cli, name='rebuild')
+
+
+@main.command('targets')
+@click.option('--project-root', type=click.Path(path_type=Path, exists=True),
+              help='Project root directory')
+def targets_cmd(project_root):
+    """List available comparison targets.
+
+    Shows all configured comparison targets and whether they have data available.
+
+    \b
+    Examples:
+        fp2-validate targets              # List all targets
+    """
+    if project_root is None:
+        project_root = Path.cwd()
+
+    click.echo("Available comparison targets:")
+    click.echo()
+
+    for target in list_targets():
+        has_data = target.has_data(project_root)
+        status = "✅" if has_data else "❌"
+        click.echo(f"  {status} {target.name}")
+        click.echo(f"     Directory: data/{target.directory}/")
+        click.echo(f"     {target.description}")
+        click.echo()
+
+
+@main.command('baseline')
+@click.argument('action', type=click.Choice(['create', 'update', 'status']))
+@click.option('--force', '-f', is_flag=True, help='Overwrite existing baseline')
+@click.option('--project-root', type=click.Path(path_type=Path, exists=True),
+              help='Project root directory')
+def baseline_cmd(action, force, project_root):
+    """Manage baseline snapshots for regression testing.
+
+    Baseline is a snapshot of modern JSON output that can be used
+    for regression testing instead of comparing against legacy.
+
+    \b
+    Actions:
+        create  - Create baseline from current modern output
+        update  - Update existing baseline (alias for create --force)
+        status  - Show baseline status
+
+    \b
+    Examples:
+        fp2-validate baseline status           # Check baseline status
+        fp2-validate baseline create           # Create new baseline
+        fp2-validate baseline update           # Update existing baseline
+    """
+    if project_root is None:
+        project_root = Path.cwd()
+
+    baseline_target = get_target("baseline")
+    baseline_path = baseline_target.get_path(project_root)
+    modern_path = project_root / "data" / "json"
+
+    if action == 'status':
+        click.echo("Baseline Status")
+        click.echo("=" * 40)
+
+        if baseline_target.has_data(project_root):
+            click.echo(f"✅ Baseline exists: {baseline_path}")
+            # Count files
+            json_count = len(list(baseline_path.rglob("*.json")))
+            click.echo(f"   JSON files: {json_count}")
+        else:
+            click.echo(f"❌ Baseline not found: {baseline_path}")
+
+        click.echo()
+        if modern_path.exists():
+            modern_count = len(list(modern_path.rglob("*.json")))
+            click.echo(f"Modern JSON files: {modern_count}")
+        else:
+            click.echo("❌ Modern JSON directory not found")
+
+    elif action in ('create', 'update'):
+        if action == 'update':
+            force = True
+
+        if baseline_target.has_data(project_root) and not force:
+            click.echo(f"Error: Baseline already exists at {baseline_path}", err=True)
+            click.echo("Use 'update' or --force to overwrite.", err=True)
+            sys.exit(1)
+
+        if not modern_path.exists():
+            click.echo(f"Error: Modern JSON directory not found: {modern_path}", err=True)
+            sys.exit(1)
+
+        click.echo(f"Creating baseline from modern output...")
+        click.echo(f"  Source: {modern_path}")
+        click.echo(f"  Target: {baseline_path}")
+
+        try:
+            success = create_baseline(project_root, force=force)
+            if success:
+                json_count = len(list(baseline_path.rglob("*.json")))
+                click.echo(f"✅ Baseline created successfully ({json_count} files)")
+            else:
+                click.echo("⚠️  No files copied (source may be empty)")
+        except Exception as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
 
 
 if __name__ == '__main__':
