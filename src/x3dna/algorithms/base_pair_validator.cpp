@@ -10,8 +10,6 @@
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
 #include <x3dna/algorithms/hydrogen_bond_finder.hpp>
 #include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.hpp>
-#include <x3dna/config/resource_locator.hpp>
-#include <filesystem>
 #include <cmath>
 #include <algorithm>
 #include <cstring>
@@ -19,8 +17,6 @@
 #include <vector>
 #include <set>
 #include <map>
-#include <fstream>
-#include <sstream>
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
@@ -31,13 +27,6 @@ namespace algorithms {
 
 using namespace x3dna::core;
 using namespace x3dna::geometry;
-
-// Static members for atom list
-std::map<std::string, std::string> BasePairValidator::atom_list_;
-bool BasePairValidator::atom_list_loaded_ = false;
-
-// Debug flag for specific pairs - can be added later if needed
-// Set via DEBUG_PAIRS="1VBY:20,21;3AVY:1204,1223"
 
 ValidationResult BasePairValidator::validate(const Residue& res1, const Residue& res2) const {
     ValidationResult result;
@@ -572,91 +561,6 @@ bool BasePairValidator::pattern_match(const std::string& str, const std::string&
         }
     }
     return true;
-}
-
-void BasePairValidator::load_atom_list(const std::string& /* x3dna_home - deprecated */) {
-    if (atom_list_loaded_) {
-        return; // Already loaded
-    }
-
-    // Use ResourceLocator for consistent path resolution
-    std::filesystem::path atomlist_path;
-    try {
-        atomlist_path = config::ResourceLocator::config_file("atomlist.dat");
-    } catch (const std::runtime_error&) {
-        // ResourceLocator not initialized - use fallback only
-        atom_list_loaded_ = true;
-        return;
-    }
-
-    std::ifstream file(atomlist_path);
-    if (!file.is_open()) {
-        // If file not found, use fallback logic only
-        atom_list_loaded_ = true;
-        return;
-    }
-
-    std::string line;
-    while (std::getline(file, line)) {
-        // Skip comments and empty lines
-        if (line.empty() || line[0] == '#') {
-            continue;
-        }
-
-        // Parse line: atom_name_pattern atomic_symbol
-        std::istringstream iss(line);
-        std::string aname4, asym;
-        if (!(iss >> aname4 >> asym)) {
-            continue;
-        }
-
-        // Skip if starts with #
-        if (aname4[0] == '#' || asym[0] == '#') {
-            continue;
-        }
-
-        // Validate format (matches legacy get_atomlist)
-        if (aname4.length() != 4) {
-            continue;
-        }
-        if (asym.length() != 1 && asym.length() != 2) {
-            continue;
-        }
-
-        // Normalize: convert to uppercase and pad atomic symbol to 2 chars
-        std::transform(aname4.begin(), aname4.end(), aname4.begin(), ::toupper);
-        std::transform(asym.begin(), asym.end(), asym.begin(), ::toupper);
-
-        // Pad atomic symbol to 2 chars with space if needed
-        if (asym.length() == 1) {
-            asym = " " + asym;
-        }
-
-        // Store in map: pattern -> atomic symbol
-        atom_list_[aname4] = asym;
-    }
-
-    file.close();
-    atom_list_loaded_ = true;
-}
-
-bool BasePairValidator::is_base_atom(const std::string& atom_name) {
-    // Matches legacy is_baseatom (line 4652 in cmn_fncs.c)
-    // Base atoms: C5M or atoms matching pattern " XD " where X is not H or P and D is digit
-    // Updated to work with trimmed atom names
-    if (atom_name == "C5M") {
-        return true;
-    }
-
-    // For trimmed names like "N1", "C2", "N9", etc.
-    // Pattern: exactly 2 chars - letter (not H or P) followed by digit
-    // This excludes sugar atoms like "C5'" and backbone atoms like "O1P"
-    if (atom_name.length() == 2 && atom_name[0] != 'H' && atom_name[0] != 'P' &&
-        std::isdigit(static_cast<unsigned char>(atom_name[1]))) {
-        return true;
-    }
-
-    return false;
 }
 
 } // namespace algorithms

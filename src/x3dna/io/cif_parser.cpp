@@ -276,6 +276,13 @@ std::string CifParser::apply_atom_name_formatting_rules(const std::string& name)
     return name;
 }
 
+// Apply exact matches for atom name normalization during CIF parsing.
+// NOTE: This function uses PDB 4-character format with position-specific padding.
+// This is intentional - the padding encodes position information from the PDB file format
+// (columns 13-16). The output is later trimmed when stored in the Atom class.
+// Examples:
+//   " OP1" (CIF format) -> " O1P" (legacy format)
+//   "   P" or "P   " (malformed) -> " P  " (standard format)
 std::string CifParser::apply_atom_name_exact_matches(const std::string& name) const {
     if (name == " O1'")
         return " O4'";

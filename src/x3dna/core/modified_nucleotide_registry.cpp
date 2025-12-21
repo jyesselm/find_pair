@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cctype>
 #include <mutex>
+#include <set>
+#include <iostream>
 
 using json = nlohmann::json;
 
@@ -81,21 +83,70 @@ const std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo>&
 
 std::optional<ModifiedNucleotideRegistry::NucleotideInfo> ModifiedNucleotideRegistry::get_info(
     const std::string& residue_name) {
-    // Trim whitespace
-    std::string trimmed = residue_name;
-    trimmed.erase(0, trimmed.find_first_not_of(" \t"));
-    trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
-
-    auto it = REGISTRY.find(trimmed);
+    // Residue names are stored trimmed - direct lookup
+    auto it = REGISTRY.find(residue_name);
     if (it != REGISTRY.end()) {
         return it->second;
     }
     return std::nullopt;
 }
 
+// Track which residues we've already warned about to avoid spam
+static std::set<std::string>& get_warned_residues() {
+    static std::set<std::string> warned;
+    return warned;
+}
+
+// Check if residue name is a known non-nucleotide (water, ion, ligand, amino acid)
+// These should not trigger warnings since they're not expected to be in the registry
+static bool is_known_non_nucleotide(const std::string& name) {
+    // Water molecules
+    static const std::set<std::string> WATER = {"HOH", "WAT", "DOD", "H2O", "OH2"};
+    if (WATER.count(name)) return true;
+
+    // Common ions
+    static const std::set<std::string> IONS = {
+        "MG", "CA", "NA", "K", "CL", "ZN", "FE", "MN", "CO", "NI", "CU",
+        "CD", "HG", "PB", "SR", "BA", "LI", "RB", "CS", "BR", "I", "F",
+        "MG2", "CA2", "ZN2", "FE2", "FE3", "MN2", "CO2", "NI2", "CU2", "CU1"
+    };
+    if (IONS.count(name)) return true;
+
+    // Standard amino acids (3-letter codes)
+    static const std::set<std::string> AMINO_ACIDS = {
+        "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
+        "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL",
+        // Common modified amino acids
+        "MSE", "SEP", "TPO", "PTR", "CSO", "OCS", "CME", "CSD", "CSX", "MLY"
+    };
+    if (AMINO_ACIDS.count(name)) return true;
+
+    // Common small molecule ligands/cofactors (not nucleotide-derived)
+    static const std::set<std::string> LIGANDS = {
+        "SO4", "PO4", "GOL", "EDO", "ACT", "ACE", "NH4", "NO3", "CO3",
+        "CIT", "TRS", "BME", "DMS", "IMD", "EPE", "PEG", "MPD", "HEM"
+    };
+    if (LIGANDS.count(name)) return true;
+
+    return false;
+}
+
 char ModifiedNucleotideRegistry::get_one_letter_code(const std::string& residue_name) {
     auto info = get_info(residue_name);
-    return info.has_value() ? info->one_letter_code : '?';
+    if (info.has_value()) {
+        return info->one_letter_code;
+    }
+
+    // Only warn for residues that might be nucleotides (not water, ions, amino acids, etc.)
+    if (!is_known_non_nucleotide(residue_name)) {
+        auto& warned = get_warned_residues();
+        if (warned.find(residue_name) == warned.end()) {
+            warned.insert(residue_name);
+            std::cerr << "Warning: Unknown residue '" << residue_name
+                      << "' not found in modified_nucleotides.json registry\n";
+        }
+    }
+    return '?';
 }
 
 std::optional<ResidueType> ModifiedNucleotideRegistry::get_base_type(const std::string& residue_name) {

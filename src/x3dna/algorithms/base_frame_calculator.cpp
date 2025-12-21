@@ -63,9 +63,9 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
         }
     }
 
-    // Check for C1' or C1R atom (use padded names for comparison)
+    // Check for C1' or C1R atom (use trimmed names - atom names are stored trimmed)
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " C1'" || atom.name() == "C1R ") {
+        if (atom.name() == "C1'" || atom.name() == "C1R") {
             has_c1_prime = true;
             break;
         }
@@ -157,41 +157,41 @@ std::tuple<int, bool> count_ring_atoms(const core::Residue& residue) {
     return upper == 'A' || upper == 'G' || upper == 'I';
 }
 
-// Detect purine atoms
+// Detect purine atoms (use trimmed names - atom names are stored trimmed)
 bool detect_purine_atoms(const core::Residue& residue) {
     bool has_n7 = false, has_c8 = false, has_n9 = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " N7 ")
+        if (atom.name() == "N7")
             has_n7 = true;
-        if (atom.name() == " C8 ")
+        if (atom.name() == "C8")
             has_c8 = true;
-        if (atom.name() == " N9 ")
+        if (atom.name() == "N9")
             has_n9 = true;
     }
     return has_n7 || has_c8 || has_n9;
 }
 
-// Determine purine type (A vs G)
+// Determine purine type (A vs G) - use trimmed names
 core::ResidueType determine_purine_type(const core::Residue& residue) {
     bool has_o6 = false, has_n6 = false, has_n2 = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " O6 ")
+        if (atom.name() == "O6")
             has_o6 = true;
-        if (atom.name() == " N6 ")
+        if (atom.name() == "N6")
             has_n6 = true;
-        if (atom.name() == " N2 ")
+        if (atom.name() == "N2")
             has_n2 = true;
     }
     return (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE : core::ResidueType::ADENINE;
 }
 
-// Determine pyrimidine type
+// Determine pyrimidine type - use trimmed names
 core::ResidueType determine_pyrimidine_type(const core::Residue& residue, char one_letter) {
     bool has_n4 = false, has_c5m = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " N4 ")
+        if (atom.name() == "N4")
             has_n4 = true;
-        if (atom.name() == "C5M " || atom.name() == " C7 ")
+        if (atom.name() == "C5M" || atom.name() == "C7")
             has_c5m = true;
     }
 
@@ -480,9 +480,9 @@ RmsdCheckResult check_nt_type_by_rmsd_poly(const core::structure::IResidue& resi
         }
     }
 
-    // Check for C1' or C1R atom
+    // Check for C1' or C1R atom (use trimmed names - atom names are stored trimmed)
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " C1'" || atom.name() == "C1R ") {
+        if (atom.name() == "C1'" || atom.name() == "C1R") {
             has_c1_prime = true;
             break;
         }
@@ -545,41 +545,41 @@ std::tuple<int, bool> count_ring_atoms_poly(const core::structure::IResidue& res
     return {count, has_purine};
 }
 
-// Detect purine atoms in polymorphic residue
+// Detect purine atoms in polymorphic residue (use trimmed names)
 bool detect_purine_atoms_poly(const core::structure::IResidue& residue) {
     bool has_n7 = false, has_c8 = false, has_n9 = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " N7 ")
+        if (atom.name() == "N7")
             has_n7 = true;
-        if (atom.name() == " C8 ")
+        if (atom.name() == "C8")
             has_c8 = true;
-        if (atom.name() == " N9 ")
+        if (atom.name() == "N9")
             has_n9 = true;
     }
     return has_n7 || has_c8 || has_n9;
 }
 
-// Determine purine type from polymorphic residue
+// Determine purine type from polymorphic residue (use trimmed names)
 core::ResidueType determine_purine_type_poly(const core::structure::IResidue& residue) {
     bool has_o6 = false, has_n6 = false, has_n2 = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " O6 ")
+        if (atom.name() == "O6")
             has_o6 = true;
-        if (atom.name() == " N6 ")
+        if (atom.name() == "N6")
             has_n6 = true;
-        if (atom.name() == " N2 ")
+        if (atom.name() == "N2")
             has_n2 = true;
     }
     return (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE : core::ResidueType::ADENINE;
 }
 
-// Determine pyrimidine type from polymorphic residue
+// Determine pyrimidine type from polymorphic residue (use trimmed names)
 core::ResidueType determine_pyrimidine_type_poly(const core::structure::IResidue& residue, char one_letter) {
     bool has_n4 = false, has_c5m = false;
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == " N4 ")
+        if (atom.name() == "N4")
             has_n4 = true;
-        if (atom.name() == "C5M " || atom.name() == " C7 ")
+        if (atom.name() == "C5M" || atom.name() == "C7")
             has_c5m = true;
     }
 

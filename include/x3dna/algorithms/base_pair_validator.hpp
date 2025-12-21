@@ -182,17 +182,6 @@ public:
 private:
     ValidationParameters params_;
 
-    // Atom list for aname2asym lookup (matches legacy ATOMLIST)
-    // Maps atom name pattern (4 chars with dots) to atomic symbol (2 chars with space)
-    static std::map<std::string, std::string> atom_list_;
-    static bool atom_list_loaded_;
-
-    /**
-     * @brief Load atomlist.dat file (matches legacy get_atomlist)
-     * @param x3dna_home X3DNA home directory (default from environment)
-     */
-    static void load_atom_list(const std::string& x3dna_home = "");
-
     /**
      * @brief Pattern match function (matches legacy str_pmatch)
      * Checks if pattern matches string (where '.' in pattern matches any char)
@@ -240,11 +229,6 @@ private:
      */
     void count_hydrogen_bonds_simple(const core::Residue& res1, const core::Residue& res2, int& num_base_hb,
                                      int& num_o2_hb) const;
-
-    /**
-     * @brief Check if atom is a base atom (matches legacy is_baseatom)
-     */
-    [[nodiscard]] static bool is_base_atom(const std::string& atom_name);
 };
 
 } // namespace algorithms

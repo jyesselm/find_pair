@@ -1,48 +1,48 @@
 /**
  * @file hydrogen_bond_utils.hpp
- * @brief Utilities for hydrogen bond calculations (atom list management, etc.)
+ * @brief Utilities for hydrogen bond calculations
  */
 
 #pragma once
 
 #include <string>
-#include <map>
-#include <vector>
+#include <x3dna/core/atom_symbol_registry.hpp>
 
 namespace x3dna {
 namespace algorithms {
 namespace hydrogen_bond {
 
 /**
- * @brief Atom list management utilities
+ * @brief Atom list utilities - delegates to AtomSymbolRegistry
  *
- * Provides shared atom list loading and lookup for hydrogen bond calculations
+ * This class provides backward compatibility with existing code.
+ * All functionality is now provided by core::AtomSymbolRegistry.
  */
 class AtomListUtils {
 public:
     /**
-     * @brief Load atom list from file
-     * @param x3dna_home X3DNA home directory (empty to use environment variable)
+     * @brief Load atom list (no-op, registry is lazy-loaded)
+     * @param x3dna_home Ignored - kept for API compatibility
      */
-    static void load_atom_list(const std::string& x3dna_home = "");
-
-    /**
-     * @brief Get atom index from atom name (matches legacy aname2asym + asym_idx)
-     * @param atom_name Atom name (e.g., " N1 ")
-     * @return Atom type index (0=UNK, 1=C, 2=O, 3=H, 4=N, 5=S, 6=P, ...)
-     */
-    [[nodiscard]] static int get_atom_idx(const std::string& atom_name);
-
-    /**
-     * @brief Check if atom list is loaded
-     */
-    [[nodiscard]] static bool is_loaded() {
-        return atom_list_loaded_;
+    static void load_atom_list(const std::string& x3dna_home = "") {
+        (void)x3dna_home;  // Registry is lazy-loaded from atomlist.json
     }
 
-private:
-    static std::map<std::string, std::string> atom_list_;
-    static bool atom_list_loaded_;
+    /**
+     * @brief Get atom index from atom name
+     * @param atom_name Atom name (e.g., "N1", " N1 ")
+     * @return Atom type index (0=UNK, 1=C, 2=O, 3=H, 4=N, 5=S, 6=P)
+     */
+    [[nodiscard]] static int get_atom_idx(const std::string& atom_name) {
+        return core::AtomSymbolRegistry::get_atom_idx(atom_name);
+    }
+
+    /**
+     * @brief Check if atom list is loaded (always true - registry is lazy-loaded)
+     */
+    [[nodiscard]] static bool is_loaded() {
+        return true;
+    }
 };
 
 /**
