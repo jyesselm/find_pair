@@ -134,3 +134,16 @@ target_link_libraries(test_base_pair_validator_poly
 )
 
 gtest_discover_tests(test_base_pair_validator_poly)
+
+# Base pair finder polymorphic tests
+add_executable(test_base_pair_finder_poly
+    test_base_pair_finder_poly.cpp
+)
+
+target_link_libraries(test_base_pair_finder_poly
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_base_pair_finder_poly)

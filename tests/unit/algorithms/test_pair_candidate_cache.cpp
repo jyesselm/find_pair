@@ -47,7 +47,8 @@ TEST_F(PairCandidateCacheTest, BuildFromStructure) {
     BasePairValidator validator;
     QualityScoreCalculator quality_calc;
 
-    cache.build(structure_, validator, quality_calc, BasePairFinder::is_nucleotide);
+    cache.build(structure_, validator, quality_calc,
+                [](const Residue& r) { return BasePairFinder::is_nucleotide(r); });
 
     EXPECT_FALSE(cache.empty());
     EXPECT_GT(cache.size(), 0);
@@ -63,7 +64,8 @@ TEST_F(PairCandidateCacheTest, GetPairInfo) {
     BasePairValidator validator;
     QualityScoreCalculator quality_calc;
 
-    cache.build(structure_, validator, quality_calc, BasePairFinder::is_nucleotide);
+    cache.build(structure_, validator, quality_calc,
+                [](const Residue& r) { return BasePairFinder::is_nucleotide(r); });
 
     // Get info for a pair that should exist
     // 100D typically has pairs like (1, 24), (2, 23), etc.
@@ -86,7 +88,8 @@ TEST_F(PairCandidateCacheTest, GetOrderIndependent) {
     BasePairValidator validator;
     QualityScoreCalculator quality_calc;
 
-    cache.build(structure_, validator, quality_calc, BasePairFinder::is_nucleotide);
+    cache.build(structure_, validator, quality_calc,
+                [](const Residue& r) { return BasePairFinder::is_nucleotide(r); });
 
     // Get same pair in both orders - should return same result
     auto info1 = cache.get(1, 24);
@@ -110,7 +113,8 @@ TEST_F(PairCandidateCacheTest, ValidPartnersFor) {
     BasePairValidator validator;
     QualityScoreCalculator quality_calc;
 
-    cache.build(structure_, validator, quality_calc, BasePairFinder::is_nucleotide);
+    cache.build(structure_, validator, quality_calc,
+                [](const Residue& r) { return BasePairFinder::is_nucleotide(r); });
 
     // Get valid partners for residue 1
     auto partners = cache.valid_partners_for(1);
@@ -132,7 +136,8 @@ TEST_F(PairCandidateCacheTest, ValidCount) {
     BasePairValidator validator;
     QualityScoreCalculator quality_calc;
 
-    cache.build(structure_, validator, quality_calc, BasePairFinder::is_nucleotide);
+    cache.build(structure_, validator, quality_calc,
+                [](const Residue& r) { return BasePairFinder::is_nucleotide(r); });
 
     size_t valid_count = cache.valid_count();
 
@@ -156,7 +161,8 @@ TEST_F(PairCandidateCacheTest, ForEachValid) {
     BasePairValidator validator;
     QualityScoreCalculator quality_calc;
 
-    cache.build(structure_, validator, quality_calc, BasePairFinder::is_nucleotide);
+    cache.build(structure_, validator, quality_calc,
+                [](const Residue& r) { return BasePairFinder::is_nucleotide(r); });
 
     size_t callback_count = 0;
     cache.for_each_valid([&](int idx1, int idx2, const CandidateInfo& info) {
@@ -177,7 +183,8 @@ TEST_F(PairCandidateCacheTest, Clear) {
     BasePairValidator validator;
     QualityScoreCalculator quality_calc;
 
-    cache.build(structure_, validator, quality_calc, BasePairFinder::is_nucleotide);
+    cache.build(structure_, validator, quality_calc,
+                [](const Residue& r) { return BasePairFinder::is_nucleotide(r); });
 
     EXPECT_FALSE(cache.empty());
 
@@ -197,7 +204,9 @@ TEST_F(PairCandidateCacheTest, IndexMapAccess) {
     BasePairValidator validator;
     QualityScoreCalculator quality_calc;
 
-    cache.build(structure_, validator, quality_calc, BasePairFinder::is_nucleotide);
+    // Use lambda to disambiguate overloaded is_nucleotide
+    cache.build(structure_, validator, quality_calc,
+                [](const Residue& r) { return BasePairFinder::is_nucleotide(r); });
 
     // Index map should be populated
     const auto& index_map = cache.index_map();
@@ -212,7 +221,9 @@ TEST_F(PairCandidateCacheTest, EmptyStructure) {
     BasePairValidator validator;
     QualityScoreCalculator quality_calc;
 
-    cache.build(empty_structure, validator, quality_calc, BasePairFinder::is_nucleotide);
+    // Use lambda to disambiguate overloaded is_nucleotide
+    cache.build(empty_structure, validator, quality_calc,
+                [](const Residue& r) { return BasePairFinder::is_nucleotide(r); });
 
     EXPECT_TRUE(cache.empty());
     EXPECT_EQ(cache.size(), 0);
