@@ -11,39 +11,6 @@
 namespace x3dna {
 namespace algorithms {
 
-namespace {
-
-/**
- * @brief Pad an atom name to 4 characters (PDB format)
- *
- * PDB atom names are 4 characters with specific positioning:
- * - 2-character elements right-aligned in first 2 chars
- * - 1-character elements in column 2
- *
- * For simplicity, we pad to " XX " format (space + name + space)
- */
-[[nodiscard]] std::string pad_atom_name(const std::string& name) {
-    if (name.length() == 2) {
-        return " " + name + " ";
-    }
-    // Already padded or longer - return as-is
-    return name;
-}
-
-/**
- * @brief Convert registry atom names to PDB-padded format
- */
-[[nodiscard]] std::vector<std::string> get_padded_names(const std::vector<std::string>& names) {
-    std::vector<std::string> padded;
-    padded.reserve(names.size());
-    for (const auto& name : names) {
-        padded.push_back(pad_atom_name(name));
-    }
-    return padded;
-}
-
-} // anonymous namespace
-
 MatchedAtoms RingAtomMatcher::match(const core::Residue& residue, const core::Structure& standard_template,
                                     std::optional<core::ResidueType> detected_type) {
     MatchedAtoms result;
@@ -73,18 +40,15 @@ MatchedAtoms RingAtomMatcher::match(const core::Residue& residue, const core::St
 
 std::vector<std::string> RingAtomMatcher::get_ring_atom_names(core::ResidueType residue_type) {
     // Use constants as single source of truth for ring atom names
-    // Pad names to PDB format for atom matching
-    return get_padded_names(constants::nucleotides::ring_atoms_for_type(residue_type));
+    // Return trimmed names directly - no padding needed since atoms are stored trimmed
+    return constants::nucleotides::ring_atoms_for_type(residue_type);
 }
 
 std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Residue& residue,
                                                              const std::string& atom_name) {
-    // Trim input for comparison since atom names are stored trimmed
-    std::string trimmed = atom_name;
-    trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r"));
-    trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
+    // Atom names are stored trimmed - direct comparison
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == trimmed) {
+        if (atom.name() == atom_name) {
             return atom;
         }
     }
@@ -143,12 +107,9 @@ MatchedAtoms RingAtomMatcher::match(const core::structure::IResidue& residue,
 
 std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::structure::IResidue& residue,
                                                               const std::string& atom_name) {
-    // Trim input for comparison since atom names are stored trimmed
-    std::string trimmed = atom_name;
-    trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r"));
-    trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
+    // Atom names are stored trimmed - direct comparison
     for (const auto& atom : residue.atoms()) {
-        if (atom.name() == trimmed) {
+        if (atom.name() == atom_name) {
             return atom;
         }
     }

@@ -21,16 +21,6 @@ namespace typing {
 
 namespace {
 
-// Helper to trim whitespace
-std::string trim(const std::string& str) {
-    auto start = str.find_first_not_of(" \t");
-    if (start == std::string::npos) {
-        return "";
-    }
-    auto end = str.find_last_not_of(" \t");
-    return str.substr(start, end - start + 1);
-}
-
 // Helper to convert string to BaseType
 BaseType string_to_base_type(const std::string& type_str) {
     if (type_str == "ADENINE") return BaseType::ADENINE;
@@ -171,19 +161,19 @@ void TypeRegistry::load_ions() {
 }
 
 ResidueClassification TypeRegistry::classify_residue(const std::string& residue_name) const {
-    std::string name = trim(residue_name);
+    // Residue names are stored trimmed - direct use
     ResidueClassification result;
-    result.residue_name = name;
+    result.residue_name = residue_name;
 
     // Check for water first
-    if (water_names_.count(name) > 0) {
+    if (water_names_.count(residue_name) > 0) {
         result.molecule_type = MoleculeType::WATER;
         result.solvent_type = SolventType::WATER;
         return result;
     }
 
     // Check nucleotides (takes priority over ions to handle I=inosine correctly)
-    auto nuc_it = nucleotides_.find(name);
+    auto nuc_it = nucleotides_.find(residue_name);
     if (nuc_it != nucleotides_.end()) {
         const auto& info = nuc_it->second;
         result.molecule_type = MoleculeType::NUCLEIC_ACID;
@@ -192,8 +182,8 @@ ResidueClassification TypeRegistry::classify_residue(const std::string& residue_
         result.is_modified_nucleotide = info.is_modified;
 
         // Determine RNA vs DNA
-        bool is_dna = (name.size() >= 2 && name[0] == 'D') ||
-                      name == "T" || name == "THY";
+        bool is_dna = (residue_name.size() >= 2 && residue_name[0] == 'D') ||
+                      residue_name == "T" || residue_name == "THY";
         result.nucleic_acid_type = is_dna ? NucleicAcidType::DNA : NucleicAcidType::RNA;
 
         // Set category
@@ -215,7 +205,7 @@ ResidueClassification TypeRegistry::classify_residue(const std::string& residue_
     }
 
     // Check amino acids
-    auto aa_it = amino_acids_.find(name);
+    auto aa_it = amino_acids_.find(residue_name);
     if (aa_it != amino_acids_.end()) {
         const auto& info = aa_it->second;
         result.molecule_type = MoleculeType::PROTEIN;
@@ -228,7 +218,7 @@ ResidueClassification TypeRegistry::classify_residue(const std::string& residue_
     }
 
     // Check ions
-    auto ion_it = ion_types_.find(name);
+    auto ion_it = ion_types_.find(residue_name);
     if (ion_it != ion_types_.end()) {
         result.molecule_type = MoleculeType::ION;
         result.ion_type = ion_it->second;
@@ -241,23 +231,23 @@ ResidueClassification TypeRegistry::classify_residue(const std::string& residue_
 }
 
 bool TypeRegistry::is_water(const std::string& residue_name) const {
-    return water_names_.count(trim(residue_name)) > 0;
+    return water_names_.count(residue_name) > 0;
 }
 
 bool TypeRegistry::is_ion(const std::string& residue_name) const {
-    return ion_types_.count(trim(residue_name)) > 0;
+    return ion_types_.count(residue_name) > 0;
 }
 
 bool TypeRegistry::is_amino_acid(const std::string& residue_name) const {
-    return amino_acids_.count(trim(residue_name)) > 0;
+    return amino_acids_.count(residue_name) > 0;
 }
 
 bool TypeRegistry::is_nucleotide(const std::string& residue_name) const {
-    return nucleotides_.count(trim(residue_name)) > 0;
+    return nucleotides_.count(residue_name) > 0;
 }
 
 std::optional<NucleotideInfo> TypeRegistry::get_nucleotide_info(const std::string& residue_name) const {
-    auto it = nucleotides_.find(trim(residue_name));
+    auto it = nucleotides_.find(residue_name);
     if (it != nucleotides_.end()) {
         return it->second;
     }
@@ -265,14 +255,13 @@ std::optional<NucleotideInfo> TypeRegistry::get_nucleotide_info(const std::strin
 }
 
 char TypeRegistry::get_one_letter_code(const std::string& residue_name) const {
-    std::string name = trim(residue_name);
-
-    auto nuc_it = nucleotides_.find(name);
+    // Residue names are stored trimmed - direct lookup
+    auto nuc_it = nucleotides_.find(residue_name);
     if (nuc_it != nucleotides_.end()) {
         return nuc_it->second.one_letter_code;
     }
 
-    auto aa_it = amino_acids_.find(name);
+    auto aa_it = amino_acids_.find(residue_name);
     if (aa_it != amino_acids_.end()) {
         return aa_it->second.one_letter_code;
     }
@@ -281,7 +270,7 @@ char TypeRegistry::get_one_letter_code(const std::string& residue_name) const {
 }
 
 std::optional<bool> TypeRegistry::is_purine(const std::string& residue_name) const {
-    auto it = nucleotides_.find(trim(residue_name));
+    auto it = nucleotides_.find(residue_name);
     if (it != nucleotides_.end()) {
         return it->second.is_purine;
     }
@@ -289,7 +278,7 @@ std::optional<bool> TypeRegistry::is_purine(const std::string& residue_name) con
 }
 
 std::optional<AminoAcidInfo> TypeRegistry::get_amino_acid_info(const std::string& residue_name) const {
-    auto it = amino_acids_.find(trim(residue_name));
+    auto it = amino_acids_.find(residue_name);
     if (it != amino_acids_.end()) {
         return it->second;
     }
@@ -297,7 +286,7 @@ std::optional<AminoAcidInfo> TypeRegistry::get_amino_acid_info(const std::string
 }
 
 IonType TypeRegistry::get_ion_type(const std::string& residue_name) const {
-    auto it = ion_types_.find(trim(residue_name));
+    auto it = ion_types_.find(residue_name);
     if (it != ion_types_.end()) {
         return it->second;
     }

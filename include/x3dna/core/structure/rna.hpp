@@ -39,13 +39,9 @@ public:
     void add_atom(const Atom& atom) override { atoms_.push_back(atom); }
 
     [[nodiscard]] std::optional<Atom> find_atom(const std::string& atom_name) const override {
+        // Atom names are stored trimmed - direct comparison
         for (const auto& atom : atoms_) {
             if (atom.name() == atom_name) {
-                return atom;
-            }
-            std::string trimmed = trim(atom_name);
-            std::string atom_trimmed = trim(atom.name());
-            if (atom_trimmed == trimmed) {
                 return atom;
             }
         }

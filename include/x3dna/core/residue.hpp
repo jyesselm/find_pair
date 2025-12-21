@@ -182,22 +182,9 @@ public:
      * @return Optional atom if found
      */
     [[nodiscard]] std::optional<Atom> find_atom(const std::string& atom_name) const {
-        // Atom names are stored in PDB 4-character format, so compare directly
-        // or normalize the search key to match
+        // Atom names are stored trimmed - direct comparison
         for (const auto& atom : atoms_) {
             if (atom.name() == atom_name) {
-                return atom;
-            }
-            // Also check trimmed version for convenience
-            std::string trimmed = atom_name;
-            trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r"));
-            trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
-
-            std::string atom_trimmed = atom.name();
-            atom_trimmed.erase(0, atom_trimmed.find_first_not_of(" \t\n\r"));
-            atom_trimmed.erase(atom_trimmed.find_last_not_of(" \t\n\r") + 1);
-
-            if (atom_trimmed == trimmed) {
                 return atom;
             }
         }

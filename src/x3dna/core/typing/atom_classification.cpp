@@ -13,21 +13,6 @@ namespace x3dna {
 namespace core {
 namespace typing {
 
-namespace {
-
-// Trim whitespace from string_view
-std::string_view trim(std::string_view sv) {
-    while (!sv.empty() && std::isspace(static_cast<unsigned char>(sv.front()))) {
-        sv.remove_prefix(1);
-    }
-    while (!sv.empty() && std::isspace(static_cast<unsigned char>(sv.back()))) {
-        sv.remove_suffix(1);
-    }
-    return sv;
-}
-
-} // anonymous namespace
-
 ElementType AtomClassifier::get_element(const std::string& atom_name) {
     if (atom_name.empty()) {
         return ElementType::UNKNOWN;
@@ -85,15 +70,12 @@ bool AtomClassifier::is_nucleobase_atom(const std::string& atom_name) {
 }
 
 bool AtomClassifier::is_ring_atom(const std::string& atom_name) {
-    // Trim whitespace
-    std::string_view sv = trim(atom_name);
-
-    // Ring atoms: N1, C2, N3, C4, C5, C6, N7, C8, N9
+    // Atom names are stored trimmed - direct lookup
     static const std::set<std::string> ring_atoms = {
         "N1", "C2", "N3", "C4", "C5", "C6", "N7", "C8", "N9"
     };
 
-    return ring_atoms.count(std::string(sv)) > 0;
+    return ring_atoms.count(atom_name) > 0;
 }
 
 bool AtomClassifier::is_mainchain_atom(const std::string& atom_name) {
@@ -136,22 +118,19 @@ bool AtomClassifier::can_form_hbond_pair(const std::string& atom1,
 }
 
 bool AtomClassifier::is_base_atom_for_hbond(const std::string& atom_name) {
-    // Trim the name for comparison
-    std::string name = atom_name;
-    name.erase(0, name.find_first_not_of(" \t\n\r"));
-    name.erase(name.find_last_not_of(" \t\n\r") + 1);
+    // Atom names are stored trimmed - direct comparison
 
-    if (name == "C5M") {
+    if (atom_name == "C5M") {
         return true;
     }
 
-    if (name.size() < 2) {
+    if (atom_name.size() < 2) {
         return false;
     }
 
     // For trimmed names like "N1", "C2", etc.
-    const char c0 = name[0];
-    const char c1 = name[1];
+    const char c0 = atom_name[0];
+    const char c1 = atom_name[1];
 
     if (c0 == 'H' || c0 == 'P') {
         return false;
