@@ -153,14 +153,6 @@ public:
     }
 
     /**
-     * @brief Get full classification of this atom
-     * @return AtomClassification with element, location, and H-bond role
-     */
-    [[nodiscard]] typing::AtomClassification classification() const {
-        return typing::AtomClassifier::classify_nucleotide_atom(name_);
-    }
-
-    /**
      * @brief Check if this is a backbone atom (P, OP1, OP2, O5', O3', etc.)
      */
     [[nodiscard]] bool is_backbone_atom() const {

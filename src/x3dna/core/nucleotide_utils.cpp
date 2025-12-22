@@ -20,7 +20,7 @@ std::vector<Atom> ring_atoms(const Residue& residue) {
 }
 
 char one_letter_code(const Residue& residue) {
-    return ModifiedNucleotideRegistry::get_one_letter_code(residue.name());
+    return TypeRegistry::instance().get_one_letter_code(residue.name());
 }
 
 int ry_classification(const Residue& residue) {

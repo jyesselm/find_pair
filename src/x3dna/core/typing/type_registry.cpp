@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <cctype>
 #include <mutex>
+#include <set>
+#include <iostream>
 
 using json = nlohmann::json;
 
@@ -20,6 +22,12 @@ namespace core {
 namespace typing {
 
 namespace {
+
+// Track which residues we've already warned about to avoid spam
+std::set<std::string>& get_warned_residues() {
+    static std::set<std::string> warned;
+    return warned;
+}
 
 // Helper to convert string to BaseType
 BaseType string_to_base_type(const std::string& type_str) {
@@ -264,6 +272,17 @@ char TypeRegistry::get_one_letter_code(const std::string& residue_name) const {
     auto aa_it = amino_acids_.find(residue_name);
     if (aa_it != amino_acids_.end()) {
         return aa_it->second.one_letter_code;
+    }
+
+    // Only warn for residues that might be nucleotides (not water, ions, amino acids, ligands)
+    // Check if it's a known non-nucleotide type
+    if (!is_water(residue_name) && !is_ion(residue_name) && !is_amino_acid(residue_name)) {
+        auto& warned = get_warned_residues();
+        if (warned.find(residue_name) == warned.end()) {
+            warned.insert(residue_name);
+            std::cerr << "Warning: Unknown residue '" << residue_name
+                      << "' not found in modified_nucleotides.json registry\n";
+        }
     }
 
     return '?';

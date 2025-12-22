@@ -7,6 +7,7 @@
 
 #include <string>
 #include <x3dna/core/typing/atom_type.hpp>
+#include <x3dna/core/typing/molecule_type.hpp>
 
 namespace x3dna {
 namespace core {
@@ -127,6 +128,18 @@ public:
     [[nodiscard]] static bool is_base_atom_for_hbond(const std::string& atom_name);
 
     // === Full classification ===
+
+    /**
+     * @brief Get complete classification for an atom with explicit molecule context
+     * @param atom_name PDB-format atom name
+     * @param molecule_type The type of molecule this atom belongs to
+     * @return Full AtomClassification struct
+     *
+     * This is the preferred method - it requires knowing the context before classifying.
+     */
+    [[nodiscard]] static AtomClassification classify(
+        const std::string& atom_name,
+        MoleculeType molecule_type);
 
     /**
      * @brief Get complete classification for an atom in a nucleotide context

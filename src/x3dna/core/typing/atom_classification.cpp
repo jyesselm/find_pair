@@ -139,6 +139,23 @@ bool AtomClassifier::is_base_atom_for_hbond(const std::string& atom_name) {
     return std::isdigit(static_cast<unsigned char>(c1));
 }
 
+AtomClassification AtomClassifier::classify(const std::string& atom_name, MoleculeType molecule_type) {
+    switch (molecule_type) {
+        case MoleculeType::NUCLEIC_ACID:
+            return classify_nucleotide_atom(atom_name);
+        case MoleculeType::PROTEIN:
+            return classify_protein_atom(atom_name);
+        default:
+            // For unknown/other types, return basic element info only
+            AtomClassification result;
+            result.element = get_element(atom_name);
+            result.legacy_element_index = get_legacy_element_index(atom_name);
+            result.location = AtomLocation::UNKNOWN;
+            result.hbond_role = HBondRole::UNKNOWN;
+            return result;
+    }
+}
+
 AtomClassification AtomClassifier::classify_nucleotide_atom(const std::string& atom_name) {
     AtomClassification result;
 

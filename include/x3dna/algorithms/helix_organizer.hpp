@@ -13,9 +13,18 @@
 #include <optional>
 #include <map>
 #include <x3dna/core/base_pair.hpp>
+#include <x3dna/core/structure.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 
 namespace x3dna::algorithms {
+
+/**
+ * @brief Method for ordering base pairs within helices
+ */
+enum class OrderingMode {
+    Legacy,    ///< Use legacy five_to_three algorithm (matches X3DNA)
+    ChainBased ///< Use ChainDetector for backbone connectivity ordering
+};
 
 /**
  * @brief Direction of backbone linkage between residues
@@ -107,13 +116,16 @@ public:
      * @brief Configuration parameters
      */
     struct Config {
-        double helix_break;     ///< Max distance (Å) between adjacent pairs
-        double neighbor_cutoff; ///< Cutoff for neighbor detection
-        double o3p_upper;       ///< Max O3'-P distance for backbone linkage (Å)
-        double end_stack_xang;  ///< Max x-angle for stacked WC pairs (degrees)
+        double helix_break;         ///< Max distance (Å) between adjacent pairs
+        double neighbor_cutoff;     ///< Cutoff for neighbor detection
+        double o3p_upper;           ///< Max O3'-P distance for backbone linkage (Å)
+        double end_stack_xang;      ///< Max x-angle for stacked WC pairs (degrees)
+        OrderingMode ordering_mode; ///< Method for ordering base pairs
 
         // Legacy uses helix_break=7.8 from $X3DNA/config/misc_3dna.par
-        Config() : helix_break(7.8), neighbor_cutoff(8.5), o3p_upper(2.5), end_stack_xang(125.0) {}
+        Config()
+            : helix_break(7.8), neighbor_cutoff(8.5), o3p_upper(2.5), end_stack_xang(125.0),
+              ordering_mode(OrderingMode::Legacy) {}
     };
 
     explicit HelixOrganizer(const Config& config = Config());
@@ -123,10 +135,11 @@ public:
      *
      * @param pairs Vector of base pairs (in selection order)
      * @param backbone Optional backbone data for 5'→3' direction checking
+     * @param structure Optional structure for chain-based ordering (required if ordering_mode is ChainBased)
      * @return HelixOrdering with reordered indices and helix boundaries
      */
-    [[nodiscard]] HelixOrdering organize(const std::vector<core::BasePair>& pairs,
-                                         const BackboneData& backbone = {}) const;
+    [[nodiscard]] HelixOrdering organize(const std::vector<core::BasePair>& pairs, const BackboneData& backbone = {},
+                                         const core::Structure* structure = nullptr) const;
 
 private:
     Config config_;
@@ -160,6 +173,11 @@ private:
     void ensure_five_to_three(const std::vector<core::BasePair>& pairs, const BackboneData& backbone,
                               std::vector<size_t>& pair_order, std::vector<HelixSegment>& helices,
                               std::vector<bool>& strand_swapped) const;
+
+    // Chain-based ordering (new approach)
+    void ensure_chain_order(const std::vector<core::BasePair>& pairs, const core::Structure& structure,
+                            std::vector<size_t>& pair_order, std::vector<HelixSegment>& helices,
+                            std::vector<bool>& strand_swapped) const;
 
     /** @brief Get residue indices based on swap status (returns 1-based indices) */
     [[nodiscard]] StrandResidues get_strand_residues(const core::BasePair& pair, bool swapped) const;

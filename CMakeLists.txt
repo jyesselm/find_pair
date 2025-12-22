@@ -53,10 +53,8 @@ add_library(x3dna
     src/x3dna/io/input_file_parser.cpp
     src/x3dna/io/input_file_writer.cpp
     src/x3dna/io/frame_json_recorder.cpp
-    src/x3dna/residue_tracker.cpp
     src/x3dna/core/structure_legacy_order.cpp
     src/x3dna/core/structure_legacy_order_impl.cpp
-    src/x3dna/core/modified_nucleotide_registry.cpp
     src/x3dna/core/atom_symbol_registry.cpp
     src/x3dna/core/typing/atom_classification.cpp
     src/x3dna/core/typing/type_registry.cpp
@@ -76,6 +74,7 @@ add_library(x3dna
     src/x3dna/algorithms/pair_candidate_cache.cpp
     src/x3dna/algorithms/json_writer_observer.cpp
     src/x3dna/algorithms/pair_selection_strategy.cpp
+    src/x3dna/algorithms/chain_detector.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.cpp
     src/x3dna/algorithms/validation/overlap_calculator.cpp
     src/x3dna/config/config_manager.cpp

@@ -63,7 +63,7 @@ public:
     /**
      * @brief Create a fully-initialized residue from PDB/CIF data
      *
-     * This is the recommended way to create residues. It uses ModifiedNucleotideRegistry
+     * This is the recommended way to create residues. It uses TypeRegistry
      * to determine one_letter_code, type, and is_purine properties.
      *
      * @param name Three-letter residue name (e.g., "A", "ATP", "PSU")

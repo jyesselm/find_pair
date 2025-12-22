@@ -89,7 +89,7 @@ TEST_F(ResidueTest, RingAtoms) {
 
 // Base identification tests (use create_from_atoms for proper initialization)
 TEST_F(ResidueTest, OneLetterCode) {
-    // one_letter_code() is now a free function that looks up via ModifiedNucleotideRegistry
+    // one_letter_code() is now a free function that looks up via TypeRegistry
     EXPECT_EQ(one_letter_code(Residue::create_from_atoms("  C", 1, "A", "", {})), 'C');
     EXPECT_EQ(one_letter_code(Residue::create_from_atoms("  G", 1, "A", "", {})), 'G');
     EXPECT_EQ(one_letter_code(Residue::create_from_atoms("  A", 1, "A", "", {})), 'A');

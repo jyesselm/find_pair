@@ -6,7 +6,7 @@
 #include <x3dna/io/cif_parser.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/chain.hpp>
-#include <x3dna/core/modified_nucleotide_registry.hpp>
+#include <x3dna/core/typing/type_registry.hpp>
 #include <gemmi/cif.hpp>
 #include <gemmi/mmcif.hpp>
 #include <gemmi/mmread.hpp>
@@ -235,7 +235,7 @@ bool CifParser::is_water(const std::string& residue_name) const {
 
 bool CifParser::is_modified_nucleotide_name(const std::string& residue_name) const {
     // Use centralized registry instead of hardcoded list
-    return core::ModifiedNucleotideRegistry::contains(residue_name);
+    return core::TypeRegistry::instance().is_nucleotide(residue_name);
 }
 
 std::string CifParser::normalize_atom_name(const std::string& name) const {

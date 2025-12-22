@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <x3dna/core/atom.hpp>
-#include <x3dna/core/modified_nucleotide_registry.hpp>
+#include <x3dna/core/typing/type_registry.hpp>
 
 namespace x3dna {
 namespace core {

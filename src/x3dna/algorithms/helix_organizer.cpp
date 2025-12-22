@@ -7,6 +7,7 @@
  */
 
 #include <x3dna/algorithms/helix_organizer.hpp>
+#include <x3dna/algorithms/chain_detector.hpp>
 #include <x3dna/config/config_manager.hpp>
 #include <algorithm>
 #include <cmath>
@@ -1194,10 +1195,122 @@ void HelixOrganizer::ensure_five_to_three(const std::vector<core::BasePair>& pai
 }
 
 // =============================================================================
+// Chain-based ordering (new approach)
+// =============================================================================
+
+void HelixOrganizer::ensure_chain_order(const std::vector<core::BasePair>& pairs, const core::Structure& structure,
+                                        std::vector<size_t>& pair_order, std::vector<HelixSegment>& helices,
+                                        std::vector<bool>& strand_swapped) const {
+    bool debug = is_five2three_debug_enabled();
+
+    strand_swapped.resize(pairs.size(), false);
+
+    // Use ChainDetector to detect RNA chains
+    ChainDetector detector;
+    auto chains = detector.detect_rna_chains(structure);
+
+    if (debug) {
+        std::cerr << "[ensure_chain_order] Detected " << chains.size() << " RNA chains\n";
+    }
+
+    // Build a map from residue pointer to (chain_id, position_in_chain)
+    std::map<const core::Residue*, std::pair<size_t, size_t>> residue_to_chain_pos;
+    for (size_t chain_idx = 0; chain_idx < chains.size(); ++chain_idx) {
+        const auto& chain = chains[chain_idx];
+        for (size_t pos = 0; pos < chain.residues.size(); ++pos) {
+            residue_to_chain_pos[chain.residues[pos]] = {chain_idx, pos};
+        }
+    }
+
+    // Helper to get residue pointer from structure by legacy index
+    auto get_residue_by_legacy_idx = [&structure](size_t legacy_idx) -> const core::Residue* {
+        for (const auto& chain : structure.chains()) {
+            for (const auto& residue : chain.residues()) {
+                if (static_cast<size_t>(residue.legacy_residue_idx()) == legacy_idx) {
+                    return &residue;
+                }
+            }
+        }
+        return nullptr;
+    };
+
+    // Process each helix
+    for (auto& helix : helices) {
+        if (helix.start_idx > helix.end_idx) {
+            continue;
+        }
+
+        if (debug) {
+            std::cerr << "[ensure_chain_order] Processing helix (pairs " << helix.start_idx << "-" << helix.end_idx
+                      << ")\n";
+        }
+
+        // For each pair in this helix, determine chain positions
+        for (size_t pos = helix.start_idx; pos <= helix.end_idx; ++pos) {
+            size_t pair_idx = pair_order[pos];
+            const auto& pair = pairs[pair_idx];
+
+            // Get residues for both strands (using 1-based legacy indices)
+            size_t res1_legacy = pair.residue_idx1() + 1;
+            size_t res2_legacy = pair.residue_idx2() + 1;
+
+            const core::Residue* res1 = get_residue_by_legacy_idx(res1_legacy);
+            const core::Residue* res2 = get_residue_by_legacy_idx(res2_legacy);
+
+            if (!res1 || !res2) {
+                if (debug) {
+                    std::cerr << "[ensure_chain_order] Could not find residues for pair " << pair_idx << " ("
+                              << res1_legacy << "," << res2_legacy << ")\n";
+                }
+                continue;
+            }
+
+            // Get chain positions
+            auto it1 = residue_to_chain_pos.find(res1);
+            auto it2 = residue_to_chain_pos.find(res2);
+
+            if (it1 == residue_to_chain_pos.end() || it2 == residue_to_chain_pos.end()) {
+                if (debug) {
+                    std::cerr << "[ensure_chain_order] Residues not in detected chains for pair " << pair_idx << "\n";
+                }
+                continue;
+            }
+
+            size_t chain1 = it1->second.first;
+            size_t pos1 = it1->second.second;
+            size_t chain2 = it2->second.first;
+            size_t pos2 = it2->second.second;
+
+            // Determine swap based on chain ordering
+            // If res1 is later in the chain than res2, swap
+            // (We want strand1 to be earlier in 5'->3' direction)
+            bool should_swap = false;
+            if (chain1 == chain2) {
+                // Same chain - order by position
+                should_swap = (pos1 > pos2);
+            } else {
+                // Different chains - order by chain index
+                should_swap = (chain1 > chain2);
+            }
+
+            strand_swapped[pair_idx] = should_swap;
+
+            if (debug) {
+                std::cerr << "[ensure_chain_order] pair " << pair_idx << " res1=(" << res1_legacy << " chain=" << chain1
+                          << " pos=" << pos1 << ")"
+                          << " res2=(" << res2_legacy << " chain=" << chain2 << " pos=" << pos2 << ")"
+                          << " swap=" << should_swap << "\n";
+            }
+        }
+    }
+}
+
+// =============================================================================
 // Main organize function
 // =============================================================================
 
-HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs, const BackboneData& backbone) const {
+HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs, const BackboneData& backbone,
+                                       const core::Structure* structure) const {
     HelixOrdering result;
 
     if (pairs.empty()) {
@@ -1229,9 +1342,18 @@ HelixOrdering HelixOrganizer::organize(const std::vector<core::BasePair>& pairs,
     // Step 3: Chain pairs into helices (respects backbone connectivity)
     auto [pair_order, helices] = locate_helices(context, endpoints, backbone, pairs.size());
 
-    // Step 4: Ensure 5'→3' direction (full five2three algorithm)
+    // Step 4: Ensure 5'→3' direction
     std::vector<bool> strand_swapped;
-    ensure_five_to_three(pairs, backbone, pair_order, helices, strand_swapped);
+    if (config_.ordering_mode == OrderingMode::Legacy) {
+        // Use legacy five2three algorithm
+        ensure_five_to_three(pairs, backbone, pair_order, helices, strand_swapped);
+    } else {
+        // Use chain-based ordering
+        if (!structure) {
+            throw std::invalid_argument("HelixOrganizer::organize: structure required for ChainBased ordering mode");
+        }
+        ensure_chain_order(pairs, *structure, pair_order, helices, strand_swapped);
+    }
 
     // Step 5: Identify helix breaks (positions without backbone connectivity)
     std::vector<bool> helix_breaks(pair_order.size() > 0 ? pair_order.size() - 1 : 0, false);

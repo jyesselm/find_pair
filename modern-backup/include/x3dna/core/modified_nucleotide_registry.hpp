@@ -3,7 +3,8 @@
 #include <string>
 #include <map>
 #include <optional>
-#include <x3dna/core/typing/nucleotide_type.hpp>
+#include <x3dna/core/residue_type.hpp>
+#include <x3dna/core/residue_classification.hpp>
 
 namespace x3dna {
 namespace core {
@@ -21,10 +22,10 @@ namespace core {
 class ModifiedNucleotideRegistry {
 public:
     struct NucleotideInfo {
-        char one_letter_code;       // 'a', 'c', 'g', 'u', 't', 'I', 'P'
-        typing::BaseType base_type; // ADENINE, CYTOSINE, etc.
-        bool is_purine;             // true for A/G/I, false for C/U/T/P
-        std::string description;    // Human-readable description
+        char one_letter_code;    // 'a', 'c', 'g', 'u', 't', 'I', 'P'
+        ResidueType base_type;   // ADENINE, CYTOSINE, etc.
+        bool is_purine;          // true for A/G/I, false for C/U/T/P
+        std::string description; // Human-readable description
     };
 
     /**
@@ -44,9 +45,9 @@ public:
     /**
      * @brief Get base type for a modified nucleotide
      * @param residue_name Three-letter residue name
-     * @return BaseType if found, nullopt otherwise
+     * @return ResidueType if found, nullopt otherwise
      */
-    [[nodiscard]] static std::optional<typing::BaseType> get_base_type(const std::string& residue_name);
+    [[nodiscard]] static std::optional<ResidueType> get_base_type(const std::string& residue_name);
 
     /**
      * @brief Check if a residue is a purine derivative
@@ -62,10 +63,17 @@ public:
      */
     [[nodiscard]] static bool contains(const std::string& residue_name);
 
+    /**
+     * @brief Classify a residue by name
+     * @param residue_name Three-letter residue name (e.g., "5MC", "DA", "HOH")
+     * @return Full ResidueClassification with all type information
+     */
+    [[nodiscard]] static ResidueClassification classify(const std::string& residue_name);
+
 private:
     // The central registry - lazy-loaded on first access via get_registry()
     // This allows ResourceLocator to be initialized before the registry is loaded
-    static const std::map<std::string, NucleotideInfo>& REGISTRY;
+    static const std::map<std::string, NucleotideInfo>& registry_;
 };
 
 } // namespace core

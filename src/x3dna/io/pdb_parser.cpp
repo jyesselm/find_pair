@@ -7,7 +7,7 @@
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/constants.hpp>
-#include <x3dna/core/modified_nucleotide_registry.hpp>
+#include <x3dna/core/typing/type_registry.hpp>
 #include <gemmi/pdb.hpp>
 #include <gemmi/mmread.hpp>
 #include <gemmi/gz.hpp>
@@ -264,7 +264,7 @@ bool PdbParser::is_water(const std::string& residue_name) const {
 
 bool PdbParser::is_modified_nucleotide_name(const std::string& residue_name) const {
     // Use centralized registry instead of hardcoded list
-    return core::ModifiedNucleotideRegistry::contains(residue_name);
+    return core::TypeRegistry::instance().is_nucleotide(residue_name);
 }
 
 bool PdbParser::check_alt_loc_filter(char alt_loc) const {

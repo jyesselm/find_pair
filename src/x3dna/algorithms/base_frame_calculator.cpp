@@ -6,6 +6,7 @@
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
 #include <x3dna/core/nucleotide_utils.hpp>
+#include <x3dna/core/typing/type_registry.hpp>
 #include <stdexcept>
 #include <cmath>
 #include <algorithm>
@@ -324,7 +325,7 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Res
                 if (!pyr_rmsd.has_value() || *pyr_rmsd > RMSD_THRESHOLD) {
                     return result;
                 }
-                if (!core::ModifiedNucleotideRegistry::contains(res_name)) {
+                if (!core::TypeRegistry::instance().is_nucleotide(res_name)) {
                     has_purine_atoms = false;
                 }
                 used_pyrimidine_fallback = true;
@@ -340,7 +341,7 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Res
     }
 
     // Determine base type if unknown
-    bool is_registry_nucleotide = core::ModifiedNucleotideRegistry::contains(res_name);
+    bool is_registry_nucleotide = core::TypeRegistry::instance().is_nucleotide(res_name);
 
     if (!is_registry_nucleotide && (needs_type_detection(residue) || needs_rmsd_check)) {
         if (has_ring_atoms) {

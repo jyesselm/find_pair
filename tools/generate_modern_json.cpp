@@ -167,7 +167,7 @@ BaseFrameCalculator setup_frame_calculator(const std::filesystem::path& template
 
 // Process a single PDB file
 bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesystem::path& json_output_dir,
-                        const std::string& stage, bool verbose = true) {
+                        const std::string& stage, bool use_chain_order = false, bool verbose = true) {
     try {
         // Create output directory if needed
         std::filesystem::create_directories(json_output_dir);
@@ -264,8 +264,12 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                     // Get helix order from HelixOrganizer (matches legacy five2three algorithm)
                     BackboneData backbone = extract_backbone_data(structure);
 
-                    HelixOrganizer organizer;
-                    auto helix_order = organizer.organize(base_pairs, backbone);
+                    HelixOrganizer::Config organizer_config;
+                    if (use_chain_order) {
+                        organizer_config.ordering_mode = OrderingMode::ChainBased;
+                    }
+                    HelixOrganizer organizer(organizer_config);
+                    auto helix_order = organizer.organize(base_pairs, backbone, &structure);
 
                     // Record bp_context for debugging (neighbor detection comparison)
                     writer.record_bp_context(base_pairs, helix_order.context);
@@ -382,6 +386,7 @@ void print_usage(const char* prog_name) {
     std::cerr << "  --pdb-list=FILE     File with PDB IDs (one per line)\n";
     std::cerr << "  --pdb-dir=DIR       Directory containing PDB files\n";
     std::cerr << "  --all-pdbs          Process all PDBs in pdb-dir\n";
+    std::cerr << "  --chain-order       Use chain-based ordering instead of legacy five2three\n";
     std::cerr << "  --progress=FILE     Progress file (default: <output_dir>/progress.json)\n";
     std::cerr << "  --resume            Resume from progress file\n";
     std::cerr << "  --max=N             Maximum PDBs to process\n";
@@ -393,6 +398,7 @@ void print_usage(const char* prog_name) {
     std::cerr << "  " << prog_name << " data/pdb/1EHZ.pdb data/json --stage=atoms\n";
     std::cerr << "  " << prog_name << " --pdb-list=fast_pdbs.txt --pdb-dir=data/pdb data/json --stage=frames\n";
     std::cerr << "  " << prog_name << " --all-pdbs --pdb-dir=data/pdb data/json --resume --max=100\n";
+    std::cerr << "  " << prog_name << " data/pdb/1EHZ.pdb data/json --chain-order --stage=steps\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -410,6 +416,7 @@ int main(int argc, char* argv[]) {
     bool all_pdbs = false;
     bool resume = false;
     bool quiet = false;
+    bool use_chain_order = false;
     int max_pdbs = -1;
     std::string single_pdb_file;
 
@@ -430,6 +437,8 @@ int main(int argc, char* argv[]) {
             max_pdbs = std::stoi(arg.substr(6));
         } else if (arg == "--all-pdbs") {
             all_pdbs = true;
+        } else if (arg == "--chain-order") {
+            use_chain_order = true;
         } else if (arg == "--resume") {
             resume = true;
         } else if (arg == "--quiet" || arg == "-q") {
@@ -474,9 +483,15 @@ int main(int argc, char* argv[]) {
 
         std::cout << "Processing: " << single_pdb_file << " (stage: " << stage << ")\n";
         std::cout << "Input: " << single_pdb_file << "\n";
-        std::cout << "Output: " << output_dir << "\n\n";
+        std::cout << "Output: " << output_dir << "\n";
+        if (use_chain_order) {
+            std::cout << "Ordering mode: Chain-based\n";
+        } else {
+            std::cout << "Ordering mode: Legacy five2three\n";
+        }
+        std::cout << "\n";
 
-        bool success = process_single_pdb(single_pdb_file, output_dir, stage, !quiet);
+        bool success = process_single_pdb(single_pdb_file, output_dir, stage, use_chain_order, !quiet);
 
         if (success) {
             std::cout << "\n✅ Success!\n";
@@ -539,7 +554,13 @@ int main(int argc, char* argv[]) {
     std::cout << "Batch processing: " << pdb_ids.size() << " PDBs (stage: " << stage << ")\n";
     std::cout << "PDB directory: " << pdb_dir << "\n";
     std::cout << "Output directory: " << output_dir << "\n";
-    std::cout << "Progress file: " << progress_file << "\n\n";
+    std::cout << "Progress file: " << progress_file << "\n";
+    if (use_chain_order) {
+        std::cout << "Ordering mode: Chain-based\n";
+    } else {
+        std::cout << "Ordering mode: Legacy five2three\n";
+    }
+    std::cout << "\n";
 
     int processed = 0;
     int succeeded = 0;
@@ -570,7 +591,7 @@ int main(int argc, char* argv[]) {
             std::cout << "[" << (i + 1) << "/" << pdb_ids.size() << "] " << pdb_id << "...\n";
         }
 
-        bool success = process_single_pdb(pdb_path, output_dir, stage, !quiet);
+        bool success = process_single_pdb(pdb_path, output_dir, stage, use_chain_order, !quiet);
 
         processed++;
         if (success) {

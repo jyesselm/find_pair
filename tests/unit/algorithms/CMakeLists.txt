@@ -108,3 +108,16 @@ target_link_libraries(test_pair_candidate_cache
 )
 
 gtest_discover_tests(test_pair_candidate_cache)
+
+# Chain detector tests
+add_executable(test_chain_detector
+    test_chain_detector.cpp
+)
+
+target_link_libraries(test_chain_detector
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_chain_detector)
