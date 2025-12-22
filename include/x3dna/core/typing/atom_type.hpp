@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace x3dna {
 namespace core {
 namespace typing {
