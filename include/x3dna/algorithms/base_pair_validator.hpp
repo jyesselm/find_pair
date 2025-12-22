@@ -11,6 +11,7 @@
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
+#include <x3dna/algorithms/validation/ring_data_cache.hpp>
 #include <x3dna/algorithms/hydrogen_bond_finder.hpp>
 #include <vector>
 #include <optional>
@@ -154,6 +155,7 @@ public:
 
 private:
     ValidationParameters params_;
+    mutable validation::RingDataCache ring_data_cache_; // Cache for overlap calculation
 
     /**
      * @brief Pattern match function (matches legacy str_pmatch)

@@ -246,8 +246,8 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
 
 double BasePairValidator::calculate_overlap_area(const Residue& res1, const Residue& res2, const Vector3D& oave,
                                                  const Vector3D& zave) const {
-    // Delegate to OverlapCalculator
-    return validation::OverlapCalculator::calculate(res1, res2, oave, zave);
+    // Delegate to OverlapCalculator with cached ring data
+    return validation::OverlapCalculator::calculate(res1, res2, oave, zave, ring_data_cache_);
 }
 
 std::vector<core::hydrogen_bond> BasePairValidator::find_hydrogen_bonds(const Residue& res1,

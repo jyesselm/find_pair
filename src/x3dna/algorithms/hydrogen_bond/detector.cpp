@@ -164,16 +164,16 @@ HBondPipelineResult HBondDetector::detect_internal(const Residue& residue1, cons
                                                     MoleculeType mol2_type) const {
     HBondPipelineResult result;
 
-    // Step 1: Find candidate bonds
-    result.initial_candidates = find_candidate_bonds(residue1, residue2, base_atoms_only, mol1_type, mol2_type);
+    // Step 1: Find candidate bonds - work in place using all_classified_bonds as working vector
+    auto& bonds = result.all_classified_bonds;
+    bonds = find_candidate_bonds(residue1, residue2, base_atoms_only, mol1_type, mol2_type);
 
-    if (result.initial_candidates.empty()) {
+    if (bonds.empty()) {
         return result;
     }
 
-    // Step 2: Resolve atom-sharing conflicts
-    result.after_conflict_resolution = result.initial_candidates;
-    resolve_atom_sharing_conflicts(result.after_conflict_resolution);
+    // Step 2: Resolve atom-sharing conflicts (in place)
+    resolve_atom_sharing_conflicts(bonds);
 
     // Step 3: Get base types for classification (for nucleic acids)
     char base1 = '?';
@@ -185,33 +185,25 @@ HBondPipelineResult HBondDetector::detect_internal(const Residue& residue1, cons
         base2 = get_base_type_for_hbond(residue2);
     }
 
-    // Step 4: Classify bonds
-    result.final_bonds = result.after_conflict_resolution;
-    classify_bonds(result.final_bonds, base1, base2);
+    // Step 4: Classify bonds (in place)
+    classify_bonds(bonds, base1, base2);
 
-    // Step 5: Calculate angles for all bonds
-    calculate_angles(result.final_bonds, residue1, residue2);
+    // Step 5: Calculate angles for all bonds (in place)
+    calculate_angles(bonds, residue1, residue2);
 
     // Step 6: Apply post-validation filtering (marks bonds as INVALID but doesn't remove)
-    apply_post_validation_filtering(result.final_bonds);
+    apply_post_validation_filtering(bonds);
 
-    // Step 7: Store ALL bonds (including INVALID) for JSON output
-    result.all_classified_bonds = result.final_bonds;
-
-    // Step 8: Remove INVALID bonds to get only valid bonds
-    result.final_bonds.erase(std::remove_if(result.final_bonds.begin(), result.final_bonds.end(),
-                                            [](const HBond& bond) {
-                                                return bond.classification == HBondClassification::INVALID;
-                                            }),
-                             result.final_bonds.end());
-
-    // Step 9: Count results
-    for (const auto& bond : result.final_bonds) {
-        if (bond.classification == HBondClassification::STANDARD) {
-            result.standard_bond_count++;
-
-            if (HBondRoleClassifier::is_good_hbond_distance(bond.distance)) {
-                result.good_bond_count++;
+    // Step 7: Build final_bonds by copying only valid bonds (single allocation)
+    result.final_bonds.reserve(bonds.size());
+    for (const auto& bond : bonds) {
+        if (bond.classification != HBondClassification::INVALID) {
+            result.final_bonds.push_back(bond);
+            if (bond.classification == HBondClassification::STANDARD) {
+                result.standard_bond_count++;
+                if (HBondRoleClassifier::is_good_hbond_distance(bond.distance)) {
+                    result.good_bond_count++;
+                }
             }
         }
     }

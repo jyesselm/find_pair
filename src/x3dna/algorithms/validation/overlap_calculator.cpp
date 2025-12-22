@@ -6,6 +6,7 @@
  */
 
 #include <x3dna/algorithms/validation/overlap_calculator.hpp>
+#include <x3dna/algorithms/validation/ring_data_cache.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
 #include <x3dna/core/atom.hpp>
 #include <cmath>
@@ -113,27 +114,31 @@ void pia_fit(double minx, double miny, double mid, double sclx, double scly, con
 
 // Helper function template to get ring coordinates - works with both Residue and IResidue
 namespace {
+
+// Static ring atom names (created once)
+static const char* RING_ATOM_NAMES[] = {"C4", "N3", "C2", "N1", "C6", "C5", "N7", "C8", "N9"};
+static constexpr size_t NUM_RING_ATOMS = 9;
+
 template<typename ResidueType>
 std::vector<geometry::Vector3D> get_ring_coords_impl(const ResidueType& residue, const geometry::Vector3D& oave) {
     std::vector<geometry::Vector3D> ring_coords;
+    ring_coords.reserve(NUM_RING_ATOMS);  // Pre-allocate
 
-    // Ring atoms: C4, N3, C2, N1, C6, C5, N7, C8, N9
-    // Pyrimidines use 6 atoms, purines use 9
-    static const std::vector<std::string> RING_ATOMS_ALL = {"C4", "N3", "C2", "N1", "C6",
-                                                            "C5", "N7", "C8", "N9"};
-
-    // Find ring atoms in residue
+    // Find ring atoms using O(1) lookup
     std::vector<const core::Atom*> ring_atoms;
-    std::set<std::string> ring_atom_names;
+    ring_atoms.reserve(NUM_RING_ATOMS);
 
-    for (const auto& ring_name : RING_ATOMS_ALL) {
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == ring_name) {
-                ring_atoms.push_back(&atom);
-                ring_atom_names.insert(atom.name());
-                break;
-            }
+    for (size_t i = 0; i < NUM_RING_ATOMS; ++i) {
+        const core::Atom* atom_ptr = residue.find_atom_ptr(RING_ATOM_NAMES[i]);
+        if (atom_ptr != nullptr) {
+            ring_atoms.push_back(atom_ptr);
         }
+    }
+
+    // Build set of ring atom names for exclusion check
+    std::set<std::string> ring_atom_names;
+    for (const auto* atom : ring_atoms) {
+        ring_atom_names.insert(atom->name());
     }
 
     // For each ring atom, find ONE exocyclic atom (connected non-ring, non-hydrogen atom)
@@ -143,7 +148,7 @@ std::vector<geometry::Vector3D> get_ring_coords_impl(const ResidueType& residue,
 
         for (const auto& atom : residue.atoms()) {
             // Skip ring atoms
-            if (ring_atom_names.find(atom.name()) != ring_atom_names.end()) {
+            if (ring_atom_names.count(atom.name()) > 0) {
                 continue;
             }
             // Skip hydrogen atoms (matches legacy get_cntatom which skips idx==3)
@@ -258,6 +263,89 @@ double calculate_impl(const ResidueType& res1, const ResidueType& res2,
 double OverlapCalculator::calculate(const core::Residue& res1, const core::Residue& res2,
                                     const geometry::Vector3D& oave, const geometry::Vector3D& zave) {
     return calculate_impl(res1, res2, oave, zave);
+}
+
+double OverlapCalculator::calculate(const core::Residue& res1, const core::Residue& res2,
+                                    const geometry::Vector3D& oave, const geometry::Vector3D& zave,
+                                    RingDataCache& cache) {
+    // Cache-aware version: reuse pre-computed ring atom indices and exocyclic mappings
+    // Step 1: Get ring coordinates using cache
+    std::vector<geometry::Vector3D> ring_coords1 = cache.get_ring_coords(res1, oave);
+    std::vector<geometry::Vector3D> ring_coords2 = cache.get_ring_coords(res2, oave);
+
+    // Need at least 3 points to form a polygon
+    if (ring_coords1.size() < 3 || ring_coords2.size() < 3) {
+        return 0.0;
+    }
+
+    // Step 2: Align to z-axis (project to plane perpendicular to zave)
+    std::vector<Point2D> poly1, poly2;
+
+    // Normalize z-axis
+    geometry::Vector3D z_normalized = zave;
+    double z_len = z_normalized.length();
+    if (z_len < 1e-10) {
+        return 0.0; // Invalid z-axis
+    }
+    z_normalized = z_normalized / z_len;
+
+    // Build orthonormal basis: zave is z-axis, find x and y axes
+    geometry::Vector3D z_target(0.0, 0.0, 1.0);
+    geometry::Vector3D rot_axis = z_normalized.cross(z_target);
+    double rot_angle = std::acos(std::max(-1.0, std::min(1.0, z_normalized.dot(z_target))));
+
+    // If zave is already aligned with z-axis, no rotation needed
+    if (rot_angle < 1e-6 || rot_axis.length() < 1e-6) {
+        // Already aligned - just use x,y coordinates
+        for (const auto& coord : ring_coords1) {
+            poly1.push_back({coord.x(), coord.y()});
+        }
+        for (const auto& coord : ring_coords2) {
+            poly2.push_back({coord.x(), coord.y()});
+        }
+    } else {
+        // Build orthonormal basis for projection
+        geometry::Vector3D x_axis, y_axis;
+
+        // Choose a vector not parallel to zave for x-axis
+        if (std::abs(z_normalized.x()) < 0.9) {
+            x_axis = geometry::Vector3D(1.0, 0.0, 0.0);
+        } else {
+            x_axis = geometry::Vector3D(0.0, 1.0, 0.0);
+        }
+
+        // Make x_axis orthogonal to zave
+        x_axis = x_axis - z_normalized * x_axis.dot(z_normalized);
+        double x_len = x_axis.length();
+        if (x_len > 1e-10) {
+            x_axis = x_axis / x_len;
+        } else {
+            x_axis = geometry::Vector3D(1.0, 0.0, 0.0);
+        }
+
+        // y_axis = zave x x_axis
+        y_axis = z_normalized.cross(x_axis);
+        double y_len = y_axis.length();
+        if (y_len > 1e-10) {
+            y_axis = y_axis / y_len;
+        }
+
+        // Project coordinates onto x,y plane
+        for (const auto& coord : ring_coords1) {
+            double x_proj = coord.dot(x_axis);
+            double y_proj = coord.dot(y_axis);
+            poly1.push_back({x_proj, y_proj});
+        }
+
+        for (const auto& coord : ring_coords2) {
+            double x_proj = coord.dot(x_axis);
+            double y_proj = coord.dot(y_axis);
+            poly2.push_back({x_proj, y_proj});
+        }
+    }
+
+    // Step 3: Calculate polygon intersection area
+    return calculate_polygon_intersection(poly1, poly2);
 }
 
 std::vector<geometry::Vector3D> OverlapCalculator::get_ring_coordinates_with_exocyclic(

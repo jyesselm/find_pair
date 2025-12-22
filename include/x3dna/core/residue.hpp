@@ -183,12 +183,27 @@ public:
         std::string trimmed = atom_name;
         while (!trimmed.empty() && trimmed.front() == ' ') trimmed.erase(0, 1);
         while (!trimmed.empty() && trimmed.back() == ' ') trimmed.pop_back();
+
         for (const auto& atom : atoms_) {
             if (atom.name() == trimmed) {
                 return atom;
             }
         }
         return std::nullopt;
+    }
+
+    /**
+     * @brief Find an atom by name and return pointer (linear scan, optimal for small residues)
+     * @param atom_name Atom name (must be trimmed)
+     * @return Pointer to atom if found, nullptr otherwise
+     */
+    [[nodiscard]] const Atom* find_atom_ptr(const std::string& atom_name) const {
+        for (const auto& atom : atoms_) {
+            if (atom.name() == atom_name) {
+                return &atom;
+            }
+        }
+        return nullptr;
     }
 
     /**

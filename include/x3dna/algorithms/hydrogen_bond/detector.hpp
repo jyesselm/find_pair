@@ -25,10 +25,8 @@ namespace hydrogen_bond {
  * @brief Result from detailed H-bond detection pipeline
  */
 struct HBondPipelineResult {
-    std::vector<core::HBond> initial_candidates;        // All potential H-bonds found
-    std::vector<core::HBond> after_conflict_resolution; // After atom-sharing conflicts resolved
-    std::vector<core::HBond> all_classified_bonds;      // All bonds with classification (including INVALID)
-    std::vector<core::HBond> final_bonds;               // Only valid bonds (STANDARD + NON_STANDARD)
+    std::vector<core::HBond> all_classified_bonds; // All bonds with classification (including INVALID)
+    std::vector<core::HBond> final_bonds;          // Only valid bonds (STANDARD + NON_STANDARD)
 
     int standard_bond_count = 0; // Count of STANDARD classification
     int good_bond_count = 0;     // Count in good distance range [2.5, 3.5]

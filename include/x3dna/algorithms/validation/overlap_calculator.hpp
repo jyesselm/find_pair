@@ -16,6 +16,9 @@ namespace x3dna {
 namespace algorithms {
 namespace validation {
 
+// Forward declaration
+class RingDataCache;
+
 /**
  * @struct Point2D
  * @brief 2D point for polygon operations
@@ -46,6 +49,19 @@ public:
      */
     [[nodiscard]] static double calculate(const core::Residue& res1, const core::Residue& res2,
                                           const geometry::Vector3D& oave, const geometry::Vector3D& zave);
+
+    /**
+     * @brief Calculate overlap area using cached ring data (faster)
+     * @param res1 First residue
+     * @param res2 Second residue
+     * @param oave Average origin of the two reference frames
+     * @param zave Average z-axis of the two reference frames
+     * @param cache Ring data cache for O(1) ring coordinate lookup
+     * @return Overlap area in square Angstroms
+     */
+    [[nodiscard]] static double calculate(const core::Residue& res1, const core::Residue& res2,
+                                          const geometry::Vector3D& oave, const geometry::Vector3D& zave,
+                                          RingDataCache& cache);
 
     /**
      * @brief Get ring coordinates with exocyclic atoms for a residue
