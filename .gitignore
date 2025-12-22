@@ -5,9 +5,8 @@ cmake-build-*/
 # Data directories (large, can be regenerated)
 data/pdb
 data/json
-data/json_legacy
-data/json_test/
-data/json_modern/
+data/json_legacy/
+data/json_baseline/
 
 # Cache
 .comparison_cache

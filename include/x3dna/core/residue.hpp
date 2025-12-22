@@ -182,9 +182,12 @@ public:
      * @return Optional atom if found
      */
     [[nodiscard]] std::optional<Atom> find_atom(const std::string& atom_name) const {
-        // Atom names are stored trimmed - direct comparison
+        // Atom names are stored trimmed - trim input for comparison
+        std::string trimmed = atom_name;
+        while (!trimmed.empty() && trimmed.front() == ' ') trimmed.erase(0, 1);
+        while (!trimmed.empty() && trimmed.back() == ' ') trimmed.pop_back();
         for (const auto& atom : atoms_) {
-            if (atom.name() == atom_name) {
+            if (atom.name() == trimmed) {
                 return atom;
             }
         }

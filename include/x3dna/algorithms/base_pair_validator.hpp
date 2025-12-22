@@ -8,7 +8,6 @@
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/core/base_pair.hpp>
-#include <x3dna/core/structure/residue.hpp>  // Polymorphic types
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
@@ -117,14 +116,6 @@ public:
     [[nodiscard]] ValidationResult validate(const core::Residue& res1, const core::Residue& res2) const;
 
     /**
-     * @brief Validate a potential base pair (polymorphic version)
-     * @param res1 First residue (must be nucleotide with reference frame)
-     * @param res2 Second residue (must be nucleotide with reference frame)
-     * @return ValidationResult with all validation details
-     */
-    [[nodiscard]] ValidationResult validate(const core::structure::IResidue& res1, const core::structure::IResidue& res2) const;
-
-    /**
      * @brief Set validation parameters
      */
     void set_parameters(const ValidationParameters& params) {
@@ -150,17 +141,6 @@ public:
                                                 const geometry::Vector3D& oave, const geometry::Vector3D& zave) const;
 
     /**
-     * @brief Calculate overlap area between two polymorphic residues
-     * @param res1 First residue
-     * @param res2 Second residue
-     * @param oave Average origin
-     * @param zave Average z-axis
-     * @return Overlap area in Angstrom²
-     */
-    [[nodiscard]] double calculate_overlap_area(const core::structure::IResidue& res1, const core::structure::IResidue& res2,
-                                                const geometry::Vector3D& oave, const geometry::Vector3D& zave) const;
-
-    /**
      * @brief Determine H-bond type based on donor-acceptor relationship (matches legacy
      * donor_acceptor)
      * @param base1 First base (A, C, G, I, T, U)
@@ -171,13 +151,6 @@ public:
      */
     [[nodiscard]] static char donor_acceptor(char base1, char base2, const std::string& atom1,
                                              const std::string& atom2);
-
-    /**
-     * @brief Find N1/N9 atoms for dNN calculation (polymorphic)
-     * @param residue Polymorphic residue to search
-     * @return Position of N1 (pyrimidine) or N9 (purine) atom, or nullopt if not found
-     */
-    [[nodiscard]] static std::optional<geometry::Vector3D> find_n1_n9_position(const core::structure::IResidue& residue);
 
 private:
     ValidationParameters params_;

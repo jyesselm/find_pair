@@ -9,7 +9,6 @@
 #include <string>
 #include <optional>
 #include <x3dna/core/residue.hpp>
-#include <x3dna/core/structure/residue.hpp>  // Polymorphic types
 #include <x3dna/geometry/vector3d.hpp>
 
 namespace x3dna {
@@ -66,20 +65,6 @@ public:
      * @return TypeDetectionResult with detected type and method used
      */
     [[nodiscard]] static TypeDetectionResult detect_type(const core::Residue& residue);
-
-    // ============================================================================
-    // Polymorphic overloads
-    // ============================================================================
-
-    /**
-     * @brief Check nucleotide type by RMSD for polymorphic residue
-     */
-    [[nodiscard]] static RmsdCheckResult check_by_rmsd(const core::structure::IResidue& residue);
-
-    /**
-     * @brief Detect residue type for polymorphic residue
-     */
-    [[nodiscard]] static TypeDetectionResult detect_type(const core::structure::IResidue& residue);
 
 private:
     /**

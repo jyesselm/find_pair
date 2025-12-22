@@ -11,7 +11,6 @@
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/atom.hpp>
-#include <x3dna/core/structure/residue.hpp>  // Polymorphic types
 #include <x3dna/geometry/vector3d.hpp>
 
 namespace x3dna {
@@ -63,17 +62,6 @@ public:
      */
     [[nodiscard]] static std::vector<std::string> get_ring_atom_names(core::ResidueType residue_type);
 
-    // ============================================================================
-    // Polymorphic overloads
-    // ============================================================================
-
-    /**
-     * @brief Match ring atoms for polymorphic residue
-     */
-    [[nodiscard]] static MatchedAtoms match(const core::structure::IResidue& residue,
-                                            const core::Structure& standard_template,
-                                            std::optional<core::ResidueType> residue_type = std::nullopt);
-
 private:
     /**
      * @brief Find first atom with given name in a residue
@@ -99,12 +87,6 @@ private:
      * @return true if purine (A or G), false if pyrimidine
      */
     [[nodiscard]] static bool is_purine(core::ResidueType type);
-
-    /**
-     * @brief Find first atom with given name in a polymorphic residue
-     */
-    [[nodiscard]] static std::optional<core::Atom> find_atom_by_name(const core::structure::IResidue& residue,
-                                                                      const std::string& atom_name);
 };
 
 } // namespace algorithms

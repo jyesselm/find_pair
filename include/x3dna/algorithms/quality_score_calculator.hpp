@@ -7,7 +7,6 @@
 
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/base_pair.hpp>
-#include <x3dna/core/structure/residue.hpp>  // Polymorphic types
 #include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/algorithms/parameter_calculator.hpp>
 #include <vector>
@@ -100,24 +99,6 @@ public:
      * @return bp_type_id (-1, 0, 1, or 2)
      */
     [[nodiscard]] int calculate_bp_type_id(const core::Residue& res1, const core::Residue& res2,
-                                           const ValidationResult& result) const;
-
-    // ============================================================================
-    // Polymorphic overloads
-    // ============================================================================
-
-    /**
-     * @brief Calculate adjusted quality score for polymorphic nucleotides
-     */
-    [[nodiscard]] double calculate_selection_score(const ValidationResult& result,
-                                                   const core::structure::INucleotide& res1,
-                                                   const core::structure::INucleotide& res2) const;
-
-    /**
-     * @brief Calculate bp_type_id for polymorphic nucleotides
-     */
-    [[nodiscard]] int calculate_bp_type_id(const core::structure::INucleotide& res1,
-                                           const core::structure::INucleotide& res2,
                                            const ValidationResult& result) const;
 
 private:

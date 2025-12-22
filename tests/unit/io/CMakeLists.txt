@@ -76,15 +76,3 @@ target_link_libraries(test_cif_parser
 
 gtest_discover_tests(test_cif_parser)
 
-add_executable(test_pdb_parser_poly
-    test_pdb_parser_poly.cpp
-)
-
-target_link_libraries(test_pdb_parser_poly
-    PRIVATE
-    x3dna
-    gtest_main
-)
-
-gtest_discover_tests(test_pdb_parser_poly)
-
