@@ -43,8 +43,13 @@ public:
      * @brief Constructor with name and position
      * @param name Atom name (will be trimmed, e.g., " C1'" becomes "C1'", " N3 " becomes "N3")
      * @param position 3D position vector
+     *
+     * Also classifies the atom type at construction time for O(1) lookup later.
      */
-    Atom(const std::string& name, const geometry::Vector3D& position) : name_(trim(name)), position_(position) {}
+    Atom(const std::string& name, const geometry::Vector3D& position)
+        : name_(trim(name)),
+          position_(position),
+          standard_atom_(typing::AtomClassifier::get_standard_atom(name_)) {}
 
     /**
      * @brief Create a Builder for fluent atom construction
@@ -127,11 +132,21 @@ public:
     }
 
     /**
+     * @brief Get the standard atom type (for fast enum comparison)
+     * @return StandardAtom enum value (UNKNOWN for non-standard atoms)
+     */
+    [[nodiscard]] StandardAtom standard_atom() const {
+        return standard_atom_;
+    }
+
+    /**
      * @brief Check if this atom is a ring atom (part of base ring)
      * @return True if ring atom
+     *
+     * Uses the cached standard_atom_ for O(1) lookup instead of string comparison.
      */
     [[nodiscard]] bool is_ring_atom() const {
-        return typing::AtomClassifier::is_ring_atom(name_);
+        return typing::is_ring_atom(standard_atom_);
     }
 
     /**
@@ -178,6 +193,7 @@ private:
 
     std::string name_;            // Atom name (trimmed, without padding)
     geometry::Vector3D position_; // 3D coordinates
+    StandardAtom standard_atom_ = StandardAtom::UNKNOWN; // Cached atom type for fast comparison
     char alt_loc_ = ' ';          // Alternate location indicator (PDB column 17)
     double occupancy_ = 1.0;      // Occupancy (PDB columns 55-60, default 1.0)
     int atom_serial_ = 0;         // Atom serial number (PDB column 7-11)
@@ -205,10 +221,13 @@ public:
      * @brief Constructor with required fields
      * @param name Atom name (will be trimmed)
      * @param position 3D position
+     *
+     * Also classifies the atom type at construction time for O(1) lookup later.
      */
     Builder(const std::string& name, const geometry::Vector3D& position) {
         atom_.name_ = trim(name);
         atom_.position_ = position;
+        atom_.standard_atom_ = typing::AtomClassifier::get_standard_atom(atom_.name_);
     }
 
     Builder& alt_loc(char loc) {

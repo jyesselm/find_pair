@@ -237,6 +237,10 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
         return std::nullopt;
     }
 
+    // Early rejection threshold (squared to avoid sqrt)
+    const double max_origin_distance_sq = validator_.parameters().max_dorg * validator_.parameters().max_dorg;
+    const auto& origin1 = res1->reference_frame()->origin();
+
     double best_score = std::numeric_limits<double>::max();
     std::optional<std::pair<int, ValidationResult>> best_result;
     std::vector<std::tuple<int, bool, double, int>> candidates;
@@ -255,6 +259,19 @@ std::optional<std::pair<int, ValidationResult>> BasePairFinder::find_best_partne
             if (collect)
                 candidates.emplace_back(idx2, false, std::numeric_limits<double>::max(), 0);
             continue;
+        }
+
+        // Early distance rejection - skip pairs that are too far apart
+        const auto& origin2 = res2->reference_frame()->origin();
+        double dx = origin2.x() - origin1.x();
+        double dy = origin2.y() - origin1.y();
+        double dz = origin2.z() - origin1.z();
+        double dist_sq = dx * dx + dy * dy + dz * dz;
+
+        if (dist_sq > max_origin_distance_sq) {
+            if (collect)
+                candidates.emplace_back(idx2, false, std::numeric_limits<double>::max(), 0);
+            continue;  // Skip - too far apart
         }
 
         // Get validation result from Phase 1 or compute on the fly
@@ -595,6 +612,10 @@ BasePairFinder::ResidueIndexMapping BasePairFinder::build_residue_index_mapping(
 BasePairFinder::Phase1Results BasePairFinder::run_phase1_validation(const ResidueIndexMapping& mapping) const {
     Phase1Results results;
 
+    // Early rejection threshold - pairs with origin distance > this are skipped
+    // This matches max_dorg in ValidationParameters (default 15.0)
+    const double max_origin_distance_sq = validator_.parameters().max_dorg * validator_.parameters().max_dorg;
+
     for (int legacy_idx1 = 1; legacy_idx1 <= mapping.max_legacy_idx - 1; ++legacy_idx1) {
         auto it1 = mapping.by_legacy_idx.find(legacy_idx1);
         if (it1 == mapping.by_legacy_idx.end() || !it1->second) {
@@ -605,6 +626,9 @@ BasePairFinder::Phase1Results BasePairFinder::run_phase1_validation(const Residu
             continue;
         }
 
+        // Cache origin for res1 to avoid repeated access
+        const auto& origin1 = res1->reference_frame()->origin();
+
         for (int legacy_idx2 = legacy_idx1 + 1; legacy_idx2 <= mapping.max_legacy_idx; ++legacy_idx2) {
             auto it2 = mapping.by_legacy_idx.find(legacy_idx2);
             if (it2 == mapping.by_legacy_idx.end() || !it2->second) {
@@ -613,6 +637,18 @@ BasePairFinder::Phase1Results BasePairFinder::run_phase1_validation(const Residu
             const Residue* res2 = it2->second;
             if (!is_nucleotide(*res2) || !res2->reference_frame().has_value()) {
                 continue;
+            }
+
+            // Early distance rejection - skip pairs that are too far apart
+            // Uses squared distance to avoid sqrt overhead
+            const auto& origin2 = res2->reference_frame()->origin();
+            double dx = origin2.x() - origin1.x();
+            double dy = origin2.y() - origin1.y();
+            double dz = origin2.z() - origin1.z();
+            double dist_sq = dx * dx + dy * dy + dz * dz;
+
+            if (dist_sq > max_origin_distance_sq) {
+                continue;  // Skip - too far apart to form a base pair
             }
 
             // Validate pair

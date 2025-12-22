@@ -17,9 +17,9 @@
 #include <x3dna/algorithms/validation/ring_data_cache.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
 #include <x3dna/core/atom.hpp>
+#include <x3dna/core/typing/atom_type.hpp>
 #include <algorithm>
 #include <cmath>
-#include <set>
 
 namespace x3dna {
 namespace algorithms {
@@ -252,13 +252,13 @@ void scale_polygon_to_integer_coords(double min_x, double min_y,
 // Ring Atom Extraction
 // ============================================================================
 
-/// Names of atoms that form the nucleotide ring system (purines have all 9, pyrimidines have first 6)
-static const char* RING_ATOM_NAMES[] = {"C4", "N3", "C2", "N1", "C6", "C5", "N7", "C8", "N9"};
-static constexpr size_t NUM_RING_ATOMS = 9;
+using core::StandardAtom;
+using core::RING_ATOM_TYPES;
+using core::NUM_RING_ATOM_TYPES;
 
 /**
  * @brief Extract ring coordinates with exocyclic substituents for overlap calculation
- * @tparam ResidueType Type supporting find_atom_ptr() and atoms() methods
+ * @tparam ResidueType Type supporting find_atom_by_type() and atoms() methods
  * @param residue The nucleotide residue
  * @param average_origin Origin point to subtract (coordinates returned relative to this)
  * @return Vector of 3D coordinates for ring atoms (using exocyclic atoms where bonded)
@@ -266,28 +266,24 @@ static constexpr size_t NUM_RING_ATOMS = 9;
  * For each ring atom, finds the closest non-ring, non-hydrogen atom within bond
  * distance. If found, uses that exocyclic atom's position instead of the ring atom.
  * This expands the effective polygon to include substituent groups like amino groups.
+ *
+ * Uses enum-based atom lookup for O(1) comparison instead of string comparison.
  */
 template <typename ResidueType>
 std::vector<geometry::Vector3D> extract_ring_coordinates(const ResidueType& residue,
                                                           const geometry::Vector3D& average_origin) {
     std::vector<geometry::Vector3D> coordinates;
-    coordinates.reserve(NUM_RING_ATOMS);
+    coordinates.reserve(NUM_RING_ATOM_TYPES);
 
-    // Find all ring atoms present in this residue
+    // Find all ring atoms present in this residue using enum-based lookup
     std::vector<const core::Atom*> ring_atoms;
-    ring_atoms.reserve(NUM_RING_ATOMS);
+    ring_atoms.reserve(NUM_RING_ATOM_TYPES);
 
-    for (size_t i = 0; i < NUM_RING_ATOMS; ++i) {
-        const core::Atom* atom = residue.find_atom_ptr(RING_ATOM_NAMES[i]);
+    for (size_t i = 0; i < NUM_RING_ATOM_TYPES; ++i) {
+        const core::Atom* atom = residue.find_atom_by_type(RING_ATOM_TYPES[i]);
         if (atom != nullptr) {
             ring_atoms.push_back(atom);
         }
-    }
-
-    // Build set of ring atom names for exclusion during exocyclic search
-    std::set<std::string> ring_atom_name_set;
-    for (const auto* atom : ring_atoms) {
-        ring_atom_name_set.insert(atom->name());
     }
 
     // For each ring atom, find closest exocyclic substituent
@@ -296,8 +292,8 @@ std::vector<geometry::Vector3D> extract_ring_coordinates(const ResidueType& resi
         double min_distance = validation_constants::BOND_DISTANCE;
 
         for (const auto& candidate : residue.atoms()) {
-            // Skip ring atoms themselves
-            if (ring_atom_name_set.count(candidate.name()) > 0) {
+            // Skip ring atoms using enum check (O(1) instead of string comparison)
+            if (core::is_ring_atom(candidate.standard_atom())) {
                 continue;
             }
             // Skip hydrogen atoms (first character is 'H')

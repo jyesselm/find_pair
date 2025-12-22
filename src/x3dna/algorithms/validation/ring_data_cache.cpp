@@ -5,14 +5,15 @@
 
 #include <x3dna/algorithms/validation/ring_data_cache.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
+#include <x3dna/core/typing/atom_type.hpp>
 
 namespace x3dna {
 namespace algorithms {
 namespace validation {
 
-// Ring atom names in order (purines use all 9, pyrimidines use first 6)
-static const char* RING_ATOM_NAMES[] = {"C4", "N3", "C2", "N1", "C6", "C5", "N7", "C8", "N9"};
-static constexpr size_t NUM_PURINE_ATOMS = 9;
+using core::StandardAtom;
+using core::RING_ATOM_TYPES;
+using core::NUM_RING_ATOM_TYPES;
 
 const ResidueRingData& RingDataCache::get_or_compute(const core::Residue& residue) {
     const std::string& key = residue.res_id();
@@ -55,10 +56,11 @@ ResidueRingData RingDataCache::compute_ring_data(const core::Residue& residue) {
 
     const auto& atoms = residue.atoms();
 
-    // Find ring atom indices
-    for (size_t r = 0; r < NUM_PURINE_ATOMS; ++r) {
+    // Find ring atom indices using enum comparison (O(1) per atom instead of string compare)
+    for (size_t r = 0; r < NUM_RING_ATOM_TYPES; ++r) {
+        StandardAtom target_type = RING_ATOM_TYPES[r];
         for (size_t i = 0; i < atoms.size(); ++i) {
-            if (atoms[i].name() == RING_ATOM_NAMES[r]) {
+            if (atoms[i].standard_atom() == target_type) {
                 data.ring_atom_indices.push_back(i);
                 break;
             }
@@ -66,18 +68,11 @@ ResidueRingData RingDataCache::compute_ring_data(const core::Residue& residue) {
     }
 
     // Determine if purine (need at least N7, C8, N9 which are indices 6,7,8)
-    data.is_purine = (data.ring_atom_indices.size() >= NUM_PURINE_ATOMS);
+    data.is_purine = (data.ring_atom_indices.size() >= NUM_RING_ATOM_TYPES);
     data.is_valid = (data.ring_atom_indices.size() >= 3);
 
     if (!data.is_valid) {
         return data;
-    }
-
-    // Build set of ring atom names for exclusion
-    std::vector<std::string> ring_names;
-    ring_names.reserve(data.ring_atom_indices.size());
-    for (size_t idx : data.ring_atom_indices) {
-        ring_names.push_back(atoms[idx].name());
     }
 
     // For each ring atom, find exocyclic partner
@@ -91,17 +86,12 @@ ResidueRingData RingDataCache::compute_ring_data(const core::Residue& residue) {
         for (size_t i = 0; i < atoms.size(); ++i) {
             const auto& atom = atoms[i];
 
-            // Skip ring atoms
-            bool is_ring = false;
-            for (const auto& rn : ring_names) {
-                if (atom.name() == rn) {
-                    is_ring = true;
-                    break;
-                }
+            // Skip ring atoms using enum check (O(1) instead of string comparison)
+            if (core::is_ring_atom(atom.standard_atom())) {
+                continue;
             }
-            if (is_ring) continue;
 
-            // Skip hydrogen atoms
+            // Skip hydrogen atoms (check element type via first char - still fast)
             if (!atom.name().empty() && atom.name()[0] == 'H') {
                 continue;
             }
