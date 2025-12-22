@@ -12,7 +12,7 @@
 #include <x3dna/geometry/matrix3d.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
 #include <x3dna/algorithms/validation/ring_data_cache.hpp>
-#include <x3dna/algorithms/hydrogen_bond_finder.hpp>
+#include <x3dna/core/hydrogen_bond.hpp>
 #include <vector>
 #include <optional>
 

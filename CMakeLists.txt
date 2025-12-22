@@ -69,7 +69,6 @@ add_library(x3dna
     src/x3dna/algorithms/base_pair_finder.cpp
     src/x3dna/algorithms/parameter_calculator.cpp
     src/x3dna/algorithms/helix_organizer.cpp
-    src/x3dna/algorithms/hydrogen_bond_finder.cpp
     src/x3dna/algorithms/residue_index_map.cpp
     src/x3dna/algorithms/quality_score_calculator.cpp
     src/x3dna/algorithms/pair_candidate_cache.cpp
@@ -140,9 +139,7 @@ target_link_libraries(generate_modern_json PRIVATE x3dna)
 add_executable(compare_single_pair tools/compare_single_pair.cpp)
 target_link_libraries(compare_single_pair PRIVATE x3dna)
 
-add_executable(compare_hbond_detectors tools/compare_hbond_detectors.cpp)
-target_link_libraries(compare_hbond_detectors PRIVATE x3dna)
-# 
+#
 # add_executable(check_residue_indices tools/check_residue_indices.cpp)
 # target_link_libraries(check_residue_indices PRIVATE x3dna)
 # add_executable(test_overlap_calculation tools/test_overlap_calculation.cpp)
