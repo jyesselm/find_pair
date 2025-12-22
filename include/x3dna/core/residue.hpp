@@ -280,6 +280,22 @@ public:
     }
 
     /**
+     * @brief Update atom types based on residue's molecule type
+     *
+     * This ensures atoms are correctly typed for the molecule context.
+     * For example, an atom named "N7" in a nucleotide will get AtomType::N7,
+     * but the same name in a ligand will get AtomType::UNKNOWN.
+     *
+     * Called automatically by create_from_atoms() and Builder::build().
+     */
+    void finalize_atom_types() {
+        typing::MoleculeType mol_type = classification_.molecule_type;
+        for (auto& atom : atoms_) {
+            atom.update_atom_type(mol_type);
+        }
+    }
+
+    /**
      * @brief Check if this is a nucleotide
      * @return True if nucleotide (A, C, G, T, U or modified a, c, g, t, u, P)
      */
@@ -477,8 +493,12 @@ public:
     /**
      * @brief Build and return the constructed Residue
      * @return Constructed Residue object
+     *
+     * Automatically calls finalize_atom_types() to ensure atoms are
+     * correctly typed based on the residue's molecule type.
      */
-    [[nodiscard]] Residue build() const {
+    [[nodiscard]] Residue build() {
+        residue_.finalize_atom_types();
         return residue_;
     }
 

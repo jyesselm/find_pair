@@ -130,14 +130,31 @@ public:
     // === AtomType classification (for fast integer comparison) ===
 
     /**
-     * @brief Get AtomType enum from atom name for fast comparison
+     * @brief Get AtomType enum from atom name for fast comparison (without context)
      * @param atom_name Atom name (trimmed or PDB-format)
      * @return AtomType enum value (UNKNOWN if not a standard atom)
      *
-     * This is used to enable O(1) integer comparison instead of string comparison.
-     * Call once during atom construction, then compare enum values in hot paths.
+     * WARNING: This version assigns AtomType without knowing molecule context.
+     * Use get_atom_type(name, molecule_type) when context is available.
      */
-    [[nodiscard]] static AtomType get_standard_atom(const std::string& atom_name);
+    [[nodiscard]] static AtomType get_atom_type(const std::string& atom_name);
+
+    /**
+     * @brief Get AtomType enum from atom name with molecule context
+     * @param atom_name Atom name (trimmed or PDB-format)
+     * @param molecule_type The type of molecule this atom belongs to
+     * @return AtomType enum value (UNKNOWN if atom doesn't belong to this molecule type)
+     *
+     * This is the preferred method - it only assigns nucleotide-specific atom types
+     * (N7, C8, N9, sugar atoms, etc.) to nucleic acid atoms, and protein-specific
+     * atom types (N, CA, C, O, side chains) to protein atoms.
+     */
+    [[nodiscard]] static AtomType get_atom_type(const std::string& atom_name, MoleculeType molecule_type);
+
+    // Backward compatibility alias
+    [[nodiscard]] static AtomType get_standard_atom(const std::string& atom_name) {
+        return get_atom_type(atom_name);
+    }
 
     // === Full classification ===
 

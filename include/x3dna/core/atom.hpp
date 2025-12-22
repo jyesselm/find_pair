@@ -49,7 +49,7 @@ public:
     Atom(const std::string& name, const geometry::Vector3D& position)
         : name_(trim(name)),
           position_(position),
-          standard_atom_(typing::AtomClassifier::get_standard_atom(name_)) {}
+          standard_atom_(typing::AtomClassifier::get_atom_type(name_)) {}
 
     /**
      * @brief Create a Builder for fluent atom construction
@@ -181,6 +181,20 @@ public:
     // Backbone atoms
     [[nodiscard]] bool is_phosphorus() const { return standard_atom_ == AtomType::P; }
 
+    // === Atom type update ===
+
+    /**
+     * @brief Update atom type based on molecule context
+     * @param molecule_type The type of molecule this atom belongs to
+     *
+     * This should be called after residue classification is known to ensure
+     * atom types are correctly assigned based on context. For example, an atom
+     * named "N7" will only get AtomType::N7 if the molecule is a nucleic acid.
+     */
+    void update_atom_type(typing::MoleculeType molecule_type) {
+        standard_atom_ = typing::AtomClassifier::get_atom_type(name_, molecule_type);
+    }
+
     /**
      * @brief Check if this atom is a ring atom (part of base ring)
      * @return True if ring atom
@@ -269,7 +283,7 @@ public:
     Builder(const std::string& name, const geometry::Vector3D& position) {
         atom_.name_ = trim(name);
         atom_.position_ = position;
-        atom_.standard_atom_ = typing::AtomClassifier::get_standard_atom(atom_.name_);
+        atom_.standard_atom_ = typing::AtomClassifier::get_atom_type(atom_.name_);
     }
 
     Builder& alt_loc(char loc) {

@@ -209,98 +209,132 @@ AtomClassification AtomClassifier::classify_protein_atom(const std::string& atom
     return result;
 }
 
-AtomType AtomClassifier::get_standard_atom(const std::string& atom_name) {
-    // Static map for O(1) lookup - initialized once
-    static const std::unordered_map<std::string, AtomType> atom_map = {
-        // Nucleotide ring atoms
-        {"C4", AtomType::C4},
-        {"N3", AtomType::N3},
-        {"C2", AtomType::C2},
-        {"N1", AtomType::N1},
-        {"C6", AtomType::C6},
-        {"C5", AtomType::C5},
-        {"N7", AtomType::N7},
-        {"C8", AtomType::C8},
-        {"N9", AtomType::N9},
+namespace {
+// Nucleotide-specific atoms (ring, exocyclic, sugar, backbone)
+const std::unordered_map<std::string, AtomType> NUCLEOTIDE_ATOM_MAP = {
+    // Ring atoms
+    {"C4", AtomType::C4},
+    {"N3", AtomType::N3},
+    {"C2", AtomType::C2},
+    {"N1", AtomType::N1},
+    {"C6", AtomType::C6},
+    {"C5", AtomType::C5},
+    {"N7", AtomType::N7},
+    {"C8", AtomType::C8},
+    {"N9", AtomType::N9},
+    // Exocyclic atoms
+    {"O6", AtomType::O6},
+    {"N6", AtomType::N6},
+    {"O2", AtomType::O2},
+    {"N2", AtomType::N2},
+    {"O4", AtomType::O4},
+    {"N4", AtomType::N4},
+    {"C5M", AtomType::C5M},
+    {"C7", AtomType::C7},
+    // Sugar atoms
+    {"C1'", AtomType::C1_PRIME},
+    {"C2'", AtomType::C2_PRIME},
+    {"C3'", AtomType::C3_PRIME},
+    {"C4'", AtomType::C4_PRIME},
+    {"C5'", AtomType::C5_PRIME},
+    {"O2'", AtomType::O2_PRIME},
+    {"O3'", AtomType::O3_PRIME},
+    {"O4'", AtomType::O4_PRIME},
+    {"O5'", AtomType::O5_PRIME},
+    // Backbone atoms
+    {"P", AtomType::P},
+    {"OP1", AtomType::OP1},
+    {"OP2", AtomType::OP2},
+    {"OP3", AtomType::OP3},
+    {"O1P", AtomType::OP1},
+    {"O2P", AtomType::OP2},
+};
 
-        // Nucleotide exocyclic atoms
-        {"O6", AtomType::O6},
-        {"N6", AtomType::N6},
-        {"O2", AtomType::O2},
-        {"N2", AtomType::N2},
-        {"O4", AtomType::O4},
-        {"N4", AtomType::N4},
-        {"C5M", AtomType::C5M},
-        {"C7", AtomType::C7},
+// Protein-specific atoms (backbone and side chain)
+const std::unordered_map<std::string, AtomType> PROTEIN_ATOM_MAP = {
+    // Backbone atoms
+    {"N", AtomType::N},
+    {"CA", AtomType::CA},
+    {"C", AtomType::C},
+    {"O", AtomType::O},
+    {"OXT", AtomType::OXT},
+    // Side chain atoms
+    {"CB", AtomType::CB},
+    {"CG", AtomType::CG},
+    {"CG1", AtomType::CG1},
+    {"CG2", AtomType::CG2},
+    {"CD", AtomType::CD},
+    {"CD1", AtomType::CD1},
+    {"CD2", AtomType::CD2},
+    {"CE", AtomType::CE},
+    {"CE1", AtomType::CE1},
+    {"CE2", AtomType::CE2},
+    {"CE3", AtomType::CE3},
+    {"CZ", AtomType::CZ},
+    {"CZ2", AtomType::CZ2},
+    {"CZ3", AtomType::CZ3},
+    {"CH2", AtomType::CH2},
+    {"OG", AtomType::OG},
+    {"OG1", AtomType::OG1},
+    {"OD1", AtomType::OD1},
+    {"OD2", AtomType::OD2},
+    {"OE1", AtomType::OE1},
+    {"OE2", AtomType::OE2},
+    {"OH", AtomType::OH},
+    {"ND1", AtomType::ND1},
+    {"ND2", AtomType::ND2},
+    {"NE", AtomType::NE},
+    {"NE1", AtomType::NE1},
+    {"NE2", AtomType::NE2},
+    {"NH1", AtomType::NH1},
+    {"NH2", AtomType::NH2},
+    {"NZ", AtomType::NZ},
+    {"SD", AtomType::SD},
+    {"SG", AtomType::SG},
+};
 
-        // Nucleotide sugar atoms
-        {"C1'", AtomType::C1_PRIME},
-        {"C2'", AtomType::C2_PRIME},
-        {"C3'", AtomType::C3_PRIME},
-        {"C4'", AtomType::C4_PRIME},
-        {"C5'", AtomType::C5_PRIME},
-        {"O2'", AtomType::O2_PRIME},
-        {"O3'", AtomType::O3_PRIME},
-        {"O4'", AtomType::O4_PRIME},
-        {"O5'", AtomType::O5_PRIME},
+// Water atoms
+const std::unordered_map<std::string, AtomType> WATER_ATOM_MAP = {
+    {"OW", AtomType::OW},
+    {"O", AtomType::OW},  // Water oxygen is often just "O"
+};
+} // anonymous namespace
 
-        // Nucleotide backbone atoms
-        {"P", AtomType::P},
-        {"OP1", AtomType::OP1},
-        {"OP2", AtomType::OP2},
-        {"OP3", AtomType::OP3},
-        // Legacy phosphate oxygen names
-        {"O1P", AtomType::OP1},
-        {"O2P", AtomType::OP2},
+AtomType AtomClassifier::get_atom_type(const std::string& atom_name, MoleculeType molecule_type) {
+    switch (molecule_type) {
+        case MoleculeType::NUCLEIC_ACID: {
+            auto it = NUCLEOTIDE_ATOM_MAP.find(atom_name);
+            return (it != NUCLEOTIDE_ATOM_MAP.end()) ? it->second : AtomType::UNKNOWN;
+        }
+        case MoleculeType::PROTEIN: {
+            auto it = PROTEIN_ATOM_MAP.find(atom_name);
+            return (it != PROTEIN_ATOM_MAP.end()) ? it->second : AtomType::UNKNOWN;
+        }
+        case MoleculeType::WATER: {
+            auto it = WATER_ATOM_MAP.find(atom_name);
+            return (it != WATER_ATOM_MAP.end()) ? it->second : AtomType::UNKNOWN;
+        }
+        default:
+            return AtomType::UNKNOWN;
+    }
+}
 
-        // Amino acid backbone atoms
-        {"N", AtomType::N},
-        {"CA", AtomType::CA},
-        {"C", AtomType::C},
-        {"O", AtomType::O},
-        {"OXT", AtomType::OXT},
-
-        // Common amino acid side chain atoms
-        {"CB", AtomType::CB},
-        {"CG", AtomType::CG},
-        {"CG1", AtomType::CG1},
-        {"CG2", AtomType::CG2},
-        {"CD", AtomType::CD},
-        {"CD1", AtomType::CD1},
-        {"CD2", AtomType::CD2},
-        {"CE", AtomType::CE},
-        {"CE1", AtomType::CE1},
-        {"CE2", AtomType::CE2},
-        {"CE3", AtomType::CE3},
-        {"CZ", AtomType::CZ},
-        {"CZ2", AtomType::CZ2},
-        {"CZ3", AtomType::CZ3},
-        {"CH2", AtomType::CH2},
-        {"OG", AtomType::OG},
-        {"OG1", AtomType::OG1},
-        {"OD1", AtomType::OD1},
-        {"OD2", AtomType::OD2},
-        {"OE1", AtomType::OE1},
-        {"OE2", AtomType::OE2},
-        {"OH", AtomType::OH},
-        {"ND1", AtomType::ND1},
-        {"ND2", AtomType::ND2},
-        {"NE", AtomType::NE},
-        {"NE1", AtomType::NE1},
-        {"NE2", AtomType::NE2},
-        {"NH1", AtomType::NH1},
-        {"NH2", AtomType::NH2},
-        {"NZ", AtomType::NZ},
-        {"SD", AtomType::SD},
-        {"SG", AtomType::SG},
-
-        // Water
-        {"OW", AtomType::OW},
-    };
-
-    auto it = atom_map.find(atom_name);
-    if (it != atom_map.end()) {
+AtomType AtomClassifier::get_atom_type(const std::string& atom_name) {
+    // Legacy behavior: check all maps (used when molecule type is unknown at construction)
+    // First check nucleotide atoms (most common use case)
+    auto it = NUCLEOTIDE_ATOM_MAP.find(atom_name);
+    if (it != NUCLEOTIDE_ATOM_MAP.end()) {
         return it->second;
+    }
+    // Then check protein atoms
+    it = PROTEIN_ATOM_MAP.find(atom_name);
+    if (it != PROTEIN_ATOM_MAP.end()) {
+        return it->second;
+    }
+    // Finally check water
+    auto wit = WATER_ATOM_MAP.find(atom_name);
+    if (wit != WATER_ATOM_MAP.end()) {
+        return wit->second;
     }
     return AtomType::UNKNOWN;
 }
