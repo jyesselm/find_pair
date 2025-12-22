@@ -9,8 +9,7 @@
 #include <x3dna/core/typing.hpp>
 #include <x3dna/core/nucleotide_utils.hpp>
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
-#include <x3dna/algorithms/hydrogen_bond_finder.hpp>
-#include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.hpp>
+#include <x3dna/algorithms/hydrogen_bond.hpp>
 #include <cmath>
 #include <algorithm>
 #include <cstring>
@@ -99,8 +98,9 @@ ValidationResult BasePairValidator::validate(const Residue& res1, const Residue&
     if (cdns) {
         // Count H-bonds simply (BEFORE validation) - matches legacy check_pair behavior
         // This is the key fix: legacy counts H-bonds before validation for pair validation
-        HydrogenBondFinder::count_simple(res1, res2, params_.hb_lower, params_.hb_dist1, params_.hb_atoms,
-                                         result.num_base_hb, result.num_o2_hb);
+        using namespace x3dna::algorithms::hydrogen_bond;
+        HBondDetector detector(HBondDetectionParams::legacy_compatible());
+        detector.count_potential_hbonds(res1, res2, result.num_base_hb, result.num_o2_hb);
 
         // Check H-bond requirement (matches legacy lines 4616-4617)
         if (params_.min_base_hb > 0) {
@@ -252,31 +252,32 @@ double BasePairValidator::calculate_overlap_area(const Residue& res1, const Resi
 
 std::vector<core::hydrogen_bond> BasePairValidator::find_hydrogen_bonds(const Residue& res1,
                                                                         const Residue& res2) const {
-    // Use HydrogenBondFinder to get ALL H-bonds including invalid ones (type=' ')
-    // This matches legacy behavior where ALL H-bonds are recorded to JSON
-    // Legacy records ALL H-bonds in get_hbond_ij (including type=' ')
-    using namespace x3dna::algorithms;
+    // Use new HBondDetector with legacy-compatible parameters
+    using namespace x3dna::algorithms::hydrogen_bond;
 
-    double hb_lower = params_.hb_lower;
-    double hb_dist1 = params_.hb_dist1;
-    double hb_dist2 = 0.0; // Matches legacy OVERLAP behavior (Phase 3 conflict marking always false)
+    HBondDetector detector(HBondDetectionParams::legacy_compatible());
 
-    DetailedHBondResult detailed = HydrogenBondFinder::find_hydrogen_bonds_detailed(res1, res2, hb_lower, hb_dist1,
-                                                                                    hb_dist2);
+    // Detect ALL H-bonds (not just base-base) to match baseline behavior
+    auto result = detector.detect_all_hbonds_detailed(res1, res2,
+        core::typing::MoleculeType::NUCLEIC_ACID, core::typing::MoleculeType::NUCLEIC_ACID);
 
-    // Return after_validation which includes ALL H-bonds (including type=' ')
-    // This matches legacy behavior where all H-bonds are recorded to JSON
-    // Note: Legacy records ALL H-bonds to JSON, not just validated ones
-    // Legacy uses fabs() for distance in json_writer_record_hbond_list (line 1165)
+    // Helper to pad atom name to 4 characters (matches legacy " O2 " format)
+    auto pad_atom_name = [](const std::string& name) -> std::string {
+        if (name.size() >= 4) return name;
+        std::string padded = " " + name;
+        while (padded.size() < 4) padded += " ";
+        return padded;
+    };
+
+    // Return all classified bonds (including INVALID) to match baseline
     std::vector<core::hydrogen_bond> all_hbonds;
-    for (const auto& hbond_result : detailed.after_validation) {
-        core::hydrogen_bond hbond;
-        hbond.donor_atom = hbond_result.donor_atom;
-        hbond.acceptor_atom = hbond_result.acceptor_atom;
-        // Use absolute distance (matches legacy fabs(hb_dist[i]) in json_writer.c:1165)
-        hbond.distance = std::abs(hbond_result.distance);
-        hbond.type = hbond_result.type;
-        all_hbonds.push_back(hbond);
+    for (const auto& hbond : result.all_classified_bonds) {
+        core::hydrogen_bond h;
+        h.donor_atom = pad_atom_name(hbond.donor_atom_name);
+        h.acceptor_atom = pad_atom_name(hbond.acceptor_atom_name);
+        h.distance = hbond.distance;
+        h.type = hbond.legacy_type_char();
+        all_hbonds.push_back(h);
     }
 
     return all_hbonds;

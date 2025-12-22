@@ -56,6 +56,7 @@ add_library(x3dna
     src/x3dna/core/structure_legacy_order.cpp
     src/x3dna/core/structure_legacy_order_impl.cpp
     src/x3dna/core/atom_symbol_registry.cpp
+    src/x3dna/core/hbond.cpp
     src/x3dna/core/typing/atom_classification.cpp
     src/x3dna/core/typing/type_registry.cpp
     src/x3dna/core/typing/residue_classification.cpp
@@ -76,6 +77,11 @@ add_library(x3dna
     src/x3dna/algorithms/pair_selection_strategy.cpp
     src/x3dna/algorithms/chain_detector.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.cpp
+    src/x3dna/algorithms/hydrogen_bond/detection_params.cpp
+    src/x3dna/algorithms/hydrogen_bond/role_classifier.cpp
+    src/x3dna/algorithms/hydrogen_bond/geometry.cpp
+    src/x3dna/algorithms/hydrogen_bond/detector.cpp
+    src/x3dna/algorithms/hydrogen_bond/interaction_filter.cpp
     src/x3dna/algorithms/validation/overlap_calculator.cpp
     src/x3dna/config/config_manager.cpp
     src/x3dna/config/resource_locator.cpp
@@ -132,6 +138,9 @@ target_link_libraries(generate_modern_json PRIVATE x3dna)
 
 add_executable(compare_single_pair tools/compare_single_pair.cpp)
 target_link_libraries(compare_single_pair PRIVATE x3dna)
+
+add_executable(compare_hbond_detectors tools/compare_hbond_detectors.cpp)
+target_link_libraries(compare_hbond_detectors PRIVATE x3dna)
 # 
 # add_executable(check_residue_indices tools/check_residue_indices.cpp)
 # target_link_libraries(check_residue_indices PRIVATE x3dna)

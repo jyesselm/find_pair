@@ -121,3 +121,16 @@ target_link_libraries(test_chain_detector
 )
 
 gtest_discover_tests(test_chain_detector)
+
+# Role classifier tests
+add_executable(test_role_classifier
+    test_role_classifier.cpp
+)
+
+target_link_libraries(test_role_classifier
+    PRIVATE
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_role_classifier)
