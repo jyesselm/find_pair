@@ -10,6 +10,7 @@
 
 using namespace x3dna::algorithms;
 using namespace x3dna::core;
+using namespace x3dna::core::typing;
 
 class StandardBaseTemplatesTest : public ::testing::Test {
 protected:
@@ -32,10 +33,10 @@ TEST_F(StandardBaseTemplatesTest, ConstructorWithPath) {
 
 // Template path tests
 TEST_F(StandardBaseTemplatesTest, GetTemplatePath) {
-    std::filesystem::path path_a = templates_->get_template_path(ResidueType::ADENINE);
+    std::filesystem::path path_a = templates_->get_template_path(BaseType::ADENINE);
     EXPECT_EQ(path_a.filename(), "Atomic_A.pdb");
 
-    std::filesystem::path path_c = templates_->get_template_path(ResidueType::CYTOSINE);
+    std::filesystem::path path_c = templates_->get_template_path(BaseType::CYTOSINE);
     EXPECT_EQ(path_c.filename(), "Atomic_C.pdb");
 }
 
@@ -44,8 +45,8 @@ TEST_F(StandardBaseTemplatesTest, TemplateExists) {
     // May or may not exist depending on whether files were copied
     // Just verify the method works without throwing
     EXPECT_NO_THROW({
-        bool exists_a = templates_->template_exists(ResidueType::ADENINE);
-        bool exists_c = templates_->template_exists(ResidueType::CYTOSINE);
+        bool exists_a = templates_->template_exists(BaseType::ADENINE);
+        bool exists_c = templates_->template_exists(BaseType::CYTOSINE);
         // Variables are used implicitly in the EXPECT_NO_THROW check
         (void)exists_a;
         (void)exists_c;
@@ -55,30 +56,30 @@ TEST_F(StandardBaseTemplatesTest, TemplateExists) {
 // Template loading tests
 TEST_F(StandardBaseTemplatesTest, LoadTemplate) {
     // Only test if template exists
-    if (templates_->template_exists(ResidueType::ADENINE)) {
-        Structure template_structure = templates_->load_template(ResidueType::ADENINE);
+    if (templates_->template_exists(BaseType::ADENINE)) {
+        Structure template_structure = templates_->load_template(BaseType::ADENINE);
         EXPECT_GT(template_structure.num_atoms(), 0);
 
         // Load again - should use cache
-        Structure template_structure2 = templates_->load_template(ResidueType::ADENINE);
+        Structure template_structure2 = templates_->load_template(BaseType::ADENINE);
         EXPECT_EQ(template_structure.num_atoms(), template_structure2.num_atoms());
     }
 }
 
 // Cache tests
 TEST_F(StandardBaseTemplatesTest, ClearCache) {
-    if (templates_->template_exists(ResidueType::ADENINE)) {
-        (void)templates_->load_template(ResidueType::ADENINE);
+    if (templates_->template_exists(BaseType::ADENINE)) {
+        (void)templates_->load_template(BaseType::ADENINE);
         templates_->clear_cache();
         // Should still be able to load after clearing
         EXPECT_NO_THROW({
-            Structure s = templates_->load_template(ResidueType::ADENINE);
+            Structure s = templates_->load_template(BaseType::ADENINE);
             EXPECT_GT(s.num_atoms(), 0);
         });
     }
 }
 
 // Error handling tests
-TEST_F(StandardBaseTemplatesTest, InvalidResidueType) {
-    EXPECT_THROW({ (void)templates_->load_template(ResidueType::AMINO_ACID); }, std::invalid_argument);
+TEST_F(StandardBaseTemplatesTest, InvalidBaseType) {
+    EXPECT_THROW({ (void)templates_->load_template(BaseType::UNKNOWN); }, std::invalid_argument);
 }

@@ -4,6 +4,7 @@
  */
 
 #include <x3dna/io/input_file_writer.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
@@ -193,7 +194,7 @@ std::string InputFileWriter::format_residue_description(const core::Residue& res
     oss << "[" << name << "]";
 
     // Add one-letter code
-    oss << residue.one_letter_code();
+    oss << core::one_letter_code(residue);
 
     return oss.str();
 }
@@ -411,7 +412,7 @@ void InputFileWriter::write_step_params(const std::filesystem::path& output_path
         int legacy_idx = static_cast<int>(res_idx + 1);
         auto residue = structure.get_residue_by_legacy_idx(legacy_idx);
         if (residue) {
-            return residue->one_letter_code();
+            return core::one_letter_code(*residue);
         }
         return '-';
     };
@@ -465,7 +466,7 @@ void InputFileWriter::write_helical_params(const std::filesystem::path& output_p
         int legacy_idx = static_cast<int>(res_idx + 1);
         auto residue = structure.get_residue_by_legacy_idx(legacy_idx);
         if (residue) {
-            return residue->one_letter_code();
+            return core::one_letter_code(*residue);
         }
         return '-';
     };

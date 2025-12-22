@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/geometry/vector3d.hpp>
@@ -78,7 +79,7 @@ TEST_F(ResidueTest, FindAtomNotFound) {
 }
 
 TEST_F(ResidueTest, RingAtoms) {
-    auto ring = residue_c_.ring_atoms();
+    auto ring = ring_atoms(residue_c_);
     // N1, C2, N3 are ring atoms
     EXPECT_GT(ring.size(), 0);
     for (const auto& atom : ring) {
@@ -88,13 +89,13 @@ TEST_F(ResidueTest, RingAtoms) {
 
 // Base identification tests (use create_from_atoms for proper initialization)
 TEST_F(ResidueTest, OneLetterCode) {
-    // create_from_atoms properly initializes one_letter_code via ModifiedNucleotideRegistry
-    EXPECT_EQ(Residue::create_from_atoms("  C", 1, "A", "", {}).one_letter_code(), 'C');
-    EXPECT_EQ(Residue::create_from_atoms("  G", 1, "A", "", {}).one_letter_code(), 'G');
-    EXPECT_EQ(Residue::create_from_atoms("  A", 1, "A", "", {}).one_letter_code(), 'A');
-    EXPECT_EQ(Residue::create_from_atoms("  T", 1, "A", "", {}).one_letter_code(), 'T');
-    EXPECT_EQ(Residue::create_from_atoms("  U", 1, "A", "", {}).one_letter_code(), 'U');
-    EXPECT_EQ(Residue::create_from_atoms("XXX", 1, "A", "", {}).one_letter_code(), '?');
+    // one_letter_code() is now a free function that looks up via ModifiedNucleotideRegistry
+    EXPECT_EQ(one_letter_code(Residue::create_from_atoms("  C", 1, "A", "", {})), 'C');
+    EXPECT_EQ(one_letter_code(Residue::create_from_atoms("  G", 1, "A", "", {})), 'G');
+    EXPECT_EQ(one_letter_code(Residue::create_from_atoms("  A", 1, "A", "", {})), 'A');
+    EXPECT_EQ(one_letter_code(Residue::create_from_atoms("  T", 1, "A", "", {})), 'T');
+    EXPECT_EQ(one_letter_code(Residue::create_from_atoms("  U", 1, "A", "", {})), 'U');
+    EXPECT_EQ(one_letter_code(Residue::create_from_atoms("XXX", 1, "A", "", {})), '?');
 }
 
 TEST_F(ResidueTest, IsNucleotide) {
@@ -107,20 +108,20 @@ TEST_F(ResidueTest, IsNucleotide) {
 }
 
 TEST_F(ResidueTest, RYClassification) {
-    EXPECT_EQ(Residue::create_from_atoms("  A", 1, "A", "", {}).ry_classification(), 1);  // Purine
-    EXPECT_EQ(Residue::create_from_atoms("  G", 1, "A", "", {}).ry_classification(), 1);  // Purine
-    EXPECT_EQ(Residue::create_from_atoms("  C", 1, "A", "", {}).ry_classification(), 0);  // Pyrimidine
-    EXPECT_EQ(Residue::create_from_atoms("  T", 1, "A", "", {}).ry_classification(), 0);  // Pyrimidine
-    EXPECT_EQ(Residue::create_from_atoms("  U", 1, "A", "", {}).ry_classification(), 0);  // Pyrimidine
-    EXPECT_EQ(Residue::create_from_atoms("XXX", 1, "A", "", {}).ry_classification(), -1); // Not nucleotide
+    EXPECT_EQ(ry_classification(Residue::create_from_atoms("  A", 1, "A", "", {})), 1);  // Purine
+    EXPECT_EQ(ry_classification(Residue::create_from_atoms("  G", 1, "A", "", {})), 1);  // Purine
+    EXPECT_EQ(ry_classification(Residue::create_from_atoms("  C", 1, "A", "", {})), 0);  // Pyrimidine
+    EXPECT_EQ(ry_classification(Residue::create_from_atoms("  T", 1, "A", "", {})), 0);  // Pyrimidine
+    EXPECT_EQ(ry_classification(Residue::create_from_atoms("  U", 1, "A", "", {})), 0);  // Pyrimidine
+    EXPECT_EQ(ry_classification(Residue::create_from_atoms("XXX", 1, "A", "", {})), -1); // Not nucleotide
 }
 
-TEST_F(ResidueTest, ResidueType) {
-    EXPECT_EQ(Residue::create_from_atoms("  A", 1, "A", "", {}).residue_type(), ResidueType::ADENINE);
-    EXPECT_EQ(Residue::create_from_atoms("  C", 1, "A", "", {}).residue_type(), ResidueType::CYTOSINE);
-    EXPECT_EQ(Residue::create_from_atoms("  G", 1, "A", "", {}).residue_type(), ResidueType::GUANINE);
-    EXPECT_EQ(Residue::create_from_atoms("  T", 1, "A", "", {}).residue_type(), ResidueType::THYMINE);
-    EXPECT_EQ(Residue::create_from_atoms("  U", 1, "A", "", {}).residue_type(), ResidueType::URACIL);
+TEST_F(ResidueTest, BaseType) {
+    EXPECT_EQ(Residue::create_from_atoms("  A", 1, "A", "", {}).base_type(), typing::BaseType::ADENINE);
+    EXPECT_EQ(Residue::create_from_atoms("  C", 1, "A", "", {}).base_type(), typing::BaseType::CYTOSINE);
+    EXPECT_EQ(Residue::create_from_atoms("  G", 1, "A", "", {}).base_type(), typing::BaseType::GUANINE);
+    EXPECT_EQ(Residue::create_from_atoms("  T", 1, "A", "", {}).base_type(), typing::BaseType::THYMINE);
+    EXPECT_EQ(Residue::create_from_atoms("  U", 1, "A", "", {}).base_type(), typing::BaseType::URACIL);
 }
 
 // Reference frame tests
@@ -220,7 +221,7 @@ TEST_F(ResidueTest, EmptyResidue) {
     Residue residue("  C", 1, "A");
     EXPECT_EQ(residue.num_atoms(), 0);
     EXPECT_FALSE(residue.find_atom(" C1'").has_value());
-    EXPECT_TRUE(residue.ring_atoms().empty());
+    EXPECT_TRUE(ring_atoms(residue).empty());
 }
 
 TEST_F(ResidueTest, ResidueWithReferenceFrame) {

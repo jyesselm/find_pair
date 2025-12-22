@@ -7,6 +7,7 @@
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/io/json_writer.hpp>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 
 namespace x3dna {
 namespace io {
@@ -20,7 +21,7 @@ size_t FrameJsonRecorder::record_base_frame_calc(core::Structure& structure, Jso
     for (const auto* residue_ptr : residues) {
         auto* residue = const_cast<core::Residue*>(residue_ptr);
 
-        if (residue->residue_type() == core::ResidueType::AMINO_ACID) {
+        if (residue->is_protein()) {
             continue;
         }
 
@@ -36,7 +37,7 @@ size_t FrameJsonRecorder::record_base_frame_calc(core::Structure& structure, Jso
         }
 
         size_t record_idx = static_cast<size_t>(legacy_residue_idx);
-        char base_type = residue->one_letter_code();
+        char base_type = core::one_letter_code(*residue);
         writer.record_base_frame_calc(record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
                                       frame_result.matched_atoms, residue->name(), residue->chain_id(),
                                       residue->seq_num(), residue->insertion());
@@ -53,7 +54,7 @@ size_t FrameJsonRecorder::record_ls_fitting(core::Structure& structure, JsonWrit
     for (const auto* residue_ptr : residues) {
         auto* residue = const_cast<core::Residue*>(residue_ptr);
 
-        if (residue->residue_type() == core::ResidueType::AMINO_ACID) {
+        if (residue->is_protein()) {
             continue;
         }
 
@@ -85,7 +86,7 @@ size_t FrameJsonRecorder::record_frame_calc(core::Structure& structure, JsonWrit
     for (const auto* residue_ptr : residues) {
         auto* residue = const_cast<core::Residue*>(residue_ptr);
 
-        if (residue->residue_type() == core::ResidueType::AMINO_ACID) {
+        if (residue->is_protein()) {
             continue;
         }
 
@@ -101,7 +102,7 @@ size_t FrameJsonRecorder::record_frame_calc(core::Structure& structure, JsonWrit
         }
 
         size_t record_idx = static_cast<size_t>(legacy_residue_idx);
-        char base_type = residue->one_letter_code();
+        char base_type = core::one_letter_code(*residue);
         writer.record_frame_calc(record_idx, base_type, frame_result.template_file, frame_result.rms_fit,
                                  frame_result.matched_standard_coords, frame_result.matched_experimental_coords,
                                  residue->name(), residue->chain_id(), residue->seq_num(), residue->insertion());

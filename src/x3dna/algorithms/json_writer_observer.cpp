@@ -5,6 +5,7 @@
 
 #include <x3dna/algorithms/json_writer_observer.hpp>
 #include <x3dna/algorithms/quality_score_calculator.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 
 namespace x3dna {
 namespace algorithms {
@@ -64,8 +65,8 @@ void JsonWriterObserver::on_pair_validated(int legacy_idx1, int legacy_idx2, con
         // Note: dir_xyz is calculated from frames in to_json_legacy(), not stored separately
 
         // Set bp_type string from residue names
-        char base1 = res1.one_letter_code();
-        char base2 = res2.one_letter_code();
+        char base1 = core::one_letter_code(res1);
+        char base2 = core::one_letter_code(res2);
         if (base1 != ' ' && base2 != ' ') {
             pair.set_bp_type(std::string(1, base1) + std::string(1, base2));
         }

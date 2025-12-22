@@ -16,6 +16,7 @@
 #include <nlohmann/json.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/base_pair.hpp>
@@ -50,8 +51,8 @@ public:
         j["residue_seq"] = residue.seq_num();
 
         // Determine record_type from residue classification
-        bool is_hetatm = !residue.is_nucleotide() ||
-                         (residue.one_letter_code() >= 'a' && residue.one_letter_code() <= 'z');
+        char olc = core::one_letter_code(residue);
+        bool is_hetatm = !residue.is_nucleotide() || (olc >= 'a' && olc <= 'z');
         j["record_type"] = is_hetatm ? "H" : "A";
 
         if (atom.alt_loc() != ' ' && atom.alt_loc() != '\0') {
@@ -115,8 +116,8 @@ public:
         j["xyz"] = nlohmann::json::array({atom.position().x(), atom.position().y(), atom.position().z()});
 
         // Determine record_type from residue classification
-        bool is_hetatm = !residue.is_nucleotide() ||
-                         (residue.one_letter_code() >= 'a' && residue.one_letter_code() <= 'z');
+        char olc = core::one_letter_code(residue);
+        bool is_hetatm = !residue.is_nucleotide() || (olc >= 'a' && olc <= 'z');
         j["record_type"] = is_hetatm ? "H" : "A";
 
         return j;
@@ -246,9 +247,8 @@ public:
         };
         std::string trimmed = trim(name);
 
-        // Get classification and one-letter code from trimmed name
+        // Get classification from trimmed name
         auto classification = core::typing::TypeRegistry::instance().classify_residue(trimmed);
-        char one_letter = core::ModifiedNucleotideRegistry::get_one_letter_code(trimmed);
 
         // Collect atoms
         std::vector<core::Atom> atoms;
@@ -259,9 +259,9 @@ public:
         }
 
         // Build residue preserving exact name from JSON
+        // Note: one_letter_code is now computed from name, not stored
         core::Residue residue = core::Residue::create(name, seq_num, chain_id)
                                     .insertion(insertion)
-                                    .one_letter_code(one_letter)
                                     .classification(classification)
                                     .atoms(atoms)
                                     .build();
@@ -293,9 +293,8 @@ public:
         };
         std::string trimmed = trim(name);
 
-        // Get classification and one-letter code from trimmed name
+        // Get classification from trimmed name
         auto classification = core::typing::TypeRegistry::instance().classify_residue(trimmed);
-        char one_letter = core::ModifiedNucleotideRegistry::get_one_letter_code(trimmed);
 
         // Collect atoms
         std::vector<core::Atom> atoms;
@@ -306,9 +305,9 @@ public:
         }
 
         // Build residue preserving exact name from JSON
+        // Note: one_letter_code is now computed from name, not stored
         core::Residue residue = core::Residue::create(name, seq_num, chain_id)
                                     .insertion(insertion)
-                                    .one_letter_code(one_letter)
                                     .classification(classification)
                                     .atoms(atoms)
                                     .build();

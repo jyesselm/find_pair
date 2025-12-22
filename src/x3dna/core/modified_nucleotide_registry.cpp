@@ -14,23 +14,23 @@ using json = nlohmann::json;
 namespace x3dna {
 namespace core {
 
-// Helper to convert string to ResidueType
-static ResidueType string_to_residue_type(const std::string& type_str) {
+// Helper to convert string to BaseType
+static typing::BaseType string_to_base_type(const std::string& type_str) {
     if (type_str == "ADENINE")
-        return ResidueType::ADENINE;
+        return typing::BaseType::ADENINE;
     if (type_str == "CYTOSINE")
-        return ResidueType::CYTOSINE;
+        return typing::BaseType::CYTOSINE;
     if (type_str == "GUANINE")
-        return ResidueType::GUANINE;
+        return typing::BaseType::GUANINE;
     if (type_str == "THYMINE")
-        return ResidueType::THYMINE;
+        return typing::BaseType::THYMINE;
     if (type_str == "URACIL")
-        return ResidueType::URACIL;
+        return typing::BaseType::URACIL;
     if (type_str == "INOSINE")
-        return ResidueType::INOSINE;
+        return typing::BaseType::INOSINE;
     if (type_str == "PSEUDOURIDINE")
-        return ResidueType::PSEUDOURIDINE;
-    throw std::runtime_error("Unknown residue type: " + type_str);
+        return typing::BaseType::PSEUDOURIDINE;
+    throw std::runtime_error("Unknown base type: " + type_str);
 }
 
 // Thread-safe lazy-loaded registry singleton
@@ -60,7 +60,7 @@ static std::map<std::string, ModifiedNucleotideRegistry::NucleotideInfo>& get_re
 
                     std::string code_str = info["code"].get<std::string>();
                     nucinfo.one_letter_code = code_str.empty() ? '?' : code_str[0];
-                    nucinfo.base_type = string_to_residue_type(info["type"].get<std::string>());
+                    nucinfo.base_type = string_to_base_type(info["type"].get<std::string>());
                     nucinfo.is_purine = info["is_purine"].get<bool>();
                     nucinfo.description = info["description"].get<std::string>();
 
@@ -149,9 +149,9 @@ char ModifiedNucleotideRegistry::get_one_letter_code(const std::string& residue_
     return '?';
 }
 
-std::optional<ResidueType> ModifiedNucleotideRegistry::get_base_type(const std::string& residue_name) {
+std::optional<typing::BaseType> ModifiedNucleotideRegistry::get_base_type(const std::string& residue_name) {
     auto info = get_info(residue_name);
-    return info.has_value() ? std::optional<ResidueType>(info->base_type) : std::nullopt;
+    return info.has_value() ? std::optional<typing::BaseType>(info->base_type) : std::nullopt;
 }
 
 std::optional<bool> ModifiedNucleotideRegistry::is_purine(const std::string& residue_name) {

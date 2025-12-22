@@ -13,6 +13,7 @@
 
 using namespace x3dna::algorithms;
 using namespace x3dna::core;
+using namespace x3dna::core::typing;
 using namespace x3dna::geometry;
 
 class RingAtomMatcherTest : public ::testing::Test {
@@ -151,7 +152,7 @@ TEST_F(RingAtomMatcherTest, MatchWithMissingAtoms) {
 // Test ring atom names retrieval
 TEST_F(RingAtomMatcherTest, GetRingAtomNames) {
     // Purine
-    auto purine_names = RingAtomMatcher::get_ring_atom_names(ResidueType::ADENINE);
+    auto purine_names = RingAtomMatcher::get_ring_atom_names(BaseType::ADENINE);
     EXPECT_EQ(purine_names.size(), 9);
     // Verify C1' is NOT included
     bool has_c1_prime = false;
@@ -164,7 +165,7 @@ TEST_F(RingAtomMatcherTest, GetRingAtomNames) {
     EXPECT_FALSE(has_c1_prime) << "C1' should not be in ring atom names (it's a sugar atom, not a ring atom)";
 
     // Pyrimidine
-    auto pyrimidine_names = RingAtomMatcher::get_ring_atom_names(ResidueType::CYTOSINE);
+    auto pyrimidine_names = RingAtomMatcher::get_ring_atom_names(BaseType::CYTOSINE);
     EXPECT_EQ(pyrimidine_names.size(), 6);
     // Verify C1' is NOT included
     has_c1_prime = false;

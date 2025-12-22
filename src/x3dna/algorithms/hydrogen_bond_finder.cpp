@@ -9,6 +9,7 @@
 #include <x3dna/algorithms/validation_constants.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/typing.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <algorithm>
 #include <cmath>
@@ -386,26 +387,26 @@ char determine_base_type_from_atoms(const core::Residue& residue) {
 
 char HydrogenBondFinder::get_base_type_for_hbond(const core::Residue& residue) {
     // Check one_letter_code first
-    char code = residue.one_letter_code();
+    char code = core::one_letter_code(residue);
     if (code != '?') {
         return code;
     }
 
-    // Try residue_type() for known types
-    switch (residue.residue_type()) {
-        case core::ResidueType::ADENINE:
+    // Try base_type() for known types
+    switch (residue.base_type()) {
+        case core::typing::BaseType::ADENINE:
             return 'A';
-        case core::ResidueType::CYTOSINE:
+        case core::typing::BaseType::CYTOSINE:
             return 'C';
-        case core::ResidueType::GUANINE:
+        case core::typing::BaseType::GUANINE:
             return 'G';
-        case core::ResidueType::THYMINE:
+        case core::typing::BaseType::THYMINE:
             return 'T';
-        case core::ResidueType::URACIL:
+        case core::typing::BaseType::URACIL:
             return 'U';
-        case core::ResidueType::INOSINE:
+        case core::typing::BaseType::INOSINE:
             return 'I';
-        case core::ResidueType::PSEUDOURIDINE:
+        case core::typing::BaseType::PSEUDOURIDINE:
             return 'P';
         default:
             break;

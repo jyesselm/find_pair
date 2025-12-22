@@ -11,6 +11,7 @@
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/atom.hpp>
+#include <x3dna/core/typing/nucleotide_type.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 
 namespace x3dna {
@@ -49,18 +50,18 @@ public:
      * @brief Match ring atoms between experimental residue and standard template
      * @param residue Experimental residue to match
      * @param standard_template Standard template structure
-     * @param residue_type Optional residue type (if provided, overrides residue.residue_type())
+     * @param base_type Optional base type (if provided, overrides residue.base_type())
      * @return MatchedAtoms structure with matched atom pairs
      */
     [[nodiscard]] static MatchedAtoms match(const core::Residue& residue, const core::Structure& standard_template,
-                                            std::optional<core::ResidueType> residue_type = std::nullopt);
+                                            std::optional<core::typing::BaseType> base_type = std::nullopt);
 
     /**
-     * @brief Get list of ring atom names for a residue type
-     * @param residue_type Residue type (ADENINE, CYTOSINE, etc.)
+     * @brief Get list of ring atom names for a base type
+     * @param base_type Base type (ADENINE, CYTOSINE, etc.)
      * @return Vector of atom names
      */
-    [[nodiscard]] static std::vector<std::string> get_ring_atom_names(core::ResidueType residue_type);
+    [[nodiscard]] static std::vector<std::string> get_ring_atom_names(core::typing::BaseType base_type);
 
 private:
     /**
@@ -82,11 +83,11 @@ private:
                                                                      const std::string& atom_name);
 
     /**
-     * @brief Check if residue type is a purine
-     * @param type Residue type
+     * @brief Check if base type is a purine
+     * @param type Base type
      * @return true if purine (A or G), false if pyrimidine
      */
-    [[nodiscard]] static bool is_purine(core::ResidueType type);
+    [[nodiscard]] static bool is_purine(core::typing::BaseType type);
 };
 
 } // namespace algorithms

@@ -9,6 +9,7 @@
 #include <string>
 #include <optional>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/typing/nucleotide_type.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 
 namespace x3dna {
@@ -31,10 +32,10 @@ struct RmsdCheckResult {
  * @brief Result of residue type detection
  */
 struct TypeDetectionResult {
-    core::ResidueType detected_type; // Detected residue type
-    bool used_fallback;              // Whether fallback logic was used
-    std::optional<double> rmsd;      // RMSD value if calculated
-    std::string detection_method;    // "registry", "rmsd", "atom_analysis", "standard"
+    core::typing::BaseType detected_type; // Detected base type
+    bool used_fallback;                   // Whether fallback logic was used
+    std::optional<double> rmsd;           // RMSD value if calculated
+    std::string detection_method;         // "registry", "rmsd", "atom_analysis", "standard"
 };
 
 /**
@@ -75,11 +76,11 @@ private:
     [[nodiscard]] static bool is_in_nt_list(const std::string& res_name);
 
     /**
-     * @brief Check if residue type is a purine
-     * @param type Residue type
+     * @brief Check if base type is a purine
+     * @param type Base type
      * @return true if purine (A or G)
      */
-    [[nodiscard]] static bool is_purine(core::ResidueType type);
+    [[nodiscard]] static bool is_purine(core::typing::BaseType type);
 };
 
 } // namespace algorithms

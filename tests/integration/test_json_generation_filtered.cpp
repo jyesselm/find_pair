@@ -8,6 +8,7 @@
 
 #include <gtest/gtest.h>
 #include <x3dna/core/structure.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 #include <x3dna/io/pdb_parser.hpp>
 #include <x3dna/io/serializers.hpp>
 #include <x3dna/algorithms/base_frame_calculator.hpp>
@@ -108,8 +109,7 @@ protected:
             for (auto& chain : structure.chains()) {
                 for (auto& residue : chain.residues()) {
                     // Only process nucleotide residues
-                    if (residue.residue_type() != ResidueType::UNKNOWN &&
-                        residue.residue_type() != ResidueType::AMINO_ACID) {
+                    if (residue.is_nucleotide()) {
 
                         // Calculate frame directly (don't check has_reference_frame)
                         // Use calculate_frame_const to avoid modifying residue during iteration
@@ -120,7 +120,7 @@ protected:
                             nlohmann::json base_frame_record;
                             base_frame_record["type"] = "base_frame_calc";
                             base_frame_record["residue_idx"] = residue_idx;
-                            base_frame_record["base_type"] = std::string(1, residue.one_letter_code());
+                            base_frame_record["base_type"] = std::string(1, one_letter_code(residue));
                             base_frame_record["residue_name"] = residue.name();
                             base_frame_record["chain_id"] = residue.chain_id();
                             base_frame_record["residue_seq"] = residue.seq_num();

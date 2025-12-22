@@ -5,6 +5,7 @@
 
 #include <x3dna/algorithms/base_frame_calculator.hpp>
 #include <x3dna/algorithms/validation_constants.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 #include <stdexcept>
 #include <cmath>
 #include <algorithm>
@@ -172,7 +173,7 @@ bool detect_purine_atoms(const core::Residue& residue) {
 }
 
 // Determine purine type (A vs G) - use trimmed names
-core::ResidueType determine_purine_type(const core::Residue& residue) {
+core::typing::BaseType determine_purine_type(const core::Residue& residue) {
     bool has_o6 = false, has_n6 = false, has_n2 = false;
     for (const auto& atom : residue.atoms()) {
         if (atom.name() == "O6")
@@ -182,11 +183,14 @@ core::ResidueType determine_purine_type(const core::Residue& residue) {
         if (atom.name() == "N2")
             has_n2 = true;
     }
-    return (has_o6 || (!has_n6 && has_n2)) ? core::ResidueType::GUANINE : core::ResidueType::ADENINE;
+    if (has_o6 || (!has_n6 && has_n2)) {
+        return core::typing::BaseType::GUANINE;
+    }
+    return core::typing::BaseType::ADENINE;
 }
 
 // Determine pyrimidine type - use trimmed names
-core::ResidueType determine_pyrimidine_type(const core::Residue& residue, char one_letter) {
+core::typing::BaseType determine_pyrimidine_type(const core::Residue& residue, char one_letter) {
     bool has_n4 = false, has_c5m = false;
     for (const auto& atom : residue.atoms()) {
         if (atom.name() == "N4")
@@ -203,15 +207,15 @@ core::ResidueType determine_pyrimidine_type(const core::Residue& residue, char o
         double dist_n1 = (c1p->position() - n1->position()).length();
         double dist_c5 = (c1p->position() - c5->position()).length();
         if (dist_c5 <= 2.0 && dist_n1 > 2.0) {
-            return core::ResidueType::PSEUDOURIDINE;
+            return core::typing::BaseType::PSEUDOURIDINE;
         }
     }
 
     if (has_n4)
-        return core::ResidueType::CYTOSINE;
+        return core::typing::BaseType::CYTOSINE;
     if (has_c5m && one_letter != 'u')
-        return core::ResidueType::THYMINE;
-    return core::ResidueType::URACIL;
+        return core::typing::BaseType::THYMINE;
+    return core::typing::BaseType::URACIL;
 }
 
 // Try pyrimidine-only RMSD check
@@ -244,6 +248,16 @@ std::optional<double> try_pyrimidine_rmsd(const core::Residue& residue) {
     }
 }
 
+// Check if residue needs special type detection
+bool needs_type_detection(const core::Residue& residue) {
+    auto mol_type = residue.molecule_type();
+    auto base_type = residue.base_type();
+    // Unknown molecule type or unknown base type for a nucleotide
+    return mol_type == core::typing::MoleculeType::UNKNOWN ||
+           mol_type == core::typing::MoleculeType::PROTEIN ||
+           (mol_type == core::typing::MoleculeType::NUCLEIC_ACID && base_type == core::typing::BaseType::UNKNOWN);
+}
+
 } // namespace
 
 BaseFrameCalculator::BaseFrameCalculator(const std::filesystem::path& template_path) : templates_(template_path) {}
@@ -265,14 +279,14 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Res
     result.is_valid = false;
 
     // Get residue info
-    core::ResidueType residue_type = residue.residue_type();
+    core::typing::BaseType base_type = residue.base_type();
     std::string res_name = residue.name();
     while (!res_name.empty() && res_name[0] == ' ')
         res_name.erase(0, 1);
     while (!res_name.empty() && res_name.back() == ' ')
         res_name.pop_back();
 
-    char one_letter = residue.one_letter_code();
+    char one_letter = core::one_letter_code(residue);
     if (one_letter == ' ' || is_excluded_molecule(res_name)) {
         return result;
     }
@@ -283,9 +297,7 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Res
     bool used_pyrimidine_fallback = false;
 
     // Check for ring atoms if needed
-    bool should_check_rings = (residue_type == core::ResidueType::UNKNOWN ||
-                               residue_type == core::ResidueType::AMINO_ACID ||
-                               residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check);
+    bool should_check_rings = needs_type_detection(residue) || needs_rmsd_check;
 
     if (should_check_rings) {
         auto [ring_count, has_purine] = count_ring_atoms(residue);
@@ -327,17 +339,15 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Res
         return result;
     }
 
-    // Determine residue type
+    // Determine base type if unknown
     bool is_registry_nucleotide = core::ModifiedNucleotideRegistry::contains(res_name);
 
-    if (!is_registry_nucleotide &&
-        (residue_type == core::ResidueType::UNKNOWN || residue_type == core::ResidueType::AMINO_ACID ||
-         residue_type == core::ResidueType::NONCANONICAL_RNA || needs_rmsd_check)) {
+    if (!is_registry_nucleotide && (needs_type_detection(residue) || needs_rmsd_check)) {
         if (has_ring_atoms) {
             if (has_purine_atoms || is_purine_letter(one_letter)) {
-                residue_type = determine_purine_type(residue);
+                base_type = determine_purine_type(residue);
             } else {
-                residue_type = determine_pyrimidine_type(residue, one_letter);
+                base_type = determine_pyrimidine_type(residue, one_letter);
             }
         } else {
             return result;
@@ -348,20 +358,20 @@ FrameCalculationResult BaseFrameCalculator::calculate_frame_impl(const core::Res
     bool is_modified = std::islower(static_cast<unsigned char>(one_letter));
     core::Structure standard_template;
     try {
-        standard_template = templates_.load_template(residue_type, is_modified);
-        result.template_file = templates_.get_template_path(residue_type, is_modified);
+        standard_template = templates_.load_template(base_type, is_modified);
+        result.template_file = templates_.get_template_path(base_type, is_modified);
     } catch (const std::exception&) {
         return result;
     }
 
     // Match ring atoms
-    core::ResidueType matching_type = residue_type;
+    core::typing::BaseType matching_type = base_type;
     if (used_pyrimidine_fallback &&
-        (residue_type == core::ResidueType::ADENINE || residue_type == core::ResidueType::GUANINE)) {
-        matching_type = core::ResidueType::URACIL;
+        (base_type == core::typing::BaseType::ADENINE || base_type == core::typing::BaseType::GUANINE)) {
+        matching_type = core::typing::BaseType::URACIL;
     }
     MatchedAtoms matched = RingAtomMatcher::match(residue, standard_template,
-                                                  std::optional<core::ResidueType>(matching_type));
+                                                  std::optional<core::typing::BaseType>(matching_type));
 
     // Fallback to RMSD check atoms if template matching failed
     if (!matched.is_valid() && has_ring_atoms && rmsd_result.has_value() && !rmsd_check.matched_atom_names.empty() &&
@@ -425,7 +435,7 @@ void BaseFrameCalculator::calculate_all_frames(core::Structure& structure) {
     }
 
     for (auto* residue : residues) {
-        if (residue->residue_type() == core::ResidueType::AMINO_ACID) {
+        if (residue->is_protein()) {
             continue;
         }
         // Frame is stored in residue as side effect; result intentionally discarded

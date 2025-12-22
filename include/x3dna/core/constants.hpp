@@ -13,7 +13,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include <x3dna/core/residue_type.hpp>
+#include <x3dna/core/typing/nucleotide_type.hpp>
 
 namespace x3dna {
 namespace constants {
@@ -143,22 +143,12 @@ inline bool is_ring_atom(std::string_view atom_name) {
 }
 
 /**
- * @brief Check if a residue type is a purine
- * @param type ResidueType enum value
- * @return true for ADENINE, GUANINE, INOSINE; false otherwise
- */
-inline bool is_purine(core::ResidueType type) {
-    return type == core::ResidueType::ADENINE || type == core::ResidueType::GUANINE ||
-           type == core::ResidueType::INOSINE;
-}
-
-/**
- * @brief Get ring atom names for a residue type
- * @param type ResidueType enum value
+ * @brief Get ring atom names for a base type
+ * @param type BaseType enum value
  * @return Ring atom names for that type (purine or pyrimidine set)
  */
-inline const std::vector<std::string>& ring_atoms_for_type(core::ResidueType type) {
-    if (is_purine(type)) {
+inline const std::vector<std::string>& ring_atoms_for_type(core::typing::BaseType type) {
+    if (core::typing::is_purine(type)) {
         return purine_ring_atoms();
     }
     return pyrimidine_ring_atoms();

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 
 namespace x3dna {
 namespace core {
@@ -99,7 +100,7 @@ public:
     [[nodiscard]] std::string sequence() const {
         std::string seq;
         for (const auto& residue : residues_) {
-            char code = residue.one_letter_code();
+            char code = one_letter_code(residue);
             if (code != '?') {
                 seq += code;
             }

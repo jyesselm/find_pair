@@ -117,18 +117,18 @@ bool ResidueTypeDetector::is_in_nt_list(const std::string& res_name) {
     return std::find(NT_LIST.begin(), NT_LIST.end(), res_upper) != NT_LIST.end();
 }
 
-bool ResidueTypeDetector::is_purine(core::ResidueType type) {
+bool ResidueTypeDetector::is_purine(core::typing::BaseType type) {
     return core::typing::is_purine(type);
 }
 
 TypeDetectionResult ResidueTypeDetector::detect_type(const core::Residue& residue) {
     TypeDetectionResult result;
-    result.detected_type = residue.residue_type();
+    result.detected_type = residue.base_type();
     result.used_fallback = false;
     result.detection_method = "standard";
 
     // If already classified and not UNKNOWN, use it
-    if (result.detected_type != core::ResidueType::UNKNOWN) {
+    if (result.detected_type != core::typing::BaseType::UNKNOWN) {
         return result;
     }
 
@@ -155,9 +155,9 @@ TypeDetectionResult ResidueTypeDetector::detect_type(const core::Residue& residu
 
         // Use purine atom presence to determine type
         if (rmsd_result.found_purine_atoms) {
-            result.detected_type = core::ResidueType::ADENINE; // Default purine
+            result.detected_type = core::typing::BaseType::ADENINE; // Default purine
         } else {
-            result.detected_type = core::ResidueType::CYTOSINE; // Default pyrimidine
+            result.detected_type = core::typing::BaseType::CYTOSINE; // Default pyrimidine
         }
     }
 

@@ -13,10 +13,6 @@
 
 namespace x3dna {
 namespace core {
-
-// Forward declaration for legacy type
-enum class ResidueType;
-
 namespace typing {
 
 /**
@@ -28,7 +24,7 @@ namespace typing {
  * - For nucleic acids: RNA vs DNA, canonical vs modified, base type
  * - For proteins: amino acid type, category, standard vs modified
  * - For solvents: water vs ion type
- * - Backwards compatible with legacy ResidueType enum
+ * - Provides consistent query interface for all residue types
  */
 struct ResidueClassification {
     // === Level 1: Molecule type ===
@@ -145,20 +141,6 @@ struct ResidueClassification {
         return is_ion() && typing::is_anion(ion_type);
     }
 
-    // === Legacy compatibility ===
-
-    /**
-     * @brief Convert to legacy ResidueType enum for backwards compatibility
-     */
-    [[nodiscard]] ResidueType to_legacy_type() const;
-
-    /**
-     * @brief Create classification from legacy ResidueType and residue name
-     */
-    [[nodiscard]] static ResidueClassification from_legacy(
-        ResidueType type,
-        const std::string& residue_name,
-        bool is_purine_hint = false);
 };
 
 } // namespace typing

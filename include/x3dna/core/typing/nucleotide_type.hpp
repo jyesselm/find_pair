@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <x3dna/core/residue_type.hpp>
+#include <cctype>
 
 namespace x3dna {
 namespace core {
@@ -153,25 +153,6 @@ enum class BaseCategory {
 [[nodiscard]] inline bool is_pyrimidine_letter(char letter) {
     char upper = static_cast<char>(std::toupper(static_cast<unsigned char>(letter)));
     return upper == 'C' || upper == 'T' || upper == 'U' || upper == 'P';
-}
-
-/**
- * @brief Check if a ResidueType is a purine (legacy compatibility)
- * @param type Legacy ResidueType enum value
- * @return true for ADENINE, GUANINE, INOSINE
- */
-[[nodiscard]] inline bool is_purine(ResidueType type) {
-    return type == ResidueType::ADENINE || type == ResidueType::GUANINE || type == ResidueType::INOSINE;
-}
-
-/**
- * @brief Check if a ResidueType is a pyrimidine (legacy compatibility)
- * @param type Legacy ResidueType enum value
- * @return true for CYTOSINE, THYMINE, URACIL, PSEUDOURIDINE
- */
-[[nodiscard]] inline bool is_pyrimidine(ResidueType type) {
-    return type == ResidueType::CYTOSINE || type == ResidueType::THYMINE || type == ResidueType::URACIL ||
-           type == ResidueType::PSEUDOURIDINE;
 }
 
 } // namespace typing

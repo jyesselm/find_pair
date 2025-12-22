@@ -43,6 +43,7 @@
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/core/parameters.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 
 // Geometry
 #include <x3dna/geometry/vector3d.hpp>

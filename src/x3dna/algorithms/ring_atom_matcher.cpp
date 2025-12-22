@@ -5,20 +5,19 @@
 
 #include <x3dna/algorithms/ring_atom_matcher.hpp>
 #include <x3dna/core/constants.hpp>
-#include <x3dna/core/typing.hpp>
 #include <algorithm>
 
 namespace x3dna {
 namespace algorithms {
 
 MatchedAtoms RingAtomMatcher::match(const core::Residue& residue, const core::Structure& standard_template,
-                                    std::optional<core::ResidueType> detected_type) {
+                                    std::optional<core::typing::BaseType> detected_type) {
     MatchedAtoms result;
 
-    // Determine residue type and get appropriate ring atom list
-    // Use detected type if provided, otherwise use residue's type
-    core::ResidueType residue_type = detected_type.has_value() ? detected_type.value() : residue.residue_type();
-    std::vector<std::string> ring_atom_names = get_ring_atom_names(residue_type);
+    // Determine base type and get appropriate ring atom list
+    // Use detected type if provided, otherwise use residue's base_type
+    core::typing::BaseType base_type = detected_type.has_value() ? detected_type.value() : residue.base_type();
+    std::vector<std::string> ring_atom_names = get_ring_atom_names(base_type);
 
     // Match atoms by name
     for (const auto& atom_name : ring_atom_names) {
@@ -38,10 +37,10 @@ MatchedAtoms RingAtomMatcher::match(const core::Residue& residue, const core::St
     return result;
 }
 
-std::vector<std::string> RingAtomMatcher::get_ring_atom_names(core::ResidueType residue_type) {
+std::vector<std::string> RingAtomMatcher::get_ring_atom_names(core::typing::BaseType base_type) {
     // Use constants as single source of truth for ring atom names
     // Return trimmed names directly - no padding needed since atoms are stored trimmed
-    return constants::nucleotides::ring_atoms_for_type(residue_type);
+    return constants::nucleotides::ring_atoms_for_type(base_type);
 }
 
 std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Residue& residue,
@@ -69,7 +68,7 @@ std::optional<core::Atom> RingAtomMatcher::find_atom_by_name(const core::Structu
     return std::nullopt;
 }
 
-bool RingAtomMatcher::is_purine(core::ResidueType type) {
+bool RingAtomMatcher::is_purine(core::typing::BaseType type) {
     return core::typing::is_purine(type);
 }
 

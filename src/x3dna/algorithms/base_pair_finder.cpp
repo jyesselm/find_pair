@@ -5,6 +5,7 @@
 
 #include <x3dna/algorithms/base_pair_finder.hpp>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 #include <x3dna/core/chain.hpp>
 #include <x3dna/io/json_writer.hpp>
 #include <x3dna/geometry/least_squares_fitter.hpp>
@@ -214,8 +215,8 @@ std::vector<BasePair> BasePairFinder::find_all_pairs(const Structure& structure)
                 pair.set_hydrogen_bonds(result.hbonds);
 
                 // Set bp_type string
-                char base1 = res1->one_letter_code();
-                char base2 = res2->one_letter_code();
+                char base1 = core::one_letter_code(*res1);
+                char base2 = core::one_letter_code(*res2);
                 if (base1 != ' ' && base2 != ' ') {
                     pair.set_bp_type(std::string(1, base1) + std::string(1, base2));
                 }
@@ -362,8 +363,8 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
             pair.set_hydrogen_bonds(result.hbonds);
 
             // Set bp_type string from residue names
-            char base1 = res1->one_letter_code();
-            char base2 = res2->one_letter_code();
+            char base1 = core::one_letter_code(*res1);
+            char base2 = core::one_letter_code(*res2);
             if (base1 != ' ' && base2 != ' ') {
                 pair.set_bp_type(std::string(1, base1) + std::string(1, base2));
             }
@@ -493,17 +494,21 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
 constexpr std::array<const char*, 6> COMMON_RING_ATOMS = {"C4", "N3", "C2", "N1", "C6", "C5"};
 constexpr std::array<const char*, 3> PURINE_RING_ATOMS = {"N7", "C8", "N9"};
 
-bool is_standard_nucleotide(ResidueType type) {
-    return type == ResidueType::ADENINE || type == ResidueType::CYTOSINE || type == ResidueType::GUANINE ||
-           type == ResidueType::THYMINE || type == ResidueType::URACIL;
+bool is_standard_nucleotide(core::typing::BaseType type) {
+    return type == core::typing::BaseType::ADENINE || type == core::typing::BaseType::CYTOSINE ||
+           type == core::typing::BaseType::GUANINE || type == core::typing::BaseType::THYMINE ||
+           type == core::typing::BaseType::URACIL;
 }
 
-bool is_recognized_modified_nucleotide(ResidueType type) {
-    return type == ResidueType::PSEUDOURIDINE || type == ResidueType::INOSINE;
+bool is_recognized_modified_nucleotide(core::typing::BaseType type) {
+    return type == core::typing::BaseType::PSEUDOURIDINE || type == core::typing::BaseType::INOSINE;
 }
 
-bool needs_rmsd_validation(ResidueType type) {
-    return type == ResidueType::UNKNOWN || type == ResidueType::NONCANONICAL_RNA;
+bool needs_rmsd_validation(const Residue& residue) {
+    auto mol_type = residue.molecule_type();
+    auto base_type = residue.base_type();
+    return mol_type == core::typing::MoleculeType::UNKNOWN ||
+           (mol_type == core::typing::MoleculeType::NUCLEIC_ACID && base_type == core::typing::BaseType::UNKNOWN);
 }
 
 bool residue_has_atom(const Residue& residue, const char* atom_name) {
@@ -538,18 +543,18 @@ bool passes_rmsd_nucleotide_check(const Residue& residue) {
 } // namespace
 
 bool BasePairFinder::is_nucleotide(const Residue& residue) {
-    const ResidueType type = residue.residue_type();
+    const auto base_type = residue.base_type();
 
     // Standard nucleotides (A, C, G, T, U)
-    if (is_standard_nucleotide(type))
+    if (is_standard_nucleotide(base_type))
         return true;
 
     // Explicitly recognized modified nucleotides
-    if (is_recognized_modified_nucleotide(type))
+    if (is_recognized_modified_nucleotide(base_type))
         return true;
 
     // Unknown or noncanonical residues need RMSD validation
-    if (needs_rmsd_validation(type)) {
+    if (needs_rmsd_validation(residue)) {
         return passes_rmsd_nucleotide_check(residue);
     }
 
@@ -663,8 +668,8 @@ BasePair BasePairFinder::create_base_pair(int legacy_idx1, int legacy_idx2, cons
 
     // Determine bp_type string from residue names
     if (res_small && res_large) {
-        char base1 = res_small->one_letter_code();
-        char base2 = res_large->one_letter_code();
+        char base1 = core::one_letter_code(*res_small);
+        char base2 = core::one_letter_code(*res_large);
         if (base1 != ' ' && base2 != ' ') {
             pair.set_bp_type(std::string(1, base1) + std::string(1, base2));
         }

@@ -7,6 +7,7 @@
 #include <x3dna/config/config_manager.hpp>
 #include <x3dna/io/json_writer.hpp>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/nucleotide_utils.hpp>
 #include <iostream>
 #include <filesystem>
 #include <vector>
@@ -101,16 +102,11 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure, const std
     }
 
     for (auto* residue : residues_in_order) {
-        // Check residue type
-        core::ResidueType res_type = residue->residue_type();
-
         // Only process nucleotide residues
-        bool is_nucleotide = (res_type != core::ResidueType::UNKNOWN && res_type != core::ResidueType::AMINO_ACID &&
-                              res_type != core::ResidueType::WATER && res_type != core::ResidueType::ION &&
-                              res_type != core::ResidueType::LIGAND);
+        bool is_nucleotide = residue->is_nucleotide();
 
         // Check for modified nucleotides that have ring atoms
-        if (!is_nucleotide && res_type == core::ResidueType::UNKNOWN) {
+        if (!is_nucleotide && residue->molecule_type() == core::typing::MoleculeType::UNKNOWN) {
             static const std::vector<std::string> common_ring_atoms = {"C4", "N3", "C2", "N1", "C6", "C5"};
             int ring_atom_count = 0;
             for (const auto& atom_name : common_ring_atoms) {
@@ -150,7 +146,7 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure, const std
                 continue;
             }
 
-            char base_type = residue->one_letter_code();
+            char base_type = core::one_letter_code(*residue);
             size_t record_idx = static_cast<size_t>(legacy_residue_idx);
 
             // Record base_frame_calc

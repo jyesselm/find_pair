@@ -11,6 +11,7 @@
 #include <memory>
 #include <x3dna/core/structure.hpp>
 #include <x3dna/core/residue.hpp>
+#include <x3dna/core/typing/nucleotide_type.hpp>
 #include <x3dna/io/pdb_parser.hpp>
 
 namespace x3dna {
@@ -40,35 +41,35 @@ public:
     explicit StandardBaseTemplates(const std::filesystem::path& template_path);
 
     /**
-     * @brief Load standard base template for a residue type
-     * @param type Residue type (ADENINE, CYTOSINE, GUANINE, THYMINE, URACIL)
+     * @brief Load standard base template for a base type
+     * @param type Base type (ADENINE, CYTOSINE, GUANINE, THYMINE, URACIL)
      * @param is_modified If true, use lowercase template (Atomic.x.pdb) for modified nucleotides
      * @return Structure containing the standard base atoms
      * @throws std::runtime_error if template file cannot be found or loaded
      */
-    [[nodiscard]] core::Structure load_template(core::ResidueType type, bool is_modified);
+    [[nodiscard]] core::Structure load_template(core::typing::BaseType type, bool is_modified);
 
     /**
-     * @brief Load standard base template for a residue type (standard nucleotide)
-     * @param type Residue type
+     * @brief Load standard base template for a base type (standard nucleotide)
+     * @param type Base type
      * @return Structure containing the standard base atoms
      */
-    [[nodiscard]] core::Structure load_template(core::ResidueType type);
+    [[nodiscard]] core::Structure load_template(core::typing::BaseType type);
 
     /**
-     * @brief Get template file path for a residue type
-     * @param type Residue type
+     * @brief Get template file path for a base type
+     * @param type Base type
      * @param is_modified If true, use lowercase template (Atomic.x.pdb) for modified nucleotides
      * @return Path to template file
      */
-    [[nodiscard]] std::filesystem::path get_template_path(core::ResidueType type, bool is_modified) const;
+    [[nodiscard]] std::filesystem::path get_template_path(core::typing::BaseType type, bool is_modified) const;
 
     /**
-     * @brief Get template file path for a residue type (standard nucleotide)
-     * @param type Residue type
+     * @brief Get template file path for a base type (standard nucleotide)
+     * @param type Base type
      * @return Path to template file
      */
-    [[nodiscard]] std::filesystem::path get_template_path(core::ResidueType type) const;
+    [[nodiscard]] std::filesystem::path get_template_path(core::typing::BaseType type) const;
 
     /**
      * @brief Set base template directory path
@@ -90,31 +91,31 @@ public:
     void clear_cache();
 
     /**
-     * @brief Check if template exists for a residue type
-     * @param type Residue type
+     * @brief Check if template exists for a base type
+     * @param type Base type
      * @return true if template file exists
      */
-    [[nodiscard]] bool template_exists(core::ResidueType type) const;
+    [[nodiscard]] bool template_exists(core::typing::BaseType type) const;
 
 private:
     std::filesystem::path template_path_;
-    std::map<core::ResidueType, std::shared_ptr<core::Structure>> cache_;
+    std::map<core::typing::BaseType, std::shared_ptr<core::Structure>> cache_;
     io::PdbParser parser_;
 
     /**
-     * @brief Convert ResidueType to template filename
-     * @param type Residue type
+     * @brief Convert BaseType to template filename
+     * @param type Base type
      * @param is_modified If true, use lowercase template (Atomic.x.pdb) for modified nucleotides
      * @return Template filename (e.g., "Atomic_A.pdb" or "Atomic.a.pdb")
      */
-    [[nodiscard]] static std::string type_to_filename(core::ResidueType type, bool is_modified);
+    [[nodiscard]] static std::string type_to_filename(core::typing::BaseType type, bool is_modified);
 
     /**
-     * @brief Convert ResidueType to template filename (standard nucleotide)
-     * @param type Residue type
+     * @brief Convert BaseType to template filename (standard nucleotide)
+     * @param type Base type
      * @return Template filename (e.g., "Atomic_A.pdb")
      */
-    [[nodiscard]] static std::string type_to_filename(core::ResidueType type);
+    [[nodiscard]] static std::string type_to_filename(core::typing::BaseType type);
 
     /**
      * @brief Check if a file exists

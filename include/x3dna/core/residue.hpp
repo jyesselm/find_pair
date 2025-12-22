@@ -13,8 +13,6 @@
 #include <limits>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/core/reference_frame.hpp>
-#include <x3dna/core/residue_type.hpp>
-#include <x3dna/core/modified_nucleotide_registry.hpp>
 #include <x3dna/core/typing/residue_classification.hpp>
 #include <x3dna/core/typing/type_registry.hpp>
 #include <x3dna/core/string_utils.hpp>
@@ -49,9 +47,8 @@ public:
      */
     Residue(const std::string& name, int seq_num, const std::string& chain_id, const std::string& insertion = "")
         : name_(trim(name)), seq_num_(seq_num), chain_id_(chain_id), insertion_(insertion) {
-        // Auto-initialize classification and one_letter_code from trimmed name
+        // Auto-initialize classification from trimmed name
         classification_ = typing::TypeRegistry::instance().classify_residue(name_);
-        one_letter_code_ = ModifiedNucleotideRegistry::get_one_letter_code(name_);
     }
 
     /**
@@ -195,38 +192,6 @@ public:
     }
 
     /**
-     * @brief Get all ring atoms (base ring atoms for nucleotides)
-     * @return Vector of ring atoms
-     */
-    [[nodiscard]] std::vector<Atom> ring_atoms() const {
-        std::vector<Atom> ring;
-        for (const auto& atom : atoms_) {
-            if (atom.is_ring_atom()) {
-                ring.push_back(atom);
-            }
-        }
-        return ring;
-    }
-
-    /**
-     * @brief Get one-letter code for this residue
-     * @return One-letter code (A, C, G, T, U for nucleotides, lowercase for modified)
-     *
-     * Recognizes standard nucleotide names:
-     * - Single letter: A, C, G, T, U
-     * - Three letter: ADE, CYT, GUA, THY, URA
-     * - DNA format: DA, DC, DG, DT (may have leading/trailing spaces)
-     * - Modified nucleotides: PSU, 5MC, 5MU, H2U, A2M, etc.
-     */
-    /**
-     * @brief Get one-letter code (stored value, not computed)
-     * @return One-letter code ('A', 'C', 'G', 'U', 'a', 'c', etc.)
-     */
-    [[nodiscard]] char one_letter_code() const {
-        return one_letter_code_;
-    }
-
-    /**
      * @brief Check if this is a nucleotide
      * @return True if nucleotide (A, C, G, T, U or modified a, c, g, t, u, P)
      */
@@ -240,34 +205,6 @@ public:
      */
     [[nodiscard]] bool is_purine() const {
         return classification_.is_purine();
-    }
-
-    /**
-     * @brief Get RY classification (Purine=1, Pyrimidine=0)
-     * Uses classification system
-     * @return 1 for purines, 0 for pyrimidines, -1 for non-nucleotides
-     */
-    [[nodiscard]] int ry_classification() const {
-        if (classification_.is_purine()) {
-            return 1; // Purine
-        }
-        // Check if it's a nucleotide
-        char code = one_letter_code();
-        if (code == 'C' || code == 'T' || code == 'U' || code == 'P' || code == 'c' || code == 't' || code == 'u') {
-            return 0; // Pyrimidine
-        }
-        return -1; // Not a nucleotide
-    }
-
-    /**
-     * @brief Get residue type
-     */
-    /**
-     * @brief Get residue type (derived from classification)
-     * @return ResidueType derived from classification
-     */
-    [[nodiscard]] ResidueType residue_type() const {
-        return classification_.to_legacy_type();
     }
 
     /**
@@ -385,7 +322,6 @@ private:
     friend class Builder;
 
     std::string name_;                              // Residue name (typically trimmed, e.g., "A", "ADE", "PSU")
-    char one_letter_code_ = '?';                    // One-letter code (stored, not computed)
     int seq_num_ = 0;                               // Sequence number
     std::string chain_id_;                          // Chain identifier
     std::string insertion_;                         // Insertion code (PDB column 27)
@@ -402,9 +338,7 @@ private:
  * Usage:
  *   auto residue = Residue::create("  G", 42, 'A')
  *       .insertion(' ')
- *       .one_letter_code('G')
- *       .type(ResidueType::GUANINE)
- *       .is_purine(true)
+ *       .classification(classification)
  *       .atoms(atom_vector)
  *       .build();
  */
@@ -424,11 +358,6 @@ public:
 
     Builder& insertion(const std::string& ins) {
         residue_.insertion_ = ins;
-        return *this;
-    }
-
-    Builder& one_letter_code(char code) {
-        residue_.one_letter_code_ = code;
         return *this;
     }
 
@@ -491,15 +420,11 @@ inline Residue Residue::create_from_atoms(const std::string& name, int sequence_
     // Get full classification from TypeRegistry
     auto classification = typing::TypeRegistry::instance().classify_residue(trimmed);
 
-    // Get one-letter code from registry
-    char one_letter = ModifiedNucleotideRegistry::get_one_letter_code(trimmed);
-
     // Build and return residue with trimmed name
     // Note: legacy_residue_idx is not set here - it should be set by the caller
     // after construction using set_legacy_residue_idx() if needed
     return Residue::create(trimmed, sequence_number, chain_id)
         .insertion(insertion_code)
-        .one_letter_code(one_letter)
         .classification(classification)
         .atoms(atoms)
         .build();

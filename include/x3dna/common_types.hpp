@@ -2,8 +2,8 @@
  * @file common_types.hpp
  * @brief Common types and enumerations for X3DNA
  *
- * Note: Core types (ResidueType, BasePairType) are defined in their
- * respective headers (residue.hpp, base_pair.hpp). This file only
+ * Note: Core types (BasePairType) are defined in their
+ * respective headers (base_pair.hpp). This file only
  * contains types that aren't tied to a specific class.
  */
 
