@@ -47,11 +47,14 @@ int main(int argc, char* argv[]) {
         // Parse command-line arguments
         auto options = x3dna::apps::CommandLineParser::parse_find_pair(argc, argv);
 
-        // Check for timing flag (--timing or -t)
+        // Check for timing flag (--timing or -t) and --no-json flag
+        bool skip_json = false;
         for (int i = 1; i < argc; ++i) {
             if (std::string(argv[i]) == "--timing" || std::string(argv[i]) == "-t") {
                 g_show_timing = true;
-                break;
+            }
+            if (std::string(argv[i]) == "--no-json") {
+                skip_json = true;
             }
         }
 
@@ -77,8 +80,9 @@ int main(int argc, char* argv[]) {
 
         // Create JSON writer for step-by-step debugging (if enabled)
         std::unique_ptr<x3dna::io::JsonWriter> json_writer;
-        // Always enable JSON output for debugging
-        json_writer = std::make_unique<x3dna::io::JsonWriter>(options.pdb_file);
+        if (!skip_json) {
+            json_writer = std::make_unique<x3dna::io::JsonWriter>(options.pdb_file);
+        }
 
         // Create protocol
         x3dna::protocols::FindPairProtocol protocol;
