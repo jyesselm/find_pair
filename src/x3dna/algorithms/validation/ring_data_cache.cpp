@@ -11,7 +11,7 @@ namespace x3dna {
 namespace algorithms {
 namespace validation {
 
-using core::StandardAtom;
+using core::AtomType;
 using core::RING_ATOM_TYPES;
 using core::NUM_RING_ATOM_TYPES;
 
@@ -58,7 +58,7 @@ ResidueRingData RingDataCache::compute_ring_data(const core::Residue& residue) {
 
     // Find ring atom indices using enum comparison (O(1) per atom instead of string compare)
     for (size_t r = 0; r < NUM_RING_ATOM_TYPES; ++r) {
-        StandardAtom target_type = RING_ATOM_TYPES[r];
+        AtomType target_type = RING_ATOM_TYPES[r];
         for (size_t i = 0; i < atoms.size(); ++i) {
             if (atoms[i].standard_atom() == target_type) {
                 data.ring_atom_indices.push_back(i);

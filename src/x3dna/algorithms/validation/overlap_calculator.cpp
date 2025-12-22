@@ -252,7 +252,7 @@ void scale_polygon_to_integer_coords(double min_x, double min_y,
 // Ring Atom Extraction
 // ============================================================================
 
-using core::StandardAtom;
+using core::AtomType;
 using core::RING_ATOM_TYPES;
 using core::NUM_RING_ATOM_TYPES;
 

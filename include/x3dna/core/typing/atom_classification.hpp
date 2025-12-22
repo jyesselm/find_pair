@@ -127,17 +127,17 @@ public:
      */
     [[nodiscard]] static bool is_base_atom_for_hbond(const std::string& atom_name);
 
-    // === StandardAtom classification (for fast integer comparison) ===
+    // === AtomType classification (for fast integer comparison) ===
 
     /**
-     * @brief Get StandardAtom enum from atom name for fast comparison
+     * @brief Get AtomType enum from atom name for fast comparison
      * @param atom_name Atom name (trimmed or PDB-format)
-     * @return StandardAtom enum value (UNKNOWN if not a standard atom)
+     * @return AtomType enum value (UNKNOWN if not a standard atom)
      *
      * This is used to enable O(1) integer comparison instead of string comparison.
      * Call once during atom construction, then compare enum values in hot paths.
      */
-    [[nodiscard]] static StandardAtom get_standard_atom(const std::string& atom_name);
+    [[nodiscard]] static AtomType get_standard_atom(const std::string& atom_name);
 
     // === Full classification ===
 

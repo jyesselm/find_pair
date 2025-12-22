@@ -81,46 +81,34 @@ size_t mark_sharing_hbonds_as_matched(const std::vector<HBond>& bonds, size_t co
 }
 
 /**
- * @brief Helper to check if residue has a specific atom (trimmed name)
- */
-bool has_atom(const Residue& residue, const std::string& name) {
-    for (const auto& atom : residue.atoms()) {
-        if (atom.name() == name) {
-            return true;
-        }
-    }
-    return false;
-}
-
-/**
- * @brief Determine purine type (A or G) from atoms
+ * @brief Determine purine type (A or G) from atoms using AtomType
  */
 char determine_purine_type(const Residue& residue) {
-    const bool has_o6 = has_atom(residue, "O6");
-    const bool has_n6 = has_atom(residue, "N6");
+    const bool has_o6 = residue.has_atom_type(AtomType::O6);
+    const bool has_n6 = residue.has_atom_type(AtomType::N6);
     return (has_o6 || !has_n6) ? 'G' : 'A';
 }
 
 /**
- * @brief Determine pyrimidine type (C, T, or U) from atoms
+ * @brief Determine pyrimidine type (C, T, or U) from atoms using AtomType
  */
 char determine_pyrimidine_type(const Residue& residue) {
-    if (has_atom(residue, "N4")) {
+    if (residue.has_atom_type(AtomType::N4)) {
         return 'C';
     }
-    if (has_atom(residue, "C5M") || has_atom(residue, "C7")) {
+    if (residue.has_atom_type(AtomType::C5M) || residue.has_atom_type(AtomType::C7)) {
         return 'T';
     }
     return 'U';
 }
 
 /**
- * @brief Determine base type from atoms for unknown residues
+ * @brief Determine base type from atoms for unknown residues using AtomType
  */
 char determine_base_type_from_atoms(const Residue& residue) {
-    const bool has_n9 = has_atom(residue, "N9");
-    const bool has_n1 = has_atom(residue, "N1");
-    const bool has_c6 = has_atom(residue, "C6");
+    const bool has_n9 = residue.has_atom_type(AtomType::N9);
+    const bool has_n1 = residue.has_atom_type(AtomType::N1);
+    const bool has_c6 = residue.has_atom_type(AtomType::C6);
 
     const bool is_purine = has_n9 || (has_n1 && has_c6);
     const bool is_pyrimidine = has_n1 && !has_c6;
@@ -231,7 +219,8 @@ void HBondDetector::count_potential_hbonds(const Residue& res1, const Residue& r
             const bool atom1_is_base = is_base_atom(a1.name());
             const bool atom2_is_base = is_base_atom(a2.name());
             const bool both_base = atom1_is_base && atom2_is_base;
-            const bool not_o2prime = (a1.name() != "O2'" && a2.name() != "O2'");
+            // Use AtomType for O2' check (O(1) comparison)
+            const bool not_o2prime = !a1.is_o2_prime() && !a2.is_o2_prime();
 
             if (both_base && not_o2prime) {
                 if (good_hb_atoms(a1.name(), a2.name(), params_.allowed_elements)) {
@@ -239,7 +228,8 @@ void HBondDetector::count_potential_hbonds(const Residue& res1, const Residue& r
                 }
             }
 
-            if (a1.name() == "O2'" || a2.name() == "O2'") {
+            // Use AtomType for O2' check
+            if (a1.is_o2_prime() || a2.is_o2_prime()) {
                 num_o2_hb++;
             }
         }

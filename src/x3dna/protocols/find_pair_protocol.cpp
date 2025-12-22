@@ -40,18 +40,14 @@ void FindPairProtocol::execute(core::Structure& structure) {
 }
 
 void FindPairProtocol::calculate_frames(core::Structure& structure) {
-    // Detect RNA by checking for O2' atoms
+    // Detect RNA by checking for O2' atoms using AtomType (O(1) comparison)
     bool is_rna = false;
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
-            for (const auto& atom : residue.atoms()) {
-                if (atom.name() == "O2'") {
-                    is_rna = true;
-                    break;
-                }
-            }
-            if (is_rna)
+            if (residue.has_atom_type(core::AtomType::O2_PRIME)) {
+                is_rna = true;
                 break;
+            }
         }
         if (is_rna)
             break;
@@ -107,14 +103,15 @@ size_t FindPairProtocol::write_frames_json(core::Structure& structure, const std
 
         // Check for modified nucleotides that have ring atoms
         if (!is_nucleotide && residue->molecule_type() == core::typing::MoleculeType::UNKNOWN) {
-            static const std::vector<std::string> common_ring_atoms = {"C4", "N3", "C2", "N1", "C6", "C5"};
+            // Check for common ring atoms using AtomType (O(1) comparison)
+            static constexpr core::AtomType common_ring_atoms[] = {
+                core::AtomType::C4, core::AtomType::N3, core::AtomType::C2,
+                core::AtomType::N1, core::AtomType::C6, core::AtomType::C5
+            };
             int ring_atom_count = 0;
-            for (const auto& atom_name : common_ring_atoms) {
-                for (const auto& atom : residue->atoms()) {
-                    if (atom.name() == atom_name) {
-                        ring_atom_count++;
-                        break;
-                    }
+            for (auto type : common_ring_atoms) {
+                if (residue->has_atom_type(type)) {
+                    ring_atom_count++;
                 }
             }
             if (ring_atom_count >= 3) {

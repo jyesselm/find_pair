@@ -82,18 +82,14 @@ void AnalyzeProtocol::recalculate_frames(core::Structure& structure) {
 
     if (need_recalculate) {
         // Some frames are missing, recalculate all frames
-        // Detect RNA by checking for O2' atoms
+        // Detect RNA by checking for O2' atoms using AtomType (O(1) comparison)
         bool is_rna = false;
         for (const auto& chain : structure.chains()) {
             for (const auto& residue : chain.residues()) {
-                for (const auto& atom : residue.atoms()) {
-                    if (atom.name() == "O2'") {
-                        is_rna = true;
-                        break;
-                    }
-                }
-                if (is_rna)
+                if (residue.has_atom_type(core::AtomType::O2_PRIME)) {
+                    is_rna = true;
                     break;
+                }
             }
             if (is_rna)
                 break;

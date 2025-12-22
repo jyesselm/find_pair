@@ -6,6 +6,7 @@
 #include <x3dna/algorithms/residue_type_detector.hpp>
 #include <x3dna/core/constants.hpp>
 #include <x3dna/core/typing.hpp>
+#include <x3dna/core/typing/atom_type.hpp>
 #include <x3dna/geometry/least_squares_fitter.hpp>
 #include <algorithm>
 #include <cctype>
@@ -13,9 +14,13 @@
 namespace x3dna {
 namespace algorithms {
 
+using core::AtomType;
+using core::RING_ATOM_TYPES;
+using core::NUM_RING_ATOM_TYPES;
+
 namespace {
 // Standard nucleotide ring geometry (from legacy xyz_ring array)
-// Matches RA_LIST order: " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "
+// Matches RA_LIST order: C4, N3, C2, N1, C6, C5, N7, C8, N9
 constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
     {{-1.265, 3.177, 0.000}}, // C4
     {{-2.342, 2.364, 0.001}}, // N3
@@ -28,10 +33,6 @@ constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
     {{-1.289, 4.551, 0.000}}, // N9 (purine)
 }};
 
-// Legacy RA_LIST order for ring atoms (trimmed for modern comparison)
-constexpr std::array<const char*, 9> RING_ATOM_NAMES = {"C4", "N3", "C2", "N1", "C6",
-                                                        "C5", "N7", "C8", "N9"};
-
 } // namespace
 
 RmsdCheckResult ResidueTypeDetector::check_by_rmsd(const core::Residue& residue) {
@@ -40,35 +41,31 @@ RmsdCheckResult ResidueTypeDetector::check_by_rmsd(const core::Residue& residue)
     int purine_atom_count = 0;
     bool has_c1_prime = false;
 
-    // Match ring atoms (matches legacy logic in find_pair)
-    // Legacy RA_LIST: " C4 ", " N3 ", " C2 ", " N1 ", " C6 ", " C5 ", " N7 ", " C8 ", " N9 "
-    for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
-        const char* atom_name = RING_ATOM_NAMES[i];
+    // Match ring atoms using AtomType for O(1) comparison
+    for (size_t i = 0; i < NUM_RING_ATOM_TYPES; ++i) {
+        AtomType target_type = RING_ATOM_TYPES[i];
+        const core::Atom* atom = residue.find_atom_by_type(target_type);
+        if (atom != nullptr) {
+            experimental_coords.push_back(atom->position());
+            standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
+                                                         STANDARD_RING_GEOMETRY[i][2]));
 
-        // Find matching atom in residue
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == atom_name) {
-                experimental_coords.push_back(atom.position());
-                standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
-                                                             STANDARD_RING_GEOMETRY[i][2]));
-
-                // Count purine atoms (N7, C8, N9)
-                if (atom_name == std::string("N7") || atom_name == std::string("C8") ||
-                    atom_name == std::string("N9")) {
-                    purine_atom_count++;
-                }
-
-                break;
+            // Count purine atoms (N7, C8, N9 are indices 6, 7, 8)
+            if (i >= 6) {
+                purine_atom_count++;
             }
         }
     }
 
-    // Check for C1' or C1R (sugar atom)
-    // Some nucleotides like NMN use C1R instead of C1'
-    for (const auto& atom : residue.atoms()) {
-        if (atom.name() == "C1'" || atom.name() == "C1R") {
-            has_c1_prime = true;
-            break;
+    // Check for C1' using AtomType, or C1R via string (alternative name)
+    if (residue.has_atom_type(AtomType::C1_PRIME)) {
+        has_c1_prime = true;
+    } else {
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == "C1R") {
+                has_c1_prime = true;
+                break;
+            }
         }
     }
 
@@ -83,16 +80,12 @@ RmsdCheckResult ResidueTypeDetector::check_by_rmsd(const core::Residue& residue)
         return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
     }
 
-    // Collect matched atom names in the order they were found
+    // Collect matched atom names using AtomType
     std::vector<std::string> matched_names;
-    for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
-        const char* atom_name = RING_ATOM_NAMES[i];
-        // Check if this atom was found in residue
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == atom_name) {
-                matched_names.push_back(std::string(atom_name));
-                break;
-            }
+    for (size_t i = 0; i < NUM_RING_ATOM_TYPES; ++i) {
+        AtomType target_type = RING_ATOM_TYPES[i];
+        if (residue.has_atom_type(target_type)) {
+            matched_names.push_back(std::string(core::typing::to_string(target_type)));
         }
     }
 

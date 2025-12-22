@@ -207,20 +207,76 @@ public:
     }
 
     /**
-     * @brief Find an atom by its StandardAtom type (O(1) enum comparison per atom)
-     * @param type StandardAtom enum value to search for
+     * @brief Find an atom by its AtomType type (O(1) enum comparison per atom)
+     * @param type AtomType enum value to search for
      * @return Pointer to atom if found, nullptr otherwise
      *
      * This is ~100x faster than string-based find_atom() in hot paths because
      * it uses integer comparison instead of string comparison.
      */
-    [[nodiscard]] const Atom* find_atom_by_type(StandardAtom type) const {
+    [[nodiscard]] const Atom* find_atom_by_type(AtomType type) const {
         for (const auto& atom : atoms_) {
             if (atom.standard_atom() == type) {
                 return &atom;
             }
         }
         return nullptr;
+    }
+
+    /**
+     * @brief Check if residue contains an atom of the given type (O(1) comparison per atom)
+     * @param type AtomType enum value to search for
+     * @return True if atom found, false otherwise
+     */
+    [[nodiscard]] bool has_atom_type(AtomType type) const {
+        return find_atom_by_type(type) != nullptr;
+    }
+
+    /**
+     * @brief Check if residue contains any non-standard atoms (AtomType::UNKNOWN)
+     * @return True if any atom has AtomType::UNKNOWN
+     *
+     * Non-standard atoms include alternative naming conventions like:
+     * - C1R (alternative for C1')
+     * - O2* (alternative for O2')
+     * - PA (alternative for P)
+     * - Modified base atoms not in the standard set
+     */
+    [[nodiscard]] bool has_nonstandard_atoms() const {
+        for (const auto& atom : atoms_) {
+            if (atom.standard_atom() == AtomType::UNKNOWN) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @brief Get names of all non-standard atoms in this residue
+     * @return Vector of atom names that have AtomType::UNKNOWN
+     */
+    [[nodiscard]] std::vector<std::string> nonstandard_atom_names() const {
+        std::vector<std::string> names;
+        for (const auto& atom : atoms_) {
+            if (atom.standard_atom() == AtomType::UNKNOWN) {
+                names.push_back(atom.name());
+            }
+        }
+        return names;
+    }
+
+    /**
+     * @brief Count non-standard atoms in this residue
+     * @return Number of atoms with AtomType::UNKNOWN
+     */
+    [[nodiscard]] size_t count_nonstandard_atoms() const {
+        size_t count = 0;
+        for (const auto& atom : atoms_) {
+            if (atom.standard_atom() == AtomType::UNKNOWN) {
+                ++count;
+            }
+        }
+        return count;
     }
 
     /**

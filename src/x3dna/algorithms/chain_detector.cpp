@@ -4,12 +4,15 @@
  */
 
 #include <x3dna/algorithms/chain_detector.hpp>
+#include <x3dna/core/typing/atom_type.hpp>
 #include <algorithm>
 #include <limits>
 #include <functional>
 
 namespace x3dna {
 namespace algorithms {
+
+using core::AtomType;
 
 ChainDetector::ChainDetector(const Config& config) : config_(config) {}
 
@@ -130,22 +133,23 @@ int ChainDetector::are_protein_residues_connected(const core::Residue& res1, con
 BackboneConnectivity ChainDetector::extract_backbone(const core::Residue& residue) const {
     BackboneConnectivity bb;
 
-    // RNA backbone atoms
-    if (auto atom = residue.find_atom("O3'")) {
+    // RNA backbone atoms - use AtomType for O(1) lookup
+    if (const auto* atom = residue.find_atom_by_type(AtomType::O3_PRIME)) {
         bb.O3_prime = atom->position();
     }
-    if (auto atom = residue.find_atom("P")) {
+    if (const auto* atom = residue.find_atom_by_type(AtomType::P)) {
         bb.P = atom->position();
     }
+    // PA not in AtomType enum - keep string lookup
     if (auto atom = residue.find_atom("PA")) {
         bb.PA = atom->position();
     }
 
-    // Protein backbone atoms
-    if (auto atom = residue.find_atom("C")) {
+    // Protein backbone atoms - use AtomType for O(1) lookup
+    if (const auto* atom = residue.find_atom_by_type(AtomType::C)) {
         bb.C = atom->position();
     }
-    if (auto atom = residue.find_atom("N")) {
+    if (const auto* atom = residue.find_atom_by_type(AtomType::N)) {
         bb.N = atom->position();
     }
 
@@ -163,8 +167,8 @@ std::vector<const core::Residue*> ChainDetector::filter_rna_residues(const core:
                 continue;
             }
 
-            // Check for P or C1' atoms as fallback (for modified bases)
-            if (residue.find_atom("P") || residue.find_atom("C1'")) {
+            // Check for P or C1' atoms as fallback (for modified bases) - use AtomType
+            if (residue.has_atom_type(AtomType::P) || residue.has_atom_type(AtomType::C1_PRIME)) {
                 rna_residues.push_back(&residue);
             }
         }
@@ -184,8 +188,8 @@ std::vector<const core::Residue*> ChainDetector::filter_protein_residues(const c
                 continue;
             }
 
-            // Check for C and N atoms as fallback (for modified amino acids)
-            if (residue.find_atom("C") && residue.find_atom("N")) {
+            // Check for C and N atoms as fallback (for modified amino acids) - use AtomType
+            if (residue.has_atom_type(AtomType::C) && residue.has_atom_type(AtomType::N)) {
                 protein_residues.push_back(&residue);
             }
         }
@@ -337,13 +341,18 @@ std::vector<ConnectedChain> ChainDetector::merge_adjacent_chains(std::vector<Con
 }
 
 std::optional<geometry::Vector3D> ChainDetector::calculate_sugar_center(const core::Residue& residue) const {
-    std::vector<std::string> sugar_atoms = {"C1'", "C2'", "C3'", "C4'", "C5'", "O2'", "O3'", "O4'", "O5'"};
+    // Sugar atoms - use AtomType for O(1) lookup
+    static constexpr AtomType sugar_atom_types[] = {
+        AtomType::C1_PRIME, AtomType::C2_PRIME, AtomType::C3_PRIME,
+        AtomType::C4_PRIME, AtomType::C5_PRIME, AtomType::O2_PRIME,
+        AtomType::O3_PRIME, AtomType::O4_PRIME, AtomType::O5_PRIME
+    };
 
     geometry::Vector3D sum(0, 0, 0);
     int count = 0;
 
-    for (const auto& atom_name : sugar_atoms) {
-        if (auto atom = residue.find_atom(atom_name)) {
+    for (auto type : sugar_atom_types) {
+        if (const auto* atom = residue.find_atom_by_type(type)) {
             sum += atom->position();
             ++count;
         }
@@ -366,10 +375,10 @@ double ChainDetector::get_residue_distance(const core::Residue& res1, const core
         }
     }
 
-    // For protein, use CA atoms
+    // For protein, use CA atoms - use AtomType for O(1) lookup
     if (res1.is_protein() && res2.is_protein()) {
-        auto ca1 = res1.find_atom("CA");
-        auto ca2 = res2.find_atom("CA");
+        const auto* ca1 = res1.find_atom_by_type(AtomType::CA);
+        const auto* ca2 = res2.find_atom_by_type(AtomType::CA);
         if (ca1 && ca2) {
             return ca1->position().distance_to(ca2->position());
         }

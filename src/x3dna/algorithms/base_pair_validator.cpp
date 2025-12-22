@@ -204,9 +204,9 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
     bool is_purine = typing::is_purine_letter(one_letter);
 
     if (is_purine) {
-        // Purine: find N9
-        auto n9 = residue.find_atom("N9");
-        if (n9.has_value()) {
+        // Purine: find N9 using AtomType (O(1) comparison)
+        const core::Atom* n9 = residue.find_atom_by_type(core::AtomType::N9);
+        if (n9 != nullptr) {
             return n9->position();
         }
         // N9 not found - legacy fallback: find atom with '9' in name
@@ -222,14 +222,14 @@ std::optional<Vector3D> BasePairValidator::find_n1_n9_position(const Residue& re
         // Special case: for P/p bases, legacy uses C5
         char base = core::one_letter_code(residue);
         if (base == 'P' || base == 'p') {
-            auto c5 = residue.find_atom("C5");
-            if (c5.has_value()) {
+            const core::Atom* c5 = residue.find_atom_by_type(core::AtomType::C5);
+            if (c5 != nullptr) {
                 return c5->position();
             }
         }
-        // Otherwise, use N1
-        auto n1 = residue.find_atom("N1");
-        if (n1.has_value()) {
+        // Otherwise, use N1 using AtomType (O(1) comparison)
+        const core::Atom* n1 = residue.find_atom_by_type(core::AtomType::N1);
+        if (n1 != nullptr) {
             return n1->position();
         }
         // N1 not found - legacy fallback: find atom with '1' in name

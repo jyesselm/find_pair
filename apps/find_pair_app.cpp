@@ -13,11 +13,47 @@
 #include <iostream>
 #include <stdexcept>
 #include <exception>
+#include <chrono>
+#include <iomanip>
+
+namespace {
+    // Simple timer for profiling
+    class Timer {
+    public:
+        void start() { start_ = std::chrono::high_resolution_clock::now(); }
+        double elapsed_ms() const {
+            auto end = std::chrono::high_resolution_clock::now();
+            return std::chrono::duration<double, std::milli>(end - start_).count();
+        }
+    private:
+        std::chrono::high_resolution_clock::time_point start_;
+    };
+
+    bool g_show_timing = false;
+
+    void print_timing(const char* label, double ms) {
+        if (g_show_timing) {
+            std::cout << "[TIMING] " << std::setw(30) << std::left << label
+                      << std::fixed << std::setprecision(1) << ms << " ms\n";
+        }
+    }
+}
 
 int main(int argc, char* argv[]) {
     try {
+        Timer total_timer, step_timer;
+        total_timer.start();
+
         // Parse command-line arguments
         auto options = x3dna::apps::CommandLineParser::parse_find_pair(argc, argv);
+
+        // Check for timing flag (--timing or -t)
+        for (int i = 1; i < argc; ++i) {
+            if (std::string(argv[i]) == "--timing" || std::string(argv[i]) == "-t") {
+                g_show_timing = true;
+                break;
+            }
+        }
 
         // Set legacy mode in config manager if requested
         auto& config = x3dna::config::ConfigManager::instance();
@@ -34,8 +70,10 @@ int main(int argc, char* argv[]) {
             parser.set_include_waters(true);
         }
 
+        step_timer.start();
         std::cout << "Parsing PDB file: " << options.pdb_file << "\n";
         auto structure = parser.parse_file(options.pdb_file);
+        print_timing("PDB parsing", step_timer.elapsed_ms());
 
         // Create JSON writer for step-by-step debugging (if enabled)
         std::unique_ptr<x3dna::io::JsonWriter> json_writer;
@@ -53,8 +91,10 @@ int main(int argc, char* argv[]) {
             protocol.set_json_writer(json_writer.get());
         }
         // Execute protocol
+        step_timer.start();
         std::cout << "Finding base pairs...\n";
         protocol.execute(structure);
+        print_timing("Find pairs (total)", step_timer.elapsed_ms());
 
         // Get results
         const auto& base_pairs = protocol.base_pairs();
@@ -62,9 +102,11 @@ int main(int argc, char* argv[]) {
 
         // Write JSON output (if JsonWriter was enabled)
         if (json_writer) {
+            step_timer.start();
             std::filesystem::path json_output_dir = "data/json";
             json_writer->write_to_file(json_output_dir, true);
             std::cout << "JSON debug output written to " << json_output_dir << "\n";
+            print_timing("JSON writing", step_timer.elapsed_ms());
         }
 
         // Write output file (.inp format)
@@ -99,6 +141,7 @@ int main(int argc, char* argv[]) {
 
             // Calculate and write step/helical parameters
             if (base_pairs.size() >= 2) {
+                step_timer.start();
                 std::cout << "Calculating step and helical parameters...\n";
 
                 // Create AnalyzeProtocol to calculate parameters
@@ -108,6 +151,7 @@ int main(int argc, char* argv[]) {
 
                 // Execute on the .inp file we just wrote
                 analyze_protocol.execute(options.output_file);
+                print_timing("Analyze protocol", step_timer.elapsed_ms());
 
                 // Get results
                 const auto& step_params = analyze_protocol.step_parameters();
@@ -135,6 +179,7 @@ int main(int argc, char* argv[]) {
         }
 
         std::cout << "Done!\n";
+        print_timing("TOTAL TIME", total_timer.elapsed_ms());
 
         return 0;
     } catch (const std::exception& e) {

@@ -209,100 +209,100 @@ AtomClassification AtomClassifier::classify_protein_atom(const std::string& atom
     return result;
 }
 
-StandardAtom AtomClassifier::get_standard_atom(const std::string& atom_name) {
+AtomType AtomClassifier::get_standard_atom(const std::string& atom_name) {
     // Static map for O(1) lookup - initialized once
-    static const std::unordered_map<std::string, StandardAtom> atom_map = {
+    static const std::unordered_map<std::string, AtomType> atom_map = {
         // Nucleotide ring atoms
-        {"C4", StandardAtom::C4},
-        {"N3", StandardAtom::N3},
-        {"C2", StandardAtom::C2},
-        {"N1", StandardAtom::N1},
-        {"C6", StandardAtom::C6},
-        {"C5", StandardAtom::C5},
-        {"N7", StandardAtom::N7},
-        {"C8", StandardAtom::C8},
-        {"N9", StandardAtom::N9},
+        {"C4", AtomType::C4},
+        {"N3", AtomType::N3},
+        {"C2", AtomType::C2},
+        {"N1", AtomType::N1},
+        {"C6", AtomType::C6},
+        {"C5", AtomType::C5},
+        {"N7", AtomType::N7},
+        {"C8", AtomType::C8},
+        {"N9", AtomType::N9},
 
         // Nucleotide exocyclic atoms
-        {"O6", StandardAtom::O6},
-        {"N6", StandardAtom::N6},
-        {"O2", StandardAtom::O2},
-        {"N2", StandardAtom::N2},
-        {"O4", StandardAtom::O4},
-        {"N4", StandardAtom::N4},
-        {"C5M", StandardAtom::C5M},
-        {"C7", StandardAtom::C7},
+        {"O6", AtomType::O6},
+        {"N6", AtomType::N6},
+        {"O2", AtomType::O2},
+        {"N2", AtomType::N2},
+        {"O4", AtomType::O4},
+        {"N4", AtomType::N4},
+        {"C5M", AtomType::C5M},
+        {"C7", AtomType::C7},
 
         // Nucleotide sugar atoms
-        {"C1'", StandardAtom::C1_PRIME},
-        {"C2'", StandardAtom::C2_PRIME},
-        {"C3'", StandardAtom::C3_PRIME},
-        {"C4'", StandardAtom::C4_PRIME},
-        {"C5'", StandardAtom::C5_PRIME},
-        {"O2'", StandardAtom::O2_PRIME},
-        {"O3'", StandardAtom::O3_PRIME},
-        {"O4'", StandardAtom::O4_PRIME},
-        {"O5'", StandardAtom::O5_PRIME},
+        {"C1'", AtomType::C1_PRIME},
+        {"C2'", AtomType::C2_PRIME},
+        {"C3'", AtomType::C3_PRIME},
+        {"C4'", AtomType::C4_PRIME},
+        {"C5'", AtomType::C5_PRIME},
+        {"O2'", AtomType::O2_PRIME},
+        {"O3'", AtomType::O3_PRIME},
+        {"O4'", AtomType::O4_PRIME},
+        {"O5'", AtomType::O5_PRIME},
 
         // Nucleotide backbone atoms
-        {"P", StandardAtom::P},
-        {"OP1", StandardAtom::OP1},
-        {"OP2", StandardAtom::OP2},
-        {"OP3", StandardAtom::OP3},
+        {"P", AtomType::P},
+        {"OP1", AtomType::OP1},
+        {"OP2", AtomType::OP2},
+        {"OP3", AtomType::OP3},
         // Legacy phosphate oxygen names
-        {"O1P", StandardAtom::OP1},
-        {"O2P", StandardAtom::OP2},
+        {"O1P", AtomType::OP1},
+        {"O2P", AtomType::OP2},
 
         // Amino acid backbone atoms
-        {"N", StandardAtom::N},
-        {"CA", StandardAtom::CA},
-        {"C", StandardAtom::C},
-        {"O", StandardAtom::O},
-        {"OXT", StandardAtom::OXT},
+        {"N", AtomType::N},
+        {"CA", AtomType::CA},
+        {"C", AtomType::C},
+        {"O", AtomType::O},
+        {"OXT", AtomType::OXT},
 
         // Common amino acid side chain atoms
-        {"CB", StandardAtom::CB},
-        {"CG", StandardAtom::CG},
-        {"CG1", StandardAtom::CG1},
-        {"CG2", StandardAtom::CG2},
-        {"CD", StandardAtom::CD},
-        {"CD1", StandardAtom::CD1},
-        {"CD2", StandardAtom::CD2},
-        {"CE", StandardAtom::CE},
-        {"CE1", StandardAtom::CE1},
-        {"CE2", StandardAtom::CE2},
-        {"CE3", StandardAtom::CE3},
-        {"CZ", StandardAtom::CZ},
-        {"CZ2", StandardAtom::CZ2},
-        {"CZ3", StandardAtom::CZ3},
-        {"CH2", StandardAtom::CH2},
-        {"OG", StandardAtom::OG},
-        {"OG1", StandardAtom::OG1},
-        {"OD1", StandardAtom::OD1},
-        {"OD2", StandardAtom::OD2},
-        {"OE1", StandardAtom::OE1},
-        {"OE2", StandardAtom::OE2},
-        {"OH", StandardAtom::OH},
-        {"ND1", StandardAtom::ND1},
-        {"ND2", StandardAtom::ND2},
-        {"NE", StandardAtom::NE},
-        {"NE1", StandardAtom::NE1},
-        {"NE2", StandardAtom::NE2},
-        {"NH1", StandardAtom::NH1},
-        {"NH2", StandardAtom::NH2},
-        {"NZ", StandardAtom::NZ},
-        {"SD", StandardAtom::SD},
-        {"SG", StandardAtom::SG},
+        {"CB", AtomType::CB},
+        {"CG", AtomType::CG},
+        {"CG1", AtomType::CG1},
+        {"CG2", AtomType::CG2},
+        {"CD", AtomType::CD},
+        {"CD1", AtomType::CD1},
+        {"CD2", AtomType::CD2},
+        {"CE", AtomType::CE},
+        {"CE1", AtomType::CE1},
+        {"CE2", AtomType::CE2},
+        {"CE3", AtomType::CE3},
+        {"CZ", AtomType::CZ},
+        {"CZ2", AtomType::CZ2},
+        {"CZ3", AtomType::CZ3},
+        {"CH2", AtomType::CH2},
+        {"OG", AtomType::OG},
+        {"OG1", AtomType::OG1},
+        {"OD1", AtomType::OD1},
+        {"OD2", AtomType::OD2},
+        {"OE1", AtomType::OE1},
+        {"OE2", AtomType::OE2},
+        {"OH", AtomType::OH},
+        {"ND1", AtomType::ND1},
+        {"ND2", AtomType::ND2},
+        {"NE", AtomType::NE},
+        {"NE1", AtomType::NE1},
+        {"NE2", AtomType::NE2},
+        {"NH1", AtomType::NH1},
+        {"NH2", AtomType::NH2},
+        {"NZ", AtomType::NZ},
+        {"SD", AtomType::SD},
+        {"SG", AtomType::SG},
 
         // Water
-        {"OW", StandardAtom::OW},
+        {"OW", AtomType::OW},
     };
 
     auto it = atom_map.find(atom_name);
     if (it != atom_map.end()) {
         return it->second;
     }
-    return StandardAtom::UNKNOWN;
+    return AtomType::UNKNOWN;
 }
 
 } // namespace typing

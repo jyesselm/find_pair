@@ -133,11 +133,53 @@ public:
 
     /**
      * @brief Get the standard atom type (for fast enum comparison)
-     * @return StandardAtom enum value (UNKNOWN for non-standard atoms)
+     * @return AtomType enum value (UNKNOWN for non-standard atoms)
      */
-    [[nodiscard]] StandardAtom standard_atom() const {
+    [[nodiscard]] AtomType atom_type() const {
         return standard_atom_;
     }
+
+    /**
+     * @brief Alias for atom_type() - deprecated, use atom_type() instead
+     */
+    [[nodiscard]] AtomType standard_atom() const {
+        return standard_atom_;
+    }
+
+    /**
+     * @brief Check if this atom matches a specific AtomType (O(1) comparison)
+     * @param type The AtomType to check against
+     * @return True if atom type matches
+     */
+    [[nodiscard]] bool is(AtomType type) const {
+        return standard_atom_ == type;
+    }
+
+    // === Specific atom type checks (O(1) comparison) ===
+
+    [[nodiscard]] bool is_c1_prime() const { return standard_atom_ == AtomType::C1_PRIME; }
+    [[nodiscard]] bool is_c2_prime() const { return standard_atom_ == AtomType::C2_PRIME; }
+    [[nodiscard]] bool is_c3_prime() const { return standard_atom_ == AtomType::C3_PRIME; }
+    [[nodiscard]] bool is_c4_prime() const { return standard_atom_ == AtomType::C4_PRIME; }
+    [[nodiscard]] bool is_c5_prime() const { return standard_atom_ == AtomType::C5_PRIME; }
+    [[nodiscard]] bool is_o2_prime() const { return standard_atom_ == AtomType::O2_PRIME; }
+    [[nodiscard]] bool is_o3_prime() const { return standard_atom_ == AtomType::O3_PRIME; }
+    [[nodiscard]] bool is_o4_prime() const { return standard_atom_ == AtomType::O4_PRIME; }
+    [[nodiscard]] bool is_o5_prime() const { return standard_atom_ == AtomType::O5_PRIME; }
+
+    // Ring atoms
+    [[nodiscard]] bool is_n1() const { return standard_atom_ == AtomType::N1; }
+    [[nodiscard]] bool is_n3() const { return standard_atom_ == AtomType::N3; }
+    [[nodiscard]] bool is_n7() const { return standard_atom_ == AtomType::N7; }
+    [[nodiscard]] bool is_n9() const { return standard_atom_ == AtomType::N9; }
+    [[nodiscard]] bool is_c2() const { return standard_atom_ == AtomType::C2; }
+    [[nodiscard]] bool is_c4() const { return standard_atom_ == AtomType::C4; }
+    [[nodiscard]] bool is_c5() const { return standard_atom_ == AtomType::C5; }
+    [[nodiscard]] bool is_c6() const { return standard_atom_ == AtomType::C6; }
+    [[nodiscard]] bool is_c8() const { return standard_atom_ == AtomType::C8; }
+
+    // Backbone atoms
+    [[nodiscard]] bool is_phosphorus() const { return standard_atom_ == AtomType::P; }
 
     /**
      * @brief Check if this atom is a ring atom (part of base ring)
@@ -193,7 +235,7 @@ private:
 
     std::string name_;            // Atom name (trimmed, without padding)
     geometry::Vector3D position_; // 3D coordinates
-    StandardAtom standard_atom_ = StandardAtom::UNKNOWN; // Cached atom type for fast comparison
+    AtomType standard_atom_ = AtomType::UNKNOWN; // Cached atom type for fast comparison
     char alt_loc_ = ' ';          // Alternate location indicator (PDB column 17)
     double occupancy_ = 1.0;      // Occupancy (PDB columns 55-60, default 1.0)
     int atom_serial_ = 0;         // Atom serial number (PDB column 7-11)

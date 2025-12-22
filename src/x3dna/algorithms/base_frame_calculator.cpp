@@ -7,6 +7,7 @@
 #include <x3dna/algorithms/validation_constants.hpp>
 #include <x3dna/core/nucleotide_utils.hpp>
 #include <x3dna/core/typing/type_registry.hpp>
+#include <x3dna/core/typing/atom_type.hpp>
 #include <stdexcept>
 #include <cmath>
 #include <algorithm>
@@ -14,6 +15,10 @@
 
 namespace x3dna {
 namespace algorithms {
+
+using core::AtomType;
+using core::RING_ATOM_TYPES;
+using core::NUM_RING_ATOM_TYPES;
 
 namespace {
 // Standard nucleotide ring geometry (from legacy xyz_ring array)
@@ -30,10 +35,8 @@ constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
     {{-1.289, 4.551, 0.000}}, // N9 (purine)
 }};
 
-// Legacy RA_LIST order for ring atoms
-// Trimmed atom names for internal comparison (names are stored trimmed)
-constexpr std::array<const char*, 9> RING_ATOM_NAMES = {"C4", "N3", "C2", "N1", "C6",
-                                                        "C5", "N7", "C8", "N9"};
+// Ring atom names are now accessed via RING_ATOM_TYPES from atom_type.hpp
+// Use core::typing::to_string(AtomType) to get the string representation
 
 /**
  * @brief Check nucleotide type by RMSD (matches legacy check_nt_type_by_rmsd)
@@ -45,31 +48,35 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
     bool has_c1_prime = false;
     int purine_atom_count = 0;
 
-    // Try to match ALL ring atoms
-    for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
-        const char* atom_name = RING_ATOM_NAMES[i];
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == atom_name) {
-                const auto& pos = atom.position();
-                experimental_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
-                standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
-                                                             STANDARD_RING_GEOMETRY[i][2]));
-                if (i == 1 || i == 3 || i == 6 || i == 8) {
-                    nN++;
-                }
-                if (i >= 6) {
-                    purine_atom_count++;
-                }
-                break;
+    // Try to match ALL ring atoms using AtomType for O(1) comparison
+    for (size_t i = 0; i < NUM_RING_ATOM_TYPES; ++i) {
+        AtomType target_type = RING_ATOM_TYPES[i];
+        const core::Atom* atom = residue.find_atom_by_type(target_type);
+        if (atom != nullptr) {
+            const auto& pos = atom->position();
+            experimental_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
+            standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
+                                                         STANDARD_RING_GEOMETRY[i][2]));
+            // N3, N1, N7, N9 are nitrogen atoms (indices 1, 3, 6, 8)
+            if (i == 1 || i == 3 || i == 6 || i == 8) {
+                nN++;
+            }
+            if (i >= 6) {
+                purine_atom_count++;
             }
         }
     }
 
-    // Check for C1' or C1R atom (use trimmed names - atom names are stored trimmed)
-    for (const auto& atom : residue.atoms()) {
-        if (atom.name() == "C1'" || atom.name() == "C1R") {
-            has_c1_prime = true;
-            break;
+    // Check for C1' atom using AtomType (O(1) comparison)
+    // Also check for C1R via string (not in AtomType enum - rare alternative name)
+    if (residue.has_atom_type(AtomType::C1_PRIME)) {
+        has_c1_prime = true;
+    } else {
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == "C1R") {
+                has_c1_prime = true;
+                break;
+            }
         }
     }
 
@@ -80,15 +87,12 @@ RmsdCheckResult check_nt_type_by_rmsd(const core::Residue& residue) {
         return {std::nullopt, purine_atom_count > 0, {}, {}, {}};
     }
 
-    // Collect matched atom names
+    // Collect matched atom names using AtomType
     std::vector<std::string> matched_names;
-    for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
-        const char* atom_name = RING_ATOM_NAMES[i];
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == atom_name) {
-                matched_names.push_back(std::string(atom_name));
-                break;
-            }
+    for (size_t i = 0; i < NUM_RING_ATOM_TYPES; ++i) {
+        AtomType target_type = RING_ATOM_TYPES[i];
+        if (residue.has_atom_type(target_type)) {
+            matched_names.push_back(std::string(core::typing::to_string(target_type)));
         }
     }
 
@@ -125,29 +129,27 @@ bool is_in_nt_list(const std::string& res_name) {
     return false;
 }
 
-// Count ring atoms in a residue
+// Count ring atoms in a residue using AtomType
 std::tuple<int, bool> count_ring_atoms(const core::Residue& residue) {
-    static const std::vector<std::string> common_ring = {"C4", "N3", "C2", "N1", "C6", "C5"};
-    static const std::vector<std::string> purine_ring = {"N7", "C8", "N9"};
+    // Common ring atoms (indices 0-5 in RING_ATOM_TYPES)
+    static constexpr AtomType common_ring[] = {
+        AtomType::C4, AtomType::N3, AtomType::C2, AtomType::N1, AtomType::C6, AtomType::C5
+    };
+    // Purine-only ring atoms (indices 6-8 in RING_ATOM_TYPES)
+    static constexpr AtomType purine_ring[] = {AtomType::N7, AtomType::C8, AtomType::N9};
 
     int count = 0;
     bool has_purine = false;
 
-    for (const auto& atom_name : common_ring) {
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == atom_name) {
-                count++;
-                break;
-            }
+    for (auto type : common_ring) {
+        if (residue.has_atom_type(type)) {
+            count++;
         }
     }
-    for (const auto& atom_name : purine_ring) {
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == atom_name) {
-                count++;
-                has_purine = true;
-                break;
-            }
+    for (auto type : purine_ring) {
+        if (residue.has_atom_type(type)) {
+            count++;
+            has_purine = true;
         }
     }
     return {count, has_purine};
@@ -159,51 +161,34 @@ std::tuple<int, bool> count_ring_atoms(const core::Residue& residue) {
     return upper == 'A' || upper == 'G' || upper == 'I';
 }
 
-// Detect purine atoms (use trimmed names - atom names are stored trimmed)
+// Detect purine atoms using AtomType (O(1) comparison)
 bool detect_purine_atoms(const core::Residue& residue) {
-    bool has_n7 = false, has_c8 = false, has_n9 = false;
-    for (const auto& atom : residue.atoms()) {
-        if (atom.name() == "N7")
-            has_n7 = true;
-        if (atom.name() == "C8")
-            has_c8 = true;
-        if (atom.name() == "N9")
-            has_n9 = true;
-    }
-    return has_n7 || has_c8 || has_n9;
+    return residue.has_atom_type(AtomType::N7) ||
+           residue.has_atom_type(AtomType::C8) ||
+           residue.has_atom_type(AtomType::N9);
 }
 
-// Determine purine type (A vs G) - use trimmed names
+// Determine purine type (A vs G) using AtomType
 core::typing::BaseType determine_purine_type(const core::Residue& residue) {
-    bool has_o6 = false, has_n6 = false, has_n2 = false;
-    for (const auto& atom : residue.atoms()) {
-        if (atom.name() == "O6")
-            has_o6 = true;
-        if (atom.name() == "N6")
-            has_n6 = true;
-        if (atom.name() == "N2")
-            has_n2 = true;
-    }
+    bool has_o6 = residue.has_atom_type(AtomType::O6);
+    bool has_n6 = residue.has_atom_type(AtomType::N6);
+    bool has_n2 = residue.has_atom_type(AtomType::N2);
+
     if (has_o6 || (!has_n6 && has_n2)) {
         return core::typing::BaseType::GUANINE;
     }
     return core::typing::BaseType::ADENINE;
 }
 
-// Determine pyrimidine type - use trimmed names
+// Determine pyrimidine type using AtomType
 core::typing::BaseType determine_pyrimidine_type(const core::Residue& residue, char one_letter) {
-    bool has_n4 = false, has_c5m = false;
-    for (const auto& atom : residue.atoms()) {
-        if (atom.name() == "N4")
-            has_n4 = true;
-        if (atom.name() == "C5M" || atom.name() == "C7")
-            has_c5m = true;
-    }
+    bool has_n4 = residue.has_atom_type(AtomType::N4);
+    bool has_c5m = residue.has_atom_type(AtomType::C5M) || residue.has_atom_type(AtomType::C7);
 
     // Check for pseudouridine
-    auto c1p = residue.find_atom("C1'");
-    auto n1 = residue.find_atom("N1");
-    auto c5 = residue.find_atom("C5");
+    const core::Atom* c1p = residue.find_atom_by_type(AtomType::C1_PRIME);
+    const core::Atom* n1 = residue.find_atom_by_type(AtomType::N1);
+    const core::Atom* c5 = residue.find_atom_by_type(AtomType::C5);
     if (c1p && n1 && c5) {
         double dist_n1 = (c1p->position() - n1->position()).length();
         double dist_c5 = (c1p->position() - c5->position()).length();
@@ -219,21 +204,20 @@ core::typing::BaseType determine_pyrimidine_type(const core::Residue& residue, c
     return core::typing::BaseType::URACIL;
 }
 
-// Try pyrimidine-only RMSD check
+// Try pyrimidine-only RMSD check using AtomType
 std::optional<double> try_pyrimidine_rmsd(const core::Residue& residue) {
     std::vector<geometry::Vector3D> exp_coords;
     std::vector<geometry::Vector3D> std_coords;
 
+    // Only check first 6 ring atoms (pyrimidine ring, excluding purine-only N7, C8, N9)
     for (size_t i = 0; i < 6; ++i) {
-        const char* atom_name = RING_ATOM_NAMES[i];
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == atom_name) {
-                const auto& pos = atom.position();
-                exp_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
-                std_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
-                                                        STANDARD_RING_GEOMETRY[i][2]));
-                break;
-            }
+        AtomType target_type = RING_ATOM_TYPES[i];
+        const core::Atom* atom = residue.find_atom_by_type(target_type);
+        if (atom != nullptr) {
+            const auto& pos = atom->position();
+            exp_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
+            std_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
+                                                    STANDARD_RING_GEOMETRY[i][2]));
         }
     }
 
@@ -451,7 +435,9 @@ void BaseFrameCalculator::set_template_path(const std::filesystem::path& templat
 bool BaseFrameCalculator::detect_rna(const core::Structure& structure) {
     for (const auto& chain : structure.chains()) {
         for (const auto& residue : chain.residues()) {
-            if (residue.find_atom("O2'").has_value() || residue.find_atom("O2*").has_value()) {
+            // Use AtomType for O2' check (fast O(1) comparison)
+            // Also check O2* via string (alternative name not in AtomType enum)
+            if (residue.has_atom_type(AtomType::O2_PRIME) || residue.find_atom("O2*").has_value()) {
                 return true;
             }
         }

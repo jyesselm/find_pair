@@ -7,6 +7,7 @@
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/nucleotide_utils.hpp>
 #include <x3dna/core/chain.hpp>
+#include <x3dna/core/typing/atom_type.hpp>
 #include <x3dna/io/json_writer.hpp>
 #include <x3dna/geometry/least_squares_fitter.hpp>
 #include <x3dna/geometry/vector3d.hpp>
@@ -16,11 +17,40 @@
 #include <optional>
 #include <array>
 #include <iostream>
+#include <chrono>
+#include <iomanip>
+
+// Timing support for profiling (controlled by environment variable or compile flag)
+namespace {
+    bool g_profile_pair_finding = false;
+
+    class ScopedTimer {
+    public:
+        ScopedTimer(const char* name, bool& enabled) : name_(name), enabled_(enabled) {
+            if (enabled_) start_ = std::chrono::high_resolution_clock::now();
+        }
+        ~ScopedTimer() {
+            if (enabled_) {
+                auto end = std::chrono::high_resolution_clock::now();
+                auto ms = std::chrono::duration<double, std::milli>(end - start_).count();
+                std::cout << "[PAIR_TIMING] " << std::setw(30) << std::left << name_
+                          << std::fixed << std::setprecision(1) << ms << " ms\n";
+            }
+        }
+    private:
+        const char* name_;
+        bool& enabled_;
+        std::chrono::high_resolution_clock::time_point start_;
+    };
+}
 
 namespace x3dna {
 namespace algorithms {
 
 using namespace x3dna::core;
+using core::AtomType;
+using core::RING_ATOM_TYPES;
+using core::NUM_RING_ATOM_TYPES;
 
 // ============================================================================
 // Helper methods - small, focused functions
@@ -102,17 +132,45 @@ bool BasePairFinder::try_select_mutual_pair(int legacy_idx1, int legacy_idx2, co
 }
 
 std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::JsonWriter* writer) const {
-    ResidueIndexMapping mapping = build_residue_index_mapping(structure);
+    // Check for profiling environment variable
+    static bool profile_checked = false;
+    if (!profile_checked) {
+        if (const char* env = std::getenv("X3DNA_PROFILE_PAIRS")) {
+            g_profile_pair_finding = (std::string(env) == "1");
+        }
+        profile_checked = true;
+    }
+
+    ResidueIndexMapping mapping = [&]() {
+        ScopedTimer t("Build residue mapping", g_profile_pair_finding);
+        return build_residue_index_mapping(structure);
+    }();
+
     if (mapping.empty()) {
         return {};
     }
 
-    Phase1Results phase1 = run_phase1_validation(mapping);
+    if (g_profile_pair_finding) {
+        std::cout << "[PAIR_TIMING] Nucleotide count: " << mapping.by_legacy_idx.size()
+                  << ", max_legacy_idx: " << mapping.max_legacy_idx << "\n";
+    }
+
+    Phase1Results phase1 = [&]() {
+        ScopedTimer t("Phase 1 validation", g_profile_pair_finding);
+        return run_phase1_validation(mapping);
+    }();
+
+    if (g_profile_pair_finding) {
+        std::cout << "[PAIR_TIMING] Phase 1 pairs validated: " << phase1.validation_results.size() << "\n";
+    }
+
     PairSelectionState state(mapping.max_legacy_idx);
     PartnerSearchContext ctx{state.matched_indices, mapping, phase1, writer};
 
     int iteration_num = 0;
     size_t prev_matched = 0;
+
+    auto iteration_start = std::chrono::high_resolution_clock::now();
 
     // Iterate until no new pairs found
     do {
@@ -160,6 +218,13 @@ std::vector<BasePair> BasePairFinder::find_best_pairs(Structure& structure, io::
                                            state.pairs_found_this_iteration);
         }
     } while (state.count_matched() > prev_matched);
+
+    if (g_profile_pair_finding) {
+        auto iteration_end = std::chrono::high_resolution_clock::now();
+        auto ms = std::chrono::duration<double, std::milli>(iteration_end - iteration_start).count();
+        std::cout << "[PAIR_TIMING] Mutual best matching      " << std::fixed << std::setprecision(1) << ms << " ms"
+                  << " (" << iteration_num << " iterations, " << state.base_pairs.size() << " pairs found)\n";
+    }
 
     // Record final results
     if (writer) {
@@ -437,7 +502,7 @@ constexpr std::array<std::array<double, 3>, 9> STANDARD_RING_GEOMETRY = {{
 }};
 
 // Legacy RA_LIST order for ring atoms (using trimmed names)
-constexpr std::array<const char*, 9> RING_ATOM_NAMES = {"C4", "N3", "C2", "N1", "C6", "C5", "N7", "C8", "N9"};
+// Ring atom names array removed - now using RING_ATOM_TYPES from atom_type.hpp
 
 // Use constant from validation_constants.hpp
 using validation_constants::NT_RMSD_CUTOFF;
@@ -448,41 +513,40 @@ using validation_constants::NT_RMSD_CUTOFF;
  * @return RMSD value if calculable, or RMSD_DUMMY if not enough atoms
  */
 std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
-    // Find ring atoms in residue
+    // Find ring atoms in residue using AtomType for O(1) comparison
     std::vector<geometry::Vector3D> experimental_coords;
     std::vector<geometry::Vector3D> standard_coords;
     int nN = 0; // Count of nitrogen atoms (N1, N3, N7, N9)
     bool has_c1_prime = false;
 
     // LEGACY BEHAVIOR: Try ALL 9 ring atoms first (matches legacy residue_ident)
-    for (size_t i = 0; i < RING_ATOM_NAMES.size(); ++i) {
-        const char* atom_name = RING_ATOM_NAMES[i];
+    for (size_t i = 0; i < NUM_RING_ATOM_TYPES; ++i) {
+        AtomType target_type = RING_ATOM_TYPES[i];
+        const Atom* atom = residue.find_atom_by_type(target_type);
+        if (atom != nullptr) {
+            const auto& pos = atom->position();
+            experimental_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
 
-        // Find this atom in residue
-        for (const auto& atom : residue.atoms()) {
-            if (atom.name() == atom_name) {
-                const auto& pos = atom.position();
-                experimental_coords.push_back(geometry::Vector3D(pos.x(), pos.y(), pos.z()));
+            // Use corresponding standard geometry
+            standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
+                                                         STANDARD_RING_GEOMETRY[i][2]));
 
-                // Use corresponding standard geometry
-                standard_coords.push_back(geometry::Vector3D(STANDARD_RING_GEOMETRY[i][0], STANDARD_RING_GEOMETRY[i][1],
-                                                             STANDARD_RING_GEOMETRY[i][2]));
-
-                // Count nitrogen atoms (indices 1=N3, 3=N1, 6=N7, 8=N9)
-                if (i == 1 || i == 3 || i == 6 || i == 8) {
-                    nN++;
-                }
-                break;
+            // Count nitrogen atoms (indices 1=N3, 3=N1, 6=N7, 8=N9)
+            if (i == 1 || i == 3 || i == 6 || i == 8) {
+                nN++;
             }
         }
     }
 
-    // Check for C1' or C1R atom (required by legacy)
-    // Some nucleotides like NMN use C1R instead of C1'
-    for (const auto& atom : residue.atoms()) {
-        if (atom.name() == "C1'" || atom.name() == "C1R") {
-            has_c1_prime = true;
-            break;
+    // Check for C1' using AtomType, or C1R via string (alternative name)
+    if (residue.has_atom_type(AtomType::C1_PRIME)) {
+        has_c1_prime = true;
+    } else {
+        for (const auto& atom : residue.atoms()) {
+            if (atom.name() == "C1R") {
+                has_c1_prime = true;
+                break;
+            }
         }
     }
 
@@ -506,10 +570,14 @@ std::optional<double> check_nt_type_by_rmsd(const Residue& residue) {
     }
 }
 
-// Additional helpers for is_nucleotide
+// Additional helpers for is_nucleotide using AtomType
 
-constexpr std::array<const char*, 6> COMMON_RING_ATOMS = {"C4", "N3", "C2", "N1", "C6", "C5"};
-constexpr std::array<const char*, 3> PURINE_RING_ATOMS = {"N7", "C8", "N9"};
+// Common ring atom types (pyrimidine ring)
+constexpr std::array<AtomType, 6> COMMON_RING_ATOM_TYPES = {
+    AtomType::C4, AtomType::N3, AtomType::C2, AtomType::N1, AtomType::C6, AtomType::C5
+};
+// Purine-only ring atom types
+constexpr std::array<AtomType, 3> PURINE_RING_ATOM_TYPES = {AtomType::N7, AtomType::C8, AtomType::N9};
 
 bool is_standard_nucleotide(core::typing::BaseType type) {
     return type == core::typing::BaseType::ADENINE || type == core::typing::BaseType::CYTOSINE ||
@@ -528,26 +596,19 @@ bool needs_rmsd_validation(const Residue& residue) {
            (mol_type == core::typing::MoleculeType::NUCLEIC_ACID && base_type == core::typing::BaseType::UNKNOWN);
 }
 
-bool residue_has_atom(const Residue& residue, const char* atom_name) {
-    for (const auto& atom : residue.atoms()) {
-        if (atom.name() == atom_name)
-            return true;
-    }
-    return false;
-}
-
-template <size_t N> int count_matching_atoms(const Residue& residue, const std::array<const char*, N>& atom_names) {
+// Count matching atoms using AtomType array
+template <size_t N> int count_matching_atom_types(const Residue& residue, const std::array<AtomType, N>& atom_types) {
     int count = 0;
-    for (const auto& name : atom_names) {
-        if (residue_has_atom(residue, name))
+    for (auto type : atom_types) {
+        if (residue.has_atom_type(type))
             count++;
     }
     return count;
 }
 
 bool passes_rmsd_nucleotide_check(const Residue& residue) {
-    const int common_count = count_matching_atoms(residue, COMMON_RING_ATOMS);
-    const int purine_count = count_matching_atoms(residue, PURINE_RING_ATOMS);
+    const int common_count = count_matching_atom_types(residue, COMMON_RING_ATOM_TYPES);
+    const int purine_count = count_matching_atom_types(residue, PURINE_RING_ATOM_TYPES);
     const int total_ring_atoms = common_count + purine_count;
 
     if (total_ring_atoms < 3)
