@@ -7,6 +7,7 @@ data/pdb
 data/json
 data/json_legacy/
 data/json_baseline/
+data/json_dssr
 
 # Cache
 .comparison_cache

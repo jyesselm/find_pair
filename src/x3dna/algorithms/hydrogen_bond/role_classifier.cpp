@@ -272,7 +272,7 @@ HBondAtomRole HBondRoleClassifier::get_nucleotide_atom_role(char base, const std
         return HBondAtomRole::UNKNOWN;
     }
 
-    // Check backbone atoms first
+    // Check backbone atoms first - these apply to ALL nucleotides
     for (const auto& bb_atom : BACKBONE_ATOMS) {
         if (atom_name.substr(0, 4) == bb_atom.name) {
             return char_to_role(bb_atom.role);
@@ -281,21 +281,44 @@ HBondAtomRole HBondRoleClassifier::get_nucleotide_atom_role(char base, const std
 
     // Find base index
     const char* base_ptr = std::strchr(BASE_LIST, std::toupper(static_cast<unsigned char>(base)));
-    if (base_ptr == nullptr) {
-        return HBondAtomRole::UNKNOWN;
-    }
-
-    int base_index = base_ptr - BASE_LIST;
-    const BaseAtom* base_atoms = get_base_atoms(base_index);
-    if (base_atoms == nullptr) {
-        return HBondAtomRole::UNKNOWN;
-    }
-
-    // Check base-specific atoms
-    for (int i = 0; base_atoms[i].name != nullptr; ++i) {
-        if (atom_name.substr(0, 4) == base_atoms[i].name) {
-            return char_to_role(base_atoms[i].role);
+    if (base_ptr != nullptr) {
+        int base_index = base_ptr - BASE_LIST;
+        const BaseAtom* base_atoms = get_base_atoms(base_index);
+        if (base_atoms != nullptr) {
+            // Check base-specific atoms
+            for (int i = 0; base_atoms[i].name != nullptr; ++i) {
+                if (atom_name.substr(0, 4) == base_atoms[i].name) {
+                    return char_to_role(base_atoms[i].role);
+                }
+            }
         }
+    }
+
+    // Fallback: element-based heuristic for unknown bases/atoms
+    // This allows H-bond detection for modified nucleotides
+    return get_element_based_role(atom_name);
+}
+
+HBondAtomRole HBondRoleClassifier::get_element_based_role(const std::string& atom_name) {
+    std::string elem = extract_element(atom_name);
+    if (elem.empty()) {
+        return HBondAtomRole::UNKNOWN;
+    }
+
+    // Convert to uppercase
+    std::transform(elem.begin(), elem.end(), elem.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+
+    // Element-based classification for H-bond participation
+    if (elem == "N") {
+        return HBondAtomRole::EITHER;  // Nitrogen can be donor or acceptor
+    } else if (elem == "O") {
+        return HBondAtomRole::EITHER;  // Oxygen can be donor (hydroxyl) or acceptor (carbonyl)
+    } else if (elem == "S") {
+        return HBondAtomRole::EITHER;  // Sulfur in thiols
+    } else if (elem == "F") {
+        return HBondAtomRole::ACCEPTOR;  // Fluorine is weak acceptor
     }
 
     return HBondAtomRole::UNKNOWN;

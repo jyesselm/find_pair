@@ -62,6 +62,15 @@ public:
      */
     [[nodiscard]] static bool is_mainchain_atom(const std::string& atom_name);
 
+    // === Element-based fallback ===
+
+    /**
+     * @brief Get atom role based on element (fallback for unknown atoms)
+     * @param atom_name Atom name (element extracted from first 1-2 chars)
+     * @return Role (EITHER for N/O/S, ACCEPTOR for F, UNKNOWN otherwise)
+     */
+    [[nodiscard]] static core::HBondAtomRole get_element_based_role(const std::string& atom_name);
+
     // === Ligand classification ===
 
     /**
