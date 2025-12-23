@@ -953,5 +953,64 @@ void JsonWriter::record_bp_context(const std::vector<core::BasePair>& pairs,
     add_calculation_record(record);
 }
 
+void JsonWriter::record_all_structure_hbonds(const algorithms::hydrogen_bond::StructureHBondResult& result) {
+    // Record grouped by residue pair (similar format to hbond_list but for all atoms)
+    for (const auto& pair_hbonds : result.residue_pair_hbonds) {
+        nlohmann::json record;
+        record["type"] = "all_hbond_list";
+        record["res_id_i"] = pair_hbonds.res_id_i;
+        record["res_id_j"] = pair_hbonds.res_id_j;
+        record["num_hbonds"] = pair_hbonds.hbonds.size();
+
+        nlohmann::json hbonds_array = nlohmann::json::array();
+        for (const auto& hb : pair_hbonds.hbonds) {
+            nlohmann::json hb_json;
+            hb_json["donor_atom"] = hb.donor_atom_name;
+            hb_json["acceptor_atom"] = hb.acceptor_atom_name;
+            hb_json["distance"] = format_double(hb.distance);
+
+            // Classification as string
+            switch (hb.classification) {
+                case core::HBondClassification::STANDARD:
+                    hb_json["classification"] = "standard";
+                    break;
+                case core::HBondClassification::NON_STANDARD:
+                    hb_json["classification"] = "non_standard";
+                    break;
+                default:
+                    hb_json["classification"] = "unknown";
+                    break;
+            }
+
+            // Context for understanding H-bond type
+            switch (hb.context) {
+                case core::HBondContext::BASE_BASE:
+                    hb_json["context"] = "base_base";
+                    break;
+                case core::HBondContext::BASE_BACKBONE:
+                    hb_json["context"] = "base_backbone";
+                    break;
+                case core::HBondContext::BACKBONE_BACKBONE:
+                    hb_json["context"] = "backbone_backbone";
+                    break;
+                case core::HBondContext::BASE_SUGAR:
+                    hb_json["context"] = "base_sugar";
+                    break;
+                case core::HBondContext::SUGAR_SUGAR:
+                    hb_json["context"] = "sugar_sugar";
+                    break;
+                default:
+                    hb_json["context"] = "unknown";
+                    break;
+            }
+
+            hbonds_array.push_back(hb_json);
+        }
+        record["hbonds"] = hbonds_array;
+
+        add_calculation_record(record);
+    }
+}
+
 } // namespace io
 } // namespace x3dna

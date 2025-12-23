@@ -22,6 +22,7 @@
 #include <x3dna/algorithms/base_pair_finder.hpp>
 #include <x3dna/algorithms/parameter_calculator.hpp>
 #include <x3dna/algorithms/helix_organizer.hpp>
+#include <x3dna/algorithms/hydrogen_bond/detector.hpp>
 
 using namespace x3dna::core;
 using namespace x3dna::io;
@@ -246,6 +247,23 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
             return true;
         }
 
+        // Stage: all_hbonds - detect ALL H-bonds in structure (not just base pairs)
+        if (stage == "all_hbonds") {
+            JsonWriter writer(pdb_file);
+
+            x3dna::algorithms::hydrogen_bond::HBondDetector hb_detector;
+            auto result = hb_detector.detect_all_structure_hbonds(structure);
+            writer.record_all_structure_hbonds(result);
+            writer.write_split_files(json_output_dir, true);
+
+            if (verbose) {
+                std::cout << "  ✅ all_hbond_list/" << pdb_name << ".json ("
+                          << result.all_hbonds.size() << " H-bonds from "
+                          << result.pairs_with_hbonds << " residue pairs)\n";
+            }
+            return true;
+        }
+
         // Stages 4-10: Full pair finding
         if (stage != "atoms" && stage != "residue_indices" && stage != "ls_fitting" && stage != "frames") {
             JsonWriter writer(pdb_file);
@@ -387,7 +405,8 @@ void print_usage(const char* prog_name) {
     std::cerr << "  --quiet             Less verbose output\n\n";
     std::cerr << "Stages:\n";
     std::cerr << "  atoms, residue_indices, ls_fitting, frames, distances,\n";
-    std::cerr << "  hbonds, validation, selection, steps, helical, all\n\n";
+    std::cerr << "  hbonds, validation, selection, steps, helical, all\n";
+    std::cerr << "  all_hbonds - detect ALL H-bonds (backbone, base-base, etc.)\n\n";
     std::cerr << "Examples:\n";
     std::cerr << "  " << prog_name << " data/pdb/1EHZ.pdb data/json --stage=atoms\n";
     std::cerr << "  " << prog_name << " --pdb-list=fast_pdbs.txt --pdb-dir=data/pdb data/json --stage=frames\n";
@@ -451,7 +470,7 @@ int main(int argc, char* argv[]) {
     // Validate stage
     const std::set<std::string> valid_stages = {"atoms",     "residue_indices", "ls_fitting", "frames",
                                                 "distances", "hbonds",          "validation", "selection",
-                                                "steps",     "helical",         "all"};
+                                                "steps",     "helical",         "all",        "all_hbonds"};
     if (valid_stages.find(stage) == valid_stages.end()) {
         std::cerr << "Error: Invalid stage: " << stage << "\n";
         return 1;

@@ -321,24 +321,30 @@ def compare_hbonds_with_pairs(
     return result
 
 
-def compare_pdb(pdb_id: str, project_root: Path, include_pairs: bool = True) -> DSSRComparisonResult:
+def compare_pdb(pdb_id: str, project_root: Path, include_pairs: bool = True, use_all_hbonds: bool = False) -> DSSRComparisonResult:
     """Compare DSSR and modern hbonds for a single PDB.
 
     Args:
         pdb_id: PDB ID (e.g., "1GID")
         project_root: Project root directory
         include_pairs: If True, also match against DSSR pairs section
+        use_all_hbonds: If True, use all_hbond_list instead of hbond_list
 
     Returns:
         DSSRComparisonResult
     """
     dssr_file = project_root / "data" / "json_dssr" / f"{pdb_id}.json"
-    modern_file = project_root / "data" / "json" / "hbond_list" / f"{pdb_id}.json"
+
+    # Choose which modern output to use
+    if use_all_hbonds:
+        modern_file = project_root / "data" / "json" / "all_hbond_list" / f"{pdb_id}.json"
+    else:
+        modern_file = project_root / "data" / "json" / "hbond_list" / f"{pdb_id}.json"
 
     if not dssr_file.exists():
         raise FileNotFoundError(f"DSSR JSON not found: {dssr_file}")
     if not modern_file.exists():
-        raise FileNotFoundError(f"Modern hbond_list not found: {modern_file}")
+        raise FileNotFoundError(f"Modern {'all_hbond_list' if use_all_hbonds else 'hbond_list'} not found: {modern_file}")
 
     with open(dssr_file) as f:
         dssr_data = json.load(f)
@@ -425,9 +431,12 @@ if __name__ == "__main__":
     project_root = Path(__file__).parent.parent
     pdb_id = sys.argv[1] if len(sys.argv) > 1 else "1GID"
     verbose = "-v" in sys.argv or "--verbose" in sys.argv
+    use_all_hbonds = "--all" in sys.argv or "-a" in sys.argv
 
     try:
-        result = compare_pdb(pdb_id, project_root)
+        result = compare_pdb(pdb_id, project_root, use_all_hbonds=use_all_hbonds)
+        if use_all_hbonds:
+            print("(Using all_hbond_list - all H-bonds mode)")
         print_comparison_summary(result, verbose)
     except FileNotFoundError as e:
         print(f"Error: {e}")

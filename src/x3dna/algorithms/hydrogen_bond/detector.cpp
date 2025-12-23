@@ -10,6 +10,7 @@
 #include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/core/typing/atom_classification.hpp>
 #include <x3dna/core/typing/nucleotide_type.hpp>
+#include <x3dna/core/structure.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <algorithm>
 #include <cmath>
@@ -508,6 +509,95 @@ char HBondDetector::get_base_type_for_hbond(const Residue& residue) {
 
     // Fall back to atom-based detection
     return determine_base_type_from_atoms(residue);
+}
+
+StructureHBondResult HBondDetector::detect_all_structure_hbonds(
+    const Structure& structure,
+    double max_residue_distance) const {
+
+    StructureHBondResult result;
+
+    // Get all residues
+    auto residues = structure.all_residues();
+    const size_t n_residues = residues.size();
+
+    if (n_residues < 2) {
+        return result;
+    }
+
+    // Pre-compute residue centers for distance filtering
+    std::vector<Vector3D> centers(n_residues);
+    for (size_t i = 0; i < n_residues; ++i) {
+        // Use center of mass of heavy atoms
+        Vector3D sum(0, 0, 0);
+        size_t count = 0;
+        for (const auto& atom : residues[i]->atoms()) {
+            // Skip hydrogens
+            if (atom.element() == "H" || atom.name()[0] == 'H') {
+                continue;
+            }
+            sum = sum + atom.position();
+            ++count;
+        }
+        if (count > 0) {
+            centers[i] = sum * (1.0 / count);
+        }
+    }
+
+    const double max_dist_sq = max_residue_distance * max_residue_distance;
+
+    // Check all residue pairs
+    for (size_t i = 0; i < n_residues; ++i) {
+        for (size_t j = i + 1; j < n_residues; ++j) {
+            // Early rejection based on residue center distance
+            const double center_dist_sq = (centers[i] - centers[j]).length_squared();
+            if (center_dist_sq > max_dist_sq) {
+                continue;
+            }
+
+            ++result.total_residue_pairs_checked;
+
+            // Determine molecule types
+            const MoleculeType mol1_type = residues[i]->is_nucleotide() ? MoleculeType::NUCLEIC_ACID
+                                         : residues[i]->is_protein() ? MoleculeType::PROTEIN
+                                         : MoleculeType::LIGAND;
+            const MoleculeType mol2_type = residues[j]->is_nucleotide() ? MoleculeType::NUCLEIC_ACID
+                                         : residues[j]->is_protein() ? MoleculeType::PROTEIN
+                                         : MoleculeType::LIGAND;
+
+            // Detect H-bonds between this pair (all atoms, not just base atoms)
+            auto hbonds = detect_all_hbonds_between(*residues[i], *residues[j], mol1_type, mol2_type);
+
+            if (!hbonds.empty()) {
+                ++result.pairs_with_hbonds;
+
+                // Set residue info on each H-bond
+                for (auto& hb : hbonds) {
+                    hb.donor_res_id = residues[i]->res_id();
+                    hb.acceptor_res_id = residues[j]->res_id();
+                    hb.donor_residue_idx = i;
+                    hb.acceptor_residue_idx = j;
+                }
+
+                // Add to grouped result
+                ResidueHBonds pair_result;
+                pair_result.res_id_i = residues[i]->res_id();
+                pair_result.res_id_j = residues[j]->res_id();
+                pair_result.residue_idx_i = i;
+                pair_result.residue_idx_j = j;
+                pair_result.hbonds = std::move(hbonds);
+
+                // Also add to flat list
+                for (const auto& hb : pair_result.hbonds) {
+                    result.all_hbonds.push_back(hb);
+                }
+
+                result.residue_pair_hbonds.push_back(std::move(pair_result));
+            }
+        }
+    }
+
+    return result;
 }
 
 } // namespace hydrogen_bond

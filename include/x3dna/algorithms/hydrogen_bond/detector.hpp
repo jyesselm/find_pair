@@ -33,6 +33,27 @@ struct HBondPipelineResult {
 };
 
 /**
+ * @brief H-bonds grouped by residue pair
+ */
+struct ResidueHBonds {
+    std::string res_id_i;  // First residue ID (e.g., "A-G-1")
+    std::string res_id_j;  // Second residue ID (e.g., "A-C-12")
+    size_t residue_idx_i = 0;
+    size_t residue_idx_j = 0;
+    std::vector<core::HBond> hbonds;
+};
+
+/**
+ * @brief Result from structure-wide H-bond detection
+ */
+struct StructureHBondResult {
+    std::vector<ResidueHBonds> residue_pair_hbonds;  // H-bonds grouped by residue pair
+    std::vector<core::HBond> all_hbonds;              // Flat list of all H-bonds
+    size_t total_residue_pairs_checked = 0;
+    size_t pairs_with_hbonds = 0;
+};
+
+/**
  * @brief General-purpose H-bond detector with configurable parameters
  *
  * Key design principles:
@@ -97,6 +118,21 @@ public:
         const core::Residue& residue1, const core::Residue& residue2,
         core::typing::MoleculeType mol1_type = core::typing::MoleculeType::NUCLEIC_ACID,
         core::typing::MoleculeType mol2_type = core::typing::MoleculeType::NUCLEIC_ACID) const;
+
+    // === Structure-Wide H-Bond Detection ===
+
+    /**
+     * @brief Detect all H-bonds in a structure (all residue pairs)
+     * @param structure The structure to analyze
+     * @param max_residue_distance Maximum distance between residue centers to consider (Angstroms)
+     * @return All H-bonds found, grouped by residue pair
+     *
+     * This detects ALL H-bonds between any atoms, not just base-pair H-bonds.
+     * Uses spatial filtering based on residue center distances for efficiency.
+     */
+    [[nodiscard]] StructureHBondResult detect_all_structure_hbonds(
+        const core::Structure& structure,
+        double max_residue_distance = 15.0) const;
 
     // === Counting (for validation checks) ===
 

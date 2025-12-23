@@ -18,6 +18,7 @@
 #include <x3dna/core/parameters.hpp>
 #include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/algorithms/helix_organizer.hpp>
+#include <x3dna/algorithms/hydrogen_bond/detector.hpp>
 #include <x3dna/geometry/vector3d.hpp>
 #include <x3dna/geometry/matrix3d.hpp>
 
@@ -317,6 +318,16 @@ public:
      */
     void record_bp_context(const std::vector<core::BasePair>& pairs,
                            const std::vector<algorithms::PairContextInfo>& context);
+
+    /**
+     * @brief Record all structure H-bonds (any residue pair, any atom types)
+     * @param result Result from HBondDetector::detect_all_structure_hbonds()
+     *
+     * This outputs H-bonds in a format similar to DSSR for comparison.
+     * Unlike record_hbond_list which is for base-pair H-bonds only,
+     * this captures all H-bonds including backbone-backbone contacts.
+     */
+    void record_all_structure_hbonds(const algorithms::hydrogen_bond::StructureHBondResult& result);
 
 private:
     std::filesystem::path pdb_file_;
