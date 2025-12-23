@@ -187,7 +187,14 @@ core::Structure PdbParser::convert_gemmi_structure(const gemmi::Structure& gemmi
         }
     }
 
-    return build_structure_from_residues(pdb_id, residue_atoms, legacy_residue_idx_map, chain_order);
+    core::Structure structure = build_structure_from_residues(pdb_id, residue_atoms, legacy_residue_idx_map, chain_order);
+
+    // Extract resolution from GEMMI structure if available
+    if (gemmi_struct.resolution > 0.0) {
+        structure.set_resolution(gemmi_struct.resolution);
+    }
+
+    return structure;
 }
 
 // Normalize atom name from GEMMI format to legacy PDB 4-character format

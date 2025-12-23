@@ -213,6 +213,25 @@ private:
     void apply_post_validation_filtering(std::vector<core::HBond>& bonds) const;
 
     /**
+     * @brief Apply angle-based filtering (optional, controlled by params)
+     * @param bonds H-bonds to filter (modified in place)
+     *
+     * Only active when params_.enable_angle_filtering is true.
+     * Marks H-bonds with geometrically impossible angles as INVALID.
+     */
+    void apply_angle_filtering(std::vector<core::HBond>& bonds) const;
+
+    /**
+     * @brief Apply quality scoring and optional filtering
+     * @param bonds H-bonds to score (modified in place)
+     *
+     * Only active when params_.enable_quality_scoring is true.
+     * Assigns quality_score to each H-bond. If filter_invalid_scores is also true,
+     * marks H-bonds with INVALID tier as INVALID classification.
+     */
+    void apply_quality_scoring(std::vector<core::HBond>& bonds) const;
+
+    /**
      * @brief Get base type for H-bond detection (handles modified nucleotides)
      * @param residue Residue to get base type for
      * @return One-letter base type (A, C, G, T, U, or '?')

@@ -7,6 +7,7 @@
 #include <x3dna/algorithms/hydrogen_bond/geometry.hpp>
 #include <x3dna/algorithms/hydrogen_bond/role_classifier.hpp>
 #include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.hpp>
+#include <x3dna/algorithms/hydrogen_bond/quality_scorer.hpp>
 #include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/core/typing/atom_classification.hpp>
 #include <x3dna/core/typing/nucleotide_type.hpp>
@@ -229,7 +230,13 @@ HBondPipelineResult HBondDetector::detect_internal(const Residue& residue1, cons
     // Step 6: Apply post-validation filtering (marks bonds as INVALID but doesn't remove)
     apply_post_validation_filtering(bonds);
 
-    // Step 7: Build final_bonds by copying only valid bonds (single allocation)
+    // Step 7: Apply optional angle-based filtering
+    apply_angle_filtering(bonds);
+
+    // Step 8: Apply optional quality scoring
+    apply_quality_scoring(bonds);
+
+    // Step 9: Build final_bonds by copying only valid bonds (single allocation)
     result.final_bonds.reserve(bonds.size());
     for (const auto& bond : bonds) {
         if (bond.classification != HBondClassification::INVALID) {
@@ -561,6 +568,57 @@ char HBondDetector::get_base_type_for_hbond(const Residue& residue) {
 
     // Fall back to atom-based detection
     return determine_base_type_from_atoms(residue);
+}
+
+void HBondDetector::apply_angle_filtering(std::vector<HBond>& bonds) const {
+    // Only apply if enabled (off by default for legacy compatibility)
+    if (!params_.enable_angle_filtering) {
+        return;
+    }
+
+    for (auto& bond : bonds) {
+        // Skip already invalid bonds
+        if (bond.classification == HBondClassification::INVALID) {
+            continue;
+        }
+
+        // Check donor angle if calculated (> 0 means angle was computed)
+        if (bond.donor_angle > 0.0 && bond.donor_angle < params_.min_donor_angle) {
+            bond.classification = HBondClassification::INVALID;
+            continue;
+        }
+
+        // Check acceptor angle if calculated
+        if (bond.acceptor_angle > 0.0 && bond.acceptor_angle < params_.min_acceptor_angle) {
+            bond.classification = HBondClassification::INVALID;
+        }
+    }
+}
+
+void HBondDetector::apply_quality_scoring(std::vector<HBond>& bonds) const {
+    // Only apply if enabled
+    if (!params_.enable_quality_scoring) {
+        return;
+    }
+
+    // Create scorer with default parameters
+    HBondQualityScorer scorer;
+
+    for (auto& bond : bonds) {
+        // Skip already invalid bonds
+        if (bond.classification == HBondClassification::INVALID) {
+            continue;
+        }
+
+        // Score this bond
+        bond.quality_score = scorer.score(bond);
+
+        // Optionally filter out INVALID tier bonds
+        if (params_.filter_invalid_scores &&
+            bond.quality_score->tier == core::HBondQualityTier::INVALID) {
+            bond.classification = HBondClassification::INVALID;
+        }
+    }
 }
 
 StructureHBondResult HBondDetector::detect_all_structure_hbonds(

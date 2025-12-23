@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 #include <x3dna/core/hbond_types.hpp>
+#include <x3dna/core/hbond_quality.hpp>
 
 namespace x3dna {
 namespace core {
@@ -50,6 +51,9 @@ public:
 
     // === Detection metadata ===
     std::optional<size_t> detection_index;
+
+    // === Quality scoring (optional - populated by HBondQualityScorer) ===
+    std::optional<HBondQualityScore> quality_score;
 
     // === Legacy compatibility ===
     [[nodiscard]] char legacy_type_char() const {

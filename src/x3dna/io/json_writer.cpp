@@ -1004,6 +1004,30 @@ void JsonWriter::record_all_structure_hbonds(const algorithms::hydrogen_bond::St
                     break;
             }
 
+            // Add angles if calculated
+            if (hb.donor_angle > 0.0) {
+                hb_json["donor_angle"] = format_double(hb.donor_angle);
+            }
+            if (hb.acceptor_angle > 0.0) {
+                hb_json["acceptor_angle"] = format_double(hb.acceptor_angle);
+            }
+
+            // Add quality score if available
+            if (hb.quality_score.has_value()) {
+                const auto& qs = hb.quality_score.value();
+                nlohmann::json quality_json;
+                quality_json["total_score"] = format_double(qs.total_score);
+                quality_json["distance_score"] = format_double(qs.distance_score);
+                quality_json["donor_angle_score"] = format_double(qs.donor_angle_score);
+                quality_json["acceptor_angle_score"] = format_double(qs.acceptor_angle_score);
+                quality_json["tier"] = core::to_string(qs.tier);
+                quality_json["dssr_tier"] = core::to_dssr_string(qs.tier);
+                if (!qs.failure_reason.empty()) {
+                    quality_json["failure_reason"] = qs.failure_reason;
+                }
+                hb_json["quality"] = quality_json;
+            }
+
             hbonds_array.push_back(hb_json);
         }
         record["hbonds"] = hbonds_array;

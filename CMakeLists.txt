@@ -81,6 +81,7 @@ add_library(x3dna
     src/x3dna/algorithms/hydrogen_bond/geometry.cpp
     src/x3dna/algorithms/hydrogen_bond/detector.cpp
     src/x3dna/algorithms/hydrogen_bond/interaction_filter.cpp
+    src/x3dna/algorithms/hydrogen_bond/quality_scorer.cpp
     src/x3dna/algorithms/validation/overlap_calculator.cpp
     src/x3dna/algorithms/validation/ring_data_cache.cpp
     src/x3dna/config/config_manager.cpp

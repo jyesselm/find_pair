@@ -62,6 +62,15 @@ struct HBondDetectionParams {
     // Interaction type filter (default: all)
     core::HBondInteractionType interaction_filter = core::HBondInteractionType::ANY;
 
+    // === Optional angle-based filtering (off by default for legacy compatibility) ===
+    bool enable_angle_filtering = false;    // Filter H-bonds by angle quality
+    double min_donor_angle = 90.0;          // Below = impossible geometry
+    double min_acceptor_angle = 70.0;       // Below = impossible geometry
+
+    // === Quality scoring (optional - applied after detection) ===
+    bool enable_quality_scoring = false;    // Calculate quality scores for H-bonds
+    bool filter_invalid_scores = false;     // Remove H-bonds with INVALID tier
+
     // Presets
     [[nodiscard]] static HBondDetectionParams legacy_compatible();
     [[nodiscard]] static HBondDetectionParams modern();

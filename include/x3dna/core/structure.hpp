@@ -256,6 +256,29 @@ private:
 
     // Map from (chain_id, seq_num, insertion) to record_type ('A' or 'H')
     std::map<std::tuple<std::string, int, std::string>, char> residue_record_types_;
+
+    // Structure resolution in Angstroms (0.0 = unknown/not applicable)
+    double resolution_ = 0.0;
+
+public:
+    // Resolution accessors
+    /**
+     * @brief Get structure resolution
+     * @return Resolution in Angstroms (0.0 if unknown)
+     */
+    [[nodiscard]] double resolution() const { return resolution_; }
+
+    /**
+     * @brief Set structure resolution
+     * @param res Resolution in Angstroms
+     */
+    void set_resolution(double res) { resolution_ = res; }
+
+    /**
+     * @brief Check if resolution is known
+     * @return true if resolution > 0
+     */
+    [[nodiscard]] bool has_resolution() const { return resolution_ > 0.0; }
 };
 
 } // namespace core

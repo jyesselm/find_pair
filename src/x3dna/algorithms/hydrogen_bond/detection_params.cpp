@@ -53,7 +53,10 @@ HBondDetectionParams HBondDetectionParams::legacy_compatible() {
     params.post_validation_max_distance = 3.6;
     params.nonstandard_min_distance = 2.6;
     params.nonstandard_max_distance = 3.2;
-    params.interaction_filter = core::HBondInteractionType::BASE_BASE;
+    // Use ANY filter - base_atoms_only flag already filters to base atoms
+    // Using BASE_BASE filter here would incorrectly reject some valid H-bonds
+    // where context detection returns non-BASE_BASE (edge cases, modified bases)
+    params.interaction_filter = core::HBondInteractionType::ANY;
     return params;
 }
 
