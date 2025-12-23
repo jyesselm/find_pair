@@ -65,15 +65,15 @@ add_library(x3dna
     src/x3dna/algorithms/ring_atom_matcher.cpp
     src/x3dna/algorithms/residue_type_detector.cpp
     src/x3dna/algorithms/base_frame_calculator.cpp
-    src/x3dna/algorithms/base_pair_validator.cpp
-    src/x3dna/algorithms/base_pair_finder.cpp
+    src/x3dna/algorithms/pair_identification/base_pair_validator.cpp
+    src/x3dna/algorithms/pair_identification/base_pair_finder.cpp
+    src/x3dna/algorithms/pair_identification/residue_index_map.cpp
+    src/x3dna/algorithms/pair_identification/quality_score_calculator.cpp
+    src/x3dna/algorithms/pair_identification/pair_candidate_cache.cpp
+    src/x3dna/algorithms/pair_identification/json_writer_observer.cpp
+    src/x3dna/algorithms/pair_identification/pair_selection_strategy.cpp
     src/x3dna/algorithms/parameter_calculator.cpp
     src/x3dna/algorithms/helix_organizer.cpp
-    src/x3dna/algorithms/residue_index_map.cpp
-    src/x3dna/algorithms/quality_score_calculator.cpp
-    src/x3dna/algorithms/pair_candidate_cache.cpp
-    src/x3dna/algorithms/json_writer_observer.cpp
-    src/x3dna/algorithms/pair_selection_strategy.cpp
     src/x3dna/algorithms/chain_detector.cpp
     src/x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.cpp
     src/x3dna/algorithms/hydrogen_bond/detection_params.cpp

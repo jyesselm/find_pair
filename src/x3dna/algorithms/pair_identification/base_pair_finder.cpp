@@ -3,7 +3,7 @@
  * @brief Implementation of base pair finding (matches legacy find_bestpair)
  */
 
-#include <x3dna/algorithms/base_pair_finder.hpp>
+#include <x3dna/algorithms/pair_identification/base_pair_finder.hpp>
 #include <x3dna/core/residue.hpp>
 #include <x3dna/core/nucleotide_utils.hpp>
 #include <x3dna/core/chain.hpp>

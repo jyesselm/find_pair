@@ -3,8 +3,8 @@
  * @brief Implementation of JsonWriterObserver
  */
 
-#include <x3dna/algorithms/json_writer_observer.hpp>
-#include <x3dna/algorithms/quality_score_calculator.hpp>
+#include <x3dna/algorithms/pair_identification/json_writer_observer.hpp>
+#include <x3dna/algorithms/pair_identification/quality_score_calculator.hpp>
 #include <x3dna/core/nucleotide_utils.hpp>
 
 namespace x3dna {

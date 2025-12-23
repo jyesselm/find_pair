@@ -42,8 +42,8 @@ def main():
 @click.argument('stages', nargs=-1)
 @click.option('--pdb', '-p', multiple=True, help='Specific PDB(s) to validate')
 @click.option('--max', '-n', 'max_count', type=int, help='Maximum number of PDBs to process')
-@click.option('--test-set', type=click.Choice(['10', '50', '100', '500', '1000', 'fast']),
-              help='Use a test set: 10/50/100/500/1000 or "fast" (3602 validated PDBs)')
+@click.option('--test-set', type=click.Choice(['10', '50', '100', '500', '1000', 'fast', 'slow']),
+              help='Use a test set: 10/50/100/500/1000, "fast" (3602 PDBs), or "slow" (521 PDBs)')
 @click.option('--workers', '-w', type=int, help='Number of parallel workers (default: 10)')
 @click.option('--quiet', '-q', is_flag=True, help='Suppress output, exit code only')
 @click.option('--verbose', '-v', is_flag=True, help='Show per-PDB results')
@@ -259,8 +259,8 @@ def alias_options(f):
     """Decorator to add common options to alias commands."""
     f = click.option('--pdb', '-p', multiple=True, help='Specific PDB(s) to validate')(f)
     f = click.option('--max', '-n', 'max_count', type=int, help='Maximum number of PDBs')(f)
-    f = click.option('--test-set', type=click.Choice(['10', '50', '100', '500', '1000', 'fast']),
-                     help='Use a test set (10/50/100/500/1000/fast)')(f)
+    f = click.option('--test-set', type=click.Choice(['10', '50', '100', '500', '1000', 'fast', 'slow']),
+                     help='Use a test set (10/50/100/500/1000/fast/slow)')(f)
     f = click.option('--workers', '-w', type=int, help='Number of parallel workers')(f)
     f = click.option('--quiet', '-q', is_flag=True, help='Suppress output')(f)
     f = click.option('--verbose', '-v', is_flag=True, help='Show per-PDB results')(f)

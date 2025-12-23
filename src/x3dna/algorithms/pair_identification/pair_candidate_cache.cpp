@@ -3,7 +3,7 @@
  * @brief Implementation of PairCandidateCache
  */
 
-#include <x3dna/algorithms/pair_candidate_cache.hpp>
+#include <x3dna/algorithms/pair_identification/pair_candidate_cache.hpp>
 
 namespace x3dna {
 namespace algorithms {

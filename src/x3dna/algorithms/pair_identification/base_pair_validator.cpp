@@ -3,7 +3,7 @@
  * @brief Implementation of base pair validation (matches legacy check_pair)
  */
 
-#include <x3dna/algorithms/base_pair_validator.hpp>
+#include <x3dna/algorithms/pair_identification/base_pair_validator.hpp>
 #include <x3dna/algorithms/validation/overlap_calculator.hpp>
 #include <x3dna/core/atom.hpp>
 #include <x3dna/core/typing.hpp>

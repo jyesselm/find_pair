@@ -3,7 +3,7 @@
  * @brief Implementation of QualityScoreCalculator
  */
 
-#include <x3dna/algorithms/quality_score_calculator.hpp>
+#include <x3dna/algorithms/pair_identification/quality_score_calculator.hpp>
 #include <x3dna/core/reference_frame.hpp>
 #include <x3dna/core/typing.hpp>
 #include <x3dna/core/nucleotide_utils.hpp>

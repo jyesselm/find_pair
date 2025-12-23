@@ -3,7 +3,7 @@
  * @brief Implementation of pair selection strategies
  */
 
-#include <x3dna/algorithms/pair_selection_strategy.hpp>
+#include <x3dna/algorithms/pair_identification/pair_selection_strategy.hpp>
 #include <limits>
 
 namespace x3dna {

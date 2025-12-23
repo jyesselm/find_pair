@@ -3,7 +3,7 @@
  * @brief Implementation of ResidueIndexMap
  */
 
-#include <x3dna/algorithms/residue_index_map.hpp>
+#include <x3dna/algorithms/pair_identification/residue_index_map.hpp>
 #include <x3dna/core/chain.hpp>
 #include <limits>
 
