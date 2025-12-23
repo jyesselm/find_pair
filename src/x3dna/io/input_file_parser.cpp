@@ -102,8 +102,10 @@ InputData InputFileParser::parse_stream(std::istream& stream) {
         try {
             auto [res1, res2] = parse_base_pair_line(line, line_number, data.flags);
 
-            // Create base pair (type will be determined later during analysis)
-            core::BasePair bp(res1, res2, core::BasePairType::UNKNOWN);
+            // Create base pair with identity frames (frames will be set during analysis)
+            // .inp files don't store frames, so we use placeholders
+            core::ReferenceFrame identity_frame;
+            core::BasePair bp(res1, res2, identity_frame, identity_frame);
             data.base_pairs.push_back(bp);
         } catch (const std::exception& e) {
             // Skip malformed lines, but log warning

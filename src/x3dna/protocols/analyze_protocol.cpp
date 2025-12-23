@@ -222,12 +222,6 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         const auto& pair1 = base_pairs_[i];
         const auto& pair2 = base_pairs_[i + 1];
 
-        // Verify both pairs have frames
-        if (!pair1.frame1().has_value() || !pair1.frame2().has_value() || !pair2.frame1().has_value() ||
-            !pair2.frame2().has_value()) {
-            continue; // Skip pairs without frames
-        }
-
         // Legacy get_parameters() uses refs_i_j(j, j+1, orien[i], org[i], r1, o1, r2, o2)
         // which extracts frames from the same strand (orien[i] for duplex i)
         // For duplex 1: uses strand 1 frames (pair_num[1][j])
@@ -238,8 +232,8 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         // Use frame1() from each pair (matching legacy strand 1 frames)
         // Note: Legacy get_parameters() does NOT apply frame reversals
         // (Frame reversals are only in analyze.c Rotmat path, not get_parameters path)
-        core::ReferenceFrame frame1 = pair1.frame1().value();
-        core::ReferenceFrame frame2 = pair2.frame1().value();
+        const core::ReferenceFrame& frame1 = pair1.frame1();
+        const core::ReferenceFrame& frame2 = pair2.frame1();
 
         // Calculate step parameters using frames (no reversals - matching get_parameters)
         auto step_params = param_calculator_.calculate_step_parameters(frame1, frame2);
@@ -271,27 +265,24 @@ void AnalyzeProtocol::calculate_parameters(core::Structure& /* structure */) {
         const auto& pair1 = base_pairs_.back();
         const auto& pair2 = base_pairs_.front();
 
-        if (pair1.frame1().has_value() && pair1.frame2().has_value() && pair2.frame1().has_value() &&
-            pair2.frame2().has_value()) {
-            auto step_params = param_calculator_.calculate_step_parameters(pair1, pair2);
-            step_parameters_.push_back(step_params);
+        auto step_params = param_calculator_.calculate_step_parameters(pair1, pair2);
+        step_parameters_.push_back(step_params);
 
-            // Record to JSON if writer provided
-            if (json_writer_) {
-                size_t bp_idx1 = base_pairs_.size(); // Last pair (1-based)
-                size_t bp_idx2 = 1;                  // First pair (1-based)
-                json_writer_->record_bpstep_params(bp_idx1, bp_idx2, step_params, &pair1, &pair2);
-            }
+        // Record to JSON if writer provided
+        if (json_writer_) {
+            size_t bp_idx1 = base_pairs_.size(); // Last pair (1-based)
+            size_t bp_idx2 = 1;                  // First pair (1-based)
+            json_writer_->record_bpstep_params(bp_idx1, bp_idx2, step_params, &pair1, &pair2);
+        }
 
-            auto helical_params = param_calculator_.calculate_helical_parameters(pair1, pair2);
-            helical_parameters_.push_back(helical_params);
+        auto helical_params = param_calculator_.calculate_helical_parameters(pair1, pair2);
+        helical_parameters_.push_back(helical_params);
 
-            // Record to JSON if writer provided
-            if (json_writer_) {
-                size_t bp_idx1 = base_pairs_.size(); // Last pair (1-based)
-                size_t bp_idx2 = 1;                  // First pair (1-based)
-                json_writer_->record_helical_params(bp_idx1, bp_idx2, helical_params, &pair1, &pair2);
-            }
+        // Record to JSON if writer provided
+        if (json_writer_) {
+            size_t bp_idx1 = base_pairs_.size(); // Last pair (1-based)
+            size_t bp_idx2 = 1;                  // First pair (1-based)
+            json_writer_->record_helical_params(bp_idx1, bp_idx2, helical_params, &pair1, &pair2);
         }
     }
 }

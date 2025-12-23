@@ -190,32 +190,21 @@ core::BasePairStepParameters ParameterCalculator::calculate_step_parameters(cons
                                                                             const core::BasePair& pair2) const {
     // For step parameters between consecutive pairs:
     // Use frame1 from each pair (the first residue's frame)
-    if (!pair1.frame1().has_value() || !pair2.frame1().has_value()) {
-        throw std::runtime_error("Base pairs must have reference frames for parameter calculation");
-    }
-    return calculate_step_parameters(pair1.frame1().value(), pair2.frame1().value());
+    return calculate_step_parameters(pair1.frame1(), pair2.frame1());
 }
 
 core::BasePairStepParameters ParameterCalculator::calculate_step_parameters_for_pair(const core::BasePair& pair) const {
     // For a single base pair (for bp_type_id calculation):
     // Legacy: bpstep_par(r2, org[j], r1, org[i], ...)
     // This means: frame2 (residue j) is first, frame1 (residue i) is second
-    if (!pair.frame1().has_value() || !pair.frame2().has_value()) {
-        throw std::runtime_error("Base pair must have both reference frames for parameter calculation");
-    }
     // Note: Legacy order is reversed (frame2 first, frame1 second)
-    return calculate_step_parameters(pair.frame2().value(), pair.frame1().value());
+    return calculate_step_parameters(pair.frame2(), pair.frame1());
 }
 
 core::HelicalParameters ParameterCalculator::calculate_helical_parameters(const core::BasePair& pair1,
                                                                           const core::BasePair& pair2) const {
-    if (!pair1.frame1().has_value() || !pair1.frame2().has_value() || !pair2.frame1().has_value() ||
-        !pair2.frame2().has_value()) {
-        throw std::runtime_error("Base pairs must have reference frames for helical parameter calculation");
-    }
-
     // Use frame1 from each pair (matching legacy refs_i_j behavior)
-    return calculate_helical_parameters_impl(pair1.frame1().value(), pair2.frame1().value());
+    return calculate_helical_parameters_impl(pair1.frame1(), pair2.frame1());
 }
 
 core::HelicalParameters ParameterCalculator::calculate_helical_parameters_impl(

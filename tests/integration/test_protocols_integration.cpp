@@ -315,27 +315,23 @@ protected:
                 const auto& org_j = legacy_json["org_j"];
 
                 // Determine which modern frame corresponds to which legacy frame
-                // Store values, not pointers (value() returns a temporary)
-                std::optional<ReferenceFrame> modern_frame_i_opt;
-                std::optional<ReferenceFrame> modern_frame_j_opt;
+                // Frames are now always present (non-optional)
+                const ReferenceFrame* modern_frame_i_ptr = nullptr;
+                const ReferenceFrame* modern_frame_j_ptr = nullptr;
 
                 if (order_matches) {
                     // Legacy i -> modern frame1, legacy j -> modern frame2
-                    if (modern_pair.frame1().has_value() && modern_pair.frame2().has_value()) {
-                        modern_frame_i_opt = modern_pair.frame1().value();
-                        modern_frame_j_opt = modern_pair.frame2().value();
-                    }
+                    modern_frame_i_ptr = &modern_pair.frame1();
+                    modern_frame_j_ptr = &modern_pair.frame2();
                 } else if (order_reversed) {
                     // Legacy i -> modern frame2, legacy j -> modern frame1
-                    if (modern_pair.frame1().has_value() && modern_pair.frame2().has_value()) {
-                        modern_frame_i_opt = modern_pair.frame2().value();
-                        modern_frame_j_opt = modern_pair.frame1().value();
-                    }
+                    modern_frame_i_ptr = &modern_pair.frame2();
+                    modern_frame_j_ptr = &modern_pair.frame1();
                 }
 
-                if (modern_frame_i_opt.has_value() && modern_frame_j_opt.has_value()) {
-                    const auto& modern_frame_i = modern_frame_i_opt.value();
-                    const auto& modern_frame_j = modern_frame_j_opt.value();
+                if (modern_frame_i_ptr && modern_frame_j_ptr) {
+                    const auto& modern_frame_i = *modern_frame_i_ptr;
+                    const auto& modern_frame_j = *modern_frame_j_ptr;
 
                     // Compare origin and orientation for residue i
                     if (org_i.is_array() && org_i.size() == 3) {
@@ -388,10 +384,9 @@ protected:
             // Compare direction vector (dir_xyz)
             // Note: Legacy has a bug where it stores [dir_y, dir_z, 0.0] instead of [dir_x, dir_y,
             // dir_z]
-            if (legacy_json.contains("dir_xyz") && modern_pair.frame1().has_value() &&
-                modern_pair.frame2().has_value()) {
-                const auto frame1 = modern_pair.frame1().value(); // Store value, not reference
-                const auto frame2 = modern_pair.frame2().value(); // Store value, not reference
+            if (legacy_json.contains("dir_xyz")) {
+                const auto& frame1 = modern_pair.frame1();
+                const auto& frame2 = modern_pair.frame2();
                 const auto& dir_xyz = legacy_json["dir_xyz"];
 
                 if (dir_xyz.is_array() && dir_xyz.size() >= 2) {

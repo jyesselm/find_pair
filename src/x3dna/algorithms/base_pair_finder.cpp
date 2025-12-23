@@ -264,18 +264,15 @@ std::vector<BasePair> BasePairFinder::find_all_pairs(const Structure& structure)
             ValidationResult result = validator_.validate(*res1, *res2);
 
             if (result.is_valid) {
-                BasePair pair(idx1, idx2, result.bp_type);
+                // Validation already ensures both residues have frames, so we can access them directly
+                // Store by value since reference_frame().value() returns a temporary
+                auto frame1 = res1->reference_frame().value();
+                auto frame2 = res2->reference_frame().value();
+                BasePair pair(idx1, idx2, frame1, frame2, result.bp_type);
 
                 // Set unique residue identifiers
                 pair.set_res_id1(res1->res_id());
                 pair.set_res_id2(res2->res_id());
-
-                if (res1->reference_frame().has_value()) {
-                    pair.set_frame1(res1->reference_frame().value());
-                }
-                if (res2->reference_frame().has_value()) {
-                    pair.set_frame2(res2->reference_frame().value());
-                }
 
                 pair.set_hydrogen_bonds(result.hbonds);
 
@@ -427,19 +424,15 @@ void BasePairFinder::record_validation_results(int legacy_idx1, int legacy_idx2,
 
             // Record base_pair for the same pairs as pair_validation (matches legacy behavior)
             // Analysis confirmed legacy pair_validation and base_pair have IDENTICAL pairs
-            BasePair pair(base_i, base_j, result.bp_type);
+            // Validation already ensures both residues have frames
+            // Store by value since reference_frame().value() returns a temporary
+            auto frame1 = res1->reference_frame().value();
+            auto frame2 = res2->reference_frame().value();
+            BasePair pair(base_i, base_j, frame1, frame2, result.bp_type);
 
             // Set unique residue identifiers
             pair.set_res_id1(res1->res_id());
             pair.set_res_id2(res2->res_id());
-
-            // Set reference frames
-            if (res1->reference_frame().has_value()) {
-                pair.set_frame1(res1->reference_frame().value());
-            }
-            if (res2->reference_frame().has_value()) {
-                pair.set_frame2(res2->reference_frame().value());
-            }
 
             // Set hydrogen bonds
             pair.set_hydrogen_bonds(result.hbonds);
@@ -737,12 +730,21 @@ BasePair BasePairFinder::create_base_pair(int legacy_idx1, int legacy_idx2, cons
     size_t idx_large = static_cast<size_t>(std::max(legacy_idx1, legacy_idx2)) - 1;
     bool swapped = (legacy_idx1 > legacy_idx2);
 
-    BasePair pair(idx_small, idx_large, result.bp_type);
-    pair.set_finding_order_swapped(swapped);
-
     // Set frames - swap if we reordered the indices
     const Residue* res_small = swapped ? res2 : res1;
     const Residue* res_large = swapped ? res1 : res2;
+
+    // Get frames (use identity if not available, though validation should ensure they exist)
+    core::ReferenceFrame frame1, frame2;
+    if (res_small && res_small->reference_frame().has_value()) {
+        frame1 = res_small->reference_frame().value();
+    }
+    if (res_large && res_large->reference_frame().has_value()) {
+        frame2 = res_large->reference_frame().value();
+    }
+
+    BasePair pair(idx_small, idx_large, frame1, frame2, result.bp_type);
+    pair.set_finding_order_swapped(swapped);
 
     // Set unique residue identifiers
     if (res_small) {
@@ -750,14 +752,6 @@ BasePair BasePairFinder::create_base_pair(int legacy_idx1, int legacy_idx2, cons
     }
     if (res_large) {
         pair.set_res_id2(res_large->res_id());
-    }
-
-    if (res_small && res_small->reference_frame().has_value()) {
-        pair.set_frame1(res_small->reference_frame().value());
-    }
-
-    if (res_large && res_large->reference_frame().has_value()) {
-        pair.set_frame2(res_large->reference_frame().value());
     }
 
     // Set hydrogen bonds

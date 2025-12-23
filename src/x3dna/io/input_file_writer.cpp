@@ -116,49 +116,41 @@ void InputFileWriter::write_ref_frames(const std::filesystem::path& output_path,
             << "\n";
 
         // Get the reference frames
-        auto frame1 = bp.frame1();
-        auto frame2 = bp.frame2();
+        const auto& frame1 = bp.frame1();
+        const auto& frame2 = bp.frame2();
 
-        if (frame1.has_value() && frame2.has_value()) {
-            // Calculate middle frame using cehs_average/bpstep_par algorithm
-            //
-            // Note: Without legacy ordering information, we cannot determine
-            // which residue is strand 1 vs strand 2. Legacy uses strand 2 first,
-            // strand 1 second (refs_right_left). For exact legacy matching,
-            // use the version with legacy_pair_ordering parameter.
-            //
-            // Default assumption: residue_idx1 = strand 1, residue_idx2 = strand 2
-            // Legacy uses strand 2 first, strand 1 second (refs_right_left)
-            // So we need: frame2 (strand 2) first, frame1 (strand 1) second
-            // This matches legacy refs_right_left() behavior
-            auto mid_frame = calc.calculate_pair_frame(frame2.value(), frame1.value());
-            auto mid_org = mid_frame.origin();
-            auto mid_x = mid_frame.x_axis();
-            auto mid_y = mid_frame.y_axis();
-            auto mid_z = mid_frame.z_axis();
+        // Calculate middle frame using cehs_average/bpstep_par algorithm
+        //
+        // Note: Without legacy ordering information, we cannot determine
+        // which residue is strand 1 vs strand 2. Legacy uses strand 2 first,
+        // strand 1 second (refs_right_left). For exact legacy matching,
+        // use the version with legacy_pair_ordering parameter.
+        //
+        // Default assumption: residue_idx1 = strand 1, residue_idx2 = strand 2
+        // Legacy uses strand 2 first, strand 1 second (refs_right_left)
+        // So we need: frame2 (strand 2) first, frame1 (strand 1) second
+        // This matches legacy refs_right_left() behavior
+        auto mid_frame = calc.calculate_pair_frame(frame2, frame1);
+        auto mid_org = mid_frame.origin();
+        auto mid_x = mid_frame.x_axis();
+        auto mid_y = mid_frame.y_axis();
+        auto mid_z = mid_frame.z_axis();
 
-            // Output origin
-            out << std::setw(10) << mid_org.x() << std::setw(10) << mid_org.y() << std::setw(10) << mid_org.z()
-                << "  # origin\n";
+        // Output origin
+        out << std::setw(10) << mid_org.x() << std::setw(10) << mid_org.y() << std::setw(10) << mid_org.z()
+            << "  # origin\n";
 
-            // Output x-axis
-            out << std::setw(10) << mid_x.x() << std::setw(10) << mid_x.y() << std::setw(10) << mid_x.z()
-                << "  # x-axis\n";
+        // Output x-axis
+        out << std::setw(10) << mid_x.x() << std::setw(10) << mid_x.y() << std::setw(10) << mid_x.z()
+            << "  # x-axis\n";
 
-            // Output y-axis
-            out << std::setw(10) << mid_y.x() << std::setw(10) << mid_y.y() << std::setw(10) << mid_y.z()
-                << "  # y-axis\n";
+        // Output y-axis
+        out << std::setw(10) << mid_y.x() << std::setw(10) << mid_y.y() << std::setw(10) << mid_y.z()
+            << "  # y-axis\n";
 
-            // Output z-axis
-            out << std::setw(10) << mid_z.x() << std::setw(10) << mid_z.y() << std::setw(10) << mid_z.z()
-                << "  # z-axis\n";
-        } else {
-            // No frames available - output identity frame
-            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0 << "  # origin\n";
-            out << std::setw(10) << 1.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0 << "  # x-axis\n";
-            out << std::setw(10) << 0.0 << std::setw(10) << 1.0 << std::setw(10) << 0.0 << "  # y-axis\n";
-            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 1.0 << "  # z-axis\n";
-        }
+        // Output z-axis
+        out << std::setw(10) << mid_z.x() << std::setw(10) << mid_z.y() << std::setw(10) << mid_z.z()
+            << "  # z-axis\n";
     }
 
     out.close();
@@ -311,86 +303,78 @@ void InputFileWriter::write_ref_frames(const std::filesystem::path& output_path,
             << "\n";
 
         // Get the reference frames
-        auto frame1 = bp.frame1();
-        auto frame2 = bp.frame2();
+        const auto& frame1 = bp.frame1();
+        const auto& frame2 = bp.frame2();
 
-        if (frame1.has_value() && frame2.has_value()) {
-            // Check legacy ordering for this pair
-            // Convert to 1-based indices for lookup (legacy uses 1-based)
-            int res1_1based = bp.residue_idx1() + 1;
-            int res2_1based = bp.residue_idx2() + 1;
-            int min_res = std::min(res1_1based, res2_1based);
-            int max_res = std::max(res1_1based, res2_1based);
-            std::pair<int, int> key(min_res, max_res);
+        // Check legacy ordering for this pair
+        // Convert to 1-based indices for lookup (legacy uses 1-based)
+        int res1_1based = bp.residue_idx1() + 1;
+        int res2_1based = bp.residue_idx2() + 1;
+        int min_res = std::min(res1_1based, res2_1based);
+        int max_res = std::max(res1_1based, res2_1based);
+        std::pair<int, int> key(min_res, max_res);
 
-            // Determine frame order based on legacy strand assignment
-            // Legacy: refs_right_left uses strand 2 first, strand 1 second
-            // In legacy .inp: res1 = strand 1, res2 = strand 2
-            // So we need: strand 2 frame first, strand 1 frame second
-            core::ReferenceFrame f_strand2; // Will be passed first to calculate_pair_frame
-            core::ReferenceFrame f_strand1; // Will be passed second to calculate_pair_frame
+        // Determine frame order based on legacy strand assignment
+        // Legacy: refs_right_left uses strand 2 first, strand 1 second
+        // In legacy .inp: res1 = strand 1, res2 = strand 2
+        // So we need: strand 2 frame first, strand 1 frame second
+        core::ReferenceFrame f_strand2; // Will be passed first to calculate_pair_frame
+        core::ReferenceFrame f_strand1; // Will be passed second to calculate_pair_frame
 
-            auto it = legacy_pair_ordering.find(key);
-            if (it != legacy_pair_ordering.end()) {
-                // We have legacy ordering information
-                // it->second is the residue that was listed first in legacy .inp (strand 1)
-                int legacy_strand1_res = it->second;
+        auto it = legacy_pair_ordering.find(key);
+        if (it != legacy_pair_ordering.end()) {
+            // We have legacy ordering information
+            // it->second is the residue that was listed first in legacy .inp (strand 1)
+            int legacy_strand1_res = it->second;
 
-                // Determine which modern residue corresponds to strand 1
-                if (res1_1based == legacy_strand1_res) {
-                    // res1 is strand 1, res2 is strand 2
-                    f_strand1 = frame1.value();
-                    f_strand2 = frame2.value();
-                } else if (res2_1based == legacy_strand1_res) {
-                    // res2 is strand 1, res1 is strand 2
-                    f_strand1 = frame2.value();
-                    f_strand2 = frame1.value();
-                } else {
-                    // Can't determine strand assignment, use default order
-                    // (This shouldn't happen if legacy ordering is correct)
-                    f_strand2 = frame2.value();
-                    f_strand1 = frame1.value();
-                }
+            // Determine which modern residue corresponds to strand 1
+            if (res1_1based == legacy_strand1_res) {
+                // res1 is strand 1, res2 is strand 2
+                f_strand1 = frame1;
+                f_strand2 = frame2;
+            } else if (res2_1based == legacy_strand1_res) {
+                // res2 is strand 1, res1 is strand 2
+                f_strand1 = frame2;
+                f_strand2 = frame1;
             } else {
-                // No legacy ordering available - use default assumption
-                // In modern code: residue_idx1 is typically strand 1, residue_idx2 is strand 2
-                // But legacy uses strand 2 first, strand 1 second
-                // So we use frame2 (strand 2) first, frame1 (strand 1) second
-                f_strand1 = frame1.value();
-                f_strand2 = frame2.value();
+                // Can't determine strand assignment, use default order
+                // (This shouldn't happen if legacy ordering is correct)
+                f_strand2 = frame2;
+                f_strand1 = frame1;
             }
-
-            // Calculate middle frame using cehs_average/bpstep_par algorithm
-            // Legacy uses strand 2 first, strand 1 second (refs_right_left)
-            // Always use this order to match legacy behavior
-            auto mid_frame = calc.calculate_pair_frame(f_strand2, f_strand1);
-            auto mid_org = mid_frame.origin();
-            auto mid_x = mid_frame.x_axis();
-            auto mid_y = mid_frame.y_axis();
-            auto mid_z = mid_frame.z_axis();
-
-            // Output origin
-            out << std::setw(10) << mid_org.x() << std::setw(10) << mid_org.y() << std::setw(10) << mid_org.z()
-                << "  # origin\n";
-
-            // Output x-axis
-            out << std::setw(10) << mid_x.x() << std::setw(10) << mid_x.y() << std::setw(10) << mid_x.z()
-                << "  # x-axis\n";
-
-            // Output y-axis
-            out << std::setw(10) << mid_y.x() << std::setw(10) << mid_y.y() << std::setw(10) << mid_y.z()
-                << "  # y-axis\n";
-
-            // Output z-axis
-            out << std::setw(10) << mid_z.x() << std::setw(10) << mid_z.y() << std::setw(10) << mid_z.z()
-                << "  # z-axis\n";
         } else {
-            // No frames available - output identity frame
-            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0 << "  # origin\n";
-            out << std::setw(10) << 1.0 << std::setw(10) << 0.0 << std::setw(10) << 0.0 << "  # x-axis\n";
-            out << std::setw(10) << 0.0 << std::setw(10) << 1.0 << std::setw(10) << 0.0 << "  # y-axis\n";
-            out << std::setw(10) << 0.0 << std::setw(10) << 0.0 << std::setw(10) << 1.0 << "  # z-axis\n";
+            // No legacy ordering available - use default assumption
+            // In modern code: residue_idx1 is typically strand 1, residue_idx2 is strand 2
+            // But legacy uses strand 2 first, strand 1 second
+            // So we use frame2 (strand 2) first, frame1 (strand 1) second
+            f_strand1 = frame1;
+            f_strand2 = frame2;
         }
+
+        // Calculate middle frame using cehs_average/bpstep_par algorithm
+        // Legacy uses strand 2 first, strand 1 second (refs_right_left)
+        // Always use this order to match legacy behavior
+        auto mid_frame = calc.calculate_pair_frame(f_strand2, f_strand1);
+        auto mid_org = mid_frame.origin();
+        auto mid_x = mid_frame.x_axis();
+        auto mid_y = mid_frame.y_axis();
+        auto mid_z = mid_frame.z_axis();
+
+        // Output origin
+        out << std::setw(10) << mid_org.x() << std::setw(10) << mid_org.y() << std::setw(10) << mid_org.z()
+            << "  # origin\n";
+
+        // Output x-axis
+        out << std::setw(10) << mid_x.x() << std::setw(10) << mid_x.y() << std::setw(10) << mid_x.z()
+            << "  # x-axis\n";
+
+        // Output y-axis
+        out << std::setw(10) << mid_y.x() << std::setw(10) << mid_y.y() << std::setw(10) << mid_y.z()
+            << "  # y-axis\n";
+
+        // Output z-axis
+        out << std::setw(10) << mid_z.x() << std::setw(10) << mid_z.y() << std::setw(10) << mid_z.z()
+            << "  # z-axis\n";
     }
 
     out.close();

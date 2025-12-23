@@ -78,11 +78,10 @@ TEST_F(BasePairFinderTest, RealPdbFile) {
     // Should find at least some pairs (or none if structure doesn't have pairs)
     EXPECT_GE(pairs.size(), 0);
 
-    // If pairs found, verify they have frames
+    // If pairs found, verify they have valid frames (origin distance > 0 for real frames)
     for (const auto& pair : pairs) {
-        if (pair.frame1().has_value() && pair.frame2().has_value()) {
-            EXPECT_GT(pair.origin_distance(), 0.0);
-        }
+        // Frames are always present (non-optional)
+        EXPECT_GT(pair.origin_distance(), 0.0);
     }
 }
 

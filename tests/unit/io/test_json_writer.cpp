@@ -118,16 +118,14 @@ TEST_F(JsonWriterTest, RecordLsFitting) {
 
 // Base pair recording (legacy format: base_i, base_j)
 TEST_F(JsonWriterTest, RecordBasePair) {
-    BasePair bp(0, 1, BasePairType::WATSON_CRICK);
-    bp.set_bp_type("CG");
-
     Matrix3D rot = Matrix3D::identity();
     Vector3D org1(0, 0, 0);
     Vector3D org2(10, 0, 0);
     ReferenceFrame frame1(rot, org1);
     ReferenceFrame frame2(rot, org2);
-    bp.set_frame1(frame1);
-    bp.set_frame2(frame2);
+
+    BasePair bp(0, 1, frame1, frame2, BasePairType::WATSON_CRICK);
+    bp.set_bp_type("CG");
 
     writer_->record_base_pair(bp);
 

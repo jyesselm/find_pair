@@ -33,13 +33,11 @@ using hydrogen_bond = HydrogenBond;
  * @class BasePair
  * @brief Represents a base pair between two nucleotide residues
  *
- * IMPORTANT: Reference frames are required for base pair operations.
- * Use the 4-parameter constructor when frames are available (preferred):
+ * Reference frames are REQUIRED - use the constructor with frames:
  *   BasePair(idx1, idx2, frame1, frame2)
  *
- * The 2-parameter constructor without frames is provided for JSON
- * deserialization and incremental construction patterns, but frames
- * must be set via set_frame1/set_frame2 before geometric operations.
+ * For JSON deserialization where frames may be missing, identity frames
+ * are used as placeholders.
  */
 class BasePair {
 private:
@@ -50,8 +48,8 @@ private:
     std::string res_id2_;                       // Unique residue identifier for second residue (chain-name-seq[ins])
     BasePairType type_ = BasePairType::UNKNOWN; // Base pair type
     std::string bp_type_;                       // Base pair type string (e.g., "CG", "AT")
-    std::optional<ReferenceFrame> frame1_;      // Reference frame for first residue
-    std::optional<ReferenceFrame> frame2_;      // Reference frame for second residue
+    ReferenceFrame frame1_;                     // Reference frame for first residue (required)
+    ReferenceFrame frame2_;                     // Reference frame for second residue (required)
     std::vector<HydrogenBond> hbonds_;          // Hydrogen bonds
     std::optional<size_t> basepair_idx_;        // Optional index for tracking (assigned when recording)
     bool finding_order_swapped_ = false; // True if indices were swapped during normalization (finding order was j,i not
@@ -92,21 +90,13 @@ private:
 
 public:
     /**
-     * @brief Default constructor
+     * @brief Default constructor - creates pair with identity frames
+     * @note Primarily for container requirements; prefer the full constructor
      */
     BasePair() = default;
 
     /**
-     * @brief Constructor with residue indices and type (frames set later)
-     * @param idx1 Index of first residue
-     * @param idx2 Index of second residue
-     * @param type Base pair type
-     * @note Frames must be set via set_frame1/set_frame2 before geometric operations
-     */
-    BasePair(size_t idx1, size_t idx2, BasePairType type) : residue_idx1_(idx1), residue_idx2_(idx2), type_(type) {}
-
-    /**
-     * @brief Constructor with residue indices and required frames (preferred)
+     * @brief Constructor with residue indices and required frames
      * @param idx1 Index of first residue
      * @param idx2 Index of second residue
      * @param frame1 Reference frame for first residue
@@ -154,23 +144,15 @@ public:
     /**
      * @brief Get reference frame for first residue
      */
-    [[nodiscard]] std::optional<ReferenceFrame> frame1() const {
+    [[nodiscard]] const ReferenceFrame& frame1() const {
         return frame1_;
     }
 
     /**
      * @brief Get reference frame for second residue
      */
-    [[nodiscard]] std::optional<ReferenceFrame> frame2() const {
+    [[nodiscard]] const ReferenceFrame& frame2() const {
         return frame2_;
-    }
-
-    /**
-     * @brief Check if both frames are set
-     * @return True if both frame1 and frame2 have values
-     */
-    [[nodiscard]] bool has_frames() const {
-        return frame1_.has_value() && frame2_.has_value();
     }
 
     /**
@@ -184,7 +166,7 @@ public:
      * - Legacy's five2three may swap frames based on helix direction (strand_swapped)
      * - The correct frame is determined by XOR of these two flags
      */
-    [[nodiscard]] std::optional<ReferenceFrame> get_step_frame(bool strand_swapped) const {
+    [[nodiscard]] const ReferenceFrame& get_step_frame(bool strand_swapped) const {
         bool use_larger_index_frame = (finding_order_swapped_ != strand_swapped);
         return use_larger_index_frame ? frame2_ : frame1_;
     }
@@ -237,10 +219,7 @@ public:
      * @return Distance in Angstroms
      */
     [[nodiscard]] double origin_distance() const {
-        if (!frame1_.has_value() || !frame2_.has_value()) {
-            return 0.0;
-        }
-        return frame1_->origin().distance_to(frame2_->origin());
+        return frame1_.origin().distance_to(frame2_.origin());
     }
 
     /**
@@ -248,11 +227,8 @@ public:
      * @return Angle in radians
      */
     [[nodiscard]] double plane_angle() const {
-        if (!frame1_.has_value() || !frame2_.has_value()) {
-            return 0.0;
-        }
-        Vector3D z1 = frame1_->z_axis();
-        Vector3D z2 = frame2_->z_axis();
+        Vector3D z1 = frame1_.z_axis();
+        Vector3D z2 = frame2_.z_axis();
         double dot = z1.dot(z2);
         // Clamp to [-1, 1] for acos
         if (dot > 1.0)
@@ -277,10 +253,7 @@ public:
      * @return Dot product of z-axes (negative for valid base pairs)
      */
     [[nodiscard]] double direction_dot_product() const {
-        if (!frame1_.has_value() || !frame2_.has_value()) {
-            return 0.0;
-        }
-        return frame1_->direction_dot_product(frame2_.value());
+        return frame1_.direction_dot_product(frame2_);
     }
 
     /**
@@ -301,96 +274,67 @@ public:
             j["res_id_j"] = res_id2_;
         }
 
-        if (frame1_.has_value()) {
-            j["orien_i"] = frame1_->rotation().to_json_legacy();
-            j["org_i"] = frame1_->origin().to_json();
-        }
+        j["orien_i"] = frame1_.rotation().to_json_legacy();
+        j["org_i"] = frame1_.origin().to_json();
 
         // For frame2 (orien_j), legacy code applies a sign flip when dir_z <= 0
         // Legacy: r2[l][k] = (k == 1 || dir_z > 0) ? orien[j][...] : -orien[j][...]
         // This negates columns 2 and 3 (y and z axes) when dir_z <= 0
-        if (frame2_.has_value()) {
-            double dir_z = 0.0;
-            if (frame1_.has_value()) {
-                dir_z = frame1_->z_axis().dot(frame2_->z_axis());
-            }
+        double dir_z = frame1_.z_axis().dot(frame2_.z_axis());
 
-            if (dir_z <= 0.0 && frame1_.has_value()) {
-                // Apply legacy sign flip: negate y and z columns
-                geometry::Matrix3D rot2 = frame2_->rotation();
-                geometry::Vector3D y_col = rot2.column(1);
-                geometry::Vector3D z_col = rot2.column(2);
-                rot2.set_column(1, -y_col);
-                rot2.set_column(2, -z_col);
-                j["orien_j"] = rot2.to_json_legacy();
-            } else {
-                j["orien_j"] = frame2_->rotation().to_json_legacy();
-            }
-            j["org_j"] = frame2_->origin().to_json();
+        if (dir_z <= 0.0) {
+            // Apply legacy sign flip: negate y and z columns
+            geometry::Matrix3D rot2 = frame2_.rotation();
+            geometry::Vector3D y_col = rot2.column(1);
+            geometry::Vector3D z_col = rot2.column(2);
+            rot2.set_column(1, -y_col);
+            rot2.set_column(2, -z_col);
+            j["orien_j"] = rot2.to_json_legacy();
+        } else {
+            j["orien_j"] = frame2_.rotation().to_json_legacy();
         }
+        j["org_j"] = frame2_.origin().to_json();
 
         // Direction vector (dot products of corresponding frame axes)
-        // Legacy: dir_x = dot(&orien[i][0], &orien[j][0])
-        //         dir_y = dot(&orien[i][3], &orien[j][3])
-        //         dir_z = dot(&orien[i][6], &orien[j][6])
-        //
-        // NOTE: Legacy has a bug in json_writer_record_base_pair:
-        //   It declares: double dir_xyz_arr[4] = {dir_x, dir_y, dir_z};
-        //   But uses: dir_xyz[1], dir_xyz[2], dir_xyz[3] (1-based indexing)
-        //   So it actually stores: [dir_y, dir_z, 0.0] (skipping dir_x!)
-        //
-        // To match legacy exactly, we need to replicate this bug:
-        if (frame1_.has_value() && frame2_.has_value()) {
-            // Calculate all three direction components (even though we only use y and z)
-            double dir_y = frame1_->y_axis().dot(frame2_->y_axis());
-            double dir_z = frame1_->z_axis().dot(frame2_->z_axis());
-            // Match legacy bug: store [dir_y, dir_z, 0.0] instead of [dir_x, dir_y, dir_z]
-            j["dir_xyz"] = nlohmann::json::array({dir_y, dir_z, 0.0});
-        }
+        // NOTE: Legacy has a bug - stores [dir_y, dir_z, 0.0] instead of [dir_x, dir_y, dir_z]
+        double dir_y = frame1_.y_axis().dot(frame2_.y_axis());
+        j["dir_xyz"] = nlohmann::json::array({dir_y, dir_z, 0.0});
 
         // Base pair index (if set)
         if (basepair_idx_.has_value()) {
             j["basepair_idx"] = static_cast<long>(basepair_idx_.value());
         }
 
-        // Hydrogen bonds
-        // NOTE: Legacy does NOT store hbonds in base_pair records - they are in separate hbond_list
-        // records For exact legacy match, we should not include them in base_pair (Legacy stores
-        // hbonds separately in hbond_list records) Commented out to match legacy exactly: if
-        // (!hbonds_.empty()) {
-        //     j["num_hbonds"] = static_cast<long>(hbonds_.size());
-        //     j["hbonds"] = nlohmann::json::array();
-        //     ...
-        // }
-
         return j;
     }
 
     /**
      * @brief Create BasePair from legacy JSON format
+     * @note If frames are missing in JSON, identity frames are used as placeholders
      */
     [[nodiscard]] static BasePair from_json_legacy(const nlohmann::json& j) {
         size_t idx1 = j.value("base_i", 0);
         size_t idx2 = j.value("base_j", 0);
-        std::string bp_type = j.value("bp_type", "");
+        std::string bp_type_str = j.value("bp_type", "");
 
-        BasePair bp(idx1, idx2, BasePairType::UNKNOWN);
-        bp.set_bp_type(bp_type);
-
-        // Parse reference frames
+        // Parse reference frames (use identity if not present)
+        ReferenceFrame frame1, frame2;
         if (j.contains("orien_i") && j.contains("org_i")) {
             nlohmann::json frame1_json;
             frame1_json["orien"] = j["orien_i"];
             frame1_json["org"] = j["org_i"];
-            bp.set_frame1(ReferenceFrame::from_json_legacy(frame1_json));
+            frame1 = ReferenceFrame::from_json_legacy(frame1_json);
         }
 
         if (j.contains("orien_j") && j.contains("org_j")) {
             nlohmann::json frame2_json;
             frame2_json["orien"] = j["orien_j"];
             frame2_json["org"] = j["org_j"];
-            bp.set_frame2(ReferenceFrame::from_json_legacy(frame2_json));
+            frame2 = ReferenceFrame::from_json_legacy(frame2_json);
         }
+
+        BasePair bp(idx1, idx2, frame1, frame2);
+        bp.set_bp_type(bp_type_str);
 
         // Parse base pair index (if present)
         if (j.contains("basepair_idx")) {
@@ -427,12 +371,8 @@ public:
         if (basepair_idx_.has_value()) {
             j["basepair_idx"] = basepair_idx_.value();
         }
-        if (frame1_.has_value()) {
-            j["frame1"] = frame1_->to_json();
-        }
-        if (frame2_.has_value()) {
-            j["frame2"] = frame2_->to_json();
-        }
+        j["frame1"] = frame1_.to_json();
+        j["frame2"] = frame2_.to_json();
         j["hydrogen_bonds"] = nlohmann::json::array();
         for (size_t i = 0; i < hbonds_.size(); ++i) {
             const auto& hbond = hbonds_[i];
@@ -453,21 +393,24 @@ public:
 
     /**
      * @brief Create BasePair from modern JSON format
+     * @note If frames are missing in JSON, identity frames are used as placeholders
      */
     [[nodiscard]] static BasePair from_json(const nlohmann::json& j) {
         size_t idx1 = j.value("residue_idx1", 0);
         size_t idx2 = j.value("residue_idx2", 0);
-        std::string bp_type = j.value("bp_type", "");
+        std::string bp_type_str = j.value("bp_type", "");
 
-        BasePair bp(idx1, idx2, BasePairType::UNKNOWN);
-        bp.set_bp_type(bp_type);
-
+        // Parse reference frames (use identity if not present)
+        ReferenceFrame frame1, frame2;
         if (j.contains("frame1")) {
-            bp.set_frame1(ReferenceFrame::from_json(j["frame1"]));
+            frame1 = ReferenceFrame::from_json(j["frame1"]);
         }
         if (j.contains("frame2")) {
-            bp.set_frame2(ReferenceFrame::from_json(j["frame2"]));
+            frame2 = ReferenceFrame::from_json(j["frame2"]);
         }
+
+        BasePair bp(idx1, idx2, frame1, frame2);
+        bp.set_bp_type(bp_type_str);
 
         if (j.contains("basepair_idx")) {
             bp.set_basepair_idx(j.value("basepair_idx", 0));

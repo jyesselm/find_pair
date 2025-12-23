@@ -28,11 +28,9 @@ protected:
         Vector3D org2(10.0, 10.0, 10.0);
         frame2_ = ReferenceFrame(rot2, org2);
 
-        // Create base pair
-        bp_ = BasePair(1, 2, BasePairType::WATSON_CRICK);
+        // Create base pair with frames
+        bp_ = BasePair(1, 2, frame1_, frame2_, BasePairType::WATSON_CRICK);
         bp_.set_bp_type("CG");
-        bp_.set_frame1(frame1_);
-        bp_.set_frame2(frame2_);
 
         // Add hydrogen bond
         hydrogen_bond hbond;
@@ -54,12 +52,14 @@ TEST_F(BasePairTest, DefaultConstructor) {
     EXPECT_EQ(bp.residue_idx1(), 0);
     EXPECT_EQ(bp.residue_idx2(), 0);
     EXPECT_EQ(bp.type(), BasePairType::UNKNOWN);
-    EXPECT_FALSE(bp.frame1().has_value());
-    EXPECT_FALSE(bp.frame2().has_value());
+    // Default constructor uses identity frames
+    EXPECT_EQ(bp.frame1().origin(), Vector3D(0, 0, 0));
+    EXPECT_EQ(bp.frame2().origin(), Vector3D(0, 0, 0));
 }
 
 TEST_F(BasePairTest, IndexTypeConstructor) {
-    BasePair bp(5, 10, BasePairType::WOBBLE);
+    ReferenceFrame frame1, frame2;
+    BasePair bp(5, 10, frame1, frame2, BasePairType::WOBBLE);
     EXPECT_EQ(bp.residue_idx1(), 5);
     EXPECT_EQ(bp.residue_idx2(), 10);
     EXPECT_EQ(bp.type(), BasePairType::WOBBLE);
@@ -67,14 +67,13 @@ TEST_F(BasePairTest, IndexTypeConstructor) {
 
 // Reference frame tests
 TEST_F(BasePairTest, SetGetFrames) {
-    BasePair bp(1, 2, BasePairType::WATSON_CRICK);
+    ReferenceFrame identity_frame;
+    BasePair bp(1, 2, identity_frame, identity_frame, BasePairType::WATSON_CRICK);
     bp.set_frame1(frame1_);
     bp.set_frame2(frame2_);
 
-    ASSERT_TRUE(bp.frame1().has_value());
-    ASSERT_TRUE(bp.frame2().has_value());
-    EXPECT_EQ(bp.frame1()->origin(), frame1_.origin());
-    EXPECT_EQ(bp.frame2()->origin(), frame2_.origin());
+    EXPECT_EQ(bp.frame1().origin(), frame1_.origin());
+    EXPECT_EQ(bp.frame2().origin(), frame2_.origin());
 }
 
 // Distance/angle tests
@@ -106,7 +105,8 @@ TEST_F(BasePairTest, DirectionDotProduct) {
 
 // Hydrogen bond tests
 TEST_F(BasePairTest, AddHydrogenBond) {
-    BasePair bp(1, 2, BasePairType::WATSON_CRICK);
+    ReferenceFrame identity_frame;
+    BasePair bp(1, 2, identity_frame, identity_frame, BasePairType::WATSON_CRICK);
     EXPECT_EQ(bp.hydrogen_bonds().size(), 0);
 
     hydrogen_bond hbond;
@@ -209,15 +209,17 @@ TEST_F(BasePairTest, JsonModernRoundTrip) {
 
 // Base pair type tests
 TEST_F(BasePairTest, BasePairTypeDetection) {
-    BasePair at(1, 2, BasePairType::UNKNOWN);
+    ReferenceFrame identity_frame;
+
+    BasePair at(1, 2, identity_frame, identity_frame, BasePairType::UNKNOWN);
     at.set_bp_type("AT");
     EXPECT_EQ(at.type(), BasePairType::WATSON_CRICK);
 
-    BasePair gc(1, 2, BasePairType::UNKNOWN);
+    BasePair gc(1, 2, identity_frame, identity_frame, BasePairType::UNKNOWN);
     gc.set_bp_type("GC");
     EXPECT_EQ(gc.type(), BasePairType::WATSON_CRICK);
 
-    BasePair gt(1, 2, BasePairType::UNKNOWN);
+    BasePair gt(1, 2, identity_frame, identity_frame, BasePairType::UNKNOWN);
     gt.set_bp_type("GT");
     EXPECT_EQ(gt.type(), BasePairType::WOBBLE);
 }

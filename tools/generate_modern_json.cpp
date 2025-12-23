@@ -294,12 +294,6 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                         const auto& pair1 = base_pairs[idx1];
                         const auto& pair2 = base_pairs[idx2];
 
-                        // Verify both pairs have frames
-                        if (!pair1.frame1().has_value() || !pair1.frame2().has_value() || !pair2.frame1().has_value() ||
-                            !pair2.frame2().has_value()) {
-                            continue;
-                        }
-
                         // Get strand_swapped flags from helix organization
                         bool swap1 = (idx1 < helix_order.strand_swapped.size()) ? helix_order.strand_swapped[idx1]
                                                                                 : false;
@@ -307,8 +301,8 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
                                                                                 : false;
 
                         // Use BasePair::get_step_frame() which encapsulates the legacy frame selection logic
-                        auto bp1_frame = pair1.get_step_frame(swap1).value();
-                        auto bp2_frame = pair2.get_step_frame(swap2).value();
+                        const auto& bp1_frame = pair1.get_step_frame(swap1);
+                        const auto& bp2_frame = pair2.get_step_frame(swap2);
 
                         // Calculate step parameters between selected frames
                         auto step_params = param_calc.calculate_step_parameters(bp1_frame, bp2_frame);
