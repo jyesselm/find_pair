@@ -251,7 +251,9 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
         if (stage == "all_hbonds") {
             JsonWriter writer(pdb_file);
 
-            x3dna::algorithms::hydrogen_bond::HBondDetector hb_detector;
+            // Use DSSR-like parameters (3.5Å cutoff) for better comparison
+            auto params = x3dna::algorithms::HBondDetectionParams::dssr_like();
+            x3dna::algorithms::hydrogen_bond::HBondDetector hb_detector(params);
             auto result = hb_detector.detect_all_structure_hbonds(structure);
             writer.record_all_structure_hbonds(result);
             writer.write_split_files(json_output_dir, true);

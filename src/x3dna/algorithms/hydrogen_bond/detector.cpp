@@ -26,6 +26,52 @@ using namespace x3dna::geometry;
 namespace {
 
 /**
+ * @brief Convert HBondContext to HBondInteractionType for filtering
+ */
+[[nodiscard]] HBondInteractionType context_to_interaction_type(HBondContext ctx) {
+    switch (ctx) {
+        case HBondContext::BASE_BASE:
+            return HBondInteractionType::BASE_BASE;
+        case HBondContext::BASE_BACKBONE:
+        case HBondContext::BACKBONE_BACKBONE:
+            return HBondInteractionType::BASE_BACKBONE;
+        case HBondContext::BASE_SUGAR:
+        case HBondContext::SUGAR_SUGAR:
+            return HBondInteractionType::BASE_SUGAR;
+        case HBondContext::BASE_PROTEIN:
+        case HBondContext::SUGAR_PROTEIN:
+        case HBondContext::BACKBONE_PROTEIN:
+            return HBondInteractionType::BASE_PROTEIN;
+        case HBondContext::BASE_LIGAND:
+            return HBondInteractionType::BASE_LIGAND;
+        case HBondContext::PROTEIN_MAINCHAIN:
+        case HBondContext::PROTEIN_SIDECHAIN:
+            return HBondInteractionType::PROTEIN_PROTEIN;
+        case HBondContext::PROTEIN_LIGAND:
+        case HBondContext::LIGAND_LIGAND:
+            return HBondInteractionType::PROTEIN_LIGAND;
+        default:
+            return HBondInteractionType::ANY;
+    }
+}
+
+/**
+ * @brief Check if a context passes the interaction type filter
+ */
+[[nodiscard]] bool passes_interaction_filter(HBondContext ctx, HBondInteractionType filter) {
+    if (filter == HBondInteractionType::ANY) {
+        return true;
+    }
+    // RNA_INTERNAL includes base-base, base-sugar, sugar-sugar, backbone interactions
+    if (filter == HBondInteractionType::RNA_INTERNAL) {
+        return ctx == HBondContext::BASE_BASE || ctx == HBondContext::BASE_SUGAR ||
+               ctx == HBondContext::SUGAR_SUGAR || ctx == HBondContext::BASE_BACKBONE ||
+               ctx == HBondContext::BACKBONE_BACKBONE;
+    }
+    return filter & context_to_interaction_type(ctx);
+}
+
+/**
  * @brief Find the index of the H-bond with shortest distance sharing a specific atom
  */
 [[nodiscard]] size_t find_shortest_hbond_sharing_atom(const std::vector<HBond>& bonds, size_t current_idx,
@@ -264,6 +310,12 @@ std::vector<HBond> HBondDetector::find_candidate_bonds(const Residue& residue1, 
             // Determine context for distance threshold
             const HBondContext context = HBondGeometry::determine_context(atom1.name(), atom2.name(), mol1_type,
                                                                            mol2_type);
+
+            // Check interaction type filter
+            if (!passes_interaction_filter(context, params_.interaction_filter)) {
+                continue;
+            }
+
             const double max_dist = params_.distances.max_for_context(context);
 
             // Check distance is in valid range

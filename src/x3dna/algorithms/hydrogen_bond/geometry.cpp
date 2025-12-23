@@ -162,6 +162,10 @@ HBondContext HBondGeometry::determine_nucleotide_context(const std::string& atom
     if (a1_sugar && a2_sugar) {
         return HBondContext::SUGAR_SUGAR;
     }
+    // Sugar-backbone interactions (e.g., O2'-OP1, O2'-OP2)
+    if ((a1_sugar && a2_backbone) || (a1_backbone && a2_sugar)) {
+        return HBondContext::BASE_BACKBONE;  // Use BASE_BACKBONE for sugar-backbone
+    }
 
     return HBondContext::UNKNOWN;
 }

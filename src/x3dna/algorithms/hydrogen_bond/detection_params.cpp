@@ -83,5 +83,32 @@ HBondDetectionParams HBondDetectionParams::general() {
     return params;
 }
 
+HBondDetectionParams HBondDetectionParams::dssr_like() {
+    HBondDetectionParams params;
+    // DSSR-compatible thresholds
+    // DSSR reports all H-bonds: RNA internal, protein, and RNA-protein
+    // Use 3.5Å cutoff to match DSSR's coverage
+    params.distances.base_base_max = 3.5;
+    params.distances.base_backbone_max = 3.5;
+    params.distances.backbone_backbone_max = 3.5;
+    params.distances.base_sugar_max = 3.5;
+    params.distances.sugar_sugar_max = 3.5;
+    params.distances.protein_mainchain_max = 3.5;
+    params.distances.protein_sidechain_max = 3.5;
+    params.distances.base_protein_max = 3.5;
+    params.distances.protein_ligand_max = 3.5;
+    params.distances.min_distance = 2.0;
+    params.distances.conflict_filter_distance = 4.5;  // Allow phase 3 promotion
+    params.allowed_elements = ".O.N.";
+    params.good_bond_min_distance = 2.5;
+    params.good_bond_max_distance = 3.5;
+    params.post_validation_max_distance = 3.6;
+    params.nonstandard_min_distance = 2.6;
+    params.nonstandard_max_distance = 3.2;
+    // Include ALL interactions (RNA, protein, RNA-protein)
+    params.interaction_filter = core::HBondInteractionType::ANY;
+    return params;
+}
+
 } // namespace algorithms
 } // namespace x3dna

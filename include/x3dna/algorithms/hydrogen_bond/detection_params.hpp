@@ -66,6 +66,7 @@ struct HBondDetectionParams {
     [[nodiscard]] static HBondDetectionParams legacy_compatible();
     [[nodiscard]] static HBondDetectionParams modern();
     [[nodiscard]] static HBondDetectionParams general();
+    [[nodiscard]] static HBondDetectionParams dssr_like();  // DSSR-compatible thresholds
 };
 
 } // namespace algorithms

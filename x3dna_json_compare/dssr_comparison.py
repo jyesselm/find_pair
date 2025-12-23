@@ -425,6 +425,211 @@ def print_comparison_summary(result: DSSRComparisonResult, verbose: bool = False
                 print(f"  {hb['atom1_id']} -- {hb['atom2_id']}: DSSR={hb['dssr_distance']:.3f} vs Modern={hb['modern_distance']:.3f} (diff={hb['diff']:.3f})")
 
 
+def get_element(atom_name: str) -> str:
+    """Get element from atom name."""
+    name = atom_name.strip().upper()
+    if not name:
+        return "?"
+    # Strip leading digits (e.g., "2MG" -> "MG")
+    while name and name[0].isdigit():
+        name = name[1:]
+    if name.startswith('O'):
+        return 'O'
+    elif name.startswith('N'):
+        return 'N'
+    elif name.startswith('C'):
+        return 'C'
+    elif name.startswith('S'):
+        return 'S'
+    elif name.startswith('P'):
+        return 'P'
+    return name[0] if name else '?'
+
+
+def get_atom_category(atom_name: str) -> str:
+    """Categorize atom as base, sugar, or backbone."""
+    name = atom_name.strip().upper()
+    # Remove prime for checking
+    base_name = name.replace("'", "")
+
+    # Sugar atoms
+    if "'" in name or base_name in ['O4', 'C1', 'C2', 'C3', 'C4', 'C5', 'O2', 'O3', 'O4', 'O5']:
+        return 'sugar'
+    # Backbone atoms
+    if base_name in ['P', 'OP1', 'OP2', 'OP3', 'O1P', 'O2P', 'O3P', 'O5', 'O3']:
+        return 'backbone'
+    # Base atoms
+    return 'base'
+
+
+def systematic_analysis(result: DSSRComparisonResult, dssr_data: Dict, modern_data: List[Dict]):
+    """Perform systematic analysis of H-bond discrepancies."""
+    print(f"\n{'='*70}")
+    print(f"SYSTEMATIC ANALYSIS: {result.pdb_id}")
+    print(f"{'='*70}")
+
+    modern_flat = flatten_modern_hbonds(modern_data)
+
+    # Build set of DSSR-known residue pairs
+    dssr_res_pairs = set()
+    for hb in dssr_data.get('hbonds', []):
+        atom1_id = hb.get('atom1_id', '')
+        atom2_id = hb.get('atom2_id', '')
+        _, res1 = parse_dssr_atom_id(atom1_id)
+        _, res2 = parse_dssr_atom_id(atom2_id)
+        dssr_res_pairs.add((res1, res2))
+        dssr_res_pairs.add((res2, res1))
+    for pair in dssr_data.get('pairs', []):
+        nt1 = pair.get('nt1', '')
+        nt2 = pair.get('nt2', '')
+        dssr_res_pairs.add((nt1, nt2))
+        dssr_res_pairs.add((nt2, nt1))
+
+    print(f"\nDSSR knows about {len(dssr_res_pairs)//2} unique residue pairs")
+
+    # Analyze modern-only bonds
+    modern_only = result.modern_only
+    print(f"\n--- MODERN-ONLY H-BONDS ({len(modern_only)}) ---")
+
+    # 1. Element pair analysis
+    element_pairs = {}
+    for hb in modern_only:
+        atom1, _ = parse_dssr_atom_id(hb['donor_atom_id'])
+        atom2, _ = parse_dssr_atom_id(hb['acceptor_atom_id'])
+        e1, e2 = get_element(atom1), get_element(atom2)
+        pair = tuple(sorted([e1, e2]))
+        element_pairs[pair] = element_pairs.get(pair, 0) + 1
+
+    print(f"\n1. Element pair distribution:")
+    for pair, count in sorted(element_pairs.items(), key=lambda x: -x[1]):
+        pct = count / len(modern_only) * 100
+        print(f"   {pair[0]}-{pair[1]}: {count} ({pct:.1f}%)")
+
+    # 2. Distance distribution
+    print(f"\n2. Distance distribution:")
+    dist_ranges = [(2.0, 2.5), (2.5, 2.8), (2.8, 3.0), (3.0, 3.2), (3.2, 3.5), (3.5, 4.0)]
+    for lo, hi in dist_ranges:
+        count = sum(1 for hb in modern_only if lo <= hb['distance'] < hi)
+        pct = count / len(modern_only) * 100 if modern_only else 0
+        print(f"   {lo:.1f}-{hi:.1f}Å: {count} ({pct:.1f}%)")
+
+    # 3. Category analysis (base-base, sugar-sugar, etc.)
+    print(f"\n3. Atom category analysis:")
+    category_pairs = {}
+    for hb in modern_only:
+        atom1, _ = parse_dssr_atom_id(hb['donor_atom_id'])
+        atom2, _ = parse_dssr_atom_id(hb['acceptor_atom_id'])
+        c1, c2 = get_atom_category(atom1), get_atom_category(atom2)
+        pair = tuple(sorted([c1, c2]))
+        category_pairs[pair] = category_pairs.get(pair, 0) + 1
+
+    for pair, count in sorted(category_pairs.items(), key=lambda x: -x[1]):
+        pct = count / len(modern_only) * 100
+        print(f"   {pair[0]}-{pair[1]}: {count} ({pct:.1f}%)")
+
+    # 4. Specific atom name pairs (top 20)
+    print(f"\n4. Top 20 specific atom pairs:")
+    atom_pairs = {}
+    for hb in modern_only:
+        atom1, _ = parse_dssr_atom_id(hb['donor_atom_id'])
+        atom2, _ = parse_dssr_atom_id(hb['acceptor_atom_id'])
+        pair = tuple(sorted([atom1, atom2]))
+        atom_pairs[pair] = atom_pairs.get(pair, 0) + 1
+
+    for pair, count in sorted(atom_pairs.items(), key=lambda x: -x[1])[:20]:
+        pct = count / len(modern_only) * 100
+        print(f"   {pair[0]}-{pair[1]}: {count} ({pct:.1f}%)")
+
+    # 5. Bonds in DSSR-known vs unknown residue pairs
+    print(f"\n5. DSSR residue pair analysis:")
+    in_dssr_pairs = []
+    not_in_dssr_pairs = []
+    for hb in modern_only:
+        _, res1 = parse_dssr_atom_id(hb['donor_atom_id'])
+        _, res2 = parse_dssr_atom_id(hb['acceptor_atom_id'])
+        if (res1, res2) in dssr_res_pairs:
+            in_dssr_pairs.append(hb)
+        else:
+            not_in_dssr_pairs.append(hb)
+
+    print(f"   In DSSR-known residue pairs: {len(in_dssr_pairs)} ({len(in_dssr_pairs)/len(modern_only)*100:.1f}%)")
+    print(f"   In unknown residue pairs: {len(not_in_dssr_pairs)} ({len(not_in_dssr_pairs)/len(modern_only)*100:.1f}%)")
+
+    # 6. Deep dive into bonds in DSSR-known pairs (these are the interesting ones)
+    if in_dssr_pairs:
+        print(f"\n6. Analysis of {len(in_dssr_pairs)} bonds in DSSR-known pairs (why doesn't DSSR report them?):")
+
+        # Element pairs for in-DSSR bonds
+        elem_in_dssr = {}
+        for hb in in_dssr_pairs:
+            atom1, _ = parse_dssr_atom_id(hb['donor_atom_id'])
+            atom2, _ = parse_dssr_atom_id(hb['acceptor_atom_id'])
+            e1, e2 = get_element(atom1), get_element(atom2)
+            pair = tuple(sorted([e1, e2]))
+            elem_in_dssr[pair] = elem_in_dssr.get(pair, 0) + 1
+
+        print(f"   Element pairs:")
+        for pair, count in sorted(elem_in_dssr.items(), key=lambda x: -x[1]):
+            pct = count / len(in_dssr_pairs) * 100
+            print(f"      {pair[0]}-{pair[1]}: {count} ({pct:.1f}%)")
+
+        # Distance distribution
+        print(f"   Distance distribution:")
+        for lo, hi in dist_ranges:
+            count = sum(1 for hb in in_dssr_pairs if lo <= hb['distance'] < hi)
+            pct = count / len(in_dssr_pairs) * 100 if in_dssr_pairs else 0
+            print(f"      {lo:.1f}-{hi:.1f}Å: {count} ({pct:.1f}%)")
+
+        # Top atom pairs
+        print(f"   Top atom pairs:")
+        atom_pairs_dssr = {}
+        for hb in in_dssr_pairs:
+            atom1, _ = parse_dssr_atom_id(hb['donor_atom_id'])
+            atom2, _ = parse_dssr_atom_id(hb['acceptor_atom_id'])
+            pair = tuple(sorted([atom1, atom2]))
+            atom_pairs_dssr[pair] = atom_pairs_dssr.get(pair, 0) + 1
+
+        for pair, count in sorted(atom_pairs_dssr.items(), key=lambda x: -x[1])[:15]:
+            pct = count / len(in_dssr_pairs) * 100
+            print(f"      {pair[0]}-{pair[1]}: {count} ({pct:.1f}%)")
+
+    # 7. DSSR-only bonds analysis
+    dssr_only = result.dssr_only
+    if dssr_only:
+        print(f"\n7. DSSR-ONLY H-BONDS ({len(dssr_only)}) - what are we missing?:")
+
+        # Element pairs
+        elem_dssr_only = {}
+        for hb in dssr_only:
+            atom1, _ = parse_dssr_atom_id(hb['atom1_id'])
+            atom2, _ = parse_dssr_atom_id(hb['atom2_id'])
+            e1, e2 = get_element(atom1), get_element(atom2)
+            pair = tuple(sorted([e1, e2]))
+            elem_dssr_only[pair] = elem_dssr_only.get(pair, 0) + 1
+
+        print(f"   Element pairs:")
+        for pair, count in sorted(elem_dssr_only.items(), key=lambda x: -x[1]):
+            pct = count / len(dssr_only) * 100
+            print(f"      {pair[0]}-{pair[1]}: {count} ({pct:.1f}%)")
+
+        # donAcc_type distribution
+        print(f"   donAcc_type distribution:")
+        types = {}
+        for hb in dssr_only:
+            t = hb.get('donAcc_type', 'unknown')
+            types[t] = types.get(t, 0) + 1
+        for t, count in sorted(types.items(), key=lambda x: -x[1]):
+            pct = count / len(dssr_only) * 100
+            print(f"      {t}: {count} ({pct:.1f}%)")
+
+        # Distance distribution
+        print(f"   Distance distribution:")
+        for lo, hi in dist_ranges:
+            count = sum(1 for hb in dssr_only if lo <= hb['distance'] < hi)
+            pct = count / len(dssr_only) * 100 if dssr_only else 0
+            print(f"      {lo:.1f}-{hi:.1f}Å: {count} ({pct:.1f}%)")
+
+
 if __name__ == "__main__":
     import sys
 
@@ -432,12 +637,29 @@ if __name__ == "__main__":
     pdb_id = sys.argv[1] if len(sys.argv) > 1 else "1GID"
     verbose = "-v" in sys.argv or "--verbose" in sys.argv
     use_all_hbonds = "--all" in sys.argv or "-a" in sys.argv
+    analyze = "--analyze" in sys.argv or "-z" in sys.argv
 
     try:
         result = compare_pdb(pdb_id, project_root, use_all_hbonds=use_all_hbonds)
         if use_all_hbonds:
             print("(Using all_hbond_list - all H-bonds mode)")
         print_comparison_summary(result, verbose)
+
+        if analyze:
+            # Load data for systematic analysis
+            dssr_file = project_root / "data" / "json_dssr" / f"{pdb_id}.json"
+            if use_all_hbonds:
+                modern_file = project_root / "data" / "json" / "all_hbond_list" / f"{pdb_id}.json"
+            else:
+                modern_file = project_root / "data" / "json" / "hbond_list" / f"{pdb_id}.json"
+
+            with open(dssr_file) as f:
+                dssr_data = json.load(f)
+            with open(modern_file) as f:
+                modern_data = json.load(f)
+
+            systematic_analysis(result, dssr_data, modern_data)
+
     except FileNotFoundError as e:
         print(f"Error: {e}")
         sys.exit(1)
