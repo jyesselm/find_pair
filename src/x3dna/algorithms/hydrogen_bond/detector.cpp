@@ -16,6 +16,7 @@
 #include <x3dna/geometry/vector3d.hpp>
 #include <algorithm>
 #include <cmath>
+#include <set>
 
 namespace x3dna {
 namespace algorithms {
@@ -26,6 +27,54 @@ using namespace x3dna::core::typing;
 using namespace x3dna::geometry;
 
 namespace {
+
+/**
+ * @brief Check if two backbone atoms are covalently connected through the phosphodiester linkage
+ *
+ * For adjacent nucleotides in the backbone:
+ * - Residue i: O3' connects to P of residue i+1
+ * - The phosphate group has O1P, O2P, O5' connected to P
+ *
+ * So for sequential residues: O3'(i) is close to P(i+1), O1P(i+1), O2P(i+1), O5'(i+1)
+ * And P(i), O1P(i), O2P(i), O5'(i) are close to O3'(i-1)
+ *
+ * @param atom1 First atom name
+ * @param atom2 Second atom name
+ * @return True if atoms are part of the same phosphodiester linkage
+ */
+[[nodiscard]] bool is_phosphodiester_pair(const std::string& atom1, const std::string& atom2) {
+    // Atoms that connect the 3' end to the phosphate group
+    static const std::set<std::string> three_prime = {"O3'"};
+    // Atoms in the phosphate group that connect to the 5' side
+    static const std::set<std::string> phosphate = {"P", "O1P", "O2P", "OP1", "OP2", "O5'"};
+
+    // Check if one atom is O3' and the other is in the phosphate group
+    const bool a1_3p = three_prime.count(atom1) > 0;
+    const bool a2_3p = three_prime.count(atom2) > 0;
+    const bool a1_phos = phosphate.count(atom1) > 0;
+    const bool a2_phos = phosphate.count(atom2) > 0;
+
+    // O3' to phosphate group atoms are covalently connected
+    if ((a1_3p && a2_phos) || (a2_3p && a1_phos)) {
+        return true;
+    }
+
+    // Within phosphate group - O1P/O2P to O5' are within 2 bonds
+    // These can appear as short "H-bonds" but are just geometry
+    static const std::set<std::string> phosphate_o = {"O1P", "O2P", "OP1", "OP2"};
+    static const std::set<std::string> five_prime = {"O5'"};
+    const bool a1_po = phosphate_o.count(atom1) > 0;
+    const bool a2_po = phosphate_o.count(atom2) > 0;
+    const bool a1_5p = five_prime.count(atom1) > 0;
+    const bool a2_5p = five_prime.count(atom2) > 0;
+
+    // O1P/O2P to O5' are connected through P
+    if ((a1_po && a2_5p) || (a2_po && a1_5p)) {
+        return true;
+    }
+
+    return false;
+}
 
 /**
  * @brief Convert HBondContext to HBondInteractionType for filtering
@@ -313,7 +362,8 @@ std::vector<HBond> HBondDetector::find_candidate_bonds(const Residue& residue1, 
     for (const auto& atom1 : residue1.atoms()) {
         for (const auto& atom2 : residue2.atoms()) {
             // Check if atoms can form H-bond based on elements
-            if (!good_hb_atoms(atom1.name(), atom2.name(), params_.allowed_elements)) {
+            if (!good_hb_atoms(atom1.name(), atom2.name(), params_.allowed_elements,
+                               params_.include_backbone_backbone)) {
                 continue;
             }
 
@@ -494,7 +544,14 @@ void HBondDetector::classify_bonds(std::vector<HBond>& bonds, char base1_type, c
             const bool is_dd = (role1 == HBondAtomRole::DONOR && role2 == HBondAtomRole::DONOR);
 
             if (is_aa || is_dd) {
-                bond.classification = HBondClassification::UNLIKELY_CHEMISTRY;
+                // For backbone-backbone context, AA bonds (like O1P-O2P) are common and
+                // can form via water-mediated H-bonds. Classify as NON_STANDARD instead
+                // of UNLIKELY_CHEMISTRY to include them in DSSR-like detection.
+                if (bond.context == HBondContext::BACKBONE_BACKBONE) {
+                    bond.classification = HBondClassification::NON_STANDARD;
+                } else {
+                    bond.classification = HBondClassification::UNLIKELY_CHEMISTRY;
+                }
             } else {
                 bond.classification = HBondClassification::NON_STANDARD;
             }
@@ -707,6 +764,37 @@ StructureHBondResult HBondDetector::detect_all_structure_hbonds(
             auto hbonds = detect_all_hbonds_between(*residues[i], *residues[j], mol1_type, mol2_type);
 
             if (!hbonds.empty()) {
+                // Check if residues are sequence-adjacent nucleotides
+                // If so, filter out backbone-backbone bonds that are part of the phosphodiester linkage
+                const bool both_nucleotides = mol1_type == MoleculeType::NUCLEIC_ACID &&
+                                              mol2_type == MoleculeType::NUCLEIC_ACID;
+                bool is_sequence_adjacent = false;
+
+                if (both_nucleotides) {
+                    // Check if same chain and consecutive sequence numbers
+                    const auto& res1 = *residues[i];
+                    const auto& res2 = *residues[j];
+                    if (res1.chain_id() == res2.chain_id()) {
+                        const int seq_diff = std::abs(res1.seq_num() - res2.seq_num());
+                        is_sequence_adjacent = (seq_diff == 1);
+                    }
+                }
+
+                // Filter out phosphodiester-linked backbone atoms for adjacent residues
+                if (is_sequence_adjacent) {
+                    hbonds.erase(
+                        std::remove_if(hbonds.begin(), hbonds.end(),
+                            [](const HBond& hb) {
+                                return hb.context == HBondContext::BACKBONE_BACKBONE &&
+                                       is_phosphodiester_pair(hb.donor_atom_name, hb.acceptor_atom_name);
+                            }),
+                        hbonds.end());
+                }
+
+                if (hbonds.empty()) {
+                    continue;  // All bonds were filtered out
+                }
+
                 ++result.pairs_with_hbonds;
 
                 // Set residue info on each H-bond

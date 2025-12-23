@@ -57,9 +57,11 @@ public:
  * @param atom1 First atom name
  * @param atom2 Second atom name
  * @param hb_atoms H-bond atom list (default ".O.N")
+ * @param include_backbone_backbone If true, allow backbone-backbone bonds (default: false)
  * @return True if atoms can form H-bond
  */
-[[nodiscard]] bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std::string& hb_atoms);
+[[nodiscard]] bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std::string& hb_atoms,
+                                  bool include_backbone_backbone = false);
 
 } // namespace hydrogen_bond
 } // namespace algorithms

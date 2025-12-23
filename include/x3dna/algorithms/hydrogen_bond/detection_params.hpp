@@ -76,6 +76,11 @@ struct HBondDetectionParams {
     // without unusual protonation or tautomerization.
     bool include_unlikely_chemistry = false;  // Include AA/DD bonds for exploration
 
+    // === Backbone H-bond filtering ===
+    // Legacy mode filters out bonds where BOTH atoms are backbone (PO list)
+    // Set to true to include backbone-backbone H-bonds (like DSSR)
+    bool include_backbone_backbone = false;
+
     // Presets
     [[nodiscard]] static HBondDetectionParams legacy_compatible();
     [[nodiscard]] static HBondDetectionParams modern();

@@ -110,6 +110,8 @@ HBondDetectionParams HBondDetectionParams::dssr_like() {
     params.nonstandard_max_distance = 3.2;
     // Include ALL interactions (RNA, protein, RNA-protein)
     params.interaction_filter = core::HBondInteractionType::ANY;
+    // Include backbone-backbone H-bonds (DSSR reports these)
+    params.include_backbone_backbone = true;
     return params;
 }
 

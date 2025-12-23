@@ -35,16 +35,21 @@ bool is_base_atom(const std::string& atom_name) {
     return false;
 }
 
-bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std::string& hb_atoms) {
+bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std::string& hb_atoms,
+                   bool include_backbone_backbone) {
     // Match legacy good_hbatoms() logic EXACTLY (lines 3864-3877 in cmn_fncs.c)
     // Input atom names are already trimmed from Atom class
 
     // Step 1: PO list check (matches legacy lines 3866-3870)
-    static const std::vector<std::string> PO = {"O1P", "O2P", "O3'", "O4'", "O5'", "N7"};
-    bool atom1_in_po = std::find(PO.begin(), PO.end(), atom1) != PO.end();
-    bool atom2_in_po = std::find(PO.begin(), PO.end(), atom2) != PO.end();
-    if (atom1_in_po && atom2_in_po) {
-        return false;
+    // Skip this check if include_backbone_backbone is true (for DSSR-like detection)
+    if (!include_backbone_backbone) {
+        // Include both old (O1P/O2P) and new (OP1/OP2) atom naming conventions
+        static const std::vector<std::string> PO = {"O1P", "O2P", "OP1", "OP2", "O3'", "O4'", "O5'", "N7"};
+        bool atom1_in_po = std::find(PO.begin(), PO.end(), atom1) != PO.end();
+        bool atom2_in_po = std::find(PO.begin(), PO.end(), atom2) != PO.end();
+        if (atom1_in_po && atom2_in_po) {
+            return false;
+        }
     }
 
     // Step 2: idx-based check (matches legacy lines 3871-3874)
