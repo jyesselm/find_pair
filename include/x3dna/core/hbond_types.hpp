@@ -12,15 +12,17 @@ namespace core {
  * @brief Classification of H-bond validity based on donor/acceptor analysis
  *
  * Legacy mapping:
- *   STANDARD     -> '-'  (valid donor-acceptor relationship)
- *   NON_STANDARD -> '*'  (atoms can H-bond but role unclear)
- *   INVALID      -> ' '  (failed validation)
+ *   STANDARD           -> '-'  (valid donor-acceptor relationship)
+ *   NON_STANDARD       -> '*'  (atoms can H-bond but role unclear)
+ *   UNLIKELY_CHEMISTRY -> '?'  (AA or DD pair - requires protonation/tautomer)
+ *   INVALID            -> ' '  (failed validation)
  */
 enum class HBondClassification {
-    UNKNOWN,      // Not yet classified
-    STANDARD,     // '-' - Valid donor-acceptor confirmed
-    NON_STANDARD, // '*' - Can form H-bond, role ambiguous
-    INVALID       // ' ' - Failed validation or filtered
+    UNKNOWN,            // Not yet classified
+    STANDARD,           // '-' - Valid donor-acceptor confirmed
+    NON_STANDARD,       // '*' - Can form H-bond, role ambiguous (e.g., X involved)
+    UNLIKELY_CHEMISTRY, // '?' - AA or DD pair, chemically unlikely without protonation
+    INVALID             // ' ' - Failed validation or filtered
 };
 
 /**
@@ -122,6 +124,8 @@ inline bool operator&(HBondInteractionType a, HBondInteractionType b) {
             return "STANDARD";
         case HBondClassification::NON_STANDARD:
             return "NON_STANDARD";
+        case HBondClassification::UNLIKELY_CHEMISTRY:
+            return "UNLIKELY_CHEMISTRY";
         case HBondClassification::INVALID:
             return "INVALID";
     }
@@ -134,6 +138,8 @@ inline bool operator&(HBondInteractionType a, HBondInteractionType b) {
             return '-';
         case HBondClassification::NON_STANDARD:
             return '*';
+        case HBondClassification::UNLIKELY_CHEMISTRY:
+            return '?';
         default:
             return ' ';
     }

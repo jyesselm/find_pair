@@ -267,14 +267,22 @@ std::string extract_element(const std::string& atom_name) {
 // ============================================================================
 
 HBondAtomRole HBondRoleClassifier::get_nucleotide_atom_role(char base, const std::string& atom_name) {
-    // Ensure we have 4-character atom name
-    if (atom_name.length() < 4) {
-        return HBondAtomRole::UNKNOWN;
-    }
+    // Trim the input atom name for comparison
+    std::string trimmed = atom_name;
+    trimmed.erase(0, trimmed.find_first_not_of(" \t"));
+    trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
+
+    // Helper to trim table entries for comparison
+    auto trim_str = [](const char* s) -> std::string {
+        std::string str(s);
+        str.erase(0, str.find_first_not_of(" \t"));
+        str.erase(str.find_last_not_of(" \t") + 1);
+        return str;
+    };
 
     // Check backbone atoms first - these apply to ALL nucleotides
     for (const auto& bb_atom : BACKBONE_ATOMS) {
-        if (atom_name.substr(0, 4) == bb_atom.name) {
+        if (trimmed == trim_str(bb_atom.name)) {
             return char_to_role(bb_atom.role);
         }
     }
@@ -287,7 +295,7 @@ HBondAtomRole HBondRoleClassifier::get_nucleotide_atom_role(char base, const std
         if (base_atoms != nullptr) {
             // Check base-specific atoms
             for (int i = 0; base_atoms[i].name != nullptr; ++i) {
-                if (atom_name.substr(0, 4) == base_atoms[i].name) {
+                if (trimmed == trim_str(base_atoms[i].name)) {
                     return char_to_role(base_atoms[i].role);
                 }
             }

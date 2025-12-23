@@ -246,13 +246,21 @@ HBondPipelineResult HBondDetector::detect_internal(const Residue& residue1, cons
     // Step 9: Build final_bonds by copying only valid bonds (single allocation)
     result.final_bonds.reserve(bonds.size());
     for (const auto& bond : bonds) {
-        if (bond.classification != HBondClassification::INVALID) {
-            result.final_bonds.push_back(bond);
-            if (bond.classification == HBondClassification::STANDARD) {
-                result.standard_bond_count++;
-                if (HBondRoleClassifier::is_good_hbond_distance(bond.distance)) {
-                    result.good_bond_count++;
-                }
+        // Skip INVALID bonds
+        if (bond.classification == HBondClassification::INVALID) {
+            continue;
+        }
+        // Skip UNLIKELY_CHEMISTRY bonds unless exploration mode is enabled
+        if (bond.classification == HBondClassification::UNLIKELY_CHEMISTRY &&
+            !params_.include_unlikely_chemistry) {
+            continue;
+        }
+
+        result.final_bonds.push_back(bond);
+        if (bond.classification == HBondClassification::STANDARD) {
+            result.standard_bond_count++;
+            if (HBondRoleClassifier::is_good_hbond_distance(bond.distance)) {
+                result.good_bond_count++;
             }
         }
     }
@@ -476,7 +484,20 @@ void HBondDetector::classify_bonds(std::vector<HBond>& bonds, char base1_type, c
         if (legacy_type == '-') {
             bond.classification = HBondClassification::STANDARD;
         } else if (legacy_type == '*') {
-            bond.classification = HBondClassification::NON_STANDARD;
+            // Check if this is an AA or DD pair (chemically unlikely)
+            // Get atom roles to distinguish AA/DD from ambiguous X-containing combinations
+            HBondAtomRole role1 = HBondRoleClassifier::get_nucleotide_atom_role(base1_type, bond.donor_atom_name);
+            HBondAtomRole role2 = HBondRoleClassifier::get_nucleotide_atom_role(base2_type, bond.acceptor_atom_name);
+
+            // AA or DD pairs are chemically unlikely without protonation/tautomerization
+            const bool is_aa = (role1 == HBondAtomRole::ACCEPTOR && role2 == HBondAtomRole::ACCEPTOR);
+            const bool is_dd = (role1 == HBondAtomRole::DONOR && role2 == HBondAtomRole::DONOR);
+
+            if (is_aa || is_dd) {
+                bond.classification = HBondClassification::UNLIKELY_CHEMISTRY;
+            } else {
+                bond.classification = HBondClassification::NON_STANDARD;
+            }
         } else {
             bond.classification = HBondClassification::INVALID;
         }

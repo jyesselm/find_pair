@@ -269,18 +269,18 @@ std::vector<core::hydrogen_bond> BasePairValidator::find_hydrogen_bonds(const Re
         return padded;
     };
 
-    // Return all classified bonds (including INVALID) to match baseline
-    std::vector<core::hydrogen_bond> all_hbonds;
-    for (const auto& hbond : result.all_classified_bonds) {
+    // Return only valid bonds (STANDARD and NON_STANDARD, not INVALID)
+    std::vector<core::hydrogen_bond> valid_hbonds;
+    for (const auto& hbond : result.final_bonds) {
         core::hydrogen_bond h;
         h.donor_atom = pad_atom_name(hbond.donor_atom_name);
         h.acceptor_atom = pad_atom_name(hbond.acceptor_atom_name);
         h.distance = hbond.distance;
         h.type = hbond.legacy_type_char();
-        all_hbonds.push_back(h);
+        valid_hbonds.push_back(h);
     }
 
-    return all_hbonds;
+    return valid_hbonds;
 }
 
 char BasePairValidator::donor_acceptor(char base1, char base2, const std::string& atom1, const std::string& atom2) {

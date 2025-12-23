@@ -48,15 +48,19 @@ TEST(RoleClassifierTest, UracilAtomRoles) {
     EXPECT_EQ(HBondRoleClassifier::get_nucleotide_atom_role('U', " O4 "), HBondAtomRole::ACCEPTOR);
 }
 
-TEST(RoleClassifierTest, UnknownBaseReturnsUnknown) {
-    // Unknown base, base atoms return UNKNOWN
-    EXPECT_EQ(HBondRoleClassifier::get_nucleotide_atom_role('X', " N1 "), HBondAtomRole::UNKNOWN);
+TEST(RoleClassifierTest, UnknownBaseUsesElementFallback) {
+    // Unknown base, N atoms fall back to element-based EITHER
+    // (enables H-bond detection for modified nucleotides)
+    EXPECT_EQ(HBondRoleClassifier::get_nucleotide_atom_role('X', " N1 "), HBondAtomRole::EITHER);
 
-    // Unknown base (PSU='P'), but backbone atoms still return their role
+    // Unknown base (PSU='P'), backbone atoms still return their role
     EXPECT_EQ(HBondRoleClassifier::get_nucleotide_atom_role('P', " O2'"), HBondAtomRole::EITHER);
 
-    // Unknown base, unknown atom
-    EXPECT_EQ(HBondRoleClassifier::get_nucleotide_atom_role('P', " N1 "), HBondAtomRole::UNKNOWN);
+    // Unknown base, N atoms fall back to EITHER
+    EXPECT_EQ(HBondRoleClassifier::get_nucleotide_atom_role('P', " N1 "), HBondAtomRole::EITHER);
+
+    // Carbon atoms return UNKNOWN (not H-bond capable)
+    EXPECT_EQ(HBondRoleClassifier::get_nucleotide_atom_role('X', " C1 "), HBondAtomRole::UNKNOWN);
 }
 
 // ============================================================================

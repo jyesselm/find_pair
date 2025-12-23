@@ -71,6 +71,11 @@ struct HBondDetectionParams {
     bool enable_quality_scoring = false;    // Calculate quality scores for H-bonds
     bool filter_invalid_scores = false;     // Remove H-bonds with INVALID tier
 
+    // === Unlikely chemistry filtering ===
+    // AA (acceptor-acceptor) and DD (donor-donor) pairs are chemically unlikely
+    // without unusual protonation or tautomerization.
+    bool include_unlikely_chemistry = false;  // Include AA/DD bonds for exploration
+
     // Presets
     [[nodiscard]] static HBondDetectionParams legacy_compatible();
     [[nodiscard]] static HBondDetectionParams modern();
