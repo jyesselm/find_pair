@@ -77,6 +77,48 @@ public:
                                                    const std::string& chain_id, const std::string& insertion_code,
                                                    const std::vector<Atom>& atoms);
 
+    /**
+     * @brief Convert our res_id format to DSSR format
+     * @param res_id Our format: "chain-name-num" or "chain-name-numX" (with insertion)
+     * @return DSSR format: "chain.nameNum" or "chain.nameNum^X"
+     *
+     * Examples:
+     *   "A-G-103"  -> "A.G103"
+     *   "A-C-10A"  -> "A.C10^A"
+     *   "B-2MG-25" -> "B.2MG25"
+     */
+    [[nodiscard]] static std::string to_dssr_res_id(const std::string& res_id) {
+        // Parse our format: chain-name-num[insertion]
+        size_t first_dash = res_id.find('-');
+        size_t last_dash = res_id.rfind('-');
+        if (first_dash == std::string::npos || last_dash == std::string::npos || first_dash == last_dash) {
+            return res_id; // Invalid format, return as-is
+        }
+
+        std::string chain = res_id.substr(0, first_dash);
+        std::string name = res_id.substr(first_dash + 1, last_dash - first_dash - 1);
+        std::string num_part = res_id.substr(last_dash + 1);
+
+        // Check if last character is an insertion code (letter at end of number)
+        std::string num;
+        std::string insertion;
+        size_t i = 0;
+        while (i < num_part.size() && (std::isdigit(num_part[i]) || num_part[i] == '-')) {
+            num += num_part[i];
+            ++i;
+        }
+        if (i < num_part.size()) {
+            insertion = num_part.substr(i);
+        }
+
+        // Build DSSR format
+        std::string result = chain + "." + name + num;
+        if (!insertion.empty()) {
+            result += "^" + insertion;
+        }
+        return result;
+    }
+
     // Getters
     [[nodiscard]] const std::string& name() const {
         return name_;
@@ -106,6 +148,36 @@ public:
             id += insertion_;
         }
         return id;
+    }
+
+    /**
+     * @brief Get DSSR-format residue identifier
+     * @return String in DSSR format "chain.nameNum" or "chain.nameNum^ins"
+     *
+     * Examples:
+     *   "A.G103"    (chain A, guanine, position 103)
+     *   "A.C10^A"   (chain A, cytosine, position 10, insertion code A)
+     *   "B.2MG25"   (chain B, modified guanine 2MG, position 25)
+     */
+    [[nodiscard]] std::string dssr_res_id() const {
+        std::string id = chain_id_ + "." + name_ + std::to_string(seq_num_);
+        if (!insertion_.empty()) {
+            id += "^" + insertion_;
+        }
+        return id;
+    }
+
+    /**
+     * @brief Get DSSR-format atom identifier
+     * @param atom_name The atom name (e.g., "N7", "O6")
+     * @return String in DSSR format "atom@chain.nameNum"
+     *
+     * Examples:
+     *   "N7@A.G103"   (N7 atom of chain A, guanine 103)
+     *   "O6@B.2MG25"  (O6 atom of modified guanine)
+     */
+    [[nodiscard]] std::string dssr_atom_id(const std::string& atom_name) const {
+        return atom_name + "@" + dssr_res_id();
     }
 
     [[nodiscard]] const std::vector<Atom>& atoms() const {
