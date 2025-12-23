@@ -73,6 +73,23 @@ enum class HBondAtomRole {
 };
 
 /**
+ * @brief Leontis-Westhof base edge classification
+ *
+ * Nucleotide bases have three edges that can participate in H-bonding:
+ * - Watson edge (W): The "front" of the base (N1/N6 for purines, N3/O2/N4 for pyrimidines)
+ * - Hoogsteen edge (H): The "top" of purines (N7/N6 side)
+ * - Sugar edge (S): The side facing the ribose (N3/O2' side)
+ *
+ * Reference: Leontis & Westhof (2001) RNA 7:499-512
+ */
+enum class BaseEdge {
+    WATSON,    // W edge - canonical Watson-Crick face
+    HOOGSTEEN, // H edge - Hoogsteen face (purines mainly)
+    SUGAR,     // S edge - sugar-facing edge
+    UNKNOWN    // Cannot determine or non-nucleotide
+};
+
+/**
  * @brief Type of molecular interaction for filtering
  */
 enum class HBondInteractionType {
@@ -120,6 +137,34 @@ inline bool operator&(HBondInteractionType a, HBondInteractionType b) {
         default:
             return ' ';
     }
+}
+
+[[nodiscard]] inline const char* to_string(BaseEdge e) {
+    switch (e) {
+        case BaseEdge::WATSON:
+            return "W";
+        case BaseEdge::HOOGSTEEN:
+            return "H";
+        case BaseEdge::SUGAR:
+            return "S";
+        case BaseEdge::UNKNOWN:
+            return "?";
+    }
+    return "?";
+}
+
+[[nodiscard]] inline char to_edge_char(BaseEdge e) {
+    switch (e) {
+        case BaseEdge::WATSON:
+            return 'W';
+        case BaseEdge::HOOGSTEEN:
+            return 'H';
+        case BaseEdge::SUGAR:
+            return 'S';
+        case BaseEdge::UNKNOWN:
+            return '?';
+    }
+    return '?';
 }
 
 } // namespace core

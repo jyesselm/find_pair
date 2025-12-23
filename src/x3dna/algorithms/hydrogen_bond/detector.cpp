@@ -8,6 +8,7 @@
 #include <x3dna/algorithms/hydrogen_bond/role_classifier.hpp>
 #include <x3dna/algorithms/hydrogen_bond/hydrogen_bond_utils.hpp>
 #include <x3dna/algorithms/hydrogen_bond/quality_scorer.hpp>
+#include <x3dna/algorithms/hydrogen_bond/edge_classifier.hpp>
 #include <x3dna/algorithms/base_pair_validator.hpp>
 #include <x3dna/core/typing/atom_classification.hpp>
 #include <x3dna/core/typing/nucleotide_type.hpp>
@@ -223,6 +224,12 @@ HBondPipelineResult HBondDetector::detect_internal(const Residue& residue1, cons
 
     // Step 4: Classify bonds (in place)
     classify_bonds(bonds, base1, base2);
+
+    // Step 4b: Classify Leontis-Westhof edges for each H-bond
+    for (auto& bond : bonds) {
+        bond.donor_edge = EdgeClassifier::classify(bond.donor_atom_name, base1);
+        bond.acceptor_edge = EdgeClassifier::classify(bond.acceptor_atom_name, base2);
+    }
 
     // Step 5: Calculate angles for all bonds (in place)
     calculate_angles(bonds, residue1, residue2);

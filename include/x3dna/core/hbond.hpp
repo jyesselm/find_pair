@@ -49,6 +49,10 @@ public:
     HBondContext context = HBondContext::UNKNOWN;
     ConflictState conflict_state = ConflictState::NO_CONFLICT;
 
+    // === Leontis-Westhof edge classification ===
+    BaseEdge donor_edge = BaseEdge::UNKNOWN;    // Which edge the donor atom is on
+    BaseEdge acceptor_edge = BaseEdge::UNKNOWN; // Which edge the acceptor atom is on
+
     // === Detection metadata ===
     std::optional<size_t> detection_index;
 

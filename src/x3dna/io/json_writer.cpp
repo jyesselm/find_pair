@@ -1012,6 +1012,14 @@ void JsonWriter::record_all_structure_hbonds(const algorithms::hydrogen_bond::St
                 hb_json["acceptor_angle"] = format_double(hb.acceptor_angle);
             }
 
+            // Add Leontis-Westhof edge classification
+            if (hb.donor_edge != core::BaseEdge::UNKNOWN) {
+                hb_json["donor_edge"] = core::to_string(hb.donor_edge);
+            }
+            if (hb.acceptor_edge != core::BaseEdge::UNKNOWN) {
+                hb_json["acceptor_edge"] = core::to_string(hb.acceptor_edge);
+            }
+
             // Add quality score if available
             if (hb.quality_score.has_value()) {
                 const auto& qs = hb.quality_score.value();
