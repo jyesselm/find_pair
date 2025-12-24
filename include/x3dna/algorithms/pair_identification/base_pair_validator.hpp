@@ -22,6 +22,10 @@ namespace algorithms {
 /**
  * @struct ValidationParameters
  * @brief Parameters for base pair validation (matches legacy miscPars)
+ *
+ * @note H-bond parameters (min_base_hb, hb_lower, hb_dist1, hb_atoms) are now
+ *       also available in the unified HBondParameters config system.
+ *       See hbond_parameters.hpp for the new API.
  */
 struct ValidationParameters {
     // Distance constraints

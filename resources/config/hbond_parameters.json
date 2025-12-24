@@ -1,0 +1,210 @@
+{
+  "_description": "H-bond detection, scoring, and quality tier parameters",
+  "_version": "1.0.0",
+
+  "detection": {
+    "_description": "Parameters for hydrogen bond detection",
+
+    "distance": {
+      "_description": "Context-specific distance thresholds in Angstroms",
+      "min": 2.0,
+      "base_base_max": 4.0,
+      "base_backbone_max": 3.5,
+      "backbone_backbone_max": 3.5,
+      "base_sugar_max": 3.5,
+      "sugar_sugar_max": 3.5,
+      "protein_mainchain_max": 3.5,
+      "protein_sidechain_max": 3.5,
+      "base_protein_max": 3.5,
+      "protein_ligand_max": 3.5,
+      "base_ligand_max": 3.5,
+      "conflict_filter": 4.5
+    },
+
+    "elements": {
+      "allowed": ".O.N."
+    },
+
+    "thresholds": {
+      "_description": "Bond quality classification thresholds",
+      "good_bond": { "min": 2.5, "max": 3.5 },
+      "post_validation_max": 3.6,
+      "nonstandard": { "min": 2.6, "max": 3.2 }
+    },
+
+    "validation": {
+      "min_base_hbonds": 1
+    },
+
+    "options": {
+      "enable_angle_filtering": false,
+      "enable_quality_scoring": false,
+      "filter_invalid_scores": false,
+      "include_unlikely_chemistry": false,
+      "include_backbone_backbone": false
+    }
+  },
+
+  "geometry": {
+    "_description": "Angle thresholds for H-bond geometry validation",
+
+    "donor_angle": {
+      "min": 90.0,
+      "ideal": 165.0
+    },
+    "acceptor_angle": {
+      "min": 70.0,
+      "ideal_sp2": 130.0,
+      "ideal_sp3": 110.0
+    }
+  },
+
+  "scoring": {
+    "_description": "Parameters for H-bond quality scoring",
+
+    "distance": {
+      "ideal": 2.9,
+      "sigma": 0.3,
+      "min": 2.0,
+      "max": 4.0
+    },
+
+    "weights": {
+      "_description": "Component weights (must sum to 1.0)",
+      "distance": 0.45,
+      "donor_angle": 0.30,
+      "acceptor_angle": 0.25
+    },
+
+    "resolution": {
+      "apply_penalty": true,
+      "high_res_threshold": 2.0,
+      "low_res_threshold": 3.5
+    }
+  },
+
+  "quality_tiers": {
+    "_description": "Score thresholds for quality tier classification",
+    "excellent": { "min_score": 90 },
+    "standard": { "min_score": 70 },
+    "acceptable": { "min_score": 50 },
+    "questionable": { "min_score": 30 }
+  },
+
+  "presets": {
+    "_description": "Named parameter presets (values override defaults)",
+
+    "legacy_compatible": {
+      "_description": "Match legacy X3DNA behavior exactly",
+      "detection": {
+        "distance": {
+          "min": 2.0,
+          "base_base_max": 4.0,
+          "conflict_filter": 0.0
+        },
+        "elements": { "allowed": ".O.N." },
+        "thresholds": {
+          "good_bond": { "min": 2.5, "max": 3.5 },
+          "post_validation_max": 3.6,
+          "nonstandard": { "min": 2.6, "max": 3.2 }
+        }
+      }
+    },
+
+    "modern": {
+      "_description": "Tighter thresholds for better accuracy",
+      "detection": {
+        "distance": {
+          "min": 2.0,
+          "base_base_max": 3.5,
+          "base_backbone_max": 3.3,
+          "backbone_backbone_max": 3.3
+        },
+        "elements": { "allowed": ".O.N." }
+      }
+    },
+
+    "general": {
+      "_description": "Support all molecule types including proteins",
+      "detection": {
+        "distance": {
+          "min": 2.0,
+          "base_base_max": 3.5,
+          "protein_mainchain_max": 3.5,
+          "protein_sidechain_max": 3.5,
+          "base_protein_max": 3.5,
+          "protein_ligand_max": 3.5
+        },
+        "elements": { "allowed": ".O.N.S." }
+      }
+    },
+
+    "dssr_like": {
+      "_description": "DSSR-compatible thresholds",
+      "detection": {
+        "distance": {
+          "min": 2.0,
+          "base_base_max": 3.5,
+          "base_backbone_max": 3.5,
+          "backbone_backbone_max": 3.5,
+          "base_sugar_max": 3.5,
+          "sugar_sugar_max": 3.5,
+          "protein_mainchain_max": 3.5,
+          "protein_sidechain_max": 3.5,
+          "base_protein_max": 3.5,
+          "protein_ligand_max": 3.5,
+          "conflict_filter": 4.5
+        },
+        "elements": { "allowed": ".O.N." },
+        "thresholds": {
+          "good_bond": { "min": 2.5, "max": 3.5 },
+          "post_validation_max": 3.6,
+          "nonstandard": { "min": 2.6, "max": 3.2 }
+        },
+        "options": {
+          "include_backbone_backbone": true
+        }
+      }
+    },
+
+    "strict_scoring": {
+      "_description": "Stricter scoring parameters",
+      "scoring": {
+        "distance": {
+          "ideal": 2.85,
+          "sigma": 0.25,
+          "max": 3.5
+        }
+      },
+      "geometry": {
+        "donor_angle": {
+          "min": 110.0,
+          "ideal": 170.0
+        },
+        "acceptor_angle": {
+          "min": 90.0
+        }
+      }
+    },
+
+    "lenient_scoring": {
+      "_description": "More permissive scoring parameters",
+      "scoring": {
+        "distance": {
+          "ideal": 2.9,
+          "sigma": 0.4,
+          "max": 4.0
+        }
+      },
+      "geometry": {
+        "donor_angle": {
+          "min": 80.0,
+          "ideal": 160.0
+        },
+        "acceptor_angle": {
+          "min": 60.0
+        }
+      }
+    }
+  }
+}

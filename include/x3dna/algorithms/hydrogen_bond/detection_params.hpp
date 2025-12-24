@@ -8,6 +8,13 @@
 #include <string>
 #include <x3dna/core/hbond_types.hpp>
 
+// Forward declaration
+namespace x3dna {
+namespace config {
+struct HBondParameters;
+}
+}
+
 namespace x3dna {
 namespace algorithms {
 
@@ -81,11 +88,18 @@ struct HBondDetectionParams {
     // Set to true to include backbone-backbone H-bonds (like DSSR)
     bool include_backbone_backbone = false;
 
-    // Presets
+    // Presets (load from config file)
     [[nodiscard]] static HBondDetectionParams legacy_compatible();
     [[nodiscard]] static HBondDetectionParams modern();
     [[nodiscard]] static HBondDetectionParams general();
     [[nodiscard]] static HBondDetectionParams dssr_like();  // DSSR-compatible thresholds
+
+    /**
+     * @brief Create detection params from unified config
+     * @param config Loaded HBondParameters configuration
+     * @return Detection params populated from config
+     */
+    [[nodiscard]] static HBondDetectionParams from_config(const config::HBondParameters& config);
 };
 
 } // namespace algorithms

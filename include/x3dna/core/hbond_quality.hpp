@@ -130,7 +130,25 @@ struct HBondQualityScore {
 };
 
 /**
- * @brief Convert numeric score to quality tier
+ * @struct QualityTierThresholds
+ * @brief Configurable thresholds for quality tier classification
+ */
+struct QualityTierThresholds {
+    double excellent_min = 90.0;
+    double standard_min = 70.0;
+    double acceptable_min = 50.0;
+    double questionable_min = 30.0;
+
+    /**
+     * @brief Get default tier thresholds
+     */
+    static QualityTierThresholds defaults() {
+        return QualityTierThresholds{};
+    }
+};
+
+/**
+ * @brief Convert numeric score to quality tier using default thresholds
  * @param score Score in range [0, 100]
  * @return Corresponding quality tier
  */
@@ -139,6 +157,20 @@ struct HBondQualityScore {
     if (score >= 70.0) return HBondQualityTier::STANDARD;
     if (score >= 50.0) return HBondQualityTier::ACCEPTABLE;
     if (score >= 30.0) return HBondQualityTier::QUESTIONABLE;
+    return HBondQualityTier::INVALID;
+}
+
+/**
+ * @brief Convert numeric score to quality tier using custom thresholds
+ * @param score Score in range [0, 100]
+ * @param thresholds Custom tier thresholds
+ * @return Corresponding quality tier
+ */
+[[nodiscard]] inline HBondQualityTier score_to_tier(double score, const QualityTierThresholds& thresholds) {
+    if (score >= thresholds.excellent_min) return HBondQualityTier::EXCELLENT;
+    if (score >= thresholds.standard_min) return HBondQualityTier::STANDARD;
+    if (score >= thresholds.acceptable_min) return HBondQualityTier::ACCEPTABLE;
+    if (score >= thresholds.questionable_min) return HBondQualityTier::QUESTIONABLE;
     return HBondQualityTier::INVALID;
 }
 

@@ -43,6 +43,11 @@ struct DebugConfig {
 /**
  * @struct ParameterThresholds
  * @brief Validation and algorithm parameters (matches legacy miscPars)
+ *
+ * @note H-bond parameters (min_base_hb, hb_lower, hb_dist1, hb_dist2, hb_atoms)
+ *       are now also available in the unified HBondParameters config system.
+ *       See hbond_parameters.hpp and hbond_parameters_loader.hpp for the new API.
+ *       These fields are kept for backward compatibility with legacy code.
  */
 struct ParameterThresholds {
     // Distance constraints
@@ -58,12 +63,14 @@ struct ParameterThresholds {
     double max_plane_angle = 65.0;
 
     // Hydrogen bond constraints
+    // @deprecated Use HBondParameters from hbond_parameters.hpp instead
     int min_base_hb = 1;
     double hb_lower = 1.8;
     double hb_dist1 = 4.0;
     double hb_dist2 = 0.0; // CRITICAL: Must be 0.0 for exact legacy match
 
     // H-bond atom list (default ".O.N" - matches legacy default)
+    // @deprecated Use HBondParameters from hbond_parameters.hpp instead
     std::string hb_atoms = ".O.N";
 
     // Overlap threshold (matches legacy OVERLAP = 0.01)

@@ -18,6 +18,13 @@
 #include <x3dna/core/hbond_quality.hpp>
 #include <x3dna/core/hbond_types.hpp>
 
+// Forward declaration
+namespace x3dna {
+namespace config {
+struct HBondParameters;
+}
+}
+
 namespace x3dna {
 namespace algorithms {
 namespace hydrogen_bond {
@@ -54,10 +61,17 @@ struct HBondScoringParams {
     double high_res_threshold = 2.0;   // No penalty below this
     double low_res_threshold = 3.5;    // Maximum penalty above this
 
-    // Presets
+    // Presets (load from config file)
     [[nodiscard]] static HBondScoringParams defaults();
     [[nodiscard]] static HBondScoringParams strict();
     [[nodiscard]] static HBondScoringParams lenient();
+
+    /**
+     * @brief Create scoring params from unified config
+     * @param config Loaded HBondParameters configuration
+     * @return Scoring params populated from config
+     */
+    [[nodiscard]] static HBondScoringParams from_config(const config::HBondParameters& config);
 };
 
 /**

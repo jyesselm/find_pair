@@ -4,6 +4,8 @@
  */
 
 #include <x3dna/algorithms/hydrogen_bond/quality_scorer.hpp>
+#include <x3dna/config/hbond_parameters.hpp>
+#include <x3dna/config/hbond_parameters_loader.hpp>
 #include <cmath>
 #include <algorithm>
 
@@ -14,10 +16,22 @@ namespace hydrogen_bond {
 // === HBondScoringParams presets ===
 
 HBondScoringParams HBondScoringParams::defaults() {
+    // Return hardcoded defaults - config loading is done via from_config()
+    // This ensures defaults() is always safe to call, even before ResourceLocator
+    // is initialized
     return HBondScoringParams{};
 }
 
 HBondScoringParams HBondScoringParams::strict() {
+    // Try to load from config preset if available
+    try {
+        if (config::HBondParametersLoader::has_preset("strict_scoring")) {
+            return from_config(config::HBondParametersLoader::load_preset("strict_scoring"));
+        }
+    } catch (...) {
+        // Fall through to hardcoded values
+    }
+    // Fallback to hardcoded values
     HBondScoringParams params;
     params.ideal_distance = 2.85;
     params.distance_sigma = 0.25;
@@ -29,6 +43,15 @@ HBondScoringParams HBondScoringParams::strict() {
 }
 
 HBondScoringParams HBondScoringParams::lenient() {
+    // Try to load from config preset if available
+    try {
+        if (config::HBondParametersLoader::has_preset("lenient_scoring")) {
+            return from_config(config::HBondParametersLoader::load_preset("lenient_scoring"));
+        }
+    } catch (...) {
+        // Fall through to hardcoded values
+    }
+    // Fallback to hardcoded values
     HBondScoringParams params;
     params.ideal_distance = 2.9;
     params.distance_sigma = 0.4;
@@ -36,6 +59,35 @@ HBondScoringParams HBondScoringParams::lenient() {
     params.ideal_donor_angle = 160.0;
     params.min_donor_angle = 80.0;
     params.min_acceptor_angle = 60.0;
+    return params;
+}
+
+HBondScoringParams HBondScoringParams::from_config(const config::HBondParameters& config) {
+    HBondScoringParams params;
+
+    // Distance scoring
+    params.ideal_distance = config.scoring.distance.ideal;
+    params.distance_sigma = config.scoring.distance.sigma;
+    params.min_distance = config.scoring.distance.min;
+    params.max_distance = config.scoring.distance.max;
+
+    // Angle scoring
+    params.ideal_donor_angle = config.geometry.donor_angle.ideal;
+    params.min_donor_angle = config.geometry.donor_angle.min;
+    params.ideal_acceptor_sp2 = config.geometry.acceptor_angle.ideal_sp2;
+    params.ideal_acceptor_sp3 = config.geometry.acceptor_angle.ideal_sp3;
+    params.min_acceptor_angle = config.geometry.acceptor_angle.min;
+
+    // Weights
+    params.weight_distance = config.scoring.weights.distance;
+    params.weight_donor_angle = config.scoring.weights.donor_angle;
+    params.weight_acceptor_angle = config.scoring.weights.acceptor_angle;
+
+    // Resolution adjustment
+    params.apply_resolution_penalty = config.scoring.resolution.apply_penalty;
+    params.high_res_threshold = config.scoring.resolution.high_res_threshold;
+    params.low_res_threshold = config.scoring.resolution.low_res_threshold;
+
     return params;
 }
 

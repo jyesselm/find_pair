@@ -36,3 +36,14 @@ target_compile_definitions(test_init_api PRIVATE
 )
 
 gtest_discover_tests(test_init_api)
+
+add_executable(test_hbond_parameters
+    test_hbond_parameters.cpp
+)
+
+target_link_libraries(test_hbond_parameters
+    x3dna
+    gtest_main
+)
+
+gtest_discover_tests(test_hbond_parameters)
