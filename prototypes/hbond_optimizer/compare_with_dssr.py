@@ -166,9 +166,20 @@ def run_dssr(pdb_path: Path) -> str:
 
 
 def parse_pdb_residues(pdb_path: Path) -> Dict[str, Residue]:
-    """Parse PDB and return residues keyed by DSSR-style ID (e.g., "A.G1")."""
+    """Parse PDB and return residues keyed by DSSR-style ID (e.g., "A.G1").
+
+    Uses ModifiedResidueRegistry to handle modified nucleotides like 5MC, H2U, PSU.
+    """
+    # Import registry for modified residue lookup
+    try:
+        from .modified_registry import get_registry
+    except ImportError:
+        from modified_registry import get_registry
+
+    registry = get_registry()
     residues = {}
 
+    # Standard residue mapping (quick lookup)
     RES_MAP = {
         'ADE': 'A', 'A': 'A', 'DA': 'A', 'RA': 'A',
         'GUA': 'G', 'G': 'G', 'DG': 'G', 'RG': 'G',
@@ -193,8 +204,6 @@ def parse_pdb_residues(pdb_path: Path) -> Dict[str, Residue]:
         'C2', 'C4', 'C5', 'C6', 'C8',
     }
 
-    current_res_key = None
-
     with open(pdb_path) as f:
         for line in f:
             if not line.startswith(('ATOM', 'HETATM')):
@@ -206,18 +215,27 @@ def parse_pdb_residues(pdb_path: Path) -> Dict[str, Residue]:
             res_seq = line[22:26].strip()
             ins_code = line[26].strip()
 
-            base_type = RES_MAP.get(res_name.upper())
+            # Try standard mapping first
+            res_name_upper = res_name.upper()
+            base_type = RES_MAP.get(res_name_upper)
+
+            # If not found, try the modified residue registry
+            if not base_type:
+                base_type = registry.get_parent_base(res_name_upper)
+
             if not base_type:
                 continue
 
             # DSSR-style residue ID: "chain.base#"
+            # For modified residues, use the parent base in the ID (matches DSSR output)
             dssr_id = f"{chain}.{base_type}{res_seq}{ins_code}".rstrip()
 
             if dssr_id not in residues:
                 residues[dssr_id] = Residue(
                     res_id=dssr_id,
                     base_type=base_type,
-                    atoms={}
+                    atoms={},
+                    residue_code=res_name_upper  # Store original 3-letter code
                 )
 
             if atom_name in TRACKED_ATOMS:

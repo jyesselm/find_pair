@@ -37,6 +37,12 @@ from .compare_with_dssr import (
     DSSRHBond,
 )
 
+from .modified_registry import (
+    ModifiedResidueRegistry,
+    get_registry,
+    get_parent_base,
+)
+
 __all__ = [
     # Core optimizer
     'HBondOptimizer',

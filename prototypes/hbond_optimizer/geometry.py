@@ -178,6 +178,30 @@ BASE_CONNECTIVITY = {
     ('C', "O5'"): ["C5'"],
     ('U', "O5'"): ["C5'"],
     ('T', "O5'"): ["C5'"],
+
+    # Pseudouridine (P) - C-glycosidic bond at C5, not N1
+    # Base atoms
+    ('P', 'N1'): ['C2', 'C6'],     # N1 is free (not glycosidic), has H
+    ('P', 'N3'): ['C2', 'C4'],     # Imino N-H (same as uridine)
+    ('P', 'O2'): ['C2'],           # Carbonyl oxygen
+    ('P', 'O4'): ['C4'],           # Carbonyl oxygen
+    # Ribose atoms
+    ('P', "O2'"): ["C2'"],
+    ('P', "O4'"): ["C1'", "C4'"],
+    ('P', "O3'"): ["C3'"],
+    ('P', "O5'"): ["C5'"],
+
+    # Inosine (I) - like guanine but no N2 amino
+    # Base atoms
+    ('I', 'N1'): ['C2', 'C6'],     # Imino N-H
+    ('I', 'O6'): ['C6'],           # Carbonyl oxygen
+    ('I', 'N3'): ['C2', 'C4'],     # Ring N acceptor
+    ('I', 'N7'): ['C5', 'C8'],     # Ring N acceptor
+    # Ribose atoms
+    ('I', "O2'"): ["C2'"],
+    ('I', "O4'"): ["C1'", "C4'"],
+    ('I', "O3'"): ["C3'"],
+    ('I', "O5'"): ["C5'"],
 }
 
 # Donor capacity: how many H atoms can donate
@@ -198,6 +222,16 @@ DONOR_CAPACITY = {
     ('G', "O2'"): 1,
     ('C', "O2'"): 1,
     ('U', "O2'"): 1,
+    ('T', "O2'"): 1,
+    ('P', "O2'"): 1,  # Pseudouridine
+    ('I', "O2'"): 1,  # Inosine
+
+    # Pseudouridine (P) - C-glycosidic bond, so N1 is free to donate
+    ('P', 'N1'): 1,   # N1 is now a donor (not glycosidic)
+    ('P', 'N3'): 1,   # Same as uridine
+
+    # Inosine (I) - like guanine but without N2 amino
+    ('I', 'N1'): 1,   # Imino NH
 }
 
 # Acceptor capacity: how many lone pairs can accept
@@ -250,6 +284,23 @@ ACCEPTOR_CAPACITY = {
     ('G', 'O2P'): 3,
     ('C', 'O2P'): 3,
     ('U', 'O2P'): 3,
+
+    # Pseudouridine (P) - similar to uridine
+    ('P', 'O2'): 2,   # Carbonyl oxygen
+    ('P', 'O4'): 2,   # Carbonyl oxygen
+    ('P', "O2'"): 2,  # Ribose
+    ('P', "O4'"): 1,  # Ribose ring
+    ('P', 'OP1'): 3,  # Phosphate
+    ('P', 'OP2'): 3,
+
+    # Inosine (I) - similar to guanine
+    ('I', 'O6'): 2,   # Carbonyl oxygen
+    ('I', 'N3'): 1,   # Ring N acceptor
+    ('I', 'N7'): 1,   # Ring N acceptor
+    ('I', "O2'"): 2,  # Ribose
+    ('I', "O4'"): 1,  # Ribose ring
+    ('I', 'OP1'): 3,  # Phosphate
+    ('I', 'OP2'): 3,
 }
 
 

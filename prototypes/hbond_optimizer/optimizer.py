@@ -27,10 +27,11 @@ except ImportError:
 @dataclass
 class Residue:
     """A nucleotide residue with its atoms."""
-    res_id: str           # e.g., "A-G-1"
-    base_type: str        # A, G, C, U, T
+    res_id: str           # e.g., "A.G1" (DSSR format)
+    base_type: str        # A, G, C, U, T, P, I (parent base type)
     atoms: Dict[str, np.ndarray] = field(default_factory=dict)
     base_normal: Optional[np.ndarray] = None
+    residue_code: str = ""  # 3-letter code, e.g., "5MC", "H2U", "PSU"
 
     # Cached slots (computed on first access)
     _h_slots: Dict[str, List[HSlot]] = field(default_factory=dict)
