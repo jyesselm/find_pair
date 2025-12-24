@@ -33,11 +33,13 @@ except ImportError:
 @dataclass
 class DSSRHBond:
     """An H-bond from DSSR output."""
-    res1: str          # e.g., "A.G1"
-    res2: str          # e.g., "B.C2"
+    res1: str          # e.g., "A.G1" (normalized for matching)
+    res2: str          # e.g., "B.C2" (normalized for matching)
     donor_atom: str    # e.g., "N6"
     acceptor_atom: str # e.g., "O4"
     distance: float
+    res1_original: str = ""  # Original DSSR ID, e.g., "A.7MG1"
+    res2_original: str = ""  # Original DSSR ID, e.g., "B.5MC2"
 
 
 def parse_dssr_output(dssr_text: str, exclude_questionable: bool = True) -> List[DSSRHBond]:
@@ -78,7 +80,11 @@ def parse_dssr_output(dssr_text: str, exclude_questionable: bool = True) -> List
         if exclude_questionable and hb_type == 'x':
             continue
 
-        # Normalize residue IDs (remove 'D' prefix for DNA)
+        # Store original IDs before normalization
+        res1_orig = res1
+        res2_orig = res2
+
+        # Normalize residue IDs for matching with our parsed residues
         res1 = normalize_res_id(res1)
         res2 = normalize_res_id(res2)
 
@@ -87,7 +93,9 @@ def parse_dssr_output(dssr_text: str, exclude_questionable: bool = True) -> List
             res2=res2,
             donor_atom=atom1,
             acceptor_atom=atom2,
-            distance=dist
+            distance=dist,
+            res1_original=res1_orig,
+            res2_original=res2_orig
         ))
 
     return hbonds
@@ -97,17 +105,70 @@ def normalize_res_id(res_id: str) -> str:
     """
     Normalize DSSR residue ID to standard format.
 
-    E.g., "A.DC1" -> "A.C1", "B.DG24" -> "B.G24"
+    E.g., "A.DC1" -> "A.C1", "B.DG24" -> "B.G24", "R.PSU655" -> "R.P655", "A.A2M5" -> "A.A5"
+
+    Handles:
+    - DNA prefixes (DC, DG, DA, DT, DU)
+    - Modified residue names with digits (PSU, 5MC, 7MG, A2M, H2U, etc.)
     """
-    # Handle DNA prefix (D before base letter)
+    # Import registry for modified residue lookup
+    try:
+        from .modified_registry import get_registry
+    except ImportError:
+        from modified_registry import get_registry
+
+    registry = get_registry()
+
     parts = res_id.split('.')
-    if len(parts) == 2:
-        chain = parts[0]
-        res = parts[1]
-        # Remove 'D' prefix for DNA bases
-        if len(res) >= 2 and res[0] == 'D' and res[1] in 'ACGTU':
-            res = res[1:]
-        return f"{chain}.{res}"
+    if len(parts) != 2:
+        return res_id
+
+    chain = parts[0]
+    res = parts[1]
+
+    # Standard bases (quick check)
+    STANDARD_BASES = {'A', 'G', 'C', 'U', 'T'}
+
+    # Smart parsing: try different split points to find valid residue name
+    # Modified residues can have digits (A2M, 5MC, 7MG, H2U, etc.)
+    # Find the last position where digits start and continue to end
+    import re
+
+    # Find where the residue number starts (last contiguous digit sequence at end)
+    # e.g., "A2M5" -> res_name="A2M", res_num="5"
+    # e.g., "PSU655" -> res_name="PSU", res_num="655"
+    # e.g., "G10" -> res_name="G", res_num="10"
+
+    # Try progressively shorter prefixes until we find a valid residue name
+    for i in range(len(res), 0, -1):
+        candidate_name = res[:i]
+        candidate_num = res[i:]
+
+        # Must have a number at the end (can start with minus for negative residue numbers)
+        if not candidate_num:
+            continue
+        # Valid residue numbers: "1", "10", "-1", "-10", "1A" (with insertion code)
+        if not (candidate_num[0].isdigit() or
+                (candidate_num[0] == '-' and len(candidate_num) > 1 and candidate_num[1].isdigit())):
+            continue
+
+        # Check if candidate_name is a valid residue
+        name_upper = candidate_name.upper()
+
+        # Check standard bases
+        if name_upper in STANDARD_BASES:
+            return f"{chain}.{name_upper}{candidate_num}"
+
+        # Check DNA prefix (D before standard base)
+        if len(name_upper) == 2 and name_upper[0] == 'D' and name_upper[1] in STANDARD_BASES:
+            return f"{chain}.{name_upper[1]}{candidate_num}"
+
+        # Check modified residue registry
+        parent = registry.get_parent_base(name_upper)
+        if parent:
+            return f"{chain}.{parent}{candidate_num}"
+
+    # Fallback: return as-is
     return res_id
 
 
