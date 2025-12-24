@@ -22,8 +22,12 @@ from dataclasses import dataclass
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from optimizer import HBondOptimizer, Residue, HBond
-from geometry import DONOR_CAPACITY, ACCEPTOR_CAPACITY
+try:
+    from .optimizer import HBondOptimizer, Residue, HBond
+    from .geometry import DONOR_CAPACITY, ACCEPTOR_CAPACITY
+except ImportError:
+    from optimizer import HBondOptimizer, Residue, HBond
+    from geometry import DONOR_CAPACITY, ACCEPTOR_CAPACITY
 
 
 @dataclass

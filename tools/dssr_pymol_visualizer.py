@@ -5,8 +5,14 @@ DSSR H-Bond Comparison PyMOL Visualizer.
 Compares H-bond detection between our code and DSSR, generates PyMOL script
 for visual inspection of differences.
 
+Supports two modes:
+1. C++ mode (default): Compare modern C++ output with DSSR
+2. Prototype mode (--use-prototype): Use Python H-bond optimizer prototype
+   with detailed miss reason analysis
+
 Usage:
     python tools/dssr_pymol_visualizer.py 1GID
+    python tools/dssr_pymol_visualizer.py 1GID --use-prototype
     python tools/dssr_pymol_visualizer.py 1GID --output 1GID_hbonds.pml --verbose
     pymol data/pdb/1GID.pdb 1GID_hbonds.pml
 """
@@ -14,10 +20,15 @@ Usage:
 import argparse
 import json
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
+
+# Add project root to path for prototype imports
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 
 def normalize_atom_name(atom_name: str) -> str:
@@ -419,6 +430,117 @@ def print_summary(dssr_only: List[HBond], modern_only: List[HBond],
                 print(f"  ... and {len(modern_only) - 10} more")
 
 
+# Miss reason to color mapping for prototype mode
+REASON_COLORS = {
+    'DONOR_OVERSATURATED': 'red',
+    'ACCEPTOR_OVERSATURATED': 'red',
+    'POOR_ALIGNMENT': 'orange',
+    'DISTANCE_TOO_FAR': 'yellow',
+    'BIFURCATION_ANGLE_SMALL': 'purple',
+    'NOT_VALID_DONOR_ACCEPTOR': 'gray',
+    'NOT_BASE_PAIRED': 'white',
+    'CONFLICT_LOST': 'salmon',
+    'UNKNOWN': 'pink',
+}
+
+
+def generate_prototype_pymol_script(pdb_id: str,
+                                     analyses,
+                                     matched_count: int,
+                                     pdb_path: str) -> str:
+    """Generate PyMOL script with miss-reason color coding from prototype analysis."""
+    lines = []
+    lines.append(f"# DSSR Miss Analysis (Prototype): {pdb_id}")
+    lines.append(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    lines.append(f"#")
+    lines.append(f"# Usage: pymol {pdb_path} {pdb_id}_hbonds.pml")
+    lines.append(f"#")
+    lines.append(f"# Summary:")
+    lines.append(f"#   Matched: {matched_count}")
+    lines.append(f"#   Missed: {len(analyses)}")
+    lines.append(f"#")
+    lines.append(f"# Color scheme by miss reason:")
+    lines.append(f"#   RED    = Oversaturated (donor or acceptor)")
+    lines.append(f"#   ORANGE = Poor alignment score")
+    lines.append(f"#   YELLOW = Distance too far")
+    lines.append(f"#   PURPLE = Bifurcation angle too small")
+    lines.append(f"#   SALMON = Lost to competing bond")
+    lines.append(f"#   WHITE  = Not base-paired / not in residue set")
+    lines.append(f"#   GRAY   = Not valid donor/acceptor")
+    lines.append("")
+
+    # Setup display
+    lines.append("# Setup display")
+    lines.append("hide all")
+    lines.append("show cartoon")
+    lines.append("set dash_gap, 0.2")
+    lines.append("set dash_radius, 0.1")
+    lines.append("")
+
+    # Group by reason
+    by_reason = {}
+    for a in analyses:
+        reason = a.reason.value
+        if reason not in by_reason:
+            by_reason[reason] = []
+        by_reason[reason].append(a)
+
+    # Generate H-bond visualizations grouped by reason
+    for reason, items in sorted(by_reason.items(), key=lambda x: -len(x[1])):
+        color = REASON_COLORS.get(reason, 'pink')
+        lines.append(f"# {reason} ({len(items)}) - {color.upper()}")
+
+        for i, a in enumerate(items, 1):
+            hb = a.dssr_hb
+            atom1_id = hb.get('atom1_id', '')
+            atom2_id = hb.get('atom2_id', '')
+
+            sel1 = to_pymol_selection(pdb_id, atom1_id)
+            sel2 = to_pymol_selection(pdb_id, atom2_id)
+
+            obj_name = f"{reason.lower()}_{i}"
+            lines.append(f"# {atom1_id} -- {atom2_id} (d={hb.get('distance', 0):.2f}A)")
+            lines.append(f"# -> {a.details}")
+            lines.append(f"distance {obj_name}, {sel1}, {sel2}")
+            lines.append(f"color {color}, {obj_name}")
+
+        lines.append("")
+
+    # Create groups
+    lines.append("# Create groups by reason for easy toggling")
+    for reason in by_reason.keys():
+        lines.append(f"group {reason.lower()}_group, {reason.lower()}_*")
+    lines.append("")
+
+    # Hide distance labels
+    lines.append("# Hide distance labels (toggle with 'label' command)")
+    lines.append("hide labels")
+    lines.append("")
+
+    # Zoom
+    lines.append(f"zoom {pdb_id}")
+    lines.append("")
+
+    # Usage tips
+    lines.append("# Usage tips:")
+    lines.append("#   disable <reason>_group  - hide that reason")
+    lines.append("#   enable <reason>_group   - show that reason")
+    lines.append("#   Example: disable not_base_paired_group")
+
+    return "\n".join(lines)
+
+
+def run_prototype_analysis(pdb_id: str, project_root: Path, verbose: bool = False):
+    """Run prototype-based miss analysis and return results."""
+    from tools.analyze_dssr_misses import PrototypeMissAnalyzer
+
+    analyzer = PrototypeMissAnalyzer(pdb_id, project_root)
+    analyses = analyzer.analyze_all_misses()
+    matched = len(analyzer.dssr_hbonds) - len(analyses)
+
+    return analyses, matched, len(analyzer.dssr_hbonds)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Compare DSSR and modern H-bond detection, generate PyMOL visualization"
@@ -428,35 +550,64 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true", help="Show detailed output")
     parser.add_argument("--show-matched", action="store_true", help="Include matched H-bonds in PyMOL script")
     parser.add_argument("--include-questionable", action="store_true", help="Include DSSR questionable H-bonds")
+    parser.add_argument("--use-prototype", action="store_true",
+                        help="Use Python H-bond optimizer prototype with miss-reason analysis")
 
     args = parser.parse_args()
 
     project_root = Path(__file__).parent.parent
     pdb_id = args.pdb_id.upper()
-
-    # Load H-bonds
-    try:
-        dssr_hbonds = load_dssr_hbonds(
-            pdb_id, project_root,
-            exclude_questionable=not args.include_questionable
-        )
-        modern_hbonds = load_modern_hbonds(pdb_id, project_root)
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        return 1
-
-    # Match H-bonds
-    dssr_only, modern_only, matched = match_hbonds(dssr_hbonds, modern_hbonds)
-
-    # Print summary
-    print_summary(dssr_only, modern_only, matched, args.verbose)
-
-    # Generate PyMOL script
     pdb_path = f"data/pdb/{pdb_id}.pdb"
-    script = generate_pymol_script(
-        pdb_id, dssr_only, modern_only, matched,
-        pdb_path, show_matched=args.show_matched
-    )
+
+    if args.use_prototype:
+        # Use prototype analysis
+        try:
+            print(f"Running prototype analysis for {pdb_id}...")
+            analyses, matched, total_dssr = run_prototype_analysis(pdb_id, project_root, args.verbose)
+
+            print(f"\nDSSR H-bonds: {total_dssr}")
+            print(f"Matched: {matched} ({matched/total_dssr*100:.1f}%)")
+            print(f"Missed: {len(analyses)} ({len(analyses)/total_dssr*100:.1f}%)")
+
+            # Summary by reason
+            by_reason = {}
+            for a in analyses:
+                reason = a.reason.value
+                by_reason[reason] = by_reason.get(reason, 0) + 1
+
+            print("\nBy reason:")
+            for reason, count in sorted(by_reason.items(), key=lambda x: -x[1]):
+                print(f"  {reason}: {count}")
+
+            # Generate script
+            script = generate_prototype_pymol_script(pdb_id, analyses, matched, pdb_path)
+
+        except FileNotFoundError as e:
+            print(f"Error: {e}")
+            return 1
+    else:
+        # Use C++ mode (original behavior)
+        try:
+            dssr_hbonds = load_dssr_hbonds(
+                pdb_id, project_root,
+                exclude_questionable=not args.include_questionable
+            )
+            modern_hbonds = load_modern_hbonds(pdb_id, project_root)
+        except FileNotFoundError as e:
+            print(f"Error: {e}")
+            return 1
+
+        # Match H-bonds
+        dssr_only, modern_only, matched = match_hbonds(dssr_hbonds, modern_hbonds)
+
+        # Print summary
+        print_summary(dssr_only, modern_only, matched, args.verbose)
+
+        # Generate PyMOL script
+        script = generate_pymol_script(
+            pdb_id, dssr_only, modern_only, matched,
+            pdb_path, show_matched=args.show_matched
+        )
 
     # Write output
     output_file = args.output or f"{pdb_id}_hbonds.pml"

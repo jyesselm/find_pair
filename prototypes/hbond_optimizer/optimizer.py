@@ -10,11 +10,18 @@ from typing import List, Dict, Tuple, Optional, Set
 from dataclasses import dataclass, field
 from collections import defaultdict
 
-from geometry import (
-    normalize, angle_between, compute_base_normal,
-    predict_h_slots, predict_lp_slots, score_hbond_alignment,
-    HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY
-)
+try:
+    from .geometry import (
+        normalize, angle_between, compute_base_normal,
+        predict_h_slots, predict_lp_slots, score_hbond_alignment,
+        HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY
+    )
+except ImportError:
+    from geometry import (
+        normalize, angle_between, compute_base_normal,
+        predict_h_slots, predict_lp_slots, score_hbond_alignment,
+        HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY
+    )
 
 
 @dataclass
