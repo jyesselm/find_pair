@@ -230,9 +230,9 @@ def analyze_miss(pdb_id: str, hb: DSSRHBond, residues: Dict[str, Residue],
     )
 
 
-def process_pdb(args: Tuple[str, Path, float, float]) -> PDBResult:
+def process_pdb(args: Tuple[str, Path, float, float, float]) -> PDBResult:
     """Process a single PDB file. Designed for multiprocessing."""
-    pdb_id, pdb_path, max_distance, min_alignment = args
+    pdb_id, pdb_path, max_distance, min_alignment, short_dist_thresh = args
 
     try:
         residues = parse_pdb_residues(pdb_path)
@@ -242,7 +242,8 @@ def process_pdb(args: Tuple[str, Path, float, float]) -> PDBResult:
         if not dssr_hbonds:
             return PDBResult(pdb_id=pdb_id, dssr_count=0, matched_count=0, optimizer_count=0)
 
-        optimizer = HBondOptimizer(max_distance=max_distance, min_alignment=min_alignment)
+        optimizer = HBondOptimizer(max_distance=max_distance, min_alignment=min_alignment,
+                                   short_distance_threshold=short_dist_thresh)
         for res in residues.values():
             optimizer.add_residue(res)
 
@@ -317,7 +318,8 @@ def process_pdb(args: Tuple[str, Path, float, float]) -> PDBResult:
 
 
 def run_benchmark(pdb_ids: List[str], pdb_dir: Path, max_workers: int = None,
-                  max_distance: float = 4.0, min_alignment: float = 0.3) -> Dict:
+                  max_distance: float = 4.0, min_alignment: float = 0.3,
+                  short_distance_threshold: float = 3.2) -> Dict:
     """Run benchmark on multiple PDBs with multiprocessing."""
     if max_workers is None:
         max_workers = mp.cpu_count()
@@ -327,7 +329,7 @@ def run_benchmark(pdb_ids: List[str], pdb_dir: Path, max_workers: int = None,
     for pdb_id in pdb_ids:
         pdb_path = pdb_dir / f"{pdb_id}.pdb"
         if pdb_path.exists():
-            args_list.append((pdb_id, pdb_path, max_distance, min_alignment))
+            args_list.append((pdb_id, pdb_path, max_distance, min_alignment, short_distance_threshold))
 
     print(f"Running benchmark on {len(args_list)} PDBs with {max_workers} workers...")
 
@@ -548,6 +550,8 @@ def main():
                        help='Max distance threshold')
     parser.add_argument('--min-align', type=float, default=0.3,
                        help='Min alignment threshold')
+    parser.add_argument('--short-dist', type=float, default=3.2,
+                       help='Short distance threshold (skip alignment check below this)')
     parser.add_argument('--output', type=str, default=None,
                        help='Output JSON file for detailed report')
     args = parser.parse_args()
@@ -571,14 +575,15 @@ def main():
         pdb_ids = [p.strip() for p in args.test_set.split(',')]
 
     print(f"Test set: {len(pdb_ids)} PDBs")
-    print(f"Parameters: max_distance={args.max_dist}, min_alignment={args.min_align}")
+    print(f"Parameters: max_distance={args.max_dist}, min_alignment={args.min_align}, short_distance={args.short_dist}")
 
     # Run benchmark
     analysis = run_benchmark(
         pdb_ids, pdb_dir,
         max_workers=args.workers,
         max_distance=args.max_dist,
-        min_alignment=args.min_align
+        min_alignment=args.min_align,
+        short_distance_threshold=args.short_dist
     )
 
     # Print report

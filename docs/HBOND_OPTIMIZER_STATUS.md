@@ -3,19 +3,19 @@
 ## Current Performance (December 2024)
 
 **Fast PDB Set (3602 PDBs):**
-- **Recall: 93.58%** (297,194 / 317,598 DSSR H-bonds matched)
-- **Precision: 91.94%** (297,194 / 323,246 optimizer H-bonds correct)
+- **Recall: 95.45%** (303,136 / 317,598 DSSR H-bonds matched)
+- **Precision: 91.47%** (303,136 / 331,408 optimizer H-bonds correct)
 
 ## Miss Categories
 
 | Reason | Count | Percentage | Description |
 |--------|-------|------------|-------------|
-| POOR_ALIGNMENT | 12,063 | 59.1% | Geometric alignment score < 0.3 threshold |
-| MISSING_RESIDUE | 5,388 | 26.4% | Residue not found in our PDB parsing |
-| MISSING_ATOM | 1,913 | 9.4% | Atom not found in residue |
-| SLOT_CONFLICT | 907 | 4.4% | Lost in greedy selection (slot saturated) |
-| NO_LP_SLOTS | 72 | 0.4% | Acceptor has no lone pair slots defined |
-| NOT_DONOR_ACCEPTOR | 56 | 0.3% | Atom pair not in donor/acceptor tables |
+| POOR_ALIGNMENT | 6,529 | 45.1% | Geometric alignment score < 0.3 threshold (for dist ≥ 3.2Å) |
+| MISSING_RESIDUE | 5,388 | 37.3% | Residue not found in our PDB parsing |
+| MISSING_ATOM | 1,913 | 13.2% | Atom not found in residue |
+| SLOT_CONFLICT | 501 | 3.5% | Lost in greedy selection (slot saturated) |
+| NO_LP_SLOTS | 70 | 0.5% | Acceptor has no lone pair slots defined |
+| NOT_DONOR_ACCEPTOR | 56 | 0.4% | Atom pair not in donor/acceptor tables |
 | NO_H_SLOTS | 5 | 0.0% | Donor has no hydrogen slots defined |
 
 ## Top Missed Atom Pairs
@@ -32,18 +32,24 @@
 
 ## Key Issues Identified
 
-### 1. POOR_ALIGNMENT (59.1%)
-The largest issue. Geometric prediction of H/LP directions doesn't match the actual H-bond geometry in many cases. The alignment score (sum of H slot and LP slot directional alignment) falls below the 0.3 threshold.
+### 1. POOR_ALIGNMENT (45.1%)
+Geometric prediction of H/LP directions doesn't match the actual H-bond geometry for longer-distance bonds. Now uses **short distance threshold** (3.2Å) - bonds below this distance bypass alignment check.
 
-**Statistics:**
+**Statistics (for dist ≥ 3.2Å):**
 - Min alignment: -4.000
 - Max alignment: 0.300
-- Mean alignment: -0.509
-- Median alignment: -0.048
+- Mean alignment: -0.843
+- Median alignment: -0.139
 
-Many valid H-bonds have negative alignment scores, indicating our LP/H position predictions are often ~180° off from the actual bond direction.
+**Key insight**: For very short distances (< 3.2Å), the geometry is less important because the atoms are so close that H-bonding is highly likely. For longer distances, alignment matters more.
 
-### 2. MISSING_RESIDUE (26.4%)
+**LP Geometry Model:**
+- Carbonyl oxygens (O2, O4, O6): sp2 with two LPs at 120° from C=O bond, in base plane
+- Ring nitrogens (N1, N3, N7): sp2 with one LP pointing out of ring
+- Ribose oxygens (O2', O4'): sp3 with flexible geometry
+- Phosphate oxygens (OP1, OP2): Tetrahedral with 3 LP directions
+
+### 2. MISSING_RESIDUE (37.3%)
 Residues reported by DSSR that we don't find in our PDB parsing. Top examples:
 - Standard residues: A.A231, A.U238, N.DG31, N.DG33 - likely chain/numbering mismatches
 - Unusual chains: X.FMN200 (flavin mononucleotide) - non-nucleotide

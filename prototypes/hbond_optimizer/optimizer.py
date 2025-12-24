@@ -111,18 +111,21 @@ class HBondOptimizer:
                  max_distance: float = 4.0,
                  min_alignment: float = 0.3,
                  min_bifurcation_angle: float = 45.0,
-                 min_bifurcation_alignment: float = 0.5):
+                 min_bifurcation_alignment: float = 0.5,
+                 short_distance_threshold: float = 3.2):
         """
         Args:
             max_distance: Maximum donor-acceptor distance in Angstroms
             min_alignment: Minimum alignment score (0-2) to accept H-bond
             min_bifurcation_angle: Minimum angle between bonds sharing a slot (degrees)
             min_bifurcation_alignment: Stricter alignment for bifurcated bonds (0-2)
+            short_distance_threshold: Below this distance, skip alignment check (distance-only mode)
         """
         self.max_distance = max_distance
         self.min_alignment = min_alignment
         self.min_bifurcation_angle = min_bifurcation_angle
         self.min_bifurcation_alignment = min_bifurcation_alignment
+        self.short_distance_threshold = short_distance_threshold
 
         self.residues: Dict[str, Residue] = {}
         self.candidates: List[HBondCandidate] = []
@@ -323,9 +326,11 @@ class HBondOptimizer:
                     continue
 
             # Check minimum alignment (stricter for bifurcated bonds)
-            min_align_required = self.min_bifurcation_alignment if is_bifurcated else self.min_alignment
-            if c.alignment_score < min_align_required:
-                continue
+            # Skip alignment check for very short distances (high confidence H-bonds)
+            if c.distance >= self.short_distance_threshold:
+                min_align_required = self.min_bifurcation_alignment if is_bifurcated else self.min_alignment
+                if c.alignment_score < min_align_required:
+                    continue
 
             # Accept this H-bond - record the bond direction for bifurcation tracking
             h_slot.add_bond(donor_to_acceptor)
