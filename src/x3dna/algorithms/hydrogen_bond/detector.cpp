@@ -16,7 +16,10 @@
 #include <x3dna/geometry/vector3d.hpp>
 #include <algorithm>
 #include <cmath>
+#include <map>
+#include <numeric>
 #include <set>
+#include <unordered_map>
 
 namespace x3dna {
 namespace algorithms {
@@ -934,6 +937,103 @@ StructureHBondResult HBondDetector::detect_all_structure_hbonds(
     }
 
     return result;
+}
+
+void HBondDetector::apply_global_occupancy_filter(
+    StructureHBondResult& result,
+    int max_bonds_per_donor,
+    int max_bonds_per_acceptor) const {
+
+    if (result.all_hbonds.empty()) {
+        return;
+    }
+
+    // Build unique atom identifiers: "res_id:atom_name"
+    auto make_atom_id = [](const std::string& res_id, const std::string& atom_name) {
+        return res_id + ":" + atom_name;
+    };
+
+    // Sort all H-bonds by distance only (shortest first)
+    // Note: Our "donor" and "acceptor" labels are based on residue order, not chemistry
+    // So we track each atom uniformly using max_bonds_per_acceptor as the limit
+    std::vector<size_t> sorted_indices(result.all_hbonds.size());
+    std::iota(sorted_indices.begin(), sorted_indices.end(), 0);
+    std::sort(sorted_indices.begin(), sorted_indices.end(),
+        [&result](size_t a, size_t b) {
+            return result.all_hbonds[a].distance < result.all_hbonds[b].distance;
+        });
+
+    // Track occupancy for each atom (uniform tracking, not role-based)
+    // Since our donor/acceptor labels don't reflect actual chemistry,
+    // we use the same limit for all atoms
+    std::unordered_map<std::string, int> atom_occupancy;
+
+    // Mark which bonds to keep
+    std::vector<bool> keep_bond(result.all_hbonds.size(), false);
+
+    // Use the more permissive limit for all atoms
+    const int max_bonds_per_atom = std::max(max_bonds_per_donor, max_bonds_per_acceptor);
+
+    // Greedy selection: process bonds in distance order
+    for (size_t idx : sorted_indices) {
+        const auto& hb = result.all_hbonds[idx];
+
+        // Create unique atom identifiers for both atoms in the bond
+        const std::string atom1_id = make_atom_id(hb.donor_res_id, hb.donor_atom_name);
+        const std::string atom2_id = make_atom_id(hb.acceptor_res_id, hb.acceptor_atom_name);
+
+        // Check if both atoms have capacity
+        const int atom1_count = atom_occupancy[atom1_id];
+        const int atom2_count = atom_occupancy[atom2_id];
+
+        if (atom1_count < max_bonds_per_atom && atom2_count < max_bonds_per_atom) {
+            // Keep this bond
+            keep_bond[idx] = true;
+            atom_occupancy[atom1_id]++;
+            atom_occupancy[atom2_id]++;
+        }
+    }
+
+    // Filter all_hbonds
+    std::vector<core::HBond> filtered_hbonds;
+    filtered_hbonds.reserve(result.all_hbonds.size());
+    for (size_t i = 0; i < result.all_hbonds.size(); ++i) {
+        if (keep_bond[i]) {
+            filtered_hbonds.push_back(std::move(result.all_hbonds[i]));
+        }
+    }
+    result.all_hbonds = std::move(filtered_hbonds);
+
+    // Rebuild residue_pair_hbonds from filtered bonds
+    // Group by (res_id_i, res_id_j) pair
+    std::map<std::pair<std::string, std::string>, std::vector<core::HBond>> grouped;
+    for (auto& hb : result.all_hbonds) {
+        // Determine which residue is "i" and which is "j" based on original order
+        std::string res_i = hb.donor_res_id;
+        std::string res_j = hb.acceptor_res_id;
+        // For intra-residue, both are the same
+        if (res_i == res_j) {
+            grouped[{res_i, res_j}].push_back(hb);
+        } else {
+            // Ensure consistent ordering (smaller res_id first)
+            if (res_i > res_j) {
+                std::swap(res_i, res_j);
+            }
+            grouped[{res_i, res_j}].push_back(hb);
+        }
+    }
+
+    // Rebuild residue_pair_hbonds
+    result.residue_pair_hbonds.clear();
+    result.pairs_with_hbonds = 0;
+    for (auto& [key, hbonds] : grouped) {
+        ResidueHBonds pair_result;
+        pair_result.res_id_i = key.first;
+        pair_result.res_id_j = key.second;
+        pair_result.hbonds = std::move(hbonds);
+        result.residue_pair_hbonds.push_back(std::move(pair_result));
+        ++result.pairs_with_hbonds;
+    }
 }
 
 } // namespace hydrogen_bond

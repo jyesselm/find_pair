@@ -134,6 +134,21 @@ public:
         const core::Structure& structure,
         double max_residue_distance = 15.0) const;
 
+    /**
+     * @brief Apply global occupancy filter to structure H-bonds
+     * @param result The H-bond result to filter (modified in place)
+     * @param max_bonds_per_donor Maximum bonds per donor atom (default: 1)
+     * @param max_bonds_per_acceptor Maximum bonds per acceptor atom (default: 2)
+     *
+     * Filters H-bonds globally so each atom participates in at most N bonds.
+     * When an atom has multiple competing bonds, keeps the shortest ones.
+     * This mimics DSSR's behavior of reporting only "significant" H-bonds.
+     */
+    void apply_global_occupancy_filter(
+        StructureHBondResult& result,
+        int max_bonds_per_donor = 1,
+        int max_bonds_per_acceptor = 2) const;
+
     // === Counting (for validation checks) ===
 
     /**

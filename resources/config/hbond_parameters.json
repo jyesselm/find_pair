@@ -166,7 +166,7 @@
         "options": {
           "include_backbone_backbone": true,
           "include_unlikely_chemistry": true,
-          "include_intra_residue": true
+          "include_intra_residue": false
         }
       }
     },

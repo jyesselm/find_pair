@@ -23,6 +23,7 @@
 #include <x3dna/algorithms/parameter_calculator.hpp>
 #include <x3dna/algorithms/helix_organizer.hpp>
 #include <x3dna/algorithms/hydrogen_bond/detector.hpp>
+#include <x3dna/algorithms/hydrogen_bond/dssr_filter.hpp>
 
 using namespace x3dna::core;
 using namespace x3dna::io;
@@ -168,7 +169,9 @@ BaseFrameCalculator setup_frame_calculator(const std::filesystem::path& template
 
 // Process a single PDB file
 bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesystem::path& json_output_dir,
-                        const std::string& stage, bool use_chain_order = false, bool verbose = true) {
+                        const std::string& stage, bool use_chain_order = false, bool verbose = true,
+                        bool use_dssr_filter = false, bool use_dssr_tight = false, bool use_dssr_strict = false,
+                        bool use_scored_occupancy = false, int max_bonds_per_atom = 2) {
     try {
         // Create output directory if needed
         std::filesystem::create_directories(json_output_dir);
@@ -251,10 +254,42 @@ bool process_single_pdb(const std::filesystem::path& pdb_file, const std::filesy
         if (stage == "all_hbonds") {
             JsonWriter writer(pdb_file);
 
-            // Use DSSR-like parameters (3.5Å cutoff) for better comparison
+            // Use DSSR-like parameters (4.0Å cutoff) for better comparison
             auto params = x3dna::algorithms::HBondDetectionParams::dssr_like();
             x3dna::algorithms::hydrogen_bond::HBondDetector hb_detector(params);
             auto result = hb_detector.detect_all_structure_hbonds(structure);
+
+            // Apply DSSR-style filtering if enabled
+            // Default: N-containing 4.0A, O2'-O 3.7A, other O-O 3.5A
+            // Tight:   N-containing 3.6A, O2'-O 3.4A, other O-O 3.2A
+            // Strict:  N-containing 3.4A, O2'-O 3.2A, other O-O 2.9A
+            if (use_dssr_filter) {
+                x3dna::algorithms::hydrogen_bond::DSSRFilterParams params;
+                std::string mode = "";
+                if (use_dssr_strict) {
+                    params = x3dna::algorithms::hydrogen_bond::DSSRFilterParams::strict();
+                    mode = " (strict)";
+                } else if (use_dssr_tight) {
+                    params = x3dna::algorithms::hydrogen_bond::DSSRFilterParams::tight();
+                    mode = " (tight)";
+                } else {
+                    params = x3dna::algorithms::hydrogen_bond::DSSRFilterParams::defaults();
+                }
+                x3dna::algorithms::hydrogen_bond::DSSRStyleFilter::filter_in_place(result, params);
+                if (verbose) {
+                    std::cout << "  Applied DSSR-style distance filtering" << mode << "\n";
+                }
+            }
+
+            // Apply scored occupancy filter if enabled
+            // This keeps only the highest-scoring bonds for each atom (default: max 2 per atom)
+            if (use_scored_occupancy) {
+                x3dna::algorithms::hydrogen_bond::DSSRStyleFilter::apply_scored_occupancy_filter(result, max_bonds_per_atom);
+                if (verbose) {
+                    std::cout << "  Applied scored occupancy filter (max " << max_bonds_per_atom << " bonds per atom)\n";
+                }
+            }
+
             writer.record_all_structure_hbonds(result);
             writer.write_split_files(json_output_dir, true);
 
@@ -401,6 +436,11 @@ void print_usage(const char* prog_name) {
     std::cerr << "  --pdb-dir=DIR       Directory containing PDB files\n";
     std::cerr << "  --all-pdbs          Process all PDBs in pdb-dir\n";
     std::cerr << "  --chain-order       Use chain-based ordering instead of legacy five2three\n";
+    std::cerr << "  --dssr-filter       Apply DSSR-style distance filtering (for all_hbonds stage)\n";
+    std::cerr << "  --dssr-tight        Use tighter thresholds (3.6Å for N-containing)\n";
+    std::cerr << "  --dssr-strict       Use strictest thresholds (3.4Å for N-containing)\n";
+    std::cerr << "  --scored-occupancy  Apply scoring-based occupancy filter (keeps best bonds per atom)\n";
+    std::cerr << "  --max-bonds=N       Max bonds per atom for occupancy filter (default: 2)\n";
     std::cerr << "  --progress=FILE     Progress file (default: <output_dir>/progress.json)\n";
     std::cerr << "  --resume            Resume from progress file\n";
     std::cerr << "  --max=N             Maximum PDBs to process\n";
@@ -432,6 +472,11 @@ int main(int argc, char* argv[]) {
     bool resume = false;
     bool quiet = false;
     bool use_chain_order = false;
+    bool use_dssr_filter = false;
+    bool use_dssr_tight = false;
+    bool use_dssr_strict = false;
+    bool use_scored_occupancy = false;
+    int max_bonds_per_atom = 2;
     int max_pdbs = -1;
     std::string single_pdb_file;
 
@@ -454,6 +499,16 @@ int main(int argc, char* argv[]) {
             all_pdbs = true;
         } else if (arg == "--chain-order") {
             use_chain_order = true;
+        } else if (arg == "--dssr-filter") {
+            use_dssr_filter = true;
+        } else if (arg == "--dssr-tight") {
+            use_dssr_tight = true;
+        } else if (arg == "--dssr-strict") {
+            use_dssr_strict = true;
+        } else if (arg == "--scored-occupancy") {
+            use_scored_occupancy = true;
+        } else if (arg.find("--max-bonds=") == 0) {
+            max_bonds_per_atom = std::stoi(arg.substr(12));
         } else if (arg == "--resume") {
             resume = true;
         } else if (arg == "--quiet" || arg == "-q") {
@@ -504,9 +559,13 @@ int main(int argc, char* argv[]) {
         } else {
             std::cout << "Ordering mode: Legacy five2three\n";
         }
+        if (use_dssr_filter) {
+            std::cout << "DSSR filter: Enabled\n";
+        }
         std::cout << "\n";
 
-        bool success = process_single_pdb(single_pdb_file, output_dir, stage, use_chain_order, !quiet);
+        bool success = process_single_pdb(single_pdb_file, output_dir, stage, use_chain_order, !quiet,
+                                          use_dssr_filter, use_dssr_tight, use_dssr_strict, use_scored_occupancy, max_bonds_per_atom);
 
         if (success) {
             std::cout << "\n✅ Success!\n";
@@ -575,6 +634,9 @@ int main(int argc, char* argv[]) {
     } else {
         std::cout << "Ordering mode: Legacy five2three\n";
     }
+    if (use_dssr_filter) {
+        std::cout << "DSSR filter: Enabled\n";
+    }
     std::cout << "\n";
 
     int processed = 0;
@@ -606,7 +668,8 @@ int main(int argc, char* argv[]) {
             std::cout << "[" << (i + 1) << "/" << pdb_ids.size() << "] " << pdb_id << "...\n";
         }
 
-        bool success = process_single_pdb(pdb_path, output_dir, stage, use_chain_order, !quiet);
+        bool success = process_single_pdb(pdb_path, output_dir, stage, use_chain_order, !quiet,
+                                          use_dssr_filter, use_dssr_tight, use_dssr_strict, use_scored_occupancy, max_bonds_per_atom);
 
         processed++;
         if (success) {

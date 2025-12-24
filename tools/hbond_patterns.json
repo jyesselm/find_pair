@@ -1,0 +1,625 @@
+{
+  "_description": "H-bond patterns for Leontis-Westhof base pair classifications",
+  "_note": "donor_base: 1 or 2, donor_atom: atom with H, acceptor_atom: atom receiving H",
+
+  "edge_atoms": {
+    "_description": "Atoms involved in each edge for each base type",
+    "A": {
+      "watson": ["N1", "N6"],
+      "hoogsteen": ["N7", "N6"],
+      "sugar": ["N3", "C2'"]
+    },
+    "G": {
+      "watson": ["N1", "O6", "N2"],
+      "hoogsteen": ["N7", "O6"],
+      "sugar": ["N3", "N2"]
+    },
+    "C": {
+      "watson": ["N3", "N4", "O2"],
+      "hoogsteen": ["C5", "C6"],
+      "sugar": ["O2"]
+    },
+    "U": {
+      "watson": ["N3", "O4", "O2"],
+      "hoogsteen": ["C5", "C6"],
+      "sugar": ["O2"]
+    },
+    "T": {
+      "watson": ["N3", "O4", "O2"],
+      "hoogsteen": ["C5", "C6"],
+      "sugar": ["O2"]
+    }
+  },
+
+  "patterns": {
+    "cWW": {
+      "_description": "Watson-Watson cis (standard Watson-Crick pairs)",
+      "GC": [
+        {"donor_base": 1, "donor_atom": "N1", "acceptor_atom": "N3", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 2, "donor_atom": "N1", "acceptor_atom": "N3", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O4", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "N1", "ideal_dist": 2.9}
+      ],
+      "UA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O4", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "N1", "ideal_dist": 2.9}
+      ],
+      "GU": [
+        {"donor_base": 1, "donor_atom": "N1", "acceptor_atom": "O2", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "UG": [
+        {"donor_base": 2, "donor_atom": "N1", "acceptor_atom": "O2", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "AC": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 3.0},
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "N1", "ideal_dist": 3.0}
+      ],
+      "CA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 3.0},
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "N1", "ideal_dist": 3.0}
+      ],
+      "GA": [
+        {"donor_base": 1, "donor_atom": "N1", "acceptor_atom": "N1", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "AG": [
+        {"donor_base": 2, "donor_atom": "N1", "acceptor_atom": "N1", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N1", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N1", "ideal_dist": 2.9}
+      ],
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N1", "acceptor_atom": "O6", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N1", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "CC": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "N3", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "UU": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O4", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "CU": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O4", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "UC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O4", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ]
+    },
+
+    "tWW": {
+      "_description": "Watson-Watson trans",
+      "GC": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "UA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N1", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N1", "ideal_dist": 2.9}
+      ],
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O6", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "CC": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UU": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O2", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "GU": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "AC": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CU": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ]
+    },
+
+    "cWH": {
+      "_description": "Watson-Hoogsteen cis",
+      "UA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O4", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O4", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "UG": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "GU": [
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 3.0}
+      ],
+      "GC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 3.0}
+      ],
+      "CC": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "UU": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N1", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "AG": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "GA": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ]
+    },
+
+    "tWH": {
+      "_description": "Watson-Hoogsteen trans",
+      "UA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O4", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O4", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "CA": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "AC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "UU": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "CC": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "UG": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "GU": [
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "GC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "AG": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "GA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ]
+    },
+
+    "cWS": {
+      "_description": "Watson-Sugar cis",
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "AG": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "GA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "AC": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "GC": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "GU": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CC": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CU": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UU": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ]
+    },
+
+    "tWS": {
+      "_description": "Watson-Sugar trans",
+      "AG": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N1", "ideal_dist": 2.9}
+      ],
+      "GA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N1", "ideal_dist": 2.9}
+      ],
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "GU": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N1", "acceptor_atom": "O2", "ideal_dist": 3.2}
+      ],
+      "UG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N1", "acceptor_atom": "O2", "ideal_dist": 3.2}
+      ],
+      "GC": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UA": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "CA": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "AC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "CC": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CU": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UU": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ]
+    },
+
+    "cHH": {
+      "_description": "Hoogsteen-Hoogsteen cis",
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "AG": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 3.0}
+      ],
+      "GA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 3.0}
+      ],
+      "GC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ]
+    },
+
+    "tHH": {
+      "_description": "Hoogsteen-Hoogsteen trans",
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O6", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "AG": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "GA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "UA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "GC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "CA": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "AC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "CU": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "UC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ]
+    },
+
+    "cHS": {
+      "_description": "Hoogsteen-Sugar cis",
+      "AG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "GA": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "GG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "O6", "ideal_dist": 3.0}
+      ],
+      "AA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "UG": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "GU": [
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "CA": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "AC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "GC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "UU": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "CC": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "CU": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "UC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O4", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ]
+    },
+
+    "tHS": {
+      "_description": "Hoogsteen-Sugar trans",
+      "AG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "N6", "ideal_dist": 3.0}
+      ],
+      "GA": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "N6", "ideal_dist": 3.0}
+      ],
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "UG": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "GU": [
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "O6", "ideal_dist": 2.9}
+      ],
+      "UA": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 2, "donor_atom": "N3", "acceptor_atom": "N7", "ideal_dist": 2.9},
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CA": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "AC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "N7", "ideal_dist": 2.9}
+      ],
+      "CC": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CU": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ]
+    },
+
+    "cSS": {
+      "_description": "Sugar-Sugar cis",
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 3.2},
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 3.2}
+      ],
+      "GA": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "AG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "CA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "AC": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "GC": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "GU": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CC": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 3.2}
+      ],
+      "CU": [
+        {"donor_base": 1, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UC": [
+        {"donor_base": 2, "donor_atom": "N4", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UU": [
+        {"donor_base": 1, "donor_atom": "N3", "acceptor_atom": "O2", "ideal_dist": 3.0}
+      ]
+    },
+
+    "tSS": {
+      "_description": "Sugar-Sugar trans",
+      "AG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "GA": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "AA": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "N3", "ideal_dist": 3.0}
+      ],
+      "GG": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9},
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "N3", "ideal_dist": 2.9}
+      ],
+      "AC": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "AU": [
+        {"donor_base": 1, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UA": [
+        {"donor_base": 2, "donor_atom": "N6", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "GC": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "CG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "GU": [
+        {"donor_base": 1, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ],
+      "UG": [
+        {"donor_base": 2, "donor_atom": "N2", "acceptor_atom": "O2", "ideal_dist": 2.9}
+      ]
+    }
+  }
+}
