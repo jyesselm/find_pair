@@ -263,6 +263,29 @@ fp2-validate baseline status          # Show baseline status
 - `docs/CODE_FLOW.md` - Detailed algorithm flow
 - `docs/TESTING_GUIDE.md` - Complete testing reference
 
+## H-Bond Prototyping (December 2024)
+
+**Directory**: `prototypes/hbond_optimizer/`
+
+Python prototype for improved H-bond detection with proper saturation tracking. Key features:
+- Predicts H atom positions and lone pair directions from known geometry
+- Tracks which H slots (for donors) and LP slots (for acceptors) are used
+- Greedy best-first selection respecting chemical capacity limits
+- Compares against DSSR output for validation
+
+**Key insight**: NH2 groups (N6, N4, N2) can donate 2 H-bonds, but each must use a different hydrogen. sp2 oxygens (O6, O2, O4) can accept 2 H-bonds, but each must use a different lone pair. The prototype computes actual H/LP positions from geometry and tracks which slots are used.
+
+**Design document**: `docs/HBOND_STRATEGIES_SURVEY.md` - Survey of barnaba, ClaRNA, FR3D, HBPLUS approaches
+
+```bash
+# Run prototype
+cd prototypes/hbond_optimizer
+python hbond_optimizer.py data/pdb/1GID.pdb
+
+# Compare with DSSR
+python compare_with_dssr.py data/pdb/1GID.pdb
+```
+
 ## Common Workflows
 
 ### Debug a failing PDB
