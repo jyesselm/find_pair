@@ -129,15 +129,29 @@ def normalize_res_id(res_id: str) -> str:
     # Standard bases (quick check)
     STANDARD_BASES = {'A', 'G', 'C', 'U', 'T'}
 
+    # PRIORITY 1: Check standard 1-character bases FIRST (A, G, C, U, T)
+    # This prevents "A231" from being parsed as modified residue "A23" + "1"
+    if len(res) >= 2 and res[0].upper() in STANDARD_BASES:
+        candidate_num = res[1:]
+        if candidate_num and (candidate_num[0].isdigit() or
+                              (candidate_num[0] == '-' and len(candidate_num) > 1 and candidate_num[1].isdigit())):
+            return f"{chain}.{res[0].upper()}{candidate_num}"
+
+    # PRIORITY 2: Check DNA prefix (DA, DG, DC, DT, DU)
+    # DNA prefixes are always exactly 2 chars, so check if first 2 chars match
+    # This must happen BEFORE trying modified residue names to avoid "DG38" -> "DG3" + "8"
+    if len(res) >= 3 and res[0].upper() == 'D' and res[1].upper() in STANDARD_BASES:
+        # Remainder should be residue number (can be negative or have insertion code)
+        candidate_num = res[2:]
+        if candidate_num and (candidate_num[0].isdigit() or
+                              (candidate_num[0] == '-' and len(candidate_num) > 1 and candidate_num[1].isdigit())):
+            return f"{chain}.{res[1].upper()}{candidate_num}"
+
     # Smart parsing: try different split points to find valid residue name
     # Modified residues can have digits (A2M, 5MC, 7MG, H2U, etc.)
-    # Find the last position where digits start and continue to end
-    import re
-
-    # Find where the residue number starts (last contiguous digit sequence at end)
     # e.g., "A2M5" -> res_name="A2M", res_num="5"
     # e.g., "PSU655" -> res_name="PSU", res_num="655"
-    # e.g., "G10" -> res_name="G", res_num="10"
+    # e.g., "7MG10" -> res_name="7MG", res_num="10"
 
     # Try progressively shorter prefixes until we find a valid residue name
     for i in range(len(res), 0, -1):
@@ -152,18 +166,8 @@ def normalize_res_id(res_id: str) -> str:
                 (candidate_num[0] == '-' and len(candidate_num) > 1 and candidate_num[1].isdigit())):
             continue
 
-        # Check if candidate_name is a valid residue
-        name_upper = candidate_name.upper()
-
-        # Check standard bases
-        if name_upper in STANDARD_BASES:
-            return f"{chain}.{name_upper}{candidate_num}"
-
-        # Check DNA prefix (D before standard base)
-        if len(name_upper) == 2 and name_upper[0] == 'D' and name_upper[1] in STANDARD_BASES:
-            return f"{chain}.{name_upper[1]}{candidate_num}"
-
         # Check modified residue registry
+        name_upper = candidate_name.upper()
         parent = registry.get_parent_base(name_upper)
         if parent:
             return f"{chain}.{parent}{candidate_num}"
