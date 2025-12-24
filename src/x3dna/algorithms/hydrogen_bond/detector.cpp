@@ -354,6 +354,87 @@ void HBondDetector::count_potential_hbonds(const Residue& res1, const Residue& r
     }
 }
 
+std::vector<HBond> HBondDetector::detect_intra_residue_hbonds(
+    const Residue& residue, MoleculeType mol_type) const {
+
+    std::vector<HBond> bonds;
+    const auto& atoms = residue.atoms();
+    const size_t n = atoms.size();
+
+    // Need at least 2 atoms for an intra-residue H-bond
+    if (n < 2) {
+        return bonds;
+    }
+
+    // Check all atom pairs within the residue
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = i + 1; j < n; ++j) {
+            const auto& atom1 = atoms[i];
+            const auto& atom2 = atoms[j];
+
+            // Check if atoms can form H-bond based on elements
+            if (!good_hb_atoms(atom1.name(), atom2.name(), params_.allowed_elements,
+                               params_.include_backbone_backbone)) {
+                continue;
+            }
+
+            // Calculate distance
+            const double dist = (atom1.position() - atom2.position()).length();
+
+            // Use a generic context for intra-residue (treat as base-sugar for nucleotides)
+            const HBondContext context = HBondContext::BASE_SUGAR;
+
+            // Check distance is in valid range
+            const double max_dist = params_.distances.max_for_context(context);
+            if (dist < params_.distances.min_distance || dist > max_dist) {
+                continue;
+            }
+
+            // Create H-bond
+            HBond hbond;
+            hbond.donor_atom_name = atom1.name();
+            hbond.acceptor_atom_name = atom2.name();
+            hbond.distance = dist;
+            hbond.context = context;
+            hbond.classification = HBondClassification::UNKNOWN;
+            hbond.conflict_state = ConflictState::NO_CONFLICT;
+            hbond.donor_res_id = residue.res_id();
+            hbond.acceptor_res_id = residue.res_id();  // Same residue
+
+            // Classify the bond
+            char base_type = '?';
+            if (mol_type == MoleculeType::NUCLEIC_ACID) {
+                base_type = get_base_type_for_hbond(residue);
+            }
+
+            // Get atom roles and classify
+            HBondAtomRole role1 = HBondRoleClassifier::get_nucleotide_atom_role(base_type, atom1.name());
+            HBondAtomRole role2 = HBondRoleClassifier::get_nucleotide_atom_role(base_type, atom2.name());
+
+            // Check for AA/DD (unlikely chemistry)
+            const bool is_aa = (role1 == HBondAtomRole::ACCEPTOR && role2 == HBondAtomRole::ACCEPTOR);
+            const bool is_dd = (role1 == HBondAtomRole::DONOR && role2 == HBondAtomRole::DONOR);
+
+            if (is_aa || is_dd) {
+                if (!params_.include_unlikely_chemistry) {
+                    continue;  // Skip unlikely chemistry
+                }
+                hbond.classification = HBondClassification::UNLIKELY_CHEMISTRY;
+            } else {
+                hbond.classification = HBondClassification::STANDARD;
+            }
+
+            // Set Leontis-Westhof edges
+            hbond.donor_edge = EdgeClassifier::classify(atom1.name(), base_type);
+            hbond.acceptor_edge = EdgeClassifier::classify(atom2.name(), base_type);
+
+            bonds.push_back(hbond);
+        }
+    }
+
+    return bonds;
+}
+
 std::vector<HBond> HBondDetector::find_candidate_bonds(const Residue& residue1, const Residue& residue2,
                                                         bool base_atoms_only, MoleculeType mol1_type,
                                                         MoleculeType mol2_type) const {
@@ -740,6 +821,35 @@ StructureHBondResult HBondDetector::detect_all_structure_hbonds(
     }
 
     const double max_dist_sq = max_residue_distance * max_residue_distance;
+
+    // Detect intra-residue H-bonds if enabled
+    if (params_.include_intra_residue) {
+        for (size_t i = 0; i < n_residues; ++i) {
+            const MoleculeType mol_type = residues[i]->is_nucleotide() ? MoleculeType::NUCLEIC_ACID
+                                        : residues[i]->is_protein() ? MoleculeType::PROTEIN
+                                        : MoleculeType::LIGAND;
+
+            auto intra_hbonds = detect_intra_residue_hbonds(*residues[i], mol_type);
+
+            if (!intra_hbonds.empty()) {
+                // Add to grouped result (same residue for both i and j)
+                ResidueHBonds intra_result;
+                intra_result.res_id_i = residues[i]->res_id();
+                intra_result.res_id_j = residues[i]->res_id();  // Same residue
+                intra_result.residue_idx_i = i;
+                intra_result.residue_idx_j = i;
+                intra_result.hbonds = std::move(intra_hbonds);
+
+                // Add to flat list
+                for (const auto& hb : intra_result.hbonds) {
+                    result.all_hbonds.push_back(hb);
+                }
+
+                result.residue_pair_hbonds.push_back(std::move(intra_result));
+                ++result.pairs_with_hbonds;
+            }
+        }
+    }
 
     // Check all residue pairs
     for (size_t i = 0; i < n_residues; ++i) {

@@ -186,6 +186,7 @@ HBondDetectionParams HBondDetectionParams::from_config(const config::HBondParame
     params.filter_invalid_scores = config.detection.options.filter_invalid_scores;
     params.include_unlikely_chemistry = config.detection.options.include_unlikely_chemistry;
     params.include_backbone_backbone = config.detection.options.include_backbone_backbone;
+    params.include_intra_residue = config.detection.options.include_intra_residue;
 
     return params;
 }

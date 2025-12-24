@@ -42,6 +42,9 @@ bool good_hb_atoms(const std::string& atom1, const std::string& atom2, const std
 
     // Step 1: PO list check (matches legacy lines 3866-3870)
     // Skip this check if include_backbone_backbone is true (for DSSR-like detection)
+    // Note: Legacy PO list has 6 elements and uses numPO = sizeof(PO)/sizeof(PO[0]) - 1 = 5,
+    // but the loop is 'for (i = nb; i <= ne; i++)' which is INCLUSIVE of index 5 (N7).
+    // So legacy DOES check all 6 elements including N7.
     if (!include_backbone_backbone) {
         // Include both old (O1P/O2P) and new (OP1/OP2) atom naming conventions
         static const std::vector<std::string> PO = {"O1P", "O2P", "OP1", "OP2", "O3'", "O4'", "O5'", "N7"};

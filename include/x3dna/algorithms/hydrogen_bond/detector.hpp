@@ -148,6 +148,21 @@ public:
     void count_potential_hbonds(const core::Residue& residue1, const core::Residue& residue2, int& base_hbond_count,
                                 int& o2_prime_hbond_count) const;
 
+    // === Intra-Residue H-Bond Detection ===
+
+    /**
+     * @brief Detect H-bonds within a single residue
+     * @param residue The residue to analyze
+     * @param mol_type The molecule type
+     * @return Vector of intra-residue H-bonds
+     *
+     * Detects H-bonds between atoms within the same residue (e.g., O2'-N3).
+     * Only called when params_.include_intra_residue is true.
+     */
+    [[nodiscard]] std::vector<core::HBond> detect_intra_residue_hbonds(
+        const core::Residue& residue,
+        core::typing::MoleculeType mol_type = core::typing::MoleculeType::NUCLEIC_ACID) const;
+
     [[nodiscard]] const HBondDetectionParams& params() const {
         return params_;
     }

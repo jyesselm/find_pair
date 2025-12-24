@@ -41,7 +41,8 @@
       "enable_quality_scoring": false,
       "filter_invalid_scores": false,
       "include_unlikely_chemistry": false,
-      "include_backbone_backbone": false
+      "include_backbone_backbone": false,
+      "include_intra_residue": false
     }
   },
 
@@ -140,29 +141,32 @@
     },
 
     "dssr_like": {
-      "_description": "DSSR-compatible thresholds",
+      "_description": "DSSR-compatible thresholds - includes backbone H-bonds and questionable chemistry",
       "detection": {
         "distance": {
           "min": 2.0,
-          "base_base_max": 3.5,
-          "base_backbone_max": 3.5,
-          "backbone_backbone_max": 3.5,
-          "base_sugar_max": 3.5,
-          "sugar_sugar_max": 3.5,
+          "base_base_max": 4.0,
+          "base_backbone_max": 4.0,
+          "backbone_backbone_max": 4.0,
+          "base_sugar_max": 4.0,
+          "sugar_sugar_max": 4.0,
           "protein_mainchain_max": 3.5,
           "protein_sidechain_max": 3.5,
           "base_protein_max": 3.5,
           "protein_ligand_max": 3.5,
+          "base_ligand_max": 4.0,
           "conflict_filter": 4.5
         },
         "elements": { "allowed": ".O.N." },
         "thresholds": {
           "good_bond": { "min": 2.5, "max": 3.5 },
-          "post_validation_max": 3.6,
+          "post_validation_max": 4.0,
           "nonstandard": { "min": 2.6, "max": 3.2 }
         },
         "options": {
-          "include_backbone_backbone": true
+          "include_backbone_backbone": true,
+          "include_unlikely_chemistry": true,
+          "include_intra_residue": true
         }
       }
     },

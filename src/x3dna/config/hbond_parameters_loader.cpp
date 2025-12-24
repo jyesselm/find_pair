@@ -135,6 +135,7 @@ void HBondParametersLoader::load_detection(HBondDetectionConfig& config, const n
         if (opt.contains("filter_invalid_scores")) config.options.filter_invalid_scores = opt["filter_invalid_scores"];
         if (opt.contains("include_unlikely_chemistry")) config.options.include_unlikely_chemistry = opt["include_unlikely_chemistry"];
         if (opt.contains("include_backbone_backbone")) config.options.include_backbone_backbone = opt["include_backbone_backbone"];
+        if (opt.contains("include_intra_residue")) config.options.include_intra_residue = opt["include_intra_residue"];
     }
 }
 

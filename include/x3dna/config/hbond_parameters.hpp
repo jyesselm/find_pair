@@ -76,6 +76,7 @@ struct HBondOptionsConfig {
     bool filter_invalid_scores = false;
     bool include_unlikely_chemistry = false;
     bool include_backbone_backbone = false;
+    bool include_intra_residue = false;  // Detect H-bonds within same residue
 };
 
 /**

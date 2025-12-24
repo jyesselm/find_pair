@@ -88,6 +88,11 @@ struct HBondDetectionParams {
     // Set to true to include backbone-backbone H-bonds (like DSSR)
     bool include_backbone_backbone = false;
 
+    // === Intra-residue H-bond detection ===
+    // Set to true to detect H-bonds within a single residue
+    // (e.g., O2'-N3 within the same nucleotide)
+    bool include_intra_residue = false;
+
     // Presets (load from config file)
     [[nodiscard]] static HBondDetectionParams legacy_compatible();
     [[nodiscard]] static HBondDetectionParams modern();
