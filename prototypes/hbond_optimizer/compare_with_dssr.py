@@ -185,6 +185,8 @@ def parse_pdb_residues(pdb_path: Path) -> Dict[str, Residue]:
         'O2', 'O4', 'O6',
         # Ribose O atoms
         "O2'", "O4'", "O3'", "O5'",
+        # Ribose C atoms (needed for H-bond geometry)
+        "C1'", "C2'", "C3'", "C4'", "C5'",
         # Phosphate O atoms
         'OP1', 'OP2', 'O1P', 'O2P',
         # Ring carbons for geometry

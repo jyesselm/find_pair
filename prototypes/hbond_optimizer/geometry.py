@@ -152,6 +152,32 @@ BASE_CONNECTIVITY = {
     ('T', 'O2'): ['C2'],
     ('T', 'O4'): ['C4'],
     ('T', 'C6'): ['C5', 'N1'],
+
+    # Ribose atoms (common to all nucleotides)
+    # O2' hydroxyl bonded to C2'
+    ('A', "O2'"): ["C2'"],
+    ('G', "O2'"): ["C2'"],
+    ('C', "O2'"): ["C2'"],
+    ('U', "O2'"): ["C2'"],
+    ('T', "O2'"): ["C2'"],
+    # O4' ring oxygen bonded to C1' and C4'
+    ('A', "O4'"): ["C1'", "C4'"],
+    ('G', "O4'"): ["C1'", "C4'"],
+    ('C', "O4'"): ["C1'", "C4'"],
+    ('U', "O4'"): ["C1'", "C4'"],
+    ('T', "O4'"): ["C1'", "C4'"],
+    # O3' bonded to C3' (also to phosphate)
+    ('A', "O3'"): ["C3'"],
+    ('G', "O3'"): ["C3'"],
+    ('C', "O3'"): ["C3'"],
+    ('U', "O3'"): ["C3'"],
+    ('T', "O3'"): ["C3'"],
+    # O5' bonded to C5' (also to phosphate)
+    ('A', "O5'"): ["C5'"],
+    ('G', "O5'"): ["C5'"],
+    ('C', "O5'"): ["C5'"],
+    ('U', "O5'"): ["C5'"],
+    ('T', "O5'"): ["C5'"],
 }
 
 # Donor capacity: how many H atoms can donate
