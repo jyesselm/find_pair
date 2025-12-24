@@ -26,8 +26,8 @@ protected:
 TEST_F(HBondParametersTest, DefaultsHaveCorrectValues) {
     auto params = HBondParameters::defaults();
 
-    // Detection distance thresholds
-    EXPECT_DOUBLE_EQ(params.detection.distance.min, 1.8);
+    // Detection distance thresholds (min = 2.0 matches JSON and legacy behavior)
+    EXPECT_DOUBLE_EQ(params.detection.distance.min, 2.0);
     EXPECT_DOUBLE_EQ(params.detection.distance.base_base_max, 4.0);
     EXPECT_DOUBLE_EQ(params.detection.distance.base_backbone_max, 3.5);
     EXPECT_DOUBLE_EQ(params.detection.distance.conflict_filter, 4.5);

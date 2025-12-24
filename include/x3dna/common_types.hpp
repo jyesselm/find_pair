@@ -20,9 +20,8 @@ namespace algorithms {
  * @brief Strategy for finding base pairs
  */
 enum class PairFindingStrategy {
-    BEST_PAIR,     // Greedy mutual best match
-    ALL_PAIRS,     // Exhaustive search
-    DISTANCE_BASED // Simple distance-based
+    BEST_PAIR, // Greedy mutual best match
+    ALL_PAIRS  // Exhaustive search
 };
 
 } // namespace algorithms

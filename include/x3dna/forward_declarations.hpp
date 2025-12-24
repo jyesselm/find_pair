@@ -23,7 +23,6 @@ struct HelicalParameters;
 namespace geometry {
 class Vector3D;
 class Matrix3D;
-class Quaternion;
 class LeastSquaresFitter;
 } // namespace geometry
 
@@ -42,7 +41,6 @@ class BaseFrameCalculator;
 class BasePairFinder;
 class ParameterCalculator;
 class HelixOrganizer;
-class HydrogenBondValidator;
 class StandardBaseTemplates;
 class RingAtomMatcher;
 } // namespace algorithms

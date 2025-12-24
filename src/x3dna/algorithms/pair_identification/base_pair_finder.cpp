@@ -98,8 +98,6 @@ std::vector<BasePair> BasePairFinder::find_pairs_with_recording(Structure& struc
             return find_best_pairs(structure, writer);
         case PairFindingStrategy::ALL_PAIRS:
             return find_all_pairs(structure);
-        case PairFindingStrategy::DISTANCE_BASED:
-            return {};
     }
     return {};
 }
