@@ -1,12 +1,12 @@
 {
-  "pdb_id": "1JB8",
+  "pdb_id": "1BMV",
   "summary": {
-    "total_canonical_cww": 3,
-    "true_positives": 3,
+    "total_canonical_cww": 0,
+    "true_positives": 0,
     "false_negatives": 0,
     "false_positives": 0,
-    "sensitivity": 1.0,
-    "precision": 1.0
+    "sensitivity": 0.0,
+    "precision": 0.0
   },
   "false_negatives": [],
   "false_positives": []

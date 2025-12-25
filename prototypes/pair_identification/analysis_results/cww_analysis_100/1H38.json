@@ -2,12 +2,2657 @@
   "pdb_id": "1H38",
   "summary": {
     "total_canonical_cww": 44,
-    "true_positives": 44,
-    "false_negatives": 0,
+    "true_positives": 0,
+    "false_negatives": 44,
     "false_positives": 0,
-    "sensitivity": 1.0,
-    "precision": 1.0
+    "sensitivity": 0.0,
+    "precision": 0.0
   },
-  "false_negatives": [],
+  "false_negatives": [
+    {
+      "res_id1": "E-DG-2",
+      "res_id2": "G-DC-9",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 7.51,
+        "n1n9_distance": 9.248,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "E-DG-3",
+      "res_id2": "G-DC-8",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 16.19,
+        "n1n9_distance": 9.015,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "E-DC-7",
+      "res_id2": "G-DG-4",
+      "sequence": "CG",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 22.244,
+        "n1n9_distance": 9.001,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "E-DG-8",
+      "res_id2": "G-DC-3",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 17.008,
+        "n1n9_distance": 8.724,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "E-DA-11",
+      "res_id2": "F-U-8",
+      "sequence": "AU",
+      "our_prediction": "tHS",
+      "dssr_class": "cWW",
+      "saenger": "20-XX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.017948820655042136,
+        "rmsd_best": 0.01793165515508822,
+        "best_lw": "tHS",
+        "rmsd_gap": 1.7165499953914615e-05,
+        "interbase_angle": 15.28,
+        "n1n9_distance": 8.633,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "E-DC-13",
+      "res_id2": "F-G-6",
+      "sequence": "CG",
+      "our_prediction": "cWS",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.014529625241858884,
+        "rmsd_best": 0.01445140249257738,
+        "best_lw": "cWS",
+        "rmsd_gap": 7.822274928150422e-05,
+        "interbase_angle": 6.456,
+        "n1n9_distance": 8.81,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "E-DG-14",
+      "res_id2": "F-C-5",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.010177407670153474,
+        "rmsd_best": 0.010177407670153474,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 9.227,
+        "n1n9_distance": 8.722,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "E-DC-15",
+      "res_id2": "F-G-4",
+      "sequence": "CG",
+      "our_prediction": "tWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.010888412009173166,
+        "rmsd_best": 0.01076105016560219,
+        "best_lw": "tWW",
+        "rmsd_gap": 0.0001273618435709764,
+        "interbase_angle": 9.752,
+        "n1n9_distance": 8.827,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "E-DC-16",
+      "res_id2": "F-G-3",
+      "sequence": "CG",
+      "our_prediction": "cWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.01416216331055578,
+        "rmsd_best": 0.014037538665646693,
+        "best_lw": "cWH",
+        "rmsd_gap": 0.00012462464490908647,
+        "interbase_angle": 14.673,
+        "n1n9_distance": 8.957,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "E-DG-17",
+      "res_id2": "F-C-2",
+      "sequence": "GC",
+      "our_prediction": "cWS",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.009773532577572292,
+        "rmsd_best": 0.009753318590729181,
+        "best_lw": "cWS",
+        "rmsd_gap": 2.021398684311053e-05,
+        "interbase_angle": 8.952,
+        "n1n9_distance": 8.748,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "E-DC-18",
+      "res_id2": "F-G-1",
+      "sequence": "CG",
+      "our_prediction": "tWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.011166869893517051,
+        "rmsd_best": 0.011094345143728477,
+        "best_lw": "tWH",
+        "rmsd_gap": 7.252474978857414e-05,
+        "interbase_angle": 13.075,
+        "n1n9_distance": 8.992,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DG-2",
+      "res_id2": "J-DC-9",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 25.315,
+        "n1n9_distance": 8.823,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DG-3",
+      "res_id2": "J-DC-8",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 30.379,
+        "n1n9_distance": 8.923,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DC-7",
+      "res_id2": "J-DG-4",
+      "sequence": "CG",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 10.003,
+        "n1n9_distance": 8.973,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DG-8",
+      "res_id2": "J-DC-3",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 13.822,
+        "n1n9_distance": 9.205,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DA-11",
+      "res_id2": "I-U-8",
+      "sequence": "AU",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "20-XX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.013213969531692933,
+        "rmsd_best": 0.013213969531692933,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 15.478,
+        "n1n9_distance": 8.638,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DC-13",
+      "res_id2": "I-G-6",
+      "sequence": "CG",
+      "our_prediction": "cWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.008098513555381012,
+        "rmsd_best": 0.0079128596400703,
+        "best_lw": "cWH",
+        "rmsd_gap": 0.0001856539153107118,
+        "interbase_angle": 7.327,
+        "n1n9_distance": 8.788,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DG-14",
+      "res_id2": "I-C-5",
+      "sequence": "GC",
+      "our_prediction": "cWS",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.005237032520701645,
+        "rmsd_best": 0.005152083897148803,
+        "best_lw": "cWS",
+        "rmsd_gap": 8.49486235528418e-05,
+        "interbase_angle": 9.612,
+        "n1n9_distance": 8.717,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DC-15",
+      "res_id2": "I-G-4",
+      "sequence": "CG",
+      "our_prediction": "tWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.012916220220201172,
+        "rmsd_best": 0.012912369232291302,
+        "best_lw": "tWW",
+        "rmsd_gap": 3.850987909869916e-06,
+        "interbase_angle": 10.192,
+        "n1n9_distance": 8.849,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DC-16",
+      "res_id2": "I-G-3",
+      "sequence": "CG",
+      "our_prediction": "tWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.00945030842784867,
+        "rmsd_best": 0.009419671189325239,
+        "best_lw": "tWH",
+        "rmsd_gap": 3.0637238523431934e-05,
+        "interbase_angle": 11.891,
+        "n1n9_distance": 8.977,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DG-17",
+      "res_id2": "I-C-2",
+      "sequence": "GC",
+      "our_prediction": "tWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.010456429039772614,
+        "rmsd_best": 0.010384153643480325,
+        "best_lw": "tWW",
+        "rmsd_gap": 7.227539629228903e-05,
+        "interbase_angle": 7.852,
+        "n1n9_distance": 8.753,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "H-DC-18",
+      "res_id2": "I-G-1",
+      "sequence": "CG",
+      "our_prediction": "tWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.010148088288628263,
+        "rmsd_best": 0.010096148541675372,
+        "best_lw": "tWH",
+        "rmsd_gap": 5.193974695289101e-05,
+        "interbase_angle": 13.467,
+        "n1n9_distance": 8.985,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DG-2",
+      "res_id2": "M-DC-9",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 9.581,
+        "n1n9_distance": 9.365,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DG-3",
+      "res_id2": "M-DC-8",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 13.055,
+        "n1n9_distance": 8.848,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DC-7",
+      "res_id2": "M-DG-4",
+      "sequence": "CG",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 13.783,
+        "n1n9_distance": 8.764,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DG-8",
+      "res_id2": "M-DC-3",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 10.504,
+        "n1n9_distance": 8.824,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DA-11",
+      "res_id2": "L-U-8",
+      "sequence": "AU",
+      "our_prediction": "tHS",
+      "dssr_class": "cWW",
+      "saenger": "20-XX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.0137495309723393,
+        "rmsd_best": 0.013647520024754308,
+        "best_lw": "tHS",
+        "rmsd_gap": 0.00010201094758499271,
+        "interbase_angle": 18.931,
+        "n1n9_distance": 8.658,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DC-13",
+      "res_id2": "L-G-6",
+      "sequence": "CG",
+      "our_prediction": "cWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.012806736609547136,
+        "rmsd_best": 0.012711054003881865,
+        "best_lw": "cWH",
+        "rmsd_gap": 9.568260566527112e-05,
+        "interbase_angle": 8.071,
+        "n1n9_distance": 8.816,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DG-14",
+      "res_id2": "L-C-5",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.009987334464492981,
+        "rmsd_best": 0.009987334464492981,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 9.487,
+        "n1n9_distance": 8.72,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DC-15",
+      "res_id2": "L-G-4",
+      "sequence": "CG",
+      "our_prediction": "tWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.0097091484281897,
+        "rmsd_best": 0.009695966303719434,
+        "best_lw": "tWH",
+        "rmsd_gap": 1.3182124470266163e-05,
+        "interbase_angle": 10.934,
+        "n1n9_distance": 8.84,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DC-16",
+      "res_id2": "L-G-3",
+      "sequence": "CG",
+      "our_prediction": "cWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.01259813839271656,
+        "rmsd_best": 0.01253267468516943,
+        "best_lw": "cWH",
+        "rmsd_gap": 6.546370754713024e-05,
+        "interbase_angle": 13.052,
+        "n1n9_distance": 8.965,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DG-17",
+      "res_id2": "L-C-2",
+      "sequence": "GC",
+      "our_prediction": "cWS",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.008420189758257675,
+        "rmsd_best": 0.008357821740181643,
+        "best_lw": "cWS",
+        "rmsd_gap": 6.236801807603214e-05,
+        "interbase_angle": 8.81,
+        "n1n9_distance": 8.736,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "K-DC-18",
+      "res_id2": "L-G-1",
+      "sequence": "CG",
+      "our_prediction": "tWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.010937360452284807,
+        "rmsd_best": 0.010871961142067758,
+        "best_lw": "tWH",
+        "rmsd_gap": 6.539931021704894e-05,
+        "interbase_angle": 12.862,
+        "n1n9_distance": 8.98,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DG-2",
+      "res_id2": "P-DC-9",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 40.552,
+        "n1n9_distance": 8.515,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DG-3",
+      "res_id2": "P-DC-8",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 28.626,
+        "n1n9_distance": 8.921,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DC-7",
+      "res_id2": "P-DG-4",
+      "sequence": "CG",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 15.261,
+        "n1n9_distance": 8.796,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DG-8",
+      "res_id2": "P-DC-3",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": Infinity,
+        "rmsd_best": Infinity,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 15.526,
+        "n1n9_distance": 9.351,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DA-11",
+      "res_id2": "O-U-8",
+      "sequence": "AU",
+      "our_prediction": "tHS",
+      "dssr_class": "cWW",
+      "saenger": "20-XX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.011581998627426543,
+        "rmsd_best": 0.011535314340741924,
+        "best_lw": "tHS",
+        "rmsd_gap": 4.6684286684618714e-05,
+        "interbase_angle": 15.255,
+        "n1n9_distance": 8.638,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DC-13",
+      "res_id2": "O-G-6",
+      "sequence": "CG",
+      "our_prediction": "cWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.008879394553197301,
+        "rmsd_best": 0.008656217872530871,
+        "best_lw": "cWH",
+        "rmsd_gap": 0.00022317668066642975,
+        "interbase_angle": 7.925,
+        "n1n9_distance": 8.8,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DG-14",
+      "res_id2": "O-C-5",
+      "sequence": "GC",
+      "our_prediction": "cWW",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.006975618658275118,
+        "rmsd_best": 0.006975618658275118,
+        "best_lw": "cWW",
+        "rmsd_gap": 0.0,
+        "interbase_angle": 11.67,
+        "n1n9_distance": 8.724,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DC-15",
+      "res_id2": "O-G-4",
+      "sequence": "CG",
+      "our_prediction": "cWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.008462087066259033,
+        "rmsd_best": 0.008310204639586764,
+        "best_lw": "cWH",
+        "rmsd_gap": 0.00015188242667226945,
+        "interbase_angle": 11.711,
+        "n1n9_distance": 8.838,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DC-16",
+      "res_id2": "O-G-3",
+      "sequence": "CG",
+      "our_prediction": "cWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.01021713880077721,
+        "rmsd_best": 0.010145517813063866,
+        "best_lw": "cWH",
+        "rmsd_gap": 7.162098771334481e-05,
+        "interbase_angle": 14.094,
+        "n1n9_distance": 8.963,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DG-17",
+      "res_id2": "O-C-2",
+      "sequence": "GC",
+      "our_prediction": "cHH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N2",
+            "acceptor_atom": "O2",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O6",
+            "acceptor_atom": "N4",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.008770775663386014,
+        "rmsd_best": 0.008762930921398734,
+        "best_lw": "cHH",
+        "rmsd_gap": 7.844741987280551e-06,
+        "interbase_angle": 8.674,
+        "n1n9_distance": 8.76,
+        "is_geometric_outlier": false
+      }
+    },
+    {
+      "res_id1": "N-DC-18",
+      "res_id2": "O-G-1",
+      "sequence": "CG",
+      "our_prediction": "tWH",
+      "dssr_class": "cWW",
+      "saenger": "19-XIX",
+      "reasons": [
+        "no_hbonds"
+      ],
+      "hbond_diagnostics": {
+        "expected_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "found_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
+            "source": "canonical"
+          },
+          {
+            "donor_atom": "O2",
+            "acceptor_atom": "N2",
+            "source": "canonical"
+          }
+        ],
+        "extra_hbonds": [],
+        "wrong_atoms": {},
+        "distance_issues": [],
+        "overloaded_acceptors": []
+      },
+      "geometric_diagnostics": {
+        "rmsd_cww": 0.010954969701282225,
+        "rmsd_best": 0.010872309091595972,
+        "best_lw": "tWH",
+        "rmsd_gap": 8.26606096862529e-05,
+        "interbase_angle": 12.685,
+        "n1n9_distance": 8.997,
+        "is_geometric_outlier": false
+      }
+    }
+  ],
   "false_positives": []
 }

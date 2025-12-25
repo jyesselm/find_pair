@@ -464,9 +464,10 @@ def predict_lp_slots(base_type: str, atom_name: str,
 
     elif capacity == 1 and len(antecedent_positions) == 2:
         # sp2 ring nitrogen: One lone pair pointing out of ring
+        # max_bonds=1 because ring N only has 1 LP (no bifurcation)
         avg_ant = (antecedent_positions[0] + antecedent_positions[1]) / 2
         lp_dir = normalize(acceptor_pos - avg_ant)
-        slots.append(LPSlot(direction=lp_dir))
+        slots.append(LPSlot(direction=lp_dir, max_bonds=1))
 
     elif capacity == 1 and len(antecedent_positions) == 1:
         # Fallback

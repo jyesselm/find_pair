@@ -350,6 +350,7 @@
       "dssr_class": "cWW",
       "saenger": "19-XIX",
       "reasons": [
+        "missing_hbonds",
         "wrong_atoms",
         "extra_hbonds",
         "distance_issues"
@@ -392,15 +393,6 @@
             "alignment": 0.56
           },
           {
-            "donor_atom": "N1",
-            "acceptor_atom": "N3",
-            "distance": 3.12,
-            "context": "base_base",
-            "h_slot": 0,
-            "lp_slot": 0,
-            "alignment": 1.51
-          },
-          {
             "donor_atom": "N4",
             "acceptor_atom": "O6",
             "distance": 3.31,
@@ -410,7 +402,13 @@
             "alignment": 0.88
           }
         ],
-        "missing_hbonds": [],
+        "missing_hbonds": [
+          {
+            "donor_atom": "N1",
+            "acceptor_atom": "N3",
+            "source": "canonical"
+          }
+        ],
         "extra_hbonds": [
           {
             "donor_atom": "N2",

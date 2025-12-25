@@ -251,7 +251,7 @@ std::vector<LPSlot> SlotPredictor::predict_sp2_ring_nitrogen_slots(
 
     geometry::Vector3D lp_dir = -avg_bond;
 
-    return {LPSlot(lp_dir, 2)}; // Single LP, can bifurcate
+    return {LPSlot(lp_dir, 1)}; // Single LP, cannot bifurcate (only 1 acceptor)
 }
 
 std::vector<HSlot> SlotPredictor::predict_sp3_hydroxyl_h_slots(
