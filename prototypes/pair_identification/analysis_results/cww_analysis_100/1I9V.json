@@ -92,8 +92,7 @@
       "reasons": [
         "missing_hbonds",
         "wrong_atoms",
-        "extra_hbonds",
-        "rmsd_prefers_other"
+        "extra_hbonds"
       ],
       "hbond_diagnostics": {
         "expected_hbonds": [

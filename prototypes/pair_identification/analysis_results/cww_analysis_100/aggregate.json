@@ -2,11 +2,11 @@
   "summary": {
     "total_pdbs": 99,
     "total_canonical_cww": 1791,
-    "true_positives": 926,
-    "false_negatives": 865,
+    "true_positives": 927,
+    "false_negatives": 864,
     "false_positives": 0,
-    "accuracy": 0.517,
-    "sensitivity": 0.517,
+    "accuracy": 0.5176,
+    "sensitivity": 0.5176,
     "precision": 1.0
   },
   "reason_distribution": {
@@ -15,16 +15,15 @@
     "extra_hbonds": 124,
     "wrong_atoms": 123,
     "missing_hbonds": 42,
-    "rmsd_prefers_other": 24,
     "non_canonical": 6,
-    "no_hbonds": 4
+    "no_hbonds": 4,
+    "rmsd_prefers_other": 2
   },
   "reason_by_sequence": {
     "AU": {
       "geometric_outlier": 78,
       "distance_issues": 18,
       "missing_hbonds": 3,
-      "rmsd_prefers_other": 1,
       "non_canonical": 1,
       "no_hbonds": 1
     },
@@ -34,7 +33,6 @@
       "wrong_atoms": 42,
       "extra_hbonds": 42,
       "missing_hbonds": 11,
-      "rmsd_prefers_other": 8,
       "non_canonical": 1,
       "no_hbonds": 1
     },
@@ -44,7 +42,6 @@
       "extra_hbonds": 79,
       "wrong_atoms": 78,
       "missing_hbonds": 26,
-      "rmsd_prefers_other": 13,
       "no_hbonds": 2,
       "non_canonical": 2
     },
@@ -65,7 +62,7 @@
   },
   "rmsd_gap_distribution": {
     "0-0.1": 841,
-    "0.1-0.2": 16,
+    "0.1-0.2": 15,
     "0.2-0.3": 5,
     "0.3-0.5": 1,
     "0.5-1.0": 2
@@ -77,8 +74,8 @@
       "accuracy": 0.0
     },
     "CG": {
-      "total": 301,
-      "misses": 301,
+      "total": 300,
+      "misses": 300,
       "accuracy": 0.0
     },
     "GC": {

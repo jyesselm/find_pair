@@ -233,7 +233,7 @@ class MissAnnotator:
                 reasons.append("overloaded_acceptor")
 
         # Geometry based reasons
-        if g_diag.rmsd_gap > 0.1:  # Another template fits 0.1Å better
+        if g_diag.rmsd_gap > 0.5:  # Another template fits 0.5Å better
             reasons.append("rmsd_prefers_other")
         if g_diag.is_geometric_outlier:
             reasons.append("geometric_outlier")

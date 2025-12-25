@@ -140,7 +140,6 @@
       "dssr_class": "cWW",
       "saenger": "20-XX",
       "reasons": [
-        "rmsd_prefers_other",
         "geometric_outlier"
       ],
       "hbond_diagnostics": {

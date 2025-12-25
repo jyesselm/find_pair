@@ -165,7 +165,6 @@
       "reasons": [
         "wrong_atoms",
         "extra_hbonds",
-        "rmsd_prefers_other",
         "geometric_outlier"
       ],
       "hbond_diagnostics": {

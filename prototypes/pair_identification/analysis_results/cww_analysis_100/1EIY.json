@@ -91,8 +91,7 @@
       "saenger": "19-XIX",
       "reasons": [
         "wrong_atoms",
-        "extra_hbonds",
-        "rmsd_prefers_other"
+        "extra_hbonds"
       ],
       "hbond_diagnostics": {
         "expected_hbonds": [
@@ -632,8 +631,7 @@
       "reasons": [
         "wrong_atoms",
         "extra_hbonds",
-        "distance_issues",
-        "rmsd_prefers_other"
+        "distance_issues"
       ],
       "hbond_diagnostics": {
         "expected_hbonds": [
