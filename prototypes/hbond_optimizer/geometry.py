@@ -52,22 +52,29 @@ def get_donor_capacity(residue_code: str, atom_name: str) -> int:
     """
     _load_cif_data()
 
+    cif_capacity = None
+
     # Check CIF data first (for modified residues)
     if residue_code in _CIF_DONORS:
         cif_donors = _CIF_DONORS[residue_code]
         if atom_name in cif_donors:
-            return cif_donors[atom_name]
-        # Atom not a donor in this residue
-        return 0
+            cif_capacity = cif_donors[atom_name]
+            if cif_capacity > 0:
+                return cif_capacity
+            # CIF says 0, but for base atoms we should check parent
+            # (CIF may have errors for modified residues)
 
     # Fall back to standard base type lookup
     # Map common modified residue prefixes to parent base
     base_type = _get_parent_base_type(residue_code)
     if base_type:
         key = (base_type, atom_name.strip())
-        return DONOR_CAPACITY.get(key, 0)
+        parent_capacity = DONOR_CAPACITY.get(key, 0)
+        if parent_capacity > 0:
+            return parent_capacity
 
-    return 0
+    # Return CIF value if we have it, otherwise 0
+    return cif_capacity if cif_capacity is not None else 0
 
 
 def get_acceptor_capacity(residue_code: str, atom_name: str) -> int:
@@ -83,21 +90,28 @@ def get_acceptor_capacity(residue_code: str, atom_name: str) -> int:
     """
     _load_cif_data()
 
+    cif_capacity = None
+
     # Check CIF data first (for modified residues)
     if residue_code in _CIF_ACCEPTORS:
         cif_acceptors = _CIF_ACCEPTORS[residue_code]
         if atom_name in cif_acceptors:
-            return cif_acceptors[atom_name]
-        # Atom not an acceptor in this residue
-        return 0
+            cif_capacity = cif_acceptors[atom_name]
+            if cif_capacity > 0:
+                return cif_capacity
+            # CIF says 0, but for base atoms we should check parent
+            # (CIF may have errors for modified residues)
 
     # Fall back to standard base type lookup
     base_type = _get_parent_base_type(residue_code)
     if base_type:
         key = (base_type, atom_name.strip())
-        return ACCEPTOR_CAPACITY.get(key, 0)
+        parent_capacity = ACCEPTOR_CAPACITY.get(key, 0)
+        if parent_capacity > 0:
+            return parent_capacity
 
-    return 0
+    # Return CIF value if we have it, otherwise 0
+    return cif_capacity if cif_capacity is not None else 0
 
 
 def _get_parent_base_type(residue_code: str) -> Optional[str]:
@@ -128,6 +142,25 @@ def _get_parent_base_type(residue_code: str) -> Optional[str]:
         first_char = residue_code[0].upper()
         if first_char in ('A', 'G', 'C', 'U', 'T'):
             return first_char
+
+    # Check for common modified base patterns
+    code_upper = residue_code.upper()
+
+    # Guanine derivatives (GTP, GNG, GNP, GDP, etc.)
+    if code_upper.startswith('G') or 'GU' in code_upper or 'GN' in code_upper:
+        return 'G'
+
+    # Uridine derivatives (RUS, SUR, etc.)
+    if 'UR' in code_upper or 'RU' in code_upper:
+        return 'U'
+
+    # Adenine derivatives
+    if 'AD' in code_upper or 'AM' in code_upper:
+        return 'A'
+
+    # Cytidine derivatives
+    if 'CY' in code_upper:
+        return 'C'
 
     return None
 

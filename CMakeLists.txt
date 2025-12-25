@@ -84,6 +84,12 @@ add_library(x3dna
     src/x3dna/algorithms/hydrogen_bond/quality_scorer.cpp
     src/x3dna/algorithms/hydrogen_bond/edge_classifier.cpp
     src/x3dna/algorithms/hydrogen_bond/dssr_filter.cpp
+    # Slot-based H-bond optimizer (new)
+    src/x3dna/algorithms/hydrogen_bond/slot/slot.cpp
+    src/x3dna/algorithms/hydrogen_bond/slot/atom_capacity.cpp
+    src/x3dna/algorithms/hydrogen_bond/slot/slot_predictor.cpp
+    src/x3dna/algorithms/hydrogen_bond/slot/slot_cache.cpp
+    src/x3dna/algorithms/hydrogen_bond/slot/slot_optimizer.cpp
     src/x3dna/algorithms/validation/overlap_calculator.cpp
     src/x3dna/algorithms/validation/ring_data_cache.cpp
     src/x3dna/config/config_manager.cpp
