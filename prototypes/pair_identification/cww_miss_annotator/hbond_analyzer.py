@@ -13,11 +13,16 @@ from .loaders import SlotHBond
 
 
 # Expected H-bond patterns for canonical Watson-Crick base pairs
+# Format: (donor_atom, acceptor_atom) - donor has H, acceptor has lone pair
 CWW_EXPECTED_PATTERNS: Dict[str, List[Tuple[str, str]]] = {
-    "GC": [("N1", "N3"), ("N2", "O2"), ("O6", "N4")],
-    "CG": [("N4", "O6"), ("N3", "N1"), ("O2", "N2")],
-    "AU": [("N6", "O4"), ("N1", "N3")],
-    "UA": [("O4", "N6"), ("N3", "N1")],
+    # GC: G.N1(donor)->C.N3(acceptor), G.N2(donor)->C.O2(acceptor), C.N4(donor)->G.O6(acceptor)
+    "GC": [("N1", "N3"), ("N2", "O2"), ("N4", "O6")],
+    # CG: same H-bonds but listed in reverse base order
+    "CG": [("N4", "O6"), ("N1", "N3"), ("N2", "O2")],
+    # AU: A.N6(donor)->U.O4(acceptor), U.N3(donor)->A.N1(acceptor)
+    "AU": [("N6", "O4"), ("N3", "N1")],
+    # UA: same H-bonds as AU
+    "UA": [("N6", "O4"), ("N3", "N1")],
 }
 
 
@@ -163,10 +168,12 @@ class HBondAnalyzer:
 
         diagnostics.wrong_atoms = wrong_atoms
 
-        # Check distance issues (outside normal range 2.5-3.5A)
+        # Check distance issues (outside normal range 2.0-3.5A)
+        # 2.0A minimum is generous - shorter would indicate a clash
+        # 3.5A maximum for heavy atom distance
         distance_issues = []
         for hb in found_hbonds:
-            if hb.distance < 2.5:
+            if hb.distance < 2.0:
                 distance_issues.append((
                     f"{hb.donor_atom}-{hb.acceptor_atom}",
                     hb.distance,
