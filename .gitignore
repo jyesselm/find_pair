@@ -8,6 +8,8 @@ data/json
 data/json_legacy/
 data/json_baseline/
 data/json_dssr
+basepair-exemplars
+basepair-idealized
 
 # Cache
 .comparison_cache
@@ -86,3 +88,16 @@ temp_compare/
 # OS files
 .DS_Store
 Thumbs.db
+
+# PyMOL session files
+*.pml
+*.pse
+
+# Visualization output
+viz_output/
+
+# Cache files
+pair_cache_*.json
+
+# H-bond benchmark data (generated)
+data/hbond_*.json

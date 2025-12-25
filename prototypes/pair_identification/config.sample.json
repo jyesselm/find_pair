@@ -1,0 +1,21 @@
+{
+  "pdb_dir": "data/pdb",
+  "dssr_dir": "data/json_dssr",
+  "slot_hbonds_dir": "data/json/slot_hbonds",
+  "legacy_json_dir": "data/json_legacy",
+  "modern_json_dir": "data/json",
+  "idealized_templates_dir": "basepair-idealized",
+  "exemplar_templates_dir": "basepair-exemplars",
+  "output_dir": "results",
+  "viz_output_dir": "viz_output",
+  "max_hbond_distance": 3.5,
+  "min_hbond_distance": 2.4,
+  "rmsd_threshold": 1.5,
+  "angle_threshold": 15.0,
+  "n1n9_range": [
+    8.0,
+    9.5
+  ],
+  "default_workers": 10,
+  "verbose": false
+}

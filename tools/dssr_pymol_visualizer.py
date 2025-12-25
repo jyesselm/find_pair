@@ -209,11 +209,11 @@ def load_dssr_hbonds(pdb_id: str, project_root: Path,
 
 
 def load_modern_hbonds(pdb_id: str, project_root: Path) -> List[HBond]:
-    """Load H-bonds from modern hbond_list JSON, filtering to valid only.
+    """Load H-bonds from modern hbond_list JSON.
 
-    Only includes STANDARD (type='-') and NON_STANDARD (type='*') H-bonds.
-    Excludes INVALID (type=' ') H-bonds which are conflict losers or
-    impossible donor-acceptor pairs.
+    Handles both old format (type='-'/'*'/' ') and new format (classification='standard'/etc).
+    For old format: includes STANDARD (type='-') and NON_STANDARD (type='*').
+    For new format: includes all H-bonds with classification field.
     """
     # Try all_hbond_list first, fall back to hbond_list
     modern_file = project_root / "data" / "json" / "all_hbond_list" / f"{pdb_id}.json"
@@ -226,18 +226,25 @@ def load_modern_hbonds(pdb_id: str, project_root: Path) -> List[HBond]:
         modern_data = json.load(f)
 
     hbonds = []
-    skipped_invalid = 0
     for group in modern_data:
         res_id_i = group.get('res_id_i', '')
         res_id_j = group.get('res_id_j', '')
 
         for hb in group.get('hbonds', []):
-            hb_type = hb.get('type', ' ')
+            # Check for new format (classification field)
+            classification = hb.get('classification', '')
+            # Check for old format (type field)
+            hb_type = hb.get('type', '')
 
-            # Skip INVALID H-bonds (type=' ')
-            # Only include STANDARD (type='-') and NON_STANDARD (type='*')
-            if not hb_type.strip():
-                skipped_invalid += 1
+            # Determine if this is a valid H-bond
+            if classification:
+                # New format: include all with classification
+                don_acc_type = classification
+            elif hb_type.strip():
+                # Old format: only include '-' or '*'
+                don_acc_type = 'standard' if hb_type == '-' else 'non_standard'
+            else:
+                # Skip invalid (no classification and empty type)
                 continue
 
             donor_atom = hb.get('donor_atom', '').strip()
@@ -252,7 +259,7 @@ def load_modern_hbonds(pdb_id: str, project_root: Path) -> List[HBond]:
                 atom2_id=acceptor_atom_id,
                 distance=distance,
                 source='modern',
-                don_acc_type='standard' if hb_type == '-' else 'non_standard',
+                don_acc_type=don_acc_type,
             ))
 
     return hbonds
@@ -329,9 +336,12 @@ def generate_pymol_script(pdb_id: str,
     # Setup display
     lines.append("# Setup display")
     lines.append("hide all")
-    lines.append("show cartoon")
+    lines.append("show sticks")
+    lines.append(f"color white, {pdb_id}")
     lines.append("set dash_gap, 0.2")
     lines.append("set dash_radius, 0.1")
+    lines.append("set label_size, 12")
+    lines.append("set label_color, white")
     lines.append("")
 
     # DSSR-only H-bonds (RED)
@@ -377,11 +387,6 @@ def generate_pymol_script(pdb_id: str,
         lines.append("group modern_only, modern_*")
     if show_matched and matched:
         lines.append("group matched, match_*")
-    lines.append("")
-
-    # Hide distance labels by default (can be toggled)
-    lines.append("# Hide distance labels (toggle with 'label' command)")
-    lines.append("hide labels")
     lines.append("")
 
     # Zoom to fit
@@ -472,9 +477,12 @@ def generate_prototype_pymol_script(pdb_id: str,
     # Setup display
     lines.append("# Setup display")
     lines.append("hide all")
-    lines.append("show cartoon")
+    lines.append("show sticks")
+    lines.append(f"color white, {pdb_id}")
     lines.append("set dash_gap, 0.2")
     lines.append("set dash_radius, 0.1")
+    lines.append("set label_size, 12")
+    lines.append("set label_color, white")
     lines.append("")
 
     # Group by reason
@@ -512,11 +520,6 @@ def generate_prototype_pymol_script(pdb_id: str,
         lines.append(f"group {reason.lower()}_group, {reason.lower()}_*")
     lines.append("")
 
-    # Hide distance labels
-    lines.append("# Hide distance labels (toggle with 'label' command)")
-    lines.append("hide labels")
-    lines.append("")
-
     # Zoom
     lines.append(f"zoom {pdb_id}")
     lines.append("")
@@ -541,6 +544,98 @@ def run_prototype_analysis(pdb_id: str, project_root: Path, verbose: bool = Fals
     return analyses, matched, len(analyzer.dssr_hbonds)
 
 
+def run_prototype_comparison(pdb_id: str, project_root: Path) -> Tuple[List[HBond], List[HBond], List[Tuple[HBond, HBond]]]:
+    """Run prototype optimizer and compare with DSSR. Returns (dssr_only, extras, matched)."""
+    import sys
+    sys.path.insert(0, str(project_root / 'prototypes' / 'hbond_optimizer'))
+    from benchmark import load_dssr_json
+    from compare_with_dssr import parse_pdb_residues
+    from optimizer import HBondOptimizer
+
+    pdb_path = project_root / 'data' / 'pdb' / f'{pdb_id}.pdb'
+    dssr_dir = project_root / 'data' / 'json_dssr'
+
+    # Parse residues
+    residues = parse_pdb_residues(pdb_path)
+
+    # Create optimizer
+    optimizer = HBondOptimizer(max_distance=4.0, min_alignment=0.3)
+    for res in residues.values():
+        optimizer.add_residue(res)
+
+    # Load DSSR H-bonds
+    dssr_hbonds_raw = load_dssr_json(pdb_id, dssr_dir)
+
+    # Convert to HBond format and build lookup
+    # Use frozenset of atoms for order-independent matching
+    dssr_atom_pairs = {}  # frozenset((atom1, atom2)) -> hb
+    dssr_by_pair = {}
+    dssr_hbonds = []
+    for hb in dssr_hbonds_raw:
+        atom1_id = f"{hb.donor_atom}@{hb.res1}"
+        atom2_id = f"{hb.acceptor_atom}@{hb.res2}"
+        dssr_hbonds.append(HBond(
+            atom1_id=atom1_id,
+            atom2_id=atom2_id,
+            distance=hb.distance,
+            source='dssr',
+            don_acc_type='standard'
+        ))
+        # Use frozenset for order-independent matching
+        atom_key = frozenset([atom1_id, atom2_id])
+        dssr_atom_pairs[atom_key] = hb
+        pair_key = (hb.res1, hb.res2)
+        if pair_key not in dssr_by_pair:
+            dssr_by_pair[pair_key] = []
+        dssr_by_pair[pair_key].append(hb)
+
+    # Run optimizer on DSSR pairs
+    matched = []
+    extras = []
+    dssr_matched_keys = set()
+
+    for pair_key in dssr_by_pair.keys():
+        res1_id, res2_id = pair_key
+        hbonds = optimizer.optimize_pair(res1_id, res2_id)
+
+        for hb in hbonds:
+            atom1_id = f"{hb.donor_atom}@{hb.donor_res_id}"
+            atom2_id = f"{hb.acceptor_atom}@{hb.acceptor_res_id}"
+            atom_key = frozenset([atom1_id, atom2_id])
+
+            if atom_key in dssr_atom_pairs:
+                dssr_matched_keys.add(atom_key)
+                matched.append((
+                    HBond(atom1_id=atom1_id, atom2_id=atom2_id, distance=hb.distance, source='dssr', don_acc_type=''),
+                    HBond(atom1_id=atom1_id, atom2_id=atom2_id, distance=hb.distance, source='prototype', don_acc_type='')
+                ))
+            else:
+                extras.append(HBond(
+                    atom1_id=atom1_id,
+                    atom2_id=atom2_id,
+                    distance=hb.distance,
+                    source='prototype',
+                    don_acc_type=f'align={hb.alignment_score:.2f}'
+                ))
+
+    # Find DSSR-only (misses)
+    dssr_only = []
+    for hb in dssr_hbonds_raw:
+        atom1_id = f"{hb.donor_atom}@{hb.res1}"
+        atom2_id = f"{hb.acceptor_atom}@{hb.res2}"
+        atom_key = frozenset([atom1_id, atom2_id])
+        if atom_key not in dssr_matched_keys:
+            dssr_only.append(HBond(
+                atom1_id=atom1_id,
+                atom2_id=atom2_id,
+                distance=hb.distance,
+                source='dssr',
+                don_acc_type='missed'
+            ))
+
+    return dssr_only, extras, matched
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Compare DSSR and modern H-bond detection, generate PyMOL visualization"
@@ -560,30 +655,48 @@ def main():
     pdb_path = f"data/pdb/{pdb_id}.pdb"
 
     if args.use_prototype:
-        # Use prototype analysis
+        # Use prototype for comparison (shows misses and extras)
         try:
-            print(f"Running prototype analysis for {pdb_id}...")
-            analyses, matched, total_dssr = run_prototype_analysis(pdb_id, project_root, args.verbose)
+            print(f"Running prototype comparison for {pdb_id}...")
+            dssr_only, modern_only, matched = run_prototype_comparison(pdb_id, project_root)
 
-            print(f"\nDSSR H-bonds: {total_dssr}")
-            print(f"Matched: {matched} ({matched/total_dssr*100:.1f}%)")
-            print(f"Missed: {len(analyses)} ({len(analyses)/total_dssr*100:.1f}%)")
+            total_dssr = len(dssr_only) + len(matched)
+            total_modern = len(modern_only) + len(matched)
 
-            # Summary by reason
-            by_reason = {}
-            for a in analyses:
-                reason = a.reason.value
-                by_reason[reason] = by_reason.get(reason, 0) + 1
+            print(f"\n{'='*60}")
+            print(f"Prototype vs DSSR H-bond Comparison")
+            print(f"{'='*60}")
+            print(f"DSSR total:      {total_dssr}")
+            print(f"Prototype total: {total_modern}")
+            print(f"Matched:         {len(matched)} ({len(matched)/total_dssr*100:.1f}% of DSSR)")
+            print(f"DSSR only:       {len(dssr_only)} (we miss these)")
+            print(f"Prototype only:  {len(modern_only)} (extras)")
 
-            print("\nBy reason:")
-            for reason, count in sorted(by_reason.items(), key=lambda x: -x[1]):
-                print(f"  {reason}: {count}")
+            if args.verbose:
+                if dssr_only:
+                    print(f"\nDSSR-only (misses):")
+                    for hb in dssr_only[:10]:
+                        print(f"  {hb.atom1_id} -- {hb.atom2_id} ({hb.distance:.2f}Å)")
+                    if len(dssr_only) > 10:
+                        print(f"  ... and {len(dssr_only) - 10} more")
 
-            # Generate script
-            script = generate_prototype_pymol_script(pdb_id, analyses, matched, pdb_path)
+                if modern_only:
+                    print(f"\nPrototype-only (extras):")
+                    for hb in modern_only[:10]:
+                        print(f"  {hb.atom1_id} -- {hb.atom2_id} ({hb.distance:.2f}Å) [{hb.don_acc_type}]")
+                    if len(modern_only) > 10:
+                        print(f"  ... and {len(modern_only) - 10} more")
 
-        except FileNotFoundError as e:
+            # Generate script (reuse existing function)
+            script = generate_pymol_script(
+                pdb_id, dssr_only, modern_only, matched,
+                pdb_path, show_matched=args.show_matched
+            )
+
+        except Exception as e:
             print(f"Error: {e}")
+            import traceback
+            traceback.print_exc()
             return 1
     else:
         # Use C++ mode (original behavior)
