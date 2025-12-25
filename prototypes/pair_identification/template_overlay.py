@@ -31,45 +31,28 @@ import argparse
 import json
 import subprocess
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from collections import Counter
 
 import numpy as np
 
+from core.residue import Residue, Atom, normalize_base_type
+from core.pdb_parser import parse_template_pdb, write_pair_pdb
+from core.alignment import kabsch_align, compute_rmsd, align_atom_dicts
+
 
 # Standard Watson-Crick pairs to exclude with --exclude-standard
 STANDARD_WC_PAIRS = {"GC", "CG", "AU", "UA", "AT", "TA", "GU", "UG", "GT", "TG"}
 
 
-@dataclass
-class Atom:
-    """Atom with name and coordinates."""
-    name: str
-    coords: np.ndarray
-    element: str = ""
-
-
-@dataclass
-class Residue:
-    """Residue with atoms."""
-    chain: str
-    name: str
-    seq: int
-    atoms: Dict[str, Atom]
-
-    def get_ring_atoms(self) -> Dict[str, np.ndarray]:
-        """Get ring atom coordinates."""
-        ring_names = ["C2", "C4", "C5", "C6", "N1", "N3", "N7", "C8", "N9"]
-        return {name: self.atoms[name].coords for name in ring_names if name in self.atoms}
-
-
 def parse_pdb_residues(pdb_path: Path) -> Dict[str, Residue]:
-    """Parse PDB file and return residues keyed by DSSR-style ID."""
+    """Parse PDB file and return residues keyed by DSSR-style ID.
+
+    Uses core.pdb_parser but converts res_id format from canonical
+    "chain-base-seq" to DSSR-style "chain.basename+seq" for compatibility.
+    """
     residues: Dict[str, Residue] = {}
-    current_atoms: Dict[str, Atom] = {}
-    current_key = None
 
     with open(pdb_path) as f:
         for line in f:
@@ -79,116 +62,41 @@ def parse_pdb_residues(pdb_path: Path) -> Dict[str, Residue]:
             atom_name = line[12:16].strip()
             res_name = line[17:20].strip()
             chain = line[21].strip() or "A"
-            res_seq = int(line[22:26].strip())
+            res_seq = line[22:26].strip()
             ins_code = line[26].strip()
             x = float(line[30:38])
             y = float(line[38:46])
             z = float(line[46:54])
             element = line[76:78].strip() if len(line) > 76 else atom_name[0]
 
-            # Build DSSR-style key
-            key = f"{chain}.{res_name}{res_seq}"
-            if ins_code:
-                key += ins_code
+            # Build DSSR-style key: "chain.residue_name+seq[ins]"
+            seq_with_ins = res_seq.strip() + ins_code if ins_code else res_seq.strip()
+            dssr_key = f"{chain}.{res_name}{seq_with_ins}"
 
-            if key != current_key:
-                if current_key and current_atoms:
-                    parts = current_key.split(".")
-                    chain_id = parts[0]
-                    rest = parts[1]
-                    i = 0
-                    while i < len(rest) and not rest[i].isdigit() and rest[i] != '-':
-                        i += 1
-                    name = rest[:i]
-                    seq_str = rest[i:]
-                    seq = int(''.join(c for c in seq_str if c.isdigit() or c == '-'))
+            # Create or update residue
+            if dssr_key not in residues:
+                base_type = normalize_base_type(res_name)
+                # Use canonical res_id format internally
+                res_id = f"{chain}-{base_type}-{seq_with_ins}"
+                residues[dssr_key] = Residue(res_id=res_id, base_type=base_type)
 
-                    residues[current_key] = Residue(
-                        chain=chain_id,
-                        name=name,
-                        seq=seq,
-                        atoms=current_atoms.copy()
-                    )
-                current_key = key
-                current_atoms = {}
-
-            current_atoms[atom_name] = Atom(
+            residues[dssr_key].add_atom(
                 name=atom_name,
                 coords=np.array([x, y, z]),
                 element=element
             )
 
-    # Don't forget last residue
-    if current_key and current_atoms:
-        parts = current_key.split(".")
-        chain_id = parts[0]
-        rest = parts[1]
-        i = 0
-        while i < len(rest) and not rest[i].isdigit() and rest[i] != '-':
-            i += 1
-        name = rest[:i]
-        seq_str = rest[i:]
-        seq = int(''.join(c for c in seq_str if c.isdigit() or c == '-'))
-
-        residues[current_key] = Residue(
-            chain=chain_id,
-            name=name,
-            seq=seq,
-            atoms=current_atoms
-        )
-
     return residues
 
 
-def parse_template_pdb(pdb_path: Path) -> Tuple[Dict[str, np.ndarray], Dict[str, np.ndarray]]:
-    """Parse template PDB and return atoms for residue 1 and 2."""
-    res1_atoms: Dict[str, np.ndarray] = {}
-    res2_atoms: Dict[str, np.ndarray] = {}
+def kabsch_align_legacy(P: np.ndarray, Q: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Wrapper for kabsch_align that returns (R, t) instead of (R, centroid_Q, centroid_P).
 
-    with open(pdb_path) as f:
-        for line in f:
-            if not line.startswith("ATOM"):
-                continue
-
-            atom_name = line[12:16].strip()
-            res_seq = int(line[22:26].strip())
-            x = float(line[30:38])
-            y = float(line[38:46])
-            z = float(line[46:54])
-
-            coords = np.array([x, y, z])
-
-            if res_seq == 1:
-                res1_atoms[atom_name] = coords
-            else:
-                res2_atoms[atom_name] = coords
-
-    return res1_atoms, res2_atoms
-
-
-def kabsch_align(P: np.ndarray, Q: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    """Compute optimal rotation and translation to align P onto Q."""
-    centroid_P = np.mean(P, axis=0)
-    centroid_Q = np.mean(Q, axis=0)
-
-    P_centered = P - centroid_P
-    Q_centered = Q - centroid_Q
-
-    H = P_centered.T @ Q_centered
-    U, S, Vt = np.linalg.svd(H)
-    R = Vt.T @ U.T
-
-    if np.linalg.det(R) < 0:
-        Vt[-1, :] *= -1
-        R = Vt.T @ U.T
-
+    This maintains backward compatibility with the original interface.
+    """
+    R, centroid_Q, centroid_P = kabsch_align(P, Q)
     t = centroid_Q - R @ centroid_P
     return R, t
-
-
-def compute_rmsd(P: np.ndarray, Q: np.ndarray) -> float:
-    """Compute RMSD between two point sets."""
-    return np.sqrt(np.mean(np.sum((P - Q) ** 2, axis=1)))
 
 
 def align_template_to_target(
@@ -217,7 +125,7 @@ def align_template_to_target(
     template_points = np.array(template_points)
     target_points = np.array(target_points)
 
-    R, t = kabsch_align(template_points, target_points)
+    R, t = kabsch_align_legacy(template_points, target_points)
 
     aligned_res1 = {name: R @ coords + t for name, coords in template_res1.items()}
     aligned_res2 = {name: R @ coords + t for name, coords in template_res2.items()}
@@ -229,23 +137,11 @@ def align_template_to_target(
 
 
 def get_base_letter(res_name: str) -> str:
-    """Convert residue name to single letter."""
-    res_name = res_name.upper()
-    if res_name.startswith("D"):
-        res_name = res_name[1:]
-    if res_name == "T":
-        res_name = "U"
-    if res_name in ["A", "C", "G", "U"]:
-        return res_name
-    if "A" in res_name:
-        return "A"
-    if "G" in res_name:
-        return "G"
-    if "C" in res_name:
-        return "C"
-    if "U" in res_name or "T" in res_name:
-        return "U"
-    return res_name[0] if res_name else "X"
+    """Convert residue name to single letter.
+
+    Wrapper around normalize_base_type for backward compatibility.
+    """
+    return normalize_base_type(res_name)
 
 
 def find_template(
@@ -283,30 +179,27 @@ def write_aligned_template_pdb(
     sequence: str,
     output_path: Path,
 ) -> None:
-    """Write aligned template coordinates to PDB file."""
+    """Write aligned template coordinates to PDB file.
+
+    Wrapper around write_pair_pdb that adds a REMARK line.
+    """
+    # Use core module to write the PDB
+    write_pair_pdb(
+        res1_atoms=aligned_res1,
+        res2_atoms=aligned_res2,
+        res1_name=sequence[0],
+        res2_name=sequence[1],
+        output_path=output_path,
+        chain="T",
+    )
+
+    # Prepend REMARK line
+    with open(output_path, "r") as f:
+        content = f.read()
+
     with open(output_path, "w") as f:
         f.write(f"REMARK   1 Aligned template for {sequence}\n")
-
-        atom_num = 1
-        for name, coords in sorted(aligned_res1.items()):
-            element = name[0]
-            f.write(
-                f"ATOM  {atom_num:5d}  {name:<3s} {sequence[0]:>3s} T   1    "
-                f"{coords[0]:8.3f}{coords[1]:8.3f}{coords[2]:8.3f}"
-                f"  1.00  0.00          {element:>2s}\n"
-            )
-            atom_num += 1
-
-        for name, coords in sorted(aligned_res2.items()):
-            element = name[0]
-            f.write(
-                f"ATOM  {atom_num:5d}  {name:<3s} {sequence[1]:>3s} T   2    "
-                f"{coords[0]:8.3f}{coords[1]:8.3f}{coords[2]:8.3f}"
-                f"  1.00  0.00          {element:>2s}\n"
-            )
-            atom_num += 1
-
-        f.write("END\n")
+        f.write(content)
 
 
 def generate_pymol_script(
@@ -850,8 +743,8 @@ Examples:
             )
 
             if not template_path:
-                base1 = get_base_letter(target_res1.name)
-                base2 = get_base_letter(target_res2.name)
+                base1 = target_res1.base_type
+                base2 = target_res2.base_type
                 rev_sequence = base2 + base1
                 template_path = find_template(
                     rev_sequence, lw_class,
@@ -1051,8 +944,8 @@ Examples:
         target_res1 = residues[res1_id]
         target_res2 = residues[res2_id]
 
-        base1 = get_base_letter(target_res1.name)
-        base2 = get_base_letter(target_res2.name)
+        base1 = target_res1.base_type
+        base2 = target_res2.base_type
         sequence = base1 + base2
 
         if args.verbose:
