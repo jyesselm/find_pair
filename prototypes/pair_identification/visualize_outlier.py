@@ -13,12 +13,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 from visualization import PairVisualizer
 
 
-def load_outliers(results_dir: Path, reason_filter: Optional[str] = None) -> List[Dict]:
+def load_outliers(results_dir: Path, reason_filter: Optional[str] = None, pdb_filter: Optional[str] = None) -> List[Dict]:
     """Load outliers from analysis results.
 
     Args:
         results_dir: Directory containing individual PDB reports
         reason_filter: Optional filter for specific reason code
+        pdb_filter: Optional filter for specific PDB ID
 
     Returns:
         List of outlier dicts with pdb_id, res_id1, res_id2, sequence, reasons
@@ -26,6 +27,9 @@ def load_outliers(results_dir: Path, reason_filter: Optional[str] = None) -> Lis
     outliers = []
 
     for json_file in sorted(results_dir.glob("*.json")):
+        # Apply PDB filter early
+        if pdb_filter and json_file.stem.upper() != pdb_filter.upper():
+            continue
         if json_file.name == "aggregate.json":
             continue
 
@@ -113,6 +117,11 @@ Examples:
         help="Filter by specific reason",
     )
     parser.add_argument(
+        "--pdb",
+        type=str,
+        help="Filter by specific PDB ID (e.g., 1EHZ)",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=50,
@@ -194,13 +203,19 @@ Examples:
         print(f"Results directory not found: {args.results}")
         return 1
 
-    outliers = load_outliers(args.results, args.reason)
+    outliers = load_outliers(args.results, args.reason, args.pdb)
 
     if not outliers:
         print("No outliers found")
         return 0
 
-    print(f"\nFound {len(outliers)} outliers" + (f" with reason '{args.reason}'" if args.reason else ""))
+    filters = []
+    if args.pdb:
+        filters.append(f"PDB '{args.pdb}'")
+    if args.reason:
+        filters.append(f"reason '{args.reason}'")
+    filter_str = " with " + " and ".join(filters) if filters else ""
+    print(f"\nFound {len(outliers)} outliers{filter_str}")
 
     # Render specific outlier
     if args.render is not None:
