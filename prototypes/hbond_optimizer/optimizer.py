@@ -14,13 +14,15 @@ try:
     from .geometry import (
         normalize, angle_between, compute_base_normal,
         predict_h_slots, predict_lp_slots, score_hbond_alignment,
-        HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY
+        HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY,
+        get_donor_capacity, get_acceptor_capacity
     )
 except ImportError:
     from geometry import (
         normalize, angle_between, compute_base_normal,
         predict_h_slots, predict_lp_slots, score_hbond_alignment,
-        HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY
+        HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY,
+        get_donor_capacity, get_acceptor_capacity
     )
 
 
@@ -112,7 +114,7 @@ class HBondOptimizer:
                  min_alignment: float = 0.3,
                  min_bifurcation_angle: float = 45.0,
                  min_bifurcation_alignment: float = 0.5,
-                 short_distance_threshold: float = 3.2):
+                 short_distance_threshold: float = 3.5):
         """
         Args:
             max_distance: Maximum donor-acceptor distance in Angstroms
@@ -160,15 +162,17 @@ class HBondOptimizer:
 
         candidates = []
 
+        # Get residue codes for CIF-aware capacity lookup
+        res1_code = res1.residue_code if res1.residue_code else res1.base_type.upper()
+        res2_code = res2.residue_code if res2.residue_code else res2.base_type.upper()
+
         # Check res1 donors -> res2 acceptors
         for donor_atom, donor_pos in res1.atoms.items():
-            donor_key = (res1.base_type.upper(), donor_atom.strip())
-            if donor_key not in DONOR_CAPACITY:
+            if get_donor_capacity(res1_code, donor_atom.strip()) == 0:
                 continue
 
             for acceptor_atom, acceptor_pos in res2.atoms.items():
-                acceptor_key = (res2.base_type.upper(), acceptor_atom.strip())
-                if acceptor_key not in ACCEPTOR_CAPACITY:
+                if get_acceptor_capacity(res2_code, acceptor_atom.strip()) == 0:
                     continue
 
                 # Skip intra-residue base-to-base contacts (covalent bonds)
@@ -189,13 +193,11 @@ class HBondOptimizer:
 
         # Check res2 donors -> res1 acceptors
         for donor_atom, donor_pos in res2.atoms.items():
-            donor_key = (res2.base_type.upper(), donor_atom.strip())
-            if donor_key not in DONOR_CAPACITY:
+            if get_donor_capacity(res2_code, donor_atom.strip()) == 0:
                 continue
 
             for acceptor_atom, acceptor_pos in res1.atoms.items():
-                acceptor_key = (res1.base_type.upper(), acceptor_atom.strip())
-                if acceptor_key not in ACCEPTOR_CAPACITY:
+                if get_acceptor_capacity(res1_code, acceptor_atom.strip()) == 0:
                     continue
 
                 # Skip intra-residue base-to-base contacts (covalent bonds)

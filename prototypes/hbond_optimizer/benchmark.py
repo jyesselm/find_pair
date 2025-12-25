@@ -21,8 +21,10 @@ from prototypes.hbond_optimizer import (
     parse_pdb_residues, run_dssr, parse_dssr_output,
     HBondOptimizer, Residue, DSSRHBond
 )
+from prototypes.hbond_optimizer.compare_with_dssr import normalize_res_id
 from prototypes.hbond_optimizer.geometry import (
-    DONOR_CAPACITY, ACCEPTOR_CAPACITY, score_hbond_alignment, normalize
+    DONOR_CAPACITY, ACCEPTOR_CAPACITY, score_hbond_alignment, normalize,
+    get_donor_capacity, get_acceptor_capacity
 )
 
 
@@ -115,36 +117,30 @@ def analyze_miss(pdb_id: str, hb: DSSRHBond, residues: Dict[str, Residue],
 
     # Determine donor/acceptor assignment
     # DSSR format: atom1@res1 atom2@res2, but doesn't specify which is donor
-    # Try both orientations
+    # Try both orientations using CIF-aware capacity functions
     donor_res, acceptor_res = None, None
     donor_atom, acceptor_atom = hb.donor_atom, hb.acceptor_atom
 
+    # Get residue codes for CIF lookup (e.g., "1MA", "5MC")
+    res1_code = res1.residue_code if res1.residue_code else res1.base_type.upper()
+    res2_code = res2.residue_code if res2.residue_code else res2.base_type.upper()
+
     # Check if res1.donor_atom -> res2.acceptor_atom
-    key1_d = (res1.base_type.upper(), hb.donor_atom)
-    key2_a = (res2.base_type.upper(), hb.acceptor_atom)
-    if key1_d in DONOR_CAPACITY and key2_a in ACCEPTOR_CAPACITY:
+    if get_donor_capacity(res1_code, hb.donor_atom) > 0 and get_acceptor_capacity(res2_code, hb.acceptor_atom) > 0:
         donor_res, acceptor_res = res1, res2
         donor_atom, acceptor_atom = hb.donor_atom, hb.acceptor_atom
-    else:
-        # Try res2.donor_atom -> res1.acceptor_atom
-        key2_d = (res2.base_type.upper(), hb.donor_atom)
-        key1_a = (res1.base_type.upper(), hb.acceptor_atom)
-        if key2_d in DONOR_CAPACITY and key1_a in ACCEPTOR_CAPACITY:
-            donor_res, acceptor_res = res2, res1
-            donor_atom, acceptor_atom = hb.donor_atom, hb.acceptor_atom
-        else:
-            # Try swapped atoms
-            key1_d2 = (res1.base_type.upper(), hb.acceptor_atom)
-            key2_a2 = (res2.base_type.upper(), hb.donor_atom)
-            if key1_d2 in DONOR_CAPACITY and key2_a2 in ACCEPTOR_CAPACITY:
-                donor_res, acceptor_res = res1, res2
-                donor_atom, acceptor_atom = hb.acceptor_atom, hb.donor_atom
-            else:
-                key2_d2 = (res2.base_type.upper(), hb.acceptor_atom)
-                key1_a2 = (res1.base_type.upper(), hb.donor_atom)
-                if key2_d2 in DONOR_CAPACITY and key1_a2 in ACCEPTOR_CAPACITY:
-                    donor_res, acceptor_res = res2, res1
-                    donor_atom, acceptor_atom = hb.acceptor_atom, hb.donor_atom
+    # Try res2.donor_atom -> res1.acceptor_atom
+    elif get_donor_capacity(res2_code, hb.donor_atom) > 0 and get_acceptor_capacity(res1_code, hb.acceptor_atom) > 0:
+        donor_res, acceptor_res = res2, res1
+        donor_atom, acceptor_atom = hb.donor_atom, hb.acceptor_atom
+    # Try swapped atoms: res1.acceptor_atom -> res2.donor_atom
+    elif get_donor_capacity(res1_code, hb.acceptor_atom) > 0 and get_acceptor_capacity(res2_code, hb.donor_atom) > 0:
+        donor_res, acceptor_res = res1, res2
+        donor_atom, acceptor_atom = hb.acceptor_atom, hb.donor_atom
+    # Try swapped: res2.acceptor_atom -> res1.donor_atom
+    elif get_donor_capacity(res2_code, hb.acceptor_atom) > 0 and get_acceptor_capacity(res1_code, hb.donor_atom) > 0:
+        donor_res, acceptor_res = res2, res1
+        donor_atom, acceptor_atom = hb.acceptor_atom, hb.donor_atom
 
     if not donor_res or not acceptor_res:
         # Not a valid donor/acceptor pair in our tables
@@ -193,23 +189,39 @@ def analyze_miss(pdb_id: str, hb: DSSRHBond, residues: Dict[str, Residue],
             details=f"{acc_code}.{acceptor_atom} has 0 LP slots (parent: {acceptor_res.base_type})"
         )
 
-    # Check alignment
+    # Check alignment - use ignore_used=True to get "theoretical" alignment
+    # This tells us whether geometry would allow the bond if slots were free
     if donor_atom in donor_res.atoms and acceptor_atom in acceptor_res.atoms:
         donor_pos = donor_res.atoms[donor_atom]
         acceptor_pos = acceptor_res.atoms[acceptor_atom]
 
         try:
-            h_idx, lp_idx, score = score_hbond_alignment(
-                donor_pos, acceptor_pos, h_slots, lp_slots
+            # Compute theoretical alignment (ignoring slot usage)
+            h_idx, lp_idx, theoretical_score = score_hbond_alignment(
+                donor_pos, acceptor_pos, h_slots, lp_slots, ignore_used=True
             )
 
-            if score < optimizer.min_alignment:
+            # Check if any slots are actually used (i.e., taken by other bonds)
+            any_h_used = any(s.used for s in h_slots)
+            any_lp_used = any(s.used for s in lp_slots)
+
+            if theoretical_score < optimizer.min_alignment:
+                # Geometry itself is bad
                 return MissedHBond(
                     pdb_id=pdb_id, res1=hb.res1, res2=hb.res2,
                     res1_original=res1_orig, res2_original=res2_orig,
                     donor_atom=hb.donor_atom, acceptor_atom=hb.acceptor_atom,
                     distance=hb.distance, reason="POOR_ALIGNMENT",
-                    details=f"alignment={score:.3f} < {optimizer.min_alignment}"
+                    details=f"alignment={theoretical_score:.3f} < {optimizer.min_alignment}"
+                )
+            elif any_h_used or any_lp_used:
+                # Geometry is OK but slots were taken by other bonds
+                return MissedHBond(
+                    pdb_id=pdb_id, res1=hb.res1, res2=hb.res2,
+                    res1_original=res1_orig, res2_original=res2_orig,
+                    donor_atom=hb.donor_atom, acceptor_atom=hb.acceptor_atom,
+                    distance=hb.distance, reason="SLOT_CONFLICT",
+                    details=f"alignment={theoretical_score:.3f} OK but slots taken (H:{any_h_used}, LP:{any_lp_used})"
                 )
         except Exception as e:
             return MissedHBond(
@@ -230,14 +242,60 @@ def analyze_miss(pdb_id: str, hb: DSSRHBond, residues: Dict[str, Residue],
     )
 
 
-def process_pdb(args: Tuple[str, Path, float, float, float]) -> PDBResult:
+def load_dssr_json(pdb_id: str, dssr_json_dir: Path) -> List[DSSRHBond]:
+    """Load H-bonds from pre-computed DSSR JSON file."""
+    import re
+
+    json_path = dssr_json_dir / f"{pdb_id}.json"
+    if not json_path.exists():
+        return []
+
+    with open(json_path) as f:
+        data = json.load(f)
+
+    hbonds = []
+
+    # Extract H-bonds from pairs
+    for pair in data.get('pairs', []):
+        hbonds_desc = pair.get('hbonds_desc', '')
+        nt1 = pair.get('nt1', '')
+        nt2 = pair.get('nt2', '')
+
+        if not hbonds_desc or not nt1 or not nt2:
+            continue
+
+        # Parse hbonds_desc: "O2(carbonyl)-N2(amino)[2.77],N3-N1(imino)[2.93]"
+        for hb_str in hbonds_desc.split(','):
+            # Pattern: atom1(type)-atom2(type)[distance] or atom1-atom2[distance]
+            match = re.match(r'([A-Za-z0-9\']+)(?:\([^)]*\))?-([A-Za-z0-9\']+)(?:\([^)]*\))?\[([0-9.]+)\]', hb_str)
+            if match:
+                atom1, atom2, dist = match.groups()
+                # Normalize residue IDs to match PDB parsing format
+                nt1_norm = normalize_res_id(nt1)
+                nt2_norm = normalize_res_id(nt2)
+                # The first atom is typically on nt1, second on nt2
+                hbonds.append(DSSRHBond(
+                    res1=nt1_norm,
+                    res2=nt2_norm,
+                    donor_atom=atom1,
+                    acceptor_atom=atom2,
+                    distance=float(dist),
+                    res1_original=nt1,
+                    res2_original=nt2,
+                ))
+
+    return hbonds
+
+
+def process_pdb(args: Tuple[str, Path, float, float, float, Path]) -> PDBResult:
     """Process a single PDB file. Designed for multiprocessing."""
-    pdb_id, pdb_path, max_distance, min_alignment, short_dist_thresh = args
+    pdb_id, pdb_path, max_distance, min_alignment, short_dist_thresh, dssr_json_dir = args
 
     try:
         residues = parse_pdb_residues(pdb_path)
-        dssr_text = run_dssr(pdb_path)
-        dssr_hbonds = parse_dssr_output(dssr_text)
+
+        # Load pre-computed DSSR JSON
+        dssr_hbonds = load_dssr_json(pdb_id, dssr_json_dir)
 
         if not dssr_hbonds:
             return PDBResult(pdb_id=pdb_id, dssr_count=0, matched_count=0, optimizer_count=0)
@@ -317,7 +375,8 @@ def process_pdb(args: Tuple[str, Path, float, float, float]) -> PDBResult:
         return PDBResult(pdb_id=pdb_id, dssr_count=0, matched_count=0, optimizer_count=0, error=str(e))
 
 
-def run_benchmark(pdb_ids: List[str], pdb_dir: Path, max_workers: int = None,
+def run_benchmark(pdb_ids: List[str], pdb_dir: Path, dssr_json_dir: Path,
+                  max_workers: int = None,
                   max_distance: float = 4.0, min_alignment: float = 0.3,
                   short_distance_threshold: float = 3.2) -> Dict:
     """Run benchmark on multiple PDBs with multiprocessing."""
@@ -329,7 +388,7 @@ def run_benchmark(pdb_ids: List[str], pdb_dir: Path, max_workers: int = None,
     for pdb_id in pdb_ids:
         pdb_path = pdb_dir / f"{pdb_id}.pdb"
         if pdb_path.exists():
-            args_list.append((pdb_id, pdb_path, max_distance, min_alignment, short_distance_threshold))
+            args_list.append((pdb_id, pdb_path, max_distance, min_alignment, short_distance_threshold, dssr_json_dir))
 
     print(f"Running benchmark on {len(args_list)} PDBs with {max_workers} workers...")
 
@@ -550,7 +609,7 @@ def main():
                        help='Max distance threshold')
     parser.add_argument('--min-align', type=float, default=0.3,
                        help='Min alignment threshold')
-    parser.add_argument('--short-dist', type=float, default=3.2,
+    parser.add_argument('--short-dist', type=float, default=3.5,
                        help='Short distance threshold (skip alignment check below this)')
     parser.add_argument('--output', type=str, default=None,
                        help='Output JSON file for detailed report')
@@ -560,6 +619,7 @@ def main():
     script_dir = Path(__file__).parent
     project_root = script_dir.parent.parent
     pdb_dir = project_root / "data" / "pdb"
+    dssr_json_dir = project_root / "data" / "json_dssr"
 
     # Load test set
     if args.test_set == 'fast':
@@ -579,7 +639,7 @@ def main():
 
     # Run benchmark
     analysis = run_benchmark(
-        pdb_ids, pdb_dir,
+        pdb_ids, pdb_dir, dssr_json_dir,
         max_workers=args.workers,
         max_distance=args.max_dist,
         min_alignment=args.min_align,

@@ -28,6 +28,8 @@ from .geometry import (
     compute_base_normal,
     normalize,
     angle_between,
+    get_donor_capacity,
+    get_acceptor_capacity,
 )
 
 from .compare_with_dssr import (
@@ -61,6 +63,8 @@ __all__ = [
     'compute_base_normal',
     'normalize',
     'angle_between',
+    'get_donor_capacity',
+    'get_acceptor_capacity',
     # DSSR comparison
     'parse_pdb_residues',
     'run_dssr',

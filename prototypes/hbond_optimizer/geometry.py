@@ -5,9 +5,131 @@ Provides functions to compute hydrogen positions and lone pair directions
 from known molecular geometry.
 """
 
+import json
 import numpy as np
-from typing import List, Tuple, Optional
+from pathlib import Path
+from typing import List, Tuple, Optional, Dict
 from dataclasses import dataclass, field
+
+
+# Load CIF-derived donor/acceptor data for modified residues
+_CIF_DONORS: Dict[str, Dict[str, int]] = {}
+_CIF_ACCEPTORS: Dict[str, Dict[str, int]] = {}
+_CIF_DATA_LOADED = False
+
+
+def _load_cif_data():
+    """Load CIF donor/acceptor data from JSON files."""
+    global _CIF_DONORS, _CIF_ACCEPTORS, _CIF_DATA_LOADED
+    if _CIF_DATA_LOADED:
+        return
+
+    cif_dir = Path(__file__).parent
+    donors_path = cif_dir / "cif_donors_chain.json"
+    acceptors_path = cif_dir / "cif_acceptors.json"
+
+    if donors_path.exists():
+        with open(donors_path) as f:
+            _CIF_DONORS = json.load(f)
+
+    if acceptors_path.exists():
+        with open(acceptors_path) as f:
+            _CIF_ACCEPTORS = json.load(f)
+
+    _CIF_DATA_LOADED = True
+
+
+def get_donor_capacity(residue_code: str, atom_name: str) -> int:
+    """
+    Get donor capacity for an atom, checking CIF data first for modified residues.
+
+    Args:
+        residue_code: Full residue code (e.g., "1MA", "A", "G")
+        atom_name: Atom name (e.g., "N6", "O2'")
+
+    Returns:
+        Donor capacity (number of H atoms that can donate)
+    """
+    _load_cif_data()
+
+    # Check CIF data first (for modified residues)
+    if residue_code in _CIF_DONORS:
+        cif_donors = _CIF_DONORS[residue_code]
+        if atom_name in cif_donors:
+            return cif_donors[atom_name]
+        # Atom not a donor in this residue
+        return 0
+
+    # Fall back to standard base type lookup
+    # Map common modified residue prefixes to parent base
+    base_type = _get_parent_base_type(residue_code)
+    if base_type:
+        key = (base_type, atom_name.strip())
+        return DONOR_CAPACITY.get(key, 0)
+
+    return 0
+
+
+def get_acceptor_capacity(residue_code: str, atom_name: str) -> int:
+    """
+    Get acceptor capacity for an atom, checking CIF data first for modified residues.
+
+    Args:
+        residue_code: Full residue code (e.g., "1MA", "A", "G")
+        atom_name: Atom name (e.g., "O6", "N1")
+
+    Returns:
+        Acceptor capacity (number of lone pairs that can accept)
+    """
+    _load_cif_data()
+
+    # Check CIF data first (for modified residues)
+    if residue_code in _CIF_ACCEPTORS:
+        cif_acceptors = _CIF_ACCEPTORS[residue_code]
+        if atom_name in cif_acceptors:
+            return cif_acceptors[atom_name]
+        # Atom not an acceptor in this residue
+        return 0
+
+    # Fall back to standard base type lookup
+    base_type = _get_parent_base_type(residue_code)
+    if base_type:
+        key = (base_type, atom_name.strip())
+        return ACCEPTOR_CAPACITY.get(key, 0)
+
+    return 0
+
+
+def _get_parent_base_type(residue_code: str) -> Optional[str]:
+    """
+    Get the parent base type for a residue code.
+
+    Standard nucleotides return themselves (A, G, C, U, T).
+    Modified residues are mapped to their parent base.
+    """
+    # Standard nucleotides
+    if residue_code in ('A', 'G', 'C', 'U', 'T', 'P', 'I'):
+        return residue_code
+
+    # DNA variants
+    if residue_code in ('DA', 'DG', 'DC', 'DT'):
+        return residue_code[1]  # DA -> A, etc.
+
+    # Try to infer from residue code
+    # Many modified residues have the parent base as last character
+    # e.g., 1MA (1-methyladenosine), 5MC (5-methylcytidine)
+    if len(residue_code) >= 2:
+        last_char = residue_code[-1].upper()
+        if last_char in ('A', 'G', 'C', 'U', 'T'):
+            return last_char
+
+    # Check if first char is the base type
+    if len(residue_code) >= 1:
+        first_char = residue_code[0].upper()
+        if first_char in ('A', 'G', 'C', 'U', 'T'):
+            return first_char
+
+    return None
 
 
 def normalize(v: np.ndarray) -> np.ndarray:
@@ -204,6 +326,95 @@ BASE_CONNECTIVITY = {
     ('I', "O5'"): ["C5'"],
 }
 
+# Amino acid connectivity for H-bond geometry prediction
+# Maps (residue_code, atom_name) -> list of bonded atom names
+PROTEIN_CONNECTIVITY = {
+    # Backbone (common to all amino acids)
+    # N (backbone amide) bonded to CA
+    ('ALA', 'N'): ['CA'],
+    ('ARG', 'N'): ['CA'],
+    ('ASN', 'N'): ['CA'],
+    ('ASP', 'N'): ['CA'],
+    ('CYS', 'N'): ['CA'],
+    ('GLN', 'N'): ['CA'],
+    ('GLU', 'N'): ['CA'],
+    ('GLY', 'N'): ['CA'],
+    ('HIS', 'N'): ['CA'],
+    ('ILE', 'N'): ['CA'],
+    ('LEU', 'N'): ['CA'],
+    ('LYS', 'N'): ['CA'],
+    ('MET', 'N'): ['CA'],
+    ('PHE', 'N'): ['CA'],
+    ('PRO', 'N'): ['CA'],  # Proline has no H on N (imino)
+    ('SER', 'N'): ['CA'],
+    ('THR', 'N'): ['CA'],
+    ('TRP', 'N'): ['CA'],
+    ('TYR', 'N'): ['CA'],
+    ('VAL', 'N'): ['CA'],
+
+    # O (backbone carbonyl) bonded to C
+    ('ALA', 'O'): ['C'],
+    ('ARG', 'O'): ['C'],
+    ('ASN', 'O'): ['C'],
+    ('ASP', 'O'): ['C'],
+    ('CYS', 'O'): ['C'],
+    ('GLN', 'O'): ['C'],
+    ('GLU', 'O'): ['C'],
+    ('GLY', 'O'): ['C'],
+    ('HIS', 'O'): ['C'],
+    ('ILE', 'O'): ['C'],
+    ('LEU', 'O'): ['C'],
+    ('LYS', 'O'): ['C'],
+    ('MET', 'O'): ['C'],
+    ('PHE', 'O'): ['C'],
+    ('PRO', 'O'): ['C'],
+    ('SER', 'O'): ['C'],
+    ('THR', 'O'): ['C'],
+    ('TRP', 'O'): ['C'],
+    ('TYR', 'O'): ['C'],
+    ('VAL', 'O'): ['C'],
+
+    # ARG - guanidinium group
+    ('ARG', 'NE'): ['CD', 'CZ'],      # NE bonded to CD and CZ
+    ('ARG', 'NH1'): ['CZ'],           # NH2 amino
+    ('ARG', 'NH2'): ['CZ'],           # NH2 amino
+
+    # ASN - amide side chain
+    ('ASN', 'ND2'): ['CG'],           # NH2 amino
+    ('ASN', 'OD1'): ['CG'],           # Carbonyl
+
+    # ASP - carboxylate
+    ('ASP', 'OD1'): ['CG'],
+    ('ASP', 'OD2'): ['CG'],
+
+    # GLN - amide side chain
+    ('GLN', 'NE2'): ['CD'],           # NH2 amino
+    ('GLN', 'OE1'): ['CD'],           # Carbonyl
+
+    # GLU - carboxylate
+    ('GLU', 'OE1'): ['CD'],
+    ('GLU', 'OE2'): ['CD'],
+
+    # HIS - imidazole
+    ('HIS', 'ND1'): ['CG', 'CE1'],    # Can be donor or acceptor depending on tautomer
+    ('HIS', 'NE2'): ['CD2', 'CE1'],   # Can be donor or acceptor depending on tautomer
+
+    # LYS - amino
+    ('LYS', 'NZ'): ['CE'],            # NH3+ amino
+
+    # SER - hydroxyl
+    ('SER', 'OG'): ['CB'],
+
+    # THR - hydroxyl
+    ('THR', 'OG1'): ['CB'],
+
+    # TRP - indole NH
+    ('TRP', 'NE1'): ['CD1', 'CE2'],
+
+    # TYR - hydroxyl
+    ('TYR', 'OH'): ['CZ'],
+}
+
 # Donor capacity: how many H atoms can donate
 # Only N and O donors (no C-H)
 DONOR_CAPACITY = {
@@ -225,6 +436,24 @@ DONOR_CAPACITY = {
     ('T', "O2'"): 1,
     ('P', "O2'"): 1,  # Pseudouridine
     ('I', "O2'"): 1,  # Inosine
+
+    # Ribose O3' hydroxyl (3' end) - can donate 1
+    ('A', "O3'"): 1,
+    ('G', "O3'"): 1,
+    ('C', "O3'"): 1,
+    ('U', "O3'"): 1,
+    ('T', "O3'"): 1,
+    ('P', "O3'"): 1,
+    ('I', "O3'"): 1,
+
+    # Ribose O5' hydroxyl (5' end) - can donate 1
+    ('A', "O5'"): 1,
+    ('G', "O5'"): 1,
+    ('C', "O5'"): 1,
+    ('U', "O5'"): 1,
+    ('T', "O5'"): 1,
+    ('P', "O5'"): 1,
+    ('I', "O5'"): 1,
 
     # Pseudouridine (P) - C-glycosidic bond, so N1 is free to donate
     ('P', 'N1'): 1,   # N1 is now a donor (not glycosidic)
@@ -263,6 +492,22 @@ ACCEPTOR_CAPACITY = {
     ('C', "O4'"): 1,
     ('U', "O4'"): 1,
     ('T', "O4'"): 1,
+    # O3' hydroxyl - 2 lone pairs
+    ('A', "O3'"): 2,
+    ('G', "O3'"): 2,
+    ('C', "O3'"): 2,
+    ('U', "O3'"): 2,
+    ('T', "O3'"): 2,
+    ('P', "O3'"): 2,
+    ('I', "O3'"): 2,
+    # O5' hydroxyl - 2 lone pairs
+    ('A', "O5'"): 2,
+    ('G', "O5'"): 2,
+    ('C', "O5'"): 2,
+    ('U', "O5'"): 2,
+    ('T', "O5'"): 2,
+    ('P', "O5'"): 2,
+    ('I', "O5'"): 2,
 
     # Phosphate oxygens - 3 lone pairs each (tetrahedral)
     ('A', 'OP1'): 3,
@@ -333,26 +578,40 @@ def predict_h_slots(base_type: str, atom_name: str,
     Predict hydrogen slot positions for a donor atom.
 
     Args:
-        base_type: Single letter base code (A, G, C, U, T)
-        atom_name: Name of the donor atom (e.g., 'N6', 'N1')
+        base_type: Single letter base code (A, G, C, U, T) OR amino acid 3-letter code
+        atom_name: Name of the donor atom (e.g., 'N6', 'N1', 'N', 'NZ')
         atoms: Dict mapping atom names to positions (np.ndarray)
-        base_normal: Normal vector to the base plane
+        base_normal: Normal vector to the base plane (may be None for proteins)
 
     Returns:
         List of HSlot objects with predicted H directions
     """
-    key = (base_type.upper(), atom_name.strip())
+    base_type_upper = base_type.upper()
+    atom_name_stripped = atom_name.strip()
+    key = (base_type_upper, atom_name_stripped)
 
-    if key not in DONOR_CAPACITY:
+    # Check nucleotide connectivity first, then protein
+    if key in DONOR_CAPACITY:
+        capacity = DONOR_CAPACITY[key]
+        connectivity = BASE_CONNECTIVITY.get(key, [])
+    elif key in PROTEIN_CONNECTIVITY:
+        # Use CIF-based capacity for amino acids
+        capacity = get_donor_capacity(base_type_upper, atom_name_stripped)
+        connectivity = PROTEIN_CONNECTIVITY.get(key, [])
+    else:
+        # Try CIF data for modified residues
+        capacity = get_donor_capacity(base_type_upper, atom_name_stripped)
+        connectivity = BASE_CONNECTIVITY.get(key, []) or PROTEIN_CONNECTIVITY.get(key, [])
+        if capacity == 0:
+            return []
+
+    if capacity == 0:
         return []
 
-    capacity = DONOR_CAPACITY[key]
-    connectivity = BASE_CONNECTIVITY.get(key, [])
-
-    if atom_name.strip() not in atoms:
+    if atom_name_stripped not in atoms:
         return []
 
-    donor_pos = atoms[atom_name.strip()]
+    donor_pos = atoms[atom_name_stripped]
 
     # Get antecedent atom positions
     antecedent_positions = []
@@ -365,16 +624,51 @@ def predict_h_slots(base_type: str, atom_name: str,
 
     slots = []
 
+    # Determine if we have a valid base normal for rotation
+    has_normal = base_normal is not None and np.linalg.norm(base_normal) > 0.1
+
     if capacity == 2 and len(antecedent_positions) == 1:
-        # sp2 NH2: Two H atoms at 120° from the C-N bond, in the base plane
+        # sp2 NH2: Two H atoms at 120° from the C-N bond
         ant_to_donor = normalize(donor_pos - antecedent_positions[0])
 
-        # Rotate ±120° around base normal
-        h1_dir = rotate_vector(ant_to_donor, base_normal, 120.0)
-        h2_dir = rotate_vector(ant_to_donor, base_normal, -120.0)
+        if has_normal:
+            # Rotate ±120° around base normal
+            h1_dir = rotate_vector(ant_to_donor, base_normal, 120.0)
+            h2_dir = rotate_vector(ant_to_donor, base_normal, -120.0)
+        else:
+            # For proteins without base normal, use arbitrary perpendicular axis
+            perp = np.cross(ant_to_donor, np.array([0.0, 0.0, 1.0]))
+            if np.linalg.norm(perp) < 0.1:
+                perp = np.cross(ant_to_donor, np.array([0.0, 1.0, 0.0]))
+            perp = normalize(perp)
+            h1_dir = rotate_vector(ant_to_donor, perp, 120.0)
+            h2_dir = rotate_vector(ant_to_donor, perp, -120.0)
 
         slots.append(HSlot(direction=h1_dir))
         slots.append(HSlot(direction=h2_dir))
+
+    elif capacity == 3 and len(antecedent_positions) == 1:
+        # sp3 NH3+ (like LYS NZ): Three H atoms in tetrahedral arrangement
+        ant_to_donor = normalize(donor_pos - antecedent_positions[0])
+
+        # Create 3 H directions at ~109° from the C-N bond
+        # Use arbitrary perpendicular as rotation axis
+        perp = np.cross(ant_to_donor, np.array([0.0, 0.0, 1.0]))
+        if np.linalg.norm(perp) < 0.1:
+            perp = np.cross(ant_to_donor, np.array([0.0, 1.0, 0.0]))
+        perp = normalize(perp)
+
+        # Tilt away from ant_to_donor by ~70° (180-109)
+        h_base = rotate_vector(ant_to_donor, perp, 70.0)
+
+        # Rotate around ant_to_donor axis
+        h1_dir = h_base
+        h2_dir = rotate_vector(h_base, ant_to_donor, 120.0)
+        h3_dir = rotate_vector(h_base, ant_to_donor, -120.0)
+
+        slots.append(HSlot(direction=h1_dir))
+        slots.append(HSlot(direction=h2_dir))
+        slots.append(HSlot(direction=h3_dir))
 
     elif capacity == 1 and len(antecedent_positions) == 2:
         # sp2 imino NH or ring C-H: H points away from ring
@@ -396,26 +690,40 @@ def predict_lp_slots(base_type: str, atom_name: str,
     Predict lone pair slot directions for an acceptor atom.
 
     Args:
-        base_type: Single letter base code
-        atom_name: Name of acceptor atom (e.g., 'O6', 'N1')
+        base_type: Single letter base code OR amino acid 3-letter code
+        atom_name: Name of acceptor atom (e.g., 'O6', 'N1', 'O', 'OD1')
         atoms: Dict mapping atom names to positions
-        base_normal: Normal vector to base plane
+        base_normal: Normal vector to base plane (may be None for proteins)
 
     Returns:
         List of LPSlot objects with predicted LP directions
     """
-    key = (base_type.upper(), atom_name.strip())
+    base_type_upper = base_type.upper()
+    atom_name_stripped = atom_name.strip()
+    key = (base_type_upper, atom_name_stripped)
 
-    if key not in ACCEPTOR_CAPACITY:
+    # Check nucleotide capacity first, then protein
+    if key in ACCEPTOR_CAPACITY:
+        capacity = ACCEPTOR_CAPACITY[key]
+        connectivity = BASE_CONNECTIVITY.get(key, [])
+    elif key in PROTEIN_CONNECTIVITY:
+        # Use CIF-based capacity for amino acids
+        capacity = get_acceptor_capacity(base_type_upper, atom_name_stripped)
+        connectivity = PROTEIN_CONNECTIVITY.get(key, [])
+    else:
+        # Try CIF data for modified residues
+        capacity = get_acceptor_capacity(base_type_upper, atom_name_stripped)
+        connectivity = BASE_CONNECTIVITY.get(key, []) or PROTEIN_CONNECTIVITY.get(key, [])
+        if capacity == 0:
+            return []
+
+    if capacity == 0:
         return []
 
-    capacity = ACCEPTOR_CAPACITY[key]
-    connectivity = BASE_CONNECTIVITY.get(key, [])
-
-    if atom_name.strip() not in atoms:
+    if atom_name_stripped not in atoms:
         return []
 
-    acceptor_pos = atoms[atom_name.strip()]
+    acceptor_pos = atoms[atom_name_stripped]
 
     antecedent_positions = []
     for ant_name in connectivity:
@@ -424,8 +732,11 @@ def predict_lp_slots(base_type: str, atom_name: str,
 
     slots = []
 
+    # Determine if we have a valid base normal
+    has_normal = base_normal is not None and np.linalg.norm(base_normal) > 0.1
+
     # Handle phosphate oxygens specially - use isotropic LP model
-    if atom_name.strip() in ('OP1', 'OP2', 'O1P', 'O2P'):
+    if atom_name_stripped in ('OP1', 'OP2', 'O1P', 'O2P'):
         # Phosphate oxygens have 3 lone pairs in rough tetrahedral arrangement
         # Use 3 orthogonal directions as approximation
         slots.append(LPSlot(direction=np.array([1.0, 0.0, 0.0])))
@@ -434,15 +745,20 @@ def predict_lp_slots(base_type: str, atom_name: str,
         return slots
 
     # Handle ribose O2' and O4' - sp3 with flexible geometry
-    if atom_name.strip() in ("O2'", "O4'", "O3'", "O5'"):
-        # Use 2 orthogonal directions perpendicular to base normal
-        perp1 = np.cross(base_normal, np.array([1.0, 0.0, 0.0]))
-        if np.linalg.norm(perp1) < 0.1:
-            perp1 = np.cross(base_normal, np.array([0.0, 1.0, 0.0]))
-        perp1 = normalize(perp1)
-        perp2 = np.cross(base_normal, perp1)
-        slots.append(LPSlot(direction=perp1))
-        slots.append(LPSlot(direction=perp2))
+    if atom_name_stripped in ("O2'", "O4'", "O3'", "O5'"):
+        if has_normal:
+            # Use 2 orthogonal directions perpendicular to base normal
+            perp1 = np.cross(base_normal, np.array([1.0, 0.0, 0.0]))
+            if np.linalg.norm(perp1) < 0.1:
+                perp1 = np.cross(base_normal, np.array([0.0, 1.0, 0.0]))
+            perp1 = normalize(perp1)
+            perp2 = np.cross(base_normal, perp1)
+            slots.append(LPSlot(direction=perp1))
+            slots.append(LPSlot(direction=perp2))
+        else:
+            # Fallback: isotropic
+            slots.append(LPSlot(direction=np.array([1.0, 0.0, 0.0])))
+            slots.append(LPSlot(direction=np.array([0.0, 1.0, 0.0])))
         return slots
 
     if not antecedent_positions:
@@ -453,11 +769,20 @@ def predict_lp_slots(base_type: str, atom_name: str,
         return slots
 
     if capacity == 2 and len(antecedent_positions) == 1:
-        # sp2 carbonyl oxygen: Two lone pairs at 120° from C=O, in base plane
+        # sp2 carbonyl oxygen: Two lone pairs at 120° from C=O
         ant_to_acc = normalize(acceptor_pos - antecedent_positions[0])
 
-        lp1_dir = rotate_vector(ant_to_acc, base_normal, 120.0)
-        lp2_dir = rotate_vector(ant_to_acc, base_normal, -120.0)
+        if has_normal:
+            lp1_dir = rotate_vector(ant_to_acc, base_normal, 120.0)
+            lp2_dir = rotate_vector(ant_to_acc, base_normal, -120.0)
+        else:
+            # For proteins without base normal, use arbitrary perpendicular axis
+            perp = np.cross(ant_to_acc, np.array([0.0, 0.0, 1.0]))
+            if np.linalg.norm(perp) < 0.1:
+                perp = np.cross(ant_to_acc, np.array([0.0, 1.0, 0.0]))
+            perp = normalize(perp)
+            lp1_dir = rotate_vector(ant_to_acc, perp, 120.0)
+            lp2_dir = rotate_vector(ant_to_acc, perp, -120.0)
 
         slots.append(LPSlot(direction=lp1_dir))
         slots.append(LPSlot(direction=lp2_dir))
@@ -477,10 +802,19 @@ def predict_lp_slots(base_type: str, atom_name: str,
 
 
 def score_hbond_alignment(donor_pos: np.ndarray, acceptor_pos: np.ndarray,
-                          h_slots: List[HSlot], lp_slots: List[LPSlot]
+                          h_slots: List[HSlot], lp_slots: List[LPSlot],
+                          ignore_used: bool = False
                           ) -> Tuple[int, int, float]:
     """
     Score how well an H-bond aligns with H and LP slots.
+
+    Args:
+        donor_pos: Position of donor atom
+        acceptor_pos: Position of acceptor atom
+        h_slots: Available H slots on donor
+        lp_slots: Available LP slots on acceptor
+        ignore_used: If True, consider all slots regardless of used status.
+                     Useful for diagnostic purposes to compute "theoretical" alignment.
 
     Returns:
         (best_h_idx, best_lp_idx, alignment_score)
@@ -496,7 +830,7 @@ def score_hbond_alignment(donor_pos: np.ndarray, acceptor_pos: np.ndarray,
     best_h_score = -2.0
     best_h_idx = 0
     for i, h_slot in enumerate(h_slots):
-        if h_slot.used:
+        if not ignore_used and h_slot.used:
             continue
         alignment = np.dot(h_slot.direction, donor_to_acceptor)
         if alignment > best_h_score:
@@ -507,7 +841,7 @@ def score_hbond_alignment(donor_pos: np.ndarray, acceptor_pos: np.ndarray,
     best_lp_score = -2.0
     best_lp_idx = 0
     for i, lp_slot in enumerate(lp_slots):
-        if lp_slot.used:
+        if not ignore_used and lp_slot.used:
             continue
         alignment = np.dot(lp_slot.direction, acceptor_to_donor)
         if alignment > best_lp_score:
