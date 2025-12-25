@@ -139,7 +139,8 @@
       "dssr_class": "cWW",
       "saenger": "19-XIX",
       "reasons": [
-        "no_hbonds"
+        "no_hbonds",
+        "dssr_questionable"
       ],
       "hbond_diagnostics": {
         "expected_hbonds": [
@@ -200,7 +201,8 @@
       "dssr_class": "cWW",
       "saenger": "19-XIX",
       "reasons": [
-        "no_hbonds"
+        "no_hbonds",
+        "dssr_questionable"
       ],
       "hbond_diagnostics": {
         "expected_hbonds": [

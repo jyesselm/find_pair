@@ -5,7 +5,9 @@
     "true_positives": 3012,
     "false_negatives": 836,
     "false_positives": 0,
+    "dssr_questionable": 78,
     "accuracy": 0.7827,
+    "adjusted_accuracy": 0.7989,
     "sensitivity": 0.7827,
     "precision": 1.0
   },
@@ -15,6 +17,7 @@
     "no_hbonds": 225,
     "extra_hbonds": 193,
     "wrong_atoms": 192,
+    "dssr_questionable": 78,
     "geometric_outlier": 77,
     "non_canonical": 77,
     "rmsd_prefers_other": 11
@@ -27,7 +30,8 @@
       "wrong_atoms": 6,
       "extra_hbonds": 6,
       "no_hbonds": 6,
-      "geometric_outlier": 5
+      "geometric_outlier": 5,
+      "dssr_questionable": 2
     },
     "CG": {
       "distance_issues": 174,
@@ -36,6 +40,7 @@
       "wrong_atoms": 76,
       "extra_hbonds": 76,
       "geometric_outlier": 33,
+      "dssr_questionable": 32,
       "non_canonical": 30
     },
     "GC": {
@@ -44,6 +49,7 @@
       "no_hbonds": 104,
       "extra_hbonds": 102,
       "wrong_atoms": 101,
+      "dssr_questionable": 43,
       "geometric_outlier": 32,
       "non_canonical": 30,
       "rmsd_prefers_other": 5
@@ -56,7 +62,8 @@
       "extra_hbonds": 9,
       "non_canonical": 8,
       "geometric_outlier": 7,
-      "rmsd_prefers_other": 6
+      "rmsd_prefers_other": 6,
+      "dssr_questionable": 1
     }
   },
   "wrong_atom_distribution": {

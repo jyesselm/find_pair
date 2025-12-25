@@ -22,6 +22,7 @@ class AggregateStats:
         total_true_positives: Total correct cWW identifications.
         total_false_negatives: Total canonical cWW pairs missed.
         total_false_positives: Total non-cWW pairs incorrectly called cWW.
+        dssr_questionable: Pairs flagged as likely DSSR errors (high RMSD + no H-bonds).
         reason_counts: Distribution of reason codes across all misses.
         reason_by_sequence: Reason distribution broken down by sequence.
         wrong_atom_counts: Distribution of wrong atom errors.
@@ -34,6 +35,7 @@ class AggregateStats:
     total_true_positives: int = 0
     total_false_negatives: int = 0
     total_false_positives: int = 0
+    dssr_questionable: int = 0  # Likely DSSR errors, not our false negatives
 
     reason_counts: Dict[str, int] = field(default_factory=dict)
     reason_by_sequence: Dict[str, Dict[str, int]] = field(default_factory=dict)
@@ -49,6 +51,20 @@ class AggregateStats:
             Accuracy as fraction of canonical cWW correctly identified.
         """
         total = self.total_true_positives + self.total_false_negatives
+        return self.total_true_positives / total if total > 0 else 0.0
+
+    @property
+    def adjusted_accuracy(self) -> float:
+        """Calculate accuracy excluding DSSR questionable pairs.
+
+        These are pairs with high RMSD (>1Å) and no H-bonds, which are
+        likely DSSR errors rather than our false negatives.
+
+        Returns:
+            Adjusted accuracy excluding likely DSSR errors.
+        """
+        adjusted_fn = self.total_false_negatives - self.dssr_questionable
+        total = self.total_true_positives + adjusted_fn
         return self.total_true_positives / total if total > 0 else 0.0
 
     @property
@@ -83,7 +99,9 @@ class AggregateStats:
                 "true_positives": self.total_true_positives,
                 "false_negatives": self.total_false_negatives,
                 "false_positives": self.total_false_positives,
+                "dssr_questionable": self.dssr_questionable,
                 "accuracy": round(self.accuracy, 4),
+                "adjusted_accuracy": round(self.adjusted_accuracy, 4),
                 "sensitivity": round(self.sensitivity, 4),
                 "precision": round(self.precision, 4),
             },
@@ -168,6 +186,10 @@ class AggregateReporter:
                     stats.sequence_stats[seq] = {"total": 0, "misses": 0}
                 stats.sequence_stats[seq]["total"] += 1
                 stats.sequence_stats[seq]["misses"] += 1
+
+                # Count DSSR questionable pairs
+                if "dssr_questionable" in ann.reasons:
+                    stats.dssr_questionable += 1
 
             # Process each false negative annotation
             for ann in report.fn_annotations:

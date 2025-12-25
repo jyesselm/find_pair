@@ -96,9 +96,10 @@ def print_summary(reports: List[PDBReport]):
     print(f"Total canonical cWW:     {aggregate.total_canonical_cww:,}")
     print(f"True positives:          {aggregate.total_true_positives:,}")
     print(f"False negatives:         {aggregate.total_false_negatives:,}")
+    print(f"  - DSSR questionable:   {aggregate.dssr_questionable:,}")
     print(f"False positives:         {aggregate.total_false_positives:,}")
     print(f"Accuracy:                {aggregate.accuracy:.2%}")
-    print(f"Sensitivity:             {aggregate.sensitivity:.2%}")
+    print(f"Adjusted accuracy:       {aggregate.adjusted_accuracy:.2%} (excl. DSSR errors)")
     print(f"Precision:               {aggregate.precision:.2%}")
 
     if aggregate.reason_counts:

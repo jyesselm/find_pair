@@ -2048,7 +2048,8 @@
       "saenger": "--",
       "reasons": [
         "no_hbonds",
-        "non_canonical"
+        "non_canonical",
+        "dssr_questionable"
       ],
       "hbond_diagnostics": {
         "expected_hbonds": [
@@ -2112,7 +2113,8 @@
         "no_hbonds",
         "rmsd_prefers_other",
         "geometric_outlier",
-        "non_canonical"
+        "non_canonical",
+        "dssr_questionable"
       ],
       "hbond_diagnostics": {
         "expected_hbonds": [

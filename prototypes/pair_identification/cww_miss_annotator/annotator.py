@@ -72,6 +72,7 @@ class MissAnnotator:
         "rmsd_prefers_other",  # Better RMSD to non-cWW template
         "geometric_outlier",  # Angle or N1N9 distance abnormal
         "non_canonical",  # DSSR Saenger is "--"
+        "dssr_questionable",  # DSSR likely wrong (high RMSD + no H-bonds)
     ]
 
     def __init__(
@@ -265,5 +266,10 @@ class MissAnnotator:
         # DSSR classification based
         if dssr_pair.saenger == "--":
             reasons.append("non_canonical")
+
+        # Flag likely DSSR errors: high RMSD + no H-bonds = probably not a real cWW
+        # These shouldn't count against our accuracy
+        if g_diag.rmsd_cww > 1.0 and not h_diag.found_hbonds:
+            reasons.append("dssr_questionable")
 
         return reasons

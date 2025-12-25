@@ -18,7 +18,8 @@
       "saenger": "19-XIX",
       "reasons": [
         "no_hbonds",
-        "geometric_outlier"
+        "geometric_outlier",
+        "dssr_questionable"
       ],
       "hbond_diagnostics": {
         "expected_hbonds": [
