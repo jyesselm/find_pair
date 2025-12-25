@@ -88,7 +88,9 @@ def process_pdb(args) -> Tuple[str, bool]:
                             context = "sugar_sugar"
 
                         hbond_list.append({
+                            "donor_res_id": hb.donor_res_id,
                             "donor_atom": hb.donor_atom,
+                            "acceptor_res_id": hb.acceptor_res_id,
                             "acceptor_atom": hb.acceptor_atom,
                             "distance": round(hb.distance, 2),
                             "context": context,
