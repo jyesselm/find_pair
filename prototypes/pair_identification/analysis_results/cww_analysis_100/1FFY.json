@@ -32,8 +32,8 @@
             "source": "canonical"
           },
           {
-            "donor_atom": "O6",
-            "acceptor_atom": "N4",
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
             "source": "canonical"
           }
         ],

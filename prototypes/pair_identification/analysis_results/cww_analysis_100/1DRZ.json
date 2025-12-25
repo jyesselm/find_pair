@@ -27,8 +27,8 @@
             "source": "canonical"
           },
           {
-            "donor_atom": "N1",
-            "acceptor_atom": "N3",
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
             "source": "canonical"
           }
         ],

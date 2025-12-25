@@ -2,10 +2,10 @@
   "pdb_id": "1HR2",
   "summary": {
     "total_canonical_cww": 81,
-    "true_positives": 76,
-    "false_negatives": 5,
+    "true_positives": 77,
+    "false_negatives": 4,
     "false_positives": 0,
-    "sensitivity": 0.9382716049382716,
+    "sensitivity": 0.9506172839506173,
     "precision": 1.0
   },
   "false_negatives": [
@@ -32,8 +32,8 @@
             "source": "canonical"
           },
           {
-            "donor_atom": "O6",
-            "acceptor_atom": "N4",
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
             "source": "canonical"
           }
         ],
@@ -101,8 +101,8 @@
       "hbond_diagnostics": {
         "expected_hbonds": [
           {
-            "donor_atom": "O4",
-            "acceptor_atom": "N6",
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
             "source": "canonical"
           },
           {
@@ -162,8 +162,7 @@
       "saenger": "19-XIX",
       "reasons": [
         "wrong_atoms",
-        "extra_hbonds",
-        "distance_issues"
+        "extra_hbonds"
       ],
       "hbond_diagnostics": {
         "expected_hbonds": [
@@ -178,8 +177,8 @@
             "source": "canonical"
           },
           {
-            "donor_atom": "O6",
-            "acceptor_atom": "N4",
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
             "source": "canonical"
           }
         ],
@@ -233,13 +232,7 @@
         "wrong_atoms": {
           "N2->N3": "Expected N2->O2, got N2->N3"
         },
-        "distance_issues": [
-          {
-            "atom": "N2-O2",
-            "distance": 2.41,
-            "issue": "too_short"
-          }
-        ],
+        "distance_issues": [],
         "overloaded_acceptors": []
       },
       "geometric_diagnostics": {
@@ -249,85 +242,6 @@
         "rmsd_gap": 0.0,
         "interbase_angle": 18.683,
         "n1n9_distance": 8.505,
-        "is_geometric_outlier": false
-      }
-    },
-    {
-      "res_id1": "B-C-145",
-      "res_id2": "B-G-158",
-      "sequence": "CG",
-      "our_prediction": "cWW",
-      "dssr_class": "cWW",
-      "saenger": "19-XIX",
-      "reasons": [
-        "distance_issues"
-      ],
-      "hbond_diagnostics": {
-        "expected_hbonds": [
-          {
-            "donor_atom": "N4",
-            "acceptor_atom": "O6",
-            "source": "canonical"
-          },
-          {
-            "donor_atom": "N3",
-            "acceptor_atom": "N1",
-            "source": "canonical"
-          },
-          {
-            "donor_atom": "O2",
-            "acceptor_atom": "N2",
-            "source": "canonical"
-          }
-        ],
-        "found_hbonds": [
-          {
-            "donor_atom": "N2",
-            "acceptor_atom": "O2",
-            "distance": 2.43,
-            "context": "base_base",
-            "h_slot": 1,
-            "lp_slot": 0,
-            "alignment": 0.85
-          },
-          {
-            "donor_atom": "N1",
-            "acceptor_atom": "N3",
-            "distance": 2.67,
-            "context": "base_base",
-            "h_slot": 0,
-            "lp_slot": 0,
-            "alignment": 1.99
-          },
-          {
-            "donor_atom": "N4",
-            "acceptor_atom": "O6",
-            "distance": 2.88,
-            "context": "base_base",
-            "h_slot": 1,
-            "lp_slot": 0,
-            "alignment": 1.04
-          }
-        ],
-        "missing_hbonds": [],
-        "extra_hbonds": [],
-        "wrong_atoms": {},
-        "distance_issues": [
-          {
-            "atom": "N2-O2",
-            "distance": 2.43,
-            "issue": "too_short"
-          }
-        ],
-        "overloaded_acceptors": []
-      },
-      "geometric_diagnostics": {
-        "rmsd_cww": 0.20663890922787895,
-        "rmsd_best": 0.20663890922787895,
-        "best_lw": "cWW",
-        "rmsd_gap": 0.0,
-        "interbase_angle": 15.16,
-        "n1n9_distance": 8.676,
         "is_geometric_outlier": false
       }
     },
@@ -354,8 +268,8 @@
             "source": "canonical"
           },
           {
-            "donor_atom": "O6",
-            "acceptor_atom": "N4",
+            "donor_atom": "N4",
+            "acceptor_atom": "O6",
             "source": "canonical"
           }
         ],

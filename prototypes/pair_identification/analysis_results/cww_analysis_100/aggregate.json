@@ -2,17 +2,17 @@
   "summary": {
     "total_pdbs": 100,
     "total_canonical_cww": 3848,
-    "true_positives": 3012,
-    "false_negatives": 836,
+    "true_positives": 3124,
+    "false_negatives": 724,
     "false_positives": 0,
     "dssr_questionable": 78,
-    "accuracy": 0.7827,
-    "adjusted_accuracy": 0.7989,
-    "sensitivity": 0.7827,
+    "accuracy": 0.8119,
+    "adjusted_accuracy": 0.8286,
+    "sensitivity": 0.8119,
     "precision": 1.0
   },
   "reason_distribution": {
-    "distance_issues": 467,
+    "distance_issues": 334,
     "missing_hbonds": 241,
     "no_hbonds": 225,
     "extra_hbonds": 193,
@@ -24,7 +24,7 @@
   },
   "reason_by_sequence": {
     "AU": {
-      "distance_issues": 39,
+      "distance_issues": 30,
       "missing_hbonds": 12,
       "non_canonical": 9,
       "wrong_atoms": 6,
@@ -34,7 +34,7 @@
       "dssr_questionable": 2
     },
     "CG": {
-      "distance_issues": 174,
+      "distance_issues": 131,
       "no_hbonds": 105,
       "missing_hbonds": 105,
       "wrong_atoms": 76,
@@ -44,7 +44,7 @@
       "non_canonical": 30
     },
     "GC": {
-      "distance_issues": 209,
+      "distance_issues": 134,
       "missing_hbonds": 111,
       "no_hbonds": 104,
       "extra_hbonds": 102,
@@ -55,7 +55,7 @@
       "rmsd_prefers_other": 5
     },
     "UA": {
-      "distance_issues": 45,
+      "distance_issues": 39,
       "missing_hbonds": 13,
       "no_hbonds": 10,
       "wrong_atoms": 9,
@@ -74,7 +74,7 @@
     "N3->N3: Expected N3->N1, got N3->N3": 1
   },
   "rmsd_gap_distribution": {
-    "0-0.1": 750,
+    "0-0.1": 638,
     "0.1-0.2": 59,
     "0.2-0.3": 10,
     "0.3-0.5": 6,
@@ -83,23 +83,23 @@
   },
   "sequence_breakdown": {
     "AU": {
-      "total": 54,
-      "misses": 54,
+      "total": 45,
+      "misses": 45,
       "accuracy": 0.0
     },
     "CG": {
-      "total": 339,
-      "misses": 339,
+      "total": 302,
+      "misses": 302,
       "accuracy": 0.0
     },
     "GC": {
-      "total": 379,
-      "misses": 379,
+      "total": 319,
+      "misses": 319,
       "accuracy": 0.0
     },
     "UA": {
-      "total": 64,
-      "misses": 64,
+      "total": 58,
+      "misses": 58,
       "accuracy": 0.0
     }
   }

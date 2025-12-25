@@ -26,8 +26,8 @@
       "hbond_diagnostics": {
         "expected_hbonds": [
           {
-            "donor_atom": "O4",
-            "acceptor_atom": "N6",
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
             "source": "canonical"
           },
           {
@@ -49,8 +49,8 @@
         ],
         "missing_hbonds": [
           {
-            "donor_atom": "O4",
-            "acceptor_atom": "N6",
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
             "source": "canonical"
           },
           {
@@ -100,8 +100,8 @@
       "hbond_diagnostics": {
         "expected_hbonds": [
           {
-            "donor_atom": "O4",
-            "acceptor_atom": "N6",
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
             "source": "canonical"
           },
           {
@@ -123,8 +123,8 @@
         ],
         "missing_hbonds": [
           {
-            "donor_atom": "O4",
-            "acceptor_atom": "N6",
+            "donor_atom": "N6",
+            "acceptor_atom": "O4",
             "source": "canonical"
           },
           {

@@ -2,10 +2,10 @@
   "pdb_id": "1A34",
   "summary": {
     "total_canonical_cww": 9,
-    "true_positives": 7,
-    "false_negatives": 2,
+    "true_positives": 8,
+    "false_negatives": 1,
     "false_positives": 0,
-    "sensitivity": 0.7777777777777778,
+    "sensitivity": 0.8888888888888888,
     "precision": 1.0
   },
   "false_negatives": [
@@ -28,8 +28,8 @@
             "source": "canonical"
           },
           {
-            "donor_atom": "N1",
-            "acceptor_atom": "N3",
+            "donor_atom": "N3",
+            "acceptor_atom": "N1",
             "source": "canonical"
           }
         ],
@@ -69,76 +69,6 @@
         "rmsd_gap": 0.0,
         "interbase_angle": 10.945,
         "n1n9_distance": 9.414,
-        "is_geometric_outlier": false
-      }
-    },
-    {
-      "res_id1": "B-A-9",
-      "res_id2": "C-U-1",
-      "sequence": "AU",
-      "our_prediction": "tWW",
-      "dssr_class": "cWW",
-      "saenger": "20-XX",
-      "reasons": [
-        "distance_issues"
-      ],
-      "hbond_diagnostics": {
-        "expected_hbonds": [
-          {
-            "donor_atom": "N6",
-            "acceptor_atom": "O4",
-            "source": "canonical"
-          },
-          {
-            "donor_atom": "N1",
-            "acceptor_atom": "N3",
-            "source": "canonical"
-          }
-        ],
-        "found_hbonds": [
-          {
-            "donor_atom": "N3",
-            "acceptor_atom": "N1",
-            "distance": 2.16,
-            "context": "base_base",
-            "h_slot": 0,
-            "lp_slot": 0,
-            "alignment": 1.54
-          },
-          {
-            "donor_atom": "N6",
-            "acceptor_atom": "O4",
-            "distance": 2.29,
-            "context": "base_base",
-            "h_slot": 0,
-            "lp_slot": 1,
-            "alignment": 0.75
-          }
-        ],
-        "missing_hbonds": [],
-        "extra_hbonds": [],
-        "wrong_atoms": {},
-        "distance_issues": [
-          {
-            "atom": "N3-N1",
-            "distance": 2.16,
-            "issue": "too_short"
-          },
-          {
-            "atom": "N6-O4",
-            "distance": 2.29,
-            "issue": "too_short"
-          }
-        ],
-        "overloaded_acceptors": []
-      },
-      "geometric_diagnostics": {
-        "rmsd_cww": 0.6056892171293801,
-        "rmsd_best": 0.5258628715818289,
-        "best_lw": "tWW",
-        "rmsd_gap": 0.07982634554755119,
-        "interbase_angle": 6.622,
-        "n1n9_distance": 7.925,
         "is_geometric_outlier": false
       }
     }
