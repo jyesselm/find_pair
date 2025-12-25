@@ -110,8 +110,6 @@ def normalize_res_id(res_id: str) -> str:
     Handles:
     - DNA prefixes (DC, DG, DA, DT, DU)
     - Modified residue names with digits (PSU, 5MC, 7MG, A2M, H2U, etc.)
-    - Insertion codes with caret (A.A22^L -> A.A22L)
-    - Slash notation for alternate chains (A.U31/6 -> A.U31)
     """
     # Import registry for modified residue lookup
     try:
@@ -128,58 +126,34 @@ def normalize_res_id(res_id: str) -> str:
     chain = parts[0]
     res = parts[1]
 
-    # Handle insertion code caret: A22^L -> A22L
-    res = res.replace('^', '')
-
-    # Handle slash notation: U31/6 -> U31
-    if '/' in res:
-        res = res.split('/')[0]
-
     # Standard bases (quick check)
     STANDARD_BASES = {'A', 'G', 'C', 'U', 'T'}
-    DNA_PREFIXES = {'DA', 'DG', 'DC', 'DT', 'DU'}
 
-    # PRIORITY 1: Check DNA prefix FIRST (DA, DG, DC, DT, DU)
-    # DNA prefixes are always exactly 2 chars
-    if len(res) >= 3 and res[:2].upper() in DNA_PREFIXES:
+    # PRIORITY 1: Check standard 1-character bases FIRST (A, G, C, U, T)
+    # This prevents "A231" from being parsed as modified residue "A23" + "1"
+    if len(res) >= 2 and res[0].upper() in STANDARD_BASES:
+        candidate_num = res[1:]
+        if candidate_num and (candidate_num[0].isdigit() or
+                              (candidate_num[0] == '-' and len(candidate_num) > 1 and candidate_num[1].isdigit())):
+            return f"{chain}.{res[0].upper()}{candidate_num}"
+
+    # PRIORITY 2: Check DNA prefix (DA, DG, DC, DT, DU)
+    # DNA prefixes are always exactly 2 chars, so check if first 2 chars match
+    # This must happen BEFORE trying modified residue names to avoid "DG38" -> "DG3" + "8"
+    if len(res) >= 3 and res[0].upper() == 'D' and res[1].upper() in STANDARD_BASES:
+        # Remainder should be residue number (can be negative or have insertion code)
         candidate_num = res[2:]
         if candidate_num and (candidate_num[0].isdigit() or
                               (candidate_num[0] == '-' and len(candidate_num) > 1 and candidate_num[1].isdigit())):
             return f"{chain}.{res[1].upper()}{candidate_num}"
 
-    # PRIORITY 2: Check standard 1-character bases (A, G, C, U, T)
-    # BUT only if the remainder is purely numeric (no letters that could be part of modified name)
-    # This handles "A231" as "A" + "231" but NOT "A2M5"
-    if len(res) >= 2 and res[0].upper() in STANDARD_BASES:
-        candidate_num = res[1:]
-        # Only match if the rest is purely numeric (or starts with minus for negative numbers)
-        # This prevents "A2M5" from matching as "A" + "2M5"
-        if candidate_num:
-            first_char = candidate_num[0]
-            # Check if it's a pure number or negative number
-            if first_char.isdigit():
-                # Make sure there are no letters after the first digit (except insertion codes at end)
-                # This allows "A231" and "A231A" but not "A2M5"
-                rest = candidate_num[1:]
-                # Check if rest contains only digits and possibly an insertion code letter at the end
-                if all(c.isdigit() for c in rest) or (rest and all(c.isdigit() for c in rest[:-1]) and rest[-1].isalpha()):
-                    return f"{chain}.{res[0].upper()}{candidate_num}"
-            elif first_char == '-' and len(candidate_num) > 1 and candidate_num[1].isdigit():
-                return f"{chain}.{res[0].upper()}{candidate_num}"
+    # Smart parsing: try different split points to find valid residue name
+    # Modified residues can have digits (A2M, 5MC, 7MG, H2U, etc.)
+    # e.g., "A2M5" -> res_name="A2M", res_num="5"
+    # e.g., "PSU655" -> res_name="PSU", res_num="655"
+    # e.g., "7MG10" -> res_name="7MG", res_num="10"
 
-    # PRIORITY 3: Check for 3-char modified residues (A2M, 5MC, G7M, H2U, PSU, etc.)
-    # These have the format: 3-char-code + residue-number
-    if len(res) >= 4:  # Need at least 3 chars for code + 1 for number
-        candidate_name = res[:3]
-        candidate_num = res[3:]
-        if candidate_num and (candidate_num[0].isdigit() or
-                              (candidate_num[0] == '-' and len(candidate_num) > 1 and candidate_num[1].isdigit())):
-            parent = registry.get_parent_base(candidate_name.upper())
-            if parent:
-                return f"{chain}.{parent}{candidate_num}"
-
-    # PRIORITY 4 (Fallback): Try progressively longer prefixes for unusual modified residues
-    # Handles cases not covered above (4+ char modified residue codes like IRES, 5BRU, etc.)
+    # Try progressively shorter prefixes until we find a valid residue name
     for i in range(len(res), 0, -1):
         candidate_name = res[:i]
         candidate_num = res[i:]
@@ -256,14 +230,10 @@ def run_dssr(pdb_path: Path) -> str:
         sys.exit(1)
 
 
-def parse_pdb_residues(pdb_path: Path, include_protein: bool = True) -> Dict[str, Residue]:
+def parse_pdb_residues(pdb_path: Path) -> Dict[str, Residue]:
     """Parse PDB and return residues keyed by DSSR-style ID (e.g., "A.G1").
 
     Uses ModifiedResidueRegistry to handle modified nucleotides like 5MC, H2U, PSU.
-
-    Args:
-        pdb_path: Path to PDB file
-        include_protein: If True, also parse amino acid residues for RNA-protein H-bonds
     """
     # Import registry for modified residue lookup
     try:
@@ -274,8 +244,8 @@ def parse_pdb_residues(pdb_path: Path, include_protein: bool = True) -> Dict[str
     registry = get_registry()
     residues = {}
 
-    # Standard nucleotide residue mapping (quick lookup)
-    NUC_RES_MAP = {
+    # Standard residue mapping (quick lookup)
+    RES_MAP = {
         'ADE': 'A', 'A': 'A', 'DA': 'A', 'RA': 'A',
         'GUA': 'G', 'G': 'G', 'DG': 'G', 'RG': 'G',
         'CYT': 'C', 'C': 'C', 'DC': 'C', 'RC': 'C',
@@ -283,14 +253,8 @@ def parse_pdb_residues(pdb_path: Path, include_protein: bool = True) -> Dict[str
         'THY': 'T', 'T': 'T', 'DT': 'T',
     }
 
-    # Standard amino acids (3-letter codes)
-    AMINO_ACIDS = {
-        'ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY', 'HIS', 'ILE',
-        'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL',
-    }
-
-    # Atoms we track for nucleotides
-    NUC_TRACKED_ATOMS = {
+    # Atoms we track (N and O only, no C-H)
+    TRACKED_ATOMS = {
         # Base N atoms
         'N1', 'N2', 'N3', 'N4', 'N6', 'N7', 'N9',
         # Base O atoms
@@ -305,45 +269,9 @@ def parse_pdb_residues(pdb_path: Path, include_protein: bool = True) -> Dict[str
         'C2', 'C4', 'C5', 'C6', 'C8',
     }
 
-    # Atoms we track for amino acids
-    PROTEIN_TRACKED_ATOMS = {
-        # Backbone atoms
-        'N', 'CA', 'C', 'O', 'OXT',
-        # Side chain donors/acceptors by residue type
-        # ARG: guanidinium
-        'NE', 'NH1', 'NH2', 'CZ',
-        # ASN: amide
-        'ND2', 'OD1', 'CG',
-        # ASP: carboxylate
-        'OD1', 'OD2',
-        # CYS: thiol (can be donor in some cases)
-        'SG',
-        # GLN: amide
-        'NE2', 'OE1', 'CD',
-        # GLU: carboxylate
-        'OE1', 'OE2',
-        # HIS: imidazole
-        'ND1', 'NE2', 'CE1', 'CD2', 'CG',
-        # LYS: amino
-        'NZ', 'CE',
-        # SER: hydroxyl
-        'OG', 'CB',
-        # THR: hydroxyl
-        'OG1', 'CB', 'CG2',
-        # TRP: indole NH
-        'NE1', 'CD1', 'CE2',
-        # TYR: hydroxyl
-        'OH', 'CZ', 'CE1', 'CE2',
-    }
-
     with open(pdb_path) as f:
         for line in f:
             if not line.startswith(('ATOM', 'HETATM')):
-                continue
-
-            # Handle alternate conformers - only take ' ' or 'A' (major conformer)
-            alt_loc = line[16] if len(line) > 16 else ' '
-            if alt_loc not in (' ', 'A'):
                 continue
 
             atom_name = line[12:16].strip()
@@ -352,27 +280,19 @@ def parse_pdb_residues(pdb_path: Path, include_protein: bool = True) -> Dict[str
             res_seq = line[22:26].strip()
             ins_code = line[26].strip()
 
+            # Try standard mapping first
             res_name_upper = res_name.upper()
-
-            # Check if it's a nucleotide
-            base_type = NUC_RES_MAP.get(res_name_upper)
-            is_nucleotide = True
+            base_type = RES_MAP.get(res_name_upper)
 
             # If not found, try the modified residue registry
             if not base_type:
                 base_type = registry.get_parent_base(res_name_upper)
 
-            # Check if it's an amino acid
-            if not base_type and include_protein and res_name_upper in AMINO_ACIDS:
-                base_type = res_name_upper  # Use 3-letter code as base_type for proteins
-                is_nucleotide = False
-
             if not base_type:
                 continue
 
-            # Build residue ID
-            # For nucleotides: "chain.base#" (e.g., "A.G1")
-            # For proteins: "chain.RES#" (e.g., "A.ALA1")
+            # DSSR-style residue ID: "chain.base#"
+            # For modified residues, use the parent base in the ID (matches DSSR output)
             dssr_id = f"{chain}.{base_type}{res_seq}{ins_code}".rstrip()
 
             if dssr_id not in residues:
@@ -383,9 +303,7 @@ def parse_pdb_residues(pdb_path: Path, include_protein: bool = True) -> Dict[str
                     residue_code=res_name_upper  # Store original 3-letter code
                 )
 
-            # Track appropriate atoms based on residue type
-            tracked = NUC_TRACKED_ATOMS if is_nucleotide else PROTEIN_TRACKED_ATOMS
-            if atom_name in tracked:
+            if atom_name in TRACKED_ATOMS:
                 x = float(line[30:38])
                 y = float(line[38:46])
                 z = float(line[46:54])

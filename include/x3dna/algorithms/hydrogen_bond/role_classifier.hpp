@@ -7,8 +7,8 @@
 
 #include <string>
 #include <vector>
-#include <x3dna/core/hbond_types.hpp>
-#include <x3dna/core/hbond.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hbond_types.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hbond.hpp>
 #include <x3dna/core/typing/molecule_type.hpp>
 
 namespace x3dna {

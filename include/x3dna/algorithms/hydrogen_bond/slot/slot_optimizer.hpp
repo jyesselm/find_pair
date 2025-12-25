@@ -15,7 +15,7 @@
 #include <x3dna/algorithms/hydrogen_bond/slot/hbond_candidate.hpp>
 #include <x3dna/algorithms/hydrogen_bond/slot/slot_optimizer_params.hpp>
 #include <x3dna/core/residue.hpp>
-#include <x3dna/core/hbond.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hbond.hpp>
 
 namespace x3dna {
 namespace algorithms {

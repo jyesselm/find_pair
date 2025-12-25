@@ -7,7 +7,7 @@
 
 #include <optional>
 #include <string>
-#include <x3dna/core/hbond_types.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hbond_types.hpp>
 #include <x3dna/core/typing/molecule_type.hpp>
 
 // Forward declarations

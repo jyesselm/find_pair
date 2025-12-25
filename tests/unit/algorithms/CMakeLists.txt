@@ -134,16 +134,3 @@ target_link_libraries(test_role_classifier
 )
 
 gtest_discover_tests(test_role_classifier)
-
-# Slot optimizer tests
-add_executable(test_slot_optimizer
-    test_slot_optimizer.cpp
-)
-
-target_link_libraries(test_slot_optimizer
-    PRIVATE
-    x3dna
-    gtest_main
-)
-
-gtest_discover_tests(test_slot_optimizer)

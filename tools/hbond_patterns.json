@@ -1,26 +1,6 @@
 {
   "_description": "H-bond patterns for Leontis-Westhof base pair classifications",
   "_note": "donor_base: 1 or 2, donor_atom: atom with H, acceptor_atom: atom receiving H",
-  "_angle_note": "donor_attached: atom bonded to donor (for X-D-H angle), acceptor_attached: atom bonded to acceptor (for D-A-Y angle)",
-
-  "donor_attached_atoms": {
-    "_description": "For each donor atom, the heavy atom attached to it for angle calculation",
-    "N1": {"attached": "C2", "ideal_angle": 120.0, "type": "ring_NH"},
-    "N2": {"attached": "C2", "ideal_angle": 120.0, "type": "amino"},
-    "N3": {"attached": "C2", "ideal_angle": 120.0, "type": "ring_NH"},
-    "N4": {"attached": "C4", "ideal_angle": 120.0, "type": "amino"},
-    "N6": {"attached": "C6", "ideal_angle": 120.0, "type": "amino"}
-  },
-
-  "acceptor_attached_atoms": {
-    "_description": "For each acceptor atom, the heavy atom attached to it for angle calculation",
-    "O2": {"attached": "C2", "ideal_angle": 120.0, "type": "carbonyl"},
-    "O4": {"attached": "C4", "ideal_angle": 120.0, "type": "carbonyl"},
-    "O6": {"attached": "C6", "ideal_angle": 120.0, "type": "carbonyl"},
-    "N1": {"attached": "C6", "ideal_angle": 125.0, "type": "ring_N"},
-    "N3": {"attached": "C4", "ideal_angle": 125.0, "type": "ring_N"},
-    "N7": {"attached": "C5", "ideal_angle": 125.0, "type": "ring_N"}
-  },
 
   "edge_atoms": {
     "_description": "Atoms involved in each edge for each base type",

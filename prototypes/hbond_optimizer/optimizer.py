@@ -14,15 +14,13 @@ try:
     from .geometry import (
         normalize, angle_between, compute_base_normal,
         predict_h_slots, predict_lp_slots, score_hbond_alignment,
-        HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY,
-        get_donor_capacity, get_acceptor_capacity
+        HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY
     )
 except ImportError:
     from geometry import (
         normalize, angle_between, compute_base_normal,
         predict_h_slots, predict_lp_slots, score_hbond_alignment,
-        HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY,
-        get_donor_capacity, get_acceptor_capacity
+        HSlot, LPSlot, DONOR_CAPACITY, ACCEPTOR_CAPACITY
     )
 
 
@@ -79,15 +77,10 @@ class HBondCandidate:
     alignment_score: float = 0.0
 
     def quality_score(self) -> float:
-        """Combined quality score (lower distance + higher alignment = better).
-
-        This allows better-aligned H-bonds to compete with slightly shorter ones.
-        Each 0.4 Å of extra distance can be compensated by 1.0 alignment improvement.
-        """
-        # Score = -distance + 0.4 * alignment
-        # Weight 0.4 allows good alignment to overcome ~0.25Å distance disadvantage
-        # when alignment difference is ~0.7 (like 1GID N1->N7 vs N2->N7 case)
-        return -self.distance + 0.4 * self.alignment_score
+        """Combined quality score (lower distance + higher alignment = better)."""
+        # Prioritize distance - shorter is better
+        # Alignment is used as a filter, not for scoring
+        return -self.distance
 
 
 @dataclass
@@ -112,24 +105,14 @@ class HBondOptimizer:
     2. Predicting H and LP positions from geometry
     3. Scoring alignment of each candidate with available slots
     4. Greedily selecting best candidates while respecting capacity
-
-    In baseline_mode, uses simpler legacy-compatible selection:
-    - Distance range 2.5-3.5Å for "good" H-bonds
-    - Simpler conflict resolution based on distance
-    - No slot-based saturation tracking
     """
-
-    # Backbone atoms for filtering in baseline mode (phosphate backbone only)
-    # Note: O2' and O4' are sugar atoms, not backbone
-    BACKBONE_ATOMS = {'P', 'O1P', 'O2P', 'OP1', 'OP2', "O3'", "O5'"}
 
     def __init__(self,
                  max_distance: float = 4.0,
                  min_alignment: float = 0.3,
-                 min_bifurcation_angle: float = 43.0,
+                 min_bifurcation_angle: float = 45.0,
                  min_bifurcation_alignment: float = 0.5,
-                 short_distance_threshold: float = 3.5,
-                 baseline_mode: bool = False):
+                 short_distance_threshold: float = 3.2):
         """
         Args:
             max_distance: Maximum donor-acceptor distance in Angstroms
@@ -137,18 +120,12 @@ class HBondOptimizer:
             min_bifurcation_angle: Minimum angle between bonds sharing a slot (degrees)
             min_bifurcation_alignment: Stricter alignment for bifurcated bonds (0-2)
             short_distance_threshold: Below this distance, skip alignment check (distance-only mode)
-            baseline_mode: If True, use legacy-compatible C++ baseline selection
         """
         self.max_distance = max_distance
         self.min_alignment = min_alignment
         self.min_bifurcation_angle = min_bifurcation_angle
         self.min_bifurcation_alignment = min_bifurcation_alignment
         self.short_distance_threshold = short_distance_threshold
-        self.baseline_mode = baseline_mode
-
-        # Baseline mode parameters
-        self.baseline_min_distance = 2.5
-        self.baseline_max_distance = 3.5
 
         self.residues: Dict[str, Residue] = {}
         self.candidates: List[HBondCandidate] = []
@@ -183,17 +160,15 @@ class HBondOptimizer:
 
         candidates = []
 
-        # Get residue codes for CIF-aware capacity lookup
-        res1_code = res1.residue_code if res1.residue_code else res1.base_type.upper()
-        res2_code = res2.residue_code if res2.residue_code else res2.base_type.upper()
-
         # Check res1 donors -> res2 acceptors
         for donor_atom, donor_pos in res1.atoms.items():
-            if get_donor_capacity(res1_code, donor_atom.strip()) == 0:
+            donor_key = (res1.base_type.upper(), donor_atom.strip())
+            if donor_key not in DONOR_CAPACITY:
                 continue
 
             for acceptor_atom, acceptor_pos in res2.atoms.items():
-                if get_acceptor_capacity(res2_code, acceptor_atom.strip()) == 0:
+                acceptor_key = (res2.base_type.upper(), acceptor_atom.strip())
+                if acceptor_key not in ACCEPTOR_CAPACITY:
                     continue
 
                 # Skip intra-residue base-to-base contacts (covalent bonds)
@@ -214,11 +189,13 @@ class HBondOptimizer:
 
         # Check res2 donors -> res1 acceptors
         for donor_atom, donor_pos in res2.atoms.items():
-            if get_donor_capacity(res2_code, donor_atom.strip()) == 0:
+            donor_key = (res2.base_type.upper(), donor_atom.strip())
+            if donor_key not in DONOR_CAPACITY:
                 continue
 
             for acceptor_atom, acceptor_pos in res1.atoms.items():
-                if get_acceptor_capacity(res1_code, acceptor_atom.strip()) == 0:
+                acceptor_key = (res1.base_type.upper(), acceptor_atom.strip())
+                if acceptor_key not in ACCEPTOR_CAPACITY:
                     continue
 
                 # Skip intra-residue base-to-base contacts (covalent bonds)
@@ -375,102 +352,7 @@ class HBondOptimizer:
     def optimize_pair(self, res1_id: str, res2_id: str) -> List[HBond]:
         """Find and select optimal H-bonds between two residues."""
         candidates = self.find_candidates(res1_id, res2_id)
-        if self.baseline_mode:
-            return self.select_baseline(candidates)
         return self.select_optimal(candidates)
-
-    @staticmethod
-    def _normalize_atom_name(atom: str) -> str:
-        """Normalize atom names (handle OP1/OP2 vs O1P/O2P variants)."""
-        atom = atom.strip()
-        # Normalize phosphate oxygens
-        if atom == 'OP1':
-            return 'O1P'
-        if atom == 'OP2':
-            return 'O2P'
-        return atom
-
-    def _is_backbone_backbone(self, atom1: str, atom2: str) -> bool:
-        """Check if both atoms are backbone atoms."""
-        a1 = self._normalize_atom_name(atom1)
-        a2 = self._normalize_atom_name(atom2)
-        return a1 in self.BACKBONE_ATOMS and a2 in self.BACKBONE_ATOMS
-
-    def select_baseline(self, candidates: List[HBondCandidate]) -> List[HBond]:
-        """
-        Select H-bonds using baseline C++ compatible algorithm.
-
-        This mimics the legacy behavior:
-        1. Filter to distance range 2.5-3.5Å
-        2. Skip backbone-backbone H-bonds
-        3. Resolve conflicts by keeping shortest bond per atom
-        4. Use linkage-type filtering for non-standard bonds
-        """
-        if not candidates:
-            return []
-
-        # Filter by distance range and backbone-backbone
-        valid_candidates = []
-        for c in candidates:
-            # Skip backbone-backbone
-            if self._is_backbone_backbone(c.donor_atom, c.acceptor_atom):
-                continue
-            # Apply distance filter
-            if self.baseline_min_distance <= c.distance <= self.baseline_max_distance:
-                valid_candidates.append(c)
-
-        if not valid_candidates:
-            return []
-
-        # Sort by distance (shortest first)
-        valid_candidates.sort(key=lambda c: c.distance)
-
-        # Simple conflict resolution: keep shortest bond for each atom
-        # Track which atoms have been used
-        used_donors = defaultdict(int)  # (res_id, atom) -> count
-        used_acceptors = defaultdict(int)
-
-        selected = []
-        for c in valid_candidates:
-            donor_key = (c.donor_res_id, c.donor_atom)
-            acceptor_key = (c.acceptor_res_id, c.acceptor_atom)
-
-            # Get capacities
-            donor_res = self.residues.get(c.donor_res_id)
-            acceptor_res = self.residues.get(c.acceptor_res_id)
-
-            if not donor_res or not acceptor_res:
-                continue
-
-            # Get capacity from geometry module
-            donor_code = donor_res.residue_code if donor_res.residue_code else donor_res.base_type
-            acceptor_code = acceptor_res.residue_code if acceptor_res.residue_code else acceptor_res.base_type
-
-            donor_capacity = get_donor_capacity(donor_code, c.donor_atom)
-            acceptor_capacity = get_acceptor_capacity(acceptor_code, c.acceptor_atom)
-
-            # Check if atoms still have capacity
-            if used_donors[donor_key] >= donor_capacity:
-                continue
-            if used_acceptors[acceptor_key] >= acceptor_capacity:
-                continue
-
-            # Accept this H-bond
-            used_donors[donor_key] += 1
-            used_acceptors[acceptor_key] += 1
-
-            selected.append(HBond(
-                donor_res_id=c.donor_res_id,
-                donor_atom=c.donor_atom,
-                acceptor_res_id=c.acceptor_res_id,
-                acceptor_atom=c.acceptor_atom,
-                distance=c.distance,
-                h_slot_idx=0,
-                lp_slot_idx=0,
-                alignment_score=0.0
-            ))
-
-        return selected
 
 
 def format_hbond(hb: HBond) -> str:

@@ -14,9 +14,9 @@
 #pragma once
 
 #include <vector>
-#include <x3dna/core/hbond.hpp>
-#include <x3dna/core/hbond_quality.hpp>
-#include <x3dna/core/hbond_types.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hbond.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hbond_quality.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hbond_types.hpp>
 
 // Forward declaration
 namespace x3dna {

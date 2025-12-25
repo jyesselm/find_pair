@@ -6,7 +6,7 @@
 #pragma once
 
 #include <string>
-#include <x3dna/core/hbond_types.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hbond_types.hpp>
 
 // Forward declaration
 namespace x3dna {

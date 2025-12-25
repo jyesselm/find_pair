@@ -6,8 +6,8 @@
 #pragma once
 
 #include <vector>
-#include <x3dna/core/hbond.hpp>
-#include <x3dna/core/hbond_types.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hbond.hpp>
+#include <x3dna/algorithms/hydrogen_bond/hbond_types.hpp>
 
 namespace x3dna {
 namespace algorithms {
