@@ -1,0 +1,13 @@
+{
+  "pdb_id": "1DNX",
+  "summary": {
+    "total_canonical_cww": 6,
+    "true_positives": 6,
+    "false_negatives": 0,
+    "false_positives": 0,
+    "sensitivity": 1.0,
+    "precision": 1.0
+  },
+  "false_negatives": [],
+  "false_positives": []
+}

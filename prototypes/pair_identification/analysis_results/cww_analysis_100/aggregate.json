@@ -1,0 +1,95 @@
+{
+  "summary": {
+    "total_pdbs": 99,
+    "total_canonical_cww": 1791,
+    "true_positives": 926,
+    "false_negatives": 865,
+    "false_positives": 0,
+    "accuracy": 0.517,
+    "sensitivity": 0.517,
+    "precision": 1.0
+  },
+  "reason_distribution": {
+    "geometric_outlier": 741,
+    "distance_issues": 196,
+    "extra_hbonds": 124,
+    "wrong_atoms": 123,
+    "missing_hbonds": 42,
+    "rmsd_prefers_other": 24,
+    "non_canonical": 6,
+    "no_hbonds": 4
+  },
+  "reason_by_sequence": {
+    "AU": {
+      "geometric_outlier": 78,
+      "distance_issues": 18,
+      "missing_hbonds": 3,
+      "rmsd_prefers_other": 1,
+      "non_canonical": 1,
+      "no_hbonds": 1
+    },
+    "CG": {
+      "geometric_outlier": 262,
+      "distance_issues": 55,
+      "wrong_atoms": 42,
+      "extra_hbonds": 42,
+      "missing_hbonds": 11,
+      "rmsd_prefers_other": 8,
+      "non_canonical": 1,
+      "no_hbonds": 1
+    },
+    "GC": {
+      "geometric_outlier": 310,
+      "distance_issues": 109,
+      "extra_hbonds": 79,
+      "wrong_atoms": 78,
+      "missing_hbonds": 26,
+      "rmsd_prefers_other": 13,
+      "no_hbonds": 2,
+      "non_canonical": 2
+    },
+    "UA": {
+      "geometric_outlier": 91,
+      "distance_issues": 14,
+      "wrong_atoms": 3,
+      "extra_hbonds": 3,
+      "missing_hbonds": 2,
+      "rmsd_prefers_other": 2,
+      "non_canonical": 2
+    }
+  },
+  "wrong_atom_distribution": {
+    "N2->N3: Expected N2->O2, got N2->N3": 63,
+    "N1->O2: Expected N1->N3, got N1->O2": 57,
+    "N6->O2: Expected N6->O4, got N6->O2": 3
+  },
+  "rmsd_gap_distribution": {
+    "0-0.1": 841,
+    "0.1-0.2": 16,
+    "0.2-0.3": 5,
+    "0.3-0.5": 1,
+    "0.5-1.0": 2
+  },
+  "sequence_breakdown": {
+    "AU": {
+      "total": 83,
+      "misses": 83,
+      "accuracy": 0.0
+    },
+    "CG": {
+      "total": 301,
+      "misses": 301,
+      "accuracy": 0.0
+    },
+    "GC": {
+      "total": 384,
+      "misses": 384,
+      "accuracy": 0.0
+    },
+    "UA": {
+      "total": 97,
+      "misses": 97,
+      "accuracy": 0.0
+    }
+  }
+}
