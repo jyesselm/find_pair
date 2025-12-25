@@ -298,9 +298,13 @@ class PairVisualizer:
 
                     for hb in entry.get("hbonds", []):
                         if hb.get("context") == "base_base":
-                            # Determine which residue is donor/acceptor
-                            donor_res = 1 if entry["res_id_i"] == res_id1 else 2
-                            acceptor_res = 2 if donor_res == 1 else 1
+                            # Use explicit donor/acceptor residue IDs from JSON
+                            donor_res_id = hb.get("donor_res_id", entry["res_id_i"])
+                            acceptor_res_id = hb.get("acceptor_res_id", entry["res_id_j"])
+
+                            # Map to residue numbers (1 or 2)
+                            donor_res = 1 if donor_res_id == res_id1 else 2
+                            acceptor_res = 1 if acceptor_res_id == res_id1 else 2
 
                             observed.append(
                                 HBondViz(
