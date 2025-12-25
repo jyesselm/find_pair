@@ -39,13 +39,13 @@ def kabsch_align(
     # SVD
     U, S, Vt = np.linalg.svd(H)
 
-    # Compute rotation
-    R = Vt.T @ U.T
+    # Compute rotation (for row-vector convention: P @ R = Q)
+    R = U @ Vt
 
     # Handle reflection case
     if np.linalg.det(R) < 0:
         Vt[-1, :] *= -1
-        R = Vt.T @ U.T
+        R = U @ Vt
 
     return R, centroid_Q, centroid_P
 
