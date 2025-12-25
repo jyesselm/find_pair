@@ -21,17 +21,19 @@ from .diagnostics import GeometricDiagnostics
 
 
 # Normal N1-N9 distance ranges for cWW pairs (Angstroms)
+# Widened thresholds - if RMSD to cWW template is good, the pair is cWW
 CWW_N1N9_RANGE = {
-    "GC": (8.5, 9.3),
-    "CG": (8.5, 9.3),
-    "AU": (8.5, 9.2),
-    "UA": (8.5, 9.2),
-    "GU": (8.0, 9.0),
-    "UG": (8.0, 9.0),
+    "GC": (7.5, 10.0),
+    "CG": (7.5, 10.0),
+    "AU": (7.5, 10.0),
+    "UA": (7.5, 10.0),
+    "GU": (7.0, 10.0),
+    "UG": (7.0, 10.0),
 }
 
 # Threshold for interbase angle outliers (degrees)
-CWW_ANGLE_THRESHOLD = 15.0
+# Widened from 15 to 30 - real cWW pairs can have significant buckling
+CWW_ANGLE_THRESHOLD = 30.0
 
 # Glycosidic nitrogen mapping
 GLYCOSIDIC_NITROGEN = {

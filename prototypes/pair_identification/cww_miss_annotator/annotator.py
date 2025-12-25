@@ -235,7 +235,9 @@ class MissAnnotator:
         # Geometry based reasons
         if g_diag.rmsd_gap > 0.5:  # Another template fits 0.5Å better
             reasons.append("rmsd_prefers_other")
-        if g_diag.is_geometric_outlier:
+        # Only flag geometric_outlier if RMSD is also poor (> 0.5Å)
+        # If RMSD to cWW is good, the pair is clearly cWW regardless of minor variations
+        if g_diag.is_geometric_outlier and g_diag.rmsd_cww > 0.5:
             reasons.append("geometric_outlier")
 
         # DSSR classification based

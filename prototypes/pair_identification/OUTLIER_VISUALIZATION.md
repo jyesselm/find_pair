@@ -29,23 +29,23 @@ python visualize_outlier.py --render-pair 1EHZ A-G-1 A-C-72
 ## Analysis Results Summary
 
 **100 PDB Test Set Results:**
-- Total cWW pairs (DSSR): 1,791
-- True Positives: 926 (51.7%)
-- False Negatives: 865 (48.3%)
+- Total cWW pairs (DSSR): 2,521
+- True Positives: 2,196 (87.1%)
+- False Negatives: 325 (12.9%)
 - **False Positives: 0** (we never incorrectly call cWW)
 
 ## Reason Codes
 
 | Reason | Count | Description |
 |--------|-------|-------------|
-| `geometric_outlier` | 741 (86%) | N1N9 distance or interbase angle outside expected range |
-| `distance_issues` | 196 (23%) | H-bond distances too long or too short |
-| `extra_hbonds` | 124 (14%) | Unexpected H-bonds detected |
-| `wrong_atoms` | 123 (14%) | H-bonds to wrong acceptor atoms (e.g., N2→N3 instead of N2→O2) |
-| `missing_hbonds` | 42 (5%) | Expected H-bonds not found |
-| `rmsd_prefers_other` | 24 (3%) | Geometry fits non-cWW template better |
-| `non_canonical` | 6 (1%) | DSSR Saenger class is "--" |
-| `no_hbonds` | 4 (0.5%) | No H-bonds detected at all |
+| `distance_issues` | 216 (66.5%) | H-bond distances too long or too short |
+| `extra_hbonds` | 157 (48.3%) | Unexpected H-bonds detected |
+| `wrong_atoms` | 156 (48.0%) | H-bonds to wrong acceptor atoms (e.g., N2→N3 instead of N2→O2) |
+| `missing_hbonds` | 53 (16.3%) | Expected H-bonds not found |
+| `geometric_outlier` | 16 (4.9%) | N1N9 distance or angle outlier AND RMSD > 0.5Å |
+| `non_canonical` | 13 (4.0%) | DSSR Saenger class is "--" |
+| `no_hbonds` | 5 (1.5%) | No H-bonds detected at all |
+| `rmsd_prefers_other` | 2 (0.6%) | Geometry fits non-cWW template > 0.5Å better |
 
 ## Command Reference
 

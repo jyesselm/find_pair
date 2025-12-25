@@ -1,53 +1,54 @@
 {
   "summary": {
-    "total_pdbs": 99,
-    "total_canonical_cww": 1791,
-    "true_positives": 927,
-    "false_negatives": 864,
+    "total_pdbs": 100,
+    "total_canonical_cww": 2521,
+    "true_positives": 2196,
+    "false_negatives": 325,
     "false_positives": 0,
-    "accuracy": 0.5176,
-    "sensitivity": 0.5176,
+    "accuracy": 0.8711,
+    "sensitivity": 0.8711,
     "precision": 1.0
   },
   "reason_distribution": {
-    "geometric_outlier": 741,
-    "distance_issues": 196,
-    "extra_hbonds": 124,
-    "wrong_atoms": 123,
-    "missing_hbonds": 42,
-    "non_canonical": 6,
-    "no_hbonds": 4,
+    "distance_issues": 216,
+    "extra_hbonds": 157,
+    "wrong_atoms": 156,
+    "missing_hbonds": 53,
+    "geometric_outlier": 16,
+    "non_canonical": 13,
+    "no_hbonds": 5,
     "rmsd_prefers_other": 2
   },
   "reason_by_sequence": {
     "AU": {
-      "geometric_outlier": 78,
-      "distance_issues": 18,
-      "missing_hbonds": 3,
-      "non_canonical": 1,
-      "no_hbonds": 1
+      "distance_issues": 21,
+      "missing_hbonds": 5,
+      "non_canonical": 4,
+      "geometric_outlier": 3,
+      "wrong_atoms": 2,
+      "extra_hbonds": 2,
+      "no_hbonds": 2
     },
     "CG": {
-      "geometric_outlier": 262,
-      "distance_issues": 55,
-      "wrong_atoms": 42,
-      "extra_hbonds": 42,
-      "missing_hbonds": 11,
-      "non_canonical": 1,
+      "wrong_atoms": 61,
+      "extra_hbonds": 61,
+      "distance_issues": 60,
+      "missing_hbonds": 16,
+      "geometric_outlier": 4,
+      "non_canonical": 3,
       "no_hbonds": 1
     },
     "GC": {
-      "geometric_outlier": 310,
-      "distance_issues": 109,
-      "extra_hbonds": 79,
-      "wrong_atoms": 78,
-      "missing_hbonds": 26,
-      "no_hbonds": 2,
-      "non_canonical": 2
+      "distance_issues": 118,
+      "extra_hbonds": 91,
+      "wrong_atoms": 90,
+      "missing_hbonds": 30,
+      "geometric_outlier": 9,
+      "non_canonical": 4,
+      "no_hbonds": 2
     },
     "UA": {
-      "geometric_outlier": 91,
-      "distance_issues": 14,
+      "distance_issues": 17,
       "wrong_atoms": 3,
       "extra_hbonds": 3,
       "missing_hbonds": 2,
@@ -56,36 +57,38 @@
     }
   },
   "wrong_atom_distribution": {
-    "N2->N3: Expected N2->O2, got N2->N3": 63,
-    "N1->O2: Expected N1->N3, got N1->O2": 57,
-    "N6->O2: Expected N6->O4, got N6->O2": 3
+    "N2->N3: Expected N2->O2, got N2->N3": 83,
+    "N1->O2: Expected N1->N3, got N1->O2": 68,
+    "N6->O2: Expected N6->O4, got N6->O2": 4,
+    "N2->O2': Expected N2->O2, got N2->O2'": 2,
+    "N3->N3: Expected N3->N1, got N3->N3": 1
   },
   "rmsd_gap_distribution": {
-    "0-0.1": 841,
-    "0.1-0.2": 15,
+    "0-0.1": 299,
+    "0.1-0.2": 18,
     "0.2-0.3": 5,
     "0.3-0.5": 1,
     "0.5-1.0": 2
   },
   "sequence_breakdown": {
     "AU": {
-      "total": 83,
-      "misses": 83,
+      "total": 26,
+      "misses": 26,
       "accuracy": 0.0
     },
     "CG": {
-      "total": 300,
-      "misses": 300,
+      "total": 104,
+      "misses": 104,
       "accuracy": 0.0
     },
     "GC": {
-      "total": 384,
-      "misses": 384,
+      "total": 176,
+      "misses": 176,
       "accuracy": 0.0
     },
     "UA": {
-      "total": 97,
-      "misses": 97,
+      "total": 19,
+      "misses": 19,
       "accuracy": 0.0
     }
   }

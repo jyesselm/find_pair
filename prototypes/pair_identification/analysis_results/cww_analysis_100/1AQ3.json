@@ -2,72 +2,13 @@
   "pdb_id": "1AQ3",
   "summary": {
     "total_canonical_cww": 8,
-    "true_positives": 4,
-    "false_negatives": 4,
+    "true_positives": 6,
+    "false_negatives": 2,
     "false_positives": 0,
-    "sensitivity": 0.5,
+    "sensitivity": 0.75,
     "precision": 1.0
   },
   "false_negatives": [
-    {
-      "res_id1": "R-A-3",
-      "res_id2": "R-U-17",
-      "sequence": "AU",
-      "our_prediction": "cWW",
-      "dssr_class": "cWW",
-      "saenger": "20-XX",
-      "reasons": [
-        "geometric_outlier"
-      ],
-      "hbond_diagnostics": {
-        "expected_hbonds": [
-          {
-            "donor_atom": "N6",
-            "acceptor_atom": "O4",
-            "source": "canonical"
-          },
-          {
-            "donor_atom": "N1",
-            "acceptor_atom": "N3",
-            "source": "canonical"
-          }
-        ],
-        "found_hbonds": [
-          {
-            "donor_atom": "N3",
-            "acceptor_atom": "N1",
-            "distance": 2.54,
-            "context": "base_base",
-            "h_slot": 0,
-            "lp_slot": 0,
-            "alignment": 1.97
-          },
-          {
-            "donor_atom": "N6",
-            "acceptor_atom": "O4",
-            "distance": 2.92,
-            "context": "base_base",
-            "h_slot": 0,
-            "lp_slot": 1,
-            "alignment": 1.1
-          }
-        ],
-        "missing_hbonds": [],
-        "extra_hbonds": [],
-        "wrong_atoms": {},
-        "distance_issues": [],
-        "overloaded_acceptors": []
-      },
-      "geometric_diagnostics": {
-        "rmsd_cww": 0.26878909759665587,
-        "rmsd_best": 0.26878909759665587,
-        "best_lw": "cWW",
-        "rmsd_gap": 0.0,
-        "interbase_angle": 20.127,
-        "n1n9_distance": 8.494,
-        "is_geometric_outlier": true
-      }
-    },
     {
       "res_id1": "R-G-5",
       "res_id2": "R-C-15",
@@ -250,79 +191,6 @@
         "interbase_angle": 9.486,
         "n1n9_distance": 8.706,
         "is_geometric_outlier": false
-      }
-    },
-    {
-      "res_id1": "S-G-5",
-      "res_id2": "S-C-15",
-      "sequence": "GC",
-      "our_prediction": "cWW",
-      "dssr_class": "cWW",
-      "saenger": "19-XIX",
-      "reasons": [
-        "geometric_outlier"
-      ],
-      "hbond_diagnostics": {
-        "expected_hbonds": [
-          {
-            "donor_atom": "N1",
-            "acceptor_atom": "N3",
-            "source": "canonical"
-          },
-          {
-            "donor_atom": "N2",
-            "acceptor_atom": "O2",
-            "source": "canonical"
-          },
-          {
-            "donor_atom": "O6",
-            "acceptor_atom": "N4",
-            "source": "canonical"
-          }
-        ],
-        "found_hbonds": [
-          {
-            "donor_atom": "N1",
-            "acceptor_atom": "N3",
-            "distance": 2.79,
-            "context": "base_base",
-            "h_slot": 0,
-            "lp_slot": 0,
-            "alignment": 1.92
-          },
-          {
-            "donor_atom": "N2",
-            "acceptor_atom": "O2",
-            "distance": 2.8,
-            "context": "base_base",
-            "h_slot": 1,
-            "lp_slot": 0,
-            "alignment": 0.96
-          },
-          {
-            "donor_atom": "N4",
-            "acceptor_atom": "O6",
-            "distance": 2.94,
-            "context": "base_base",
-            "h_slot": 1,
-            "lp_slot": 0,
-            "alignment": 0.95
-          }
-        ],
-        "missing_hbonds": [],
-        "extra_hbonds": [],
-        "wrong_atoms": {},
-        "distance_issues": [],
-        "overloaded_acceptors": []
-      },
-      "geometric_diagnostics": {
-        "rmsd_cww": 0.2402559190095252,
-        "rmsd_best": 0.2402559190095252,
-        "best_lw": "cWW",
-        "rmsd_gap": 0.0,
-        "interbase_angle": 18.884,
-        "n1n9_distance": 8.737,
-        "is_geometric_outlier": true
       }
     }
   ],
