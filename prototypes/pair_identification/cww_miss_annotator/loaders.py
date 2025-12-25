@@ -136,7 +136,9 @@ def load_dssr_pairs(
 @dataclass
 class SlotHBond:
     """Slot-based hydrogen bond record."""
+    donor_res_id: str
     donor_atom: str
+    acceptor_res_id: str
     acceptor_atom: str
     distance: float
     context: str
@@ -172,7 +174,9 @@ def load_slot_hbonds(hbond_path: Path) -> Dict[Tuple[str, str], List[SlotHBond]]
         slot_hbonds = []
         for hbond in record.get("hbonds", []):
             slot_hbond = SlotHBond(
+                donor_res_id=hbond.get("donor_res_id", res_id_i),
                 donor_atom=hbond.get("donor_atom", ""),
+                acceptor_res_id=hbond.get("acceptor_res_id", res_id_j),
                 acceptor_atom=hbond.get("acceptor_atom", ""),
                 distance=hbond.get("distance", 0.0),
                 context=hbond.get("context", ""),

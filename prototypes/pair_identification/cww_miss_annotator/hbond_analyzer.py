@@ -116,7 +116,9 @@ class HBondAnalyzer:
         # Convert found_hbonds to dict format for diagnostics
         found_hbond_dicts = [
             {
+                "donor_res_id": hb.donor_res_id,
                 "donor_atom": hb.donor_atom,
+                "acceptor_res_id": hb.acceptor_res_id,
                 "acceptor_atom": hb.acceptor_atom,
                 "distance": hb.distance,
                 "context": hb.context,
