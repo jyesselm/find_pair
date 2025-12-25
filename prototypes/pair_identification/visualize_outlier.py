@@ -138,22 +138,25 @@ Examples:
         metavar=("PDB", "RES1", "RES2"),
         help="Render specific pair: PDB_ID RES_ID1 RES_ID2",
     )
+    # Default paths relative to project root
+    project_root = Path(__file__).parent.parent.parent  # find_pair_2/
+
     parser.add_argument(
         "--pdb-dir",
         type=Path,
-        default=Path("data/pdb"),
+        default=project_root / "data" / "pdb",
         help="PDB directory",
     )
     parser.add_argument(
         "--template-dir",
         type=Path,
-        default=Path("basepair-idealized"),
+        default=project_root / "basepair-idealized",
         help="Template directory",
     )
     parser.add_argument(
         "--hbond-dir",
         type=Path,
-        default=Path("data/json/slot_hbonds"),
+        default=project_root / "data" / "json" / "slot_hbonds",
         help="H-bond JSON directory",
     )
     parser.add_argument(
