@@ -235,20 +235,43 @@ class MissAnnotator:
         """
         reasons = []
 
-        # H-bond based reasons
+        # Get sequence to determine expected H-bond count
+        sequence = dssr_pair.bp.replace("-", "")
+        expected_hbonds = 3 if sequence in ("GC", "CG") else 2  # GC has 3, AU has 2
+
+        # Count good H-bonds (found and no distance issues)
+        n_found = len(h_diag.found_hbonds)
+        n_distance_issues = len(h_diag.distance_issues) if h_diag.distance_issues else 0
+        n_good_hbonds = n_found - n_distance_issues
+
+        # H-bond based reasons - be lenient if enough good H-bonds exist
         if not h_diag.found_hbonds:
             reasons.append("no_hbonds")
         else:
-            if h_diag.missing_hbonds:
-                reasons.append("missing_hbonds")
-            if h_diag.wrong_atoms:
-                reasons.append("wrong_atoms")
-            if h_diag.extra_hbonds:
-                reasons.append("extra_hbonds")
-            if h_diag.distance_issues:
-                reasons.append("distance_issues")
-            if h_diag.overloaded_acceptors:
-                reasons.append("overloaded_acceptor")
+            # For GC/CG: need at least 2 good H-bonds
+            # For AU/UA: need at least 1 good H-bond
+            min_good_hbonds = 2 if expected_hbonds == 3 else 1
+
+            # Only flag issues if we don't have enough good H-bonds
+            # AND the geometry is questionable (RMSD > 0.5)
+            has_enough_good = n_good_hbonds >= min_good_hbonds
+            geometry_ok = g_diag.rmsd_cww <= 0.5
+
+            if has_enough_good and geometry_ok:
+                # Pair is clearly cWW - don't flag minor issues
+                pass
+            else:
+                # Flag issues that could cause misclassification
+                if h_diag.missing_hbonds:
+                    reasons.append("missing_hbonds")
+                if h_diag.wrong_atoms:
+                    reasons.append("wrong_atoms")
+                if h_diag.extra_hbonds:
+                    reasons.append("extra_hbonds")
+                if h_diag.distance_issues:
+                    reasons.append("distance_issues")
+                if h_diag.overloaded_acceptors:
+                    reasons.append("overloaded_acceptor")
 
         # Geometry based reasons
         # Only flag rmsd_prefers_other if the best template has DIFFERENT edges
