@@ -100,7 +100,7 @@ Examples:
     parser.add_argument(
         "--results", "-r",
         type=Path,
-        default=Path("/tmp/cww_test_fixed"),
+        default=Path(__file__).parent / "analysis_results" / "cww_analysis_100",
         help="Results directory from cww_annotate.py",
     )
     parser.add_argument(
