@@ -30,6 +30,23 @@ from cww_miss_annotator.loaders import (
 from core.pdb_parser import parse_pdb
 
 
+def get_edge_pair(lw_class: str) -> str:
+    """Extract edge pair from LW class (ignoring cis/trans).
+
+    cWW and tWW both use Watson-Watson edges, so they should be treated
+    as equivalent when comparing base atoms only (sugars distinguish them).
+
+    Args:
+        lw_class: LW classification (e.g., "cWW", "tWW", "cWS")
+
+    Returns:
+        Edge pair without cis/trans (e.g., "WW", "WS", "HS")
+    """
+    if len(lw_class) >= 3:
+        return lw_class[1:3]  # Extract edge letters (WW, WS, HS, etc.)
+    return lw_class
+
+
 class MissAnnotator:
     """Annotates misclassified cWW pairs with detailed diagnostics.
 
@@ -233,8 +250,13 @@ class MissAnnotator:
                 reasons.append("overloaded_acceptor")
 
         # Geometry based reasons
-        if g_diag.rmsd_gap > 0.5:  # Another template fits 0.5Å better
-            reasons.append("rmsd_prefers_other")
+        # Only flag rmsd_prefers_other if the best template has DIFFERENT edges
+        # cWW and tWW have same edges (WW), so treat them as equivalent
+        if g_diag.rmsd_gap > 0.5:
+            best_edges = get_edge_pair(g_diag.best_lw)
+            target_edges = "WW"  # We're looking for Watson-Watson pairs
+            if best_edges != target_edges:
+                reasons.append("rmsd_prefers_other")
         # Only flag geometric_outlier if RMSD is also poor (> 0.5Å)
         # If RMSD to cWW is good, the pair is clearly cWW regardless of minor variations
         if g_diag.is_geometric_outlier and g_diag.rmsd_cww > 0.5:
