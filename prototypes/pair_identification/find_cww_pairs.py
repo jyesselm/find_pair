@@ -33,6 +33,7 @@ from modified_registry import get_parent_base
 
 
 # N1N9 distance ranges for cWW pairs (from DSSR statistics analysis)
+# Analysis showed expanding to (7.0, 11.0) adds too many false positives
 N1N9_RANGE_CWW = (8.0, 10.0)
 
 # Canonical Watson-Crick sequences (including DNA T equivalents)
@@ -451,6 +452,7 @@ def validate_candidates(
         # 1. Score >= 0.6 AND at least 1 H-bond, OR
         # 2. RMSD < 0.5 AND at least 2 H-bonds (clear geometry match with H-bonds)
         # Requiring H-bonds prevents false positives from stacked non-WC pairs
+        # Note: Lowering to 0.5 was tested but added too many false positives
         cand.is_valid = (
             (cand.score >= 0.6 and found >= 1) or
             (cand.rmsd_cww is not None and cand.rmsd_cww < 0.5 and found >= 2)
