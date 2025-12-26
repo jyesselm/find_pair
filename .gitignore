@@ -101,3 +101,6 @@ pair_cache_*.json
 
 # H-bond benchmark data (generated)
 data/hbond_*.json
+
+# Analysis results (regenerable)
+prototypes/pair_identification/analysis_results/
