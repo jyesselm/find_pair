@@ -356,13 +356,48 @@ def count_wc_hbonds(
     return expected, found
 
 
+def select_best_pairs(validated: List[CandidatePair]) -> List[CandidatePair]:
+    """Select best pair for each residue using greedy mutual selection.
+
+    Each residue can only be in one pair. When a residue appears in multiple
+    validated pairs, keep only the one with the highest score.
+    """
+    # Sort by score descending (best first)
+    sorted_pairs = sorted(validated, key=lambda p: p.score, reverse=True)
+
+    # Track which residues are already paired
+    paired_residues = set()
+    selected = []
+
+    for pair in sorted_pairs:
+        # Normalize res_ids for comparison
+        res1 = normalize_res_id_base(pair.res_id1)
+        res2 = normalize_res_id_base(pair.res_id2)
+
+        # Skip if either residue is already paired
+        if res1 in paired_residues or res2 in paired_residues:
+            continue
+
+        # Accept this pair
+        selected.append(pair)
+        paired_residues.add(res1)
+        paired_residues.add(res2)
+
+    return selected
+
+
 def validate_candidates(
     residues: Dict[str, Residue],
     candidates: List[CandidatePair],
     slot_hbonds: Dict[Tuple[str, str], List[Dict]],
     template_aligner: Optional[TemplateAligner] = None,
+    greedy_selection: bool = True,
 ) -> List[CandidatePair]:
-    """Validate candidate pairs using H-bonds and template RMSD."""
+    """Validate candidate pairs using H-bonds and template RMSD.
+
+    Args:
+        greedy_selection: If True, each residue can only be in one pair (best score wins)
+    """
     validated = []
 
     for cand in candidates:
@@ -424,6 +459,10 @@ def validate_candidates(
         if cand.is_valid:
             validated.append(cand)
 
+    # Apply greedy selection so each residue is in at most one pair
+    if greedy_selection:
+        validated = select_best_pairs(validated)
+
     return validated
 
 
@@ -457,6 +496,7 @@ def normalize_dssr_nt(nt: str) -> str:
     """Convert DSSR nt format to res_id format.
 
     Keeps original base names (DA, DG, 2MG, etc.) without normalizing.
+    Handles DSSR's special format for modified bases: AF2/103 -> AF2-103
     """
     if "." not in nt:
         return nt
@@ -470,6 +510,14 @@ def normalize_dssr_nt(nt: str) -> str:
         rest, alt = rest.split("^", 1)
     else:
         alt = ""
+
+    # DSSR uses / before residue number for modified bases (e.g., AF2/103)
+    # Split on / to separate base name from residue number
+    if "/" in rest:
+        base, num = rest.rsplit("/", 1)
+        if alt:
+            num += alt
+        return f"{chain}-{base}-{num}"
 
     # Find where number starts (handle negative numbers too)
     # Look for last stretch of digits, possibly preceded by minus sign
