@@ -41,10 +41,12 @@ def parse_pdb(path: Path) -> Dict[str, Residue]:
 
             element = line[76:78].strip() if len(line) > 76 else ""
 
-            # Build canonical res_id
+            # Build canonical res_id - use original residue name, not normalized
             seq_with_ins = res_seq + ins_code if ins_code else res_seq
+            res_id = f"{chain_id}-{res_name}-{seq_with_ins}"
+
+            # Normalize base_type for internal use (purine/pyrimidine detection)
             base_type = normalize_base_type(res_name)
-            res_id = f"{chain_id}-{base_type}-{seq_with_ins}"
 
             # Create or update residue
             if res_id not in residues:
