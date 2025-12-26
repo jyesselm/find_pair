@@ -27,7 +27,37 @@ from cww_miss_annotator.loaders import (
     load_dssr_pairs,
     load_slot_hbonds,
 )
+from cww_miss_annotator.bp_score import compute_bp_score
 from core.pdb_parser import parse_pdb
+
+
+def normalize_res_id_for_hbond_lookup(res_id: str) -> str:
+    """Normalize DNA res_ids to match slot H-bond file format.
+
+    Slot H-bond files use single-letter base codes (G, C, A, T, U) while
+    DSSR uses DNA-specific codes (DG, DC, DA, DT). This converts DSSR
+    format to the format used in slot H-bond files.
+
+    Args:
+        res_id: Residue ID in format "chain-base-seqnum" (e.g., "E-DG-2")
+
+    Returns:
+        Normalized res_id (e.g., "E-G-2")
+
+    Examples:
+        >>> normalize_res_id_for_hbond_lookup("E-DG-2")
+        'E-G-2'
+        >>> normalize_res_id_for_hbond_lookup("A-G-10")
+        'A-G-10'
+    """
+    parts = res_id.split("-")
+    if len(parts) >= 2:
+        base = parts[1]
+        # Convert DNA bases (DG, DC, DA, DT) to single-letter codes
+        if base.upper() in ("DG", "DC", "DA", "DT"):
+            parts[1] = base[1].upper()  # Take second letter (G, C, A, T)
+            return "-".join(parts)
+    return res_id
 
 
 def get_edge_pair(lw_class: str) -> str:
@@ -63,11 +93,13 @@ class MissAnnotator:
     """
 
     REASON_CODES = [
-        "no_hbonds",  # No H-bonds detected
+        "no_hbonds",  # No H-bonds detected between bases
+        "poor_planarity",  # Bases not coplanar (interbase angle > 20°)
         "missing_hbonds",  # Some expected H-bonds missing
-        "wrong_atoms",  # H-bonds to wrong acceptor atoms
+        "wrong_hbonds",  # H-bonds to wrong acceptor atoms
         "extra_hbonds",  # Unexpected H-bonds detected
-        "distance_issues",  # H-bond distances out of range
+        "long_hbonds",  # H-bonds detected but distances > 4.0Å
+        "short_hbonds",  # H-bonds detected but distances < 2.0Å (clash)
         "overloaded_acceptor",  # Acceptor has >2 H-bonds
         "rmsd_prefers_other",  # Better RMSD to non-cWW template
         "geometric_outlier",  # Angle or N1N9 distance abnormal
@@ -142,8 +174,15 @@ class MissAnnotator:
         true_positives = 0
 
         for (res_id1, res_id2), dssr_pair in dssr_pairs.items():
+            # Normalize IDs for fallback lookup (DNA prefixes -> RNA codes)
+            norm_id1 = normalize_res_id_for_hbond_lookup(res_id1)
+            norm_id2 = normalize_res_id_for_hbond_lookup(res_id2)
+
             # Get our H-bonds for this pair
+            # Try original IDs first, then normalized IDs (some files use DNA prefixes, some don't)
             hbonds = slot_hbonds.get((res_id1, res_id2), [])
+            if not hbonds:
+                hbonds = slot_hbonds.get((norm_id1, norm_id2), [])
 
             # Analyze H-bonds
             sequence = dssr_pair.bp.replace("-", "")
@@ -153,9 +192,13 @@ class MissAnnotator:
                 dssr_hbonds_desc=dssr_pair.hbonds_desc,
             )
 
-            # Analyze geometry
+            # Analyze geometry (try original IDs, then normalized)
             res1_atoms = self._extract_atom_coords(residues, res_id1)
+            if not res1_atoms:
+                res1_atoms = self._extract_atom_coords(residues, norm_id1)
             res2_atoms = self._extract_atom_coords(residues, res_id2)
+            if not res2_atoms:
+                res2_atoms = self._extract_atom_coords(residues, norm_id2)
 
             g_diag = self.geometric_analyzer.analyze(
                 res1_atoms=res1_atoms,
@@ -166,7 +209,8 @@ class MissAnnotator:
             )
 
             # Determine if this is a miss
-            reasons = self._categorize_miss(h_diag, g_diag, dssr_pair)
+            # Pass atom coords for extended H-bond search when geometry is good
+            reasons = self._categorize_miss(h_diag, g_diag, dssr_pair, res1_atoms, res2_atoms)
 
             if reasons:
                 # This is a false negative (we would miss this cWW pair)
@@ -220,7 +264,8 @@ class MissAnnotator:
         return {name: atom.coords for name, atom in residues[res_id].atoms.items()}
 
     def _categorize_miss(
-        self, h_diag: HBondDiagnostics, g_diag: GeometricDiagnostics, dssr_pair: DSSRPair
+        self, h_diag: HBondDiagnostics, g_diag: GeometricDiagnostics, dssr_pair: DSSRPair,
+        res1_atoms: Dict = None, res2_atoms: Dict = None,
     ) -> List[str]:
         """Determine why a pair would be misclassified.
 
@@ -228,70 +273,72 @@ class MissAnnotator:
             h_diag: H-bond diagnostics
             g_diag: Geometric diagnostics
             dssr_pair: DSSR reference data
+            res1_atoms: Optional atom coordinates for residue 1 (for extended H-bond search)
+            res2_atoms: Optional atom coordinates for residue 2 (for extended H-bond search)
 
         Returns:
             List of reason codes explaining the miss. Empty list if no miss
             (i.e., pair would be correctly classified).
         """
+        sequence = dssr_pair.bp.replace("-", "")
+
+        # Compute BP score first - if score >= threshold, pair is good
+        # found_hbonds is already a list of dicts with context, distance, alignment keys
+        # Pass atom coords for extended H-bond search when geometry is good but H-bonds sparse
+        bp_score, bp_components = compute_bp_score(
+            sequence, g_diag.rmsd_cww, h_diag.found_hbonds,
+            res1_atoms=res1_atoms, res2_atoms=res2_atoms,
+            interbase_angle=g_diag.interbase_angle,
+        )
+
+        # Use lower threshold (0.60) when extended search found H-bonds
+        # These pairs have good geometry but stretched H-bonds - likely real cWW
+        threshold = 0.60 if bp_components.get('extended_search', False) else 0.70
+        if bp_score >= threshold:
+            return []
+
         reasons = []
 
-        # Get sequence to determine expected H-bond count
-        sequence = dssr_pair.bp.replace("-", "")
-        expected_hbonds = 3 if sequence in ("GC", "CG") else 2  # GC has 3, AU has 2
-
-        # Count good H-bonds (found and no distance issues)
-        n_found = len(h_diag.found_hbonds)
-        n_distance_issues = len(h_diag.distance_issues) if h_diag.distance_issues else 0
-        n_good_hbonds = n_found - n_distance_issues
-
-        # H-bond based reasons - be lenient if enough good H-bonds exist
+        # H-bond based reasons
         if not h_diag.found_hbonds:
             reasons.append("no_hbonds")
         else:
-            # For GC/CG: need at least 2 good H-bonds
-            # For AU/UA: need at least 1 good H-bond
-            min_good_hbonds = 2 if expected_hbonds == 3 else 1
-
-            # Only flag issues if we don't have enough good H-bonds
-            # AND the geometry is questionable (RMSD > 0.5)
-            has_enough_good = n_good_hbonds >= min_good_hbonds
-            geometry_ok = g_diag.rmsd_cww <= 0.5
-
-            if has_enough_good and geometry_ok:
-                # Pair is clearly cWW - don't flag minor issues
-                pass
-            else:
-                # Flag issues that could cause misclassification
-                if h_diag.missing_hbonds:
-                    reasons.append("missing_hbonds")
-                if h_diag.wrong_atoms:
-                    reasons.append("wrong_atoms")
-                if h_diag.extra_hbonds:
-                    reasons.append("extra_hbonds")
-                if h_diag.distance_issues:
-                    reasons.append("distance_issues")
-                if h_diag.overloaded_acceptors:
-                    reasons.append("overloaded_acceptor")
+            if h_diag.missing_hbonds:
+                reasons.append("missing_hbonds")
+            if h_diag.wrong_atoms:
+                reasons.append("wrong_hbonds")
+            if h_diag.extra_hbonds:
+                reasons.append("extra_hbonds")
+            # Separate long vs short distance issues
+            if h_diag.distance_issues:
+                has_long = any(issue[2] == "too_long" for issue in h_diag.distance_issues)
+                has_short = any(issue[2] == "too_short" for issue in h_diag.distance_issues)
+                if has_long:
+                    reasons.append("long_hbonds")
+                if has_short:
+                    reasons.append("short_hbonds")
+            if h_diag.overloaded_acceptors:
+                reasons.append("overloaded_acceptor")
 
         # Geometry based reasons
-        # Only flag rmsd_prefers_other if the best template has DIFFERENT edges
-        # cWW and tWW have same edges (WW), so treat them as equivalent
         if g_diag.rmsd_gap > 0.5:
             best_edges = get_edge_pair(g_diag.best_lw)
-            target_edges = "WW"  # We're looking for Watson-Watson pairs
+            target_edges = "WW"
             if best_edges != target_edges:
                 reasons.append("rmsd_prefers_other")
-        # Only flag geometric_outlier if RMSD is also poor (> 0.5Å)
-        # If RMSD to cWW is good, the pair is clearly cWW regardless of minor variations
-        if g_diag.is_geometric_outlier and g_diag.rmsd_cww > 0.5:
+
+        if g_diag.is_geometric_outlier:
             reasons.append("geometric_outlier")
+
+        # Check planarity - bases should be coplanar (angle < 20°)
+        if g_diag.interbase_angle >= 20.0:
+            reasons.append("poor_planarity")
 
         # DSSR classification based
         if dssr_pair.saenger == "--":
             reasons.append("non_canonical")
 
         # Flag likely DSSR errors: high RMSD + no H-bonds = probably not a real cWW
-        # These shouldn't count against our accuracy
         if g_diag.rmsd_cww > 1.0 and not h_diag.found_hbonds:
             reasons.append("dssr_questionable")
 

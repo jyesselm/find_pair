@@ -170,9 +170,9 @@ class HBondAnalyzer:
 
         diagnostics.wrong_atoms = wrong_atoms
 
-        # Check distance issues (outside normal range 2.0-3.5A)
-        # 2.0A minimum is generous - shorter would indicate a clash
-        # 3.5A maximum for heavy atom distance
+        # Check distance issues (outside normal range 2.0-4.0A)
+        # 2.0A minimum - shorter indicates a clash
+        # 4.0A maximum - longer is extremely stretched (not really an H-bond)
         distance_issues = []
         for hb in found_hbonds:
             if hb.distance < 2.0:
@@ -181,7 +181,7 @@ class HBondAnalyzer:
                     hb.distance,
                     "too_short"
                 ))
-            elif hb.distance > 3.5:
+            elif hb.distance > 4.0:
                 distance_issues.append((
                     f"{hb.donor_atom}-{hb.acceptor_atom}",
                     hb.distance,

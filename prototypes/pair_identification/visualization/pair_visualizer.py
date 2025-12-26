@@ -3,7 +3,7 @@
 import sys
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
 import numpy as np
@@ -23,6 +23,11 @@ from core.identifiers import extract_sequence
 
 from .pymol_generator import PyMOLScriptGenerator, HBondViz, TemplateViz
 
+# Import BP scoring
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from cww_miss_annotator.bp_score import compute_bp_score, score_to_grade
+
 
 @dataclass
 class VisualizationResult:
@@ -40,6 +45,11 @@ class VisualizationResult:
     rmsd_values: Dict[str, float]
     best_lw: str
     best_rmsd: float
+
+    # BP score
+    bp_score: float = 0.0
+    bp_score_components: Dict[str, float] = None
+    bp_grade: str = "F"
 
 
 class PairVisualizer:
@@ -176,14 +186,31 @@ class PairVisualizer:
             best_lw = "unknown"
             best_rmsd = float("inf")
 
+        # Only show other templates if cWW is not the best match
+        if best_lw == "cWW":
+            # cWW is best - only show cWW template
+            template_vizs = [t for t in template_vizs if t.name == "cWW"]
+        # else: show all templates to help diagnose why cWW isn't best
+
         # Load H-bonds if requested
         observed_hbonds = []
         expected_hbonds = []
+        raw_hbonds = []  # For BP scoring
 
         if include_hbonds:
-            observed_hbonds, expected_hbonds = self._load_hbonds(
+            observed_hbonds, expected_hbonds, raw_hbonds = self._load_hbonds(
                 pdb_id, res_id1, res_id2, sequence
             )
+
+        # Compute BP score with extended search for pairs with good geometry but sparse H-bonds
+        cww_rmsd = rmsd_values.get("cWW", 1.0)
+        bp_score, bp_components = compute_bp_score(
+            sequence, cww_rmsd, raw_hbonds,
+            res1_atoms=target_res1,
+            res2_atoms=target_res2,
+            interbase_angle=0.0,  # Would need DSSR data for actual angle
+        )
+        bp_grade = score_to_grade(bp_score)
 
         # Generate PyMOL script
         script_name = f"view_{pdb_id}_{res_id1}_{res_id2}".replace("-", "_")
@@ -196,6 +223,9 @@ class PairVisualizer:
             expected_hbonds=expected_hbonds,
             output_name=script_name,
             title=title,
+            bp_score=bp_score,
+            bp_grade=bp_grade,
+            bp_components=bp_components,
         )
 
         return VisualizationResult(
@@ -209,6 +239,9 @@ class PairVisualizer:
             rmsd_values=rmsd_values,
             best_lw=best_lw,
             best_rmsd=best_rmsd,
+            bp_score=bp_score,
+            bp_score_components=bp_components,
+            bp_grade=bp_grade,
         )
 
     def _find_template(self, sequence: str, lw_class: str) -> Optional[Path]:
@@ -277,12 +310,18 @@ class PairVisualizer:
         res_id1: str,
         res_id2: str,
         sequence: str,
-    ) -> Tuple[List[HBondViz], List[HBondViz]]:
-        """Load observed and expected H-bonds."""
+    ) -> Tuple[List[HBondViz], List[HBondViz], List[Dict]]:
+        """Load observed and expected H-bonds.
+
+        Returns:
+            Tuple of (observed_hbonds, expected_hbonds, raw_hbonds)
+            raw_hbonds is the list of H-bond dicts for BP scoring
+        """
         from hbond.patterns import get_cww_expected
 
         observed = []
         expected = []
+        raw_hbonds = []  # For BP scoring
 
         # Load slot H-bonds
         hbond_path = self.hbond_dir / f"{pdb_id}.json"
@@ -298,6 +337,9 @@ class PairVisualizer:
 
                     for hb in entry.get("hbonds", []):
                         if hb.get("context") == "base_base":
+                            # Store raw H-bond for BP scoring
+                            raw_hbonds.append(hb)
+
                             # Use explicit donor/acceptor residue IDs from JSON
                             donor_res_id = hb.get("donor_res_id", entry["res_id_i"])
                             acceptor_res_id = hb.get("acceptor_res_id", entry["res_id_j"])
@@ -340,4 +382,4 @@ class PairVisualizer:
                 )
             )
 
-        return observed, expected
+        return observed, expected, raw_hbonds

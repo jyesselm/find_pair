@@ -11,18 +11,20 @@ from typing import List, Dict, Optional
 sys.path.insert(0, str(Path(__file__).parent))
 
 from visualization import PairVisualizer
+from cww_miss_annotator.bp_score import compute_bp_score, score_to_grade
 
 
-def load_outliers(results_dir: Path, reason_filter: Optional[str] = None, pdb_filter: Optional[str] = None) -> List[Dict]:
+def load_outliers(results_dir: Path, reason_filter: Optional[str] = None, pdb_filter: Optional[str] = None, include_dssr_questionable: bool = False) -> List[Dict]:
     """Load outliers from analysis results.
 
     Args:
         results_dir: Directory containing individual PDB reports
         reason_filter: Optional filter for specific reason code
         pdb_filter: Optional filter for specific PDB ID
+        include_dssr_questionable: If False (default), exclude dssr_questionable pairs
 
     Returns:
-        List of outlier dicts with pdb_id, res_id1, res_id2, sequence, reasons
+        List of outlier dicts with pdb_id, res_id1, res_id2, sequence, reasons, bp_score
     """
     outliers = []
 
@@ -44,29 +46,48 @@ def load_outliers(results_dir: Path, reason_filter: Optional[str] = None, pdb_fi
         for fn in report.get("false_negatives", []):
             reasons = fn.get("reasons", [])
 
+            # Skip dssr_questionable pairs by default (they're DSSR errors, not our misses)
+            if not include_dssr_questionable and "dssr_questionable" in reasons:
+                continue
+
             # Apply filter if specified
             if reason_filter and reason_filter not in reasons:
                 continue
+
+            # Extract data for BP score
+            sequence = fn["sequence"]
+            rmsd_cww = fn.get("geometric_diagnostics", {}).get("rmsd_cww", 1.0)
+            found_hbonds = fn.get("hbond_diagnostics", {}).get("found_hbonds", [])
+
+            # Compute BP score
+            bp_score, bp_components = compute_bp_score(sequence, rmsd_cww, found_hbonds)
+            bp_grade = score_to_grade(bp_score)
 
             outliers.append({
                 "pdb_id": pdb_id,
                 "res_id1": fn["res_id1"],
                 "res_id2": fn["res_id2"],
-                "sequence": fn["sequence"],
+                "sequence": sequence,
                 "reasons": reasons,
                 "our_prediction": fn.get("our_prediction", "unknown"),
-                "rmsd_cww": fn.get("geometric_diagnostics", {}).get("rmsd_cww", 0),
+                "rmsd_cww": rmsd_cww,
                 "rmsd_best": fn.get("geometric_diagnostics", {}).get("rmsd_best", 0),
                 "best_lw": fn.get("geometric_diagnostics", {}).get("best_lw", "unknown"),
+                "bp_score": bp_score,
+                "bp_grade": bp_grade,
+                "bp_components": bp_components,
             })
+
+    # Sort by BP score (best to worst = highest to lowest)
+    outliers.sort(key=lambda x: x["bp_score"], reverse=True)
 
     return outliers
 
 
 def list_outliers(outliers: List[Dict], limit: int = 50):
-    """Print list of outliers."""
-    print(f"\n{'#':<4} {'PDB':<6} {'Pair':<20} {'Seq':<4} {'Reasons':<40} {'Best LW':<8} {'RMSD'}")
-    print("-" * 100)
+    """Print list of outliers sorted by BP score (best to worst)."""
+    print(f"\n{'#':<4} {'Score':<8} {'PDB':<6} {'Pair':<22} {'Seq':<4} {'RMSD':<6} {'Reasons'}")
+    print("-" * 110)
 
     for i, o in enumerate(outliers[:limit]):
         pair = f"{o['res_id1']} - {o['res_id2']}"
@@ -74,11 +95,33 @@ def list_outliers(outliers: List[Dict], limit: int = 50):
         if len(o['reasons']) > 3:
             reasons += f" (+{len(o['reasons'])-3})"
         rmsd = f"{o['rmsd_cww']:.2f}" if o['rmsd_cww'] else "N/A"
+        score_str = f"{o['bp_score']:.2f}({o['bp_grade']})"
 
-        print(f"{i:<4} {o['pdb_id']:<6} {pair:<20} {o['sequence']:<4} {reasons:<40} {o['best_lw']:<8} {rmsd}")
+        print(f"{i:<4} {score_str:<8} {o['pdb_id']:<6} {pair:<22} {o['sequence']:<4} {rmsd:<6} {reasons}")
 
     if len(outliers) > limit:
         print(f"\n... and {len(outliers) - limit} more. Use --limit to show more.")
+
+    # Print score explanation
+    print("\n" + "=" * 60)
+    print("BP SCORE EXPLANATION")
+    print("=" * 60)
+    print("Score = 0.30×RMSD + 0.40×Coverage + 0.30×Quality")
+    print()
+    print("Components:")
+    print("  RMSD:     1.0 if ≤0.3Å, 0.0 if ≥1.0Å, linear between")
+    print("  Coverage: (found H-bonds) / (expected H-bonds)")
+    print("            GC/CG expect 3, AU/UA expect 2")
+    print("  Quality:  H-bond quality with geometry-adjusted leniency")
+    print("            Good geometry (RMSD<0.5Å): accept up to 4.2Å H-bonds")
+    print("            Poor geometry (RMSD>0.8Å): strict 3.2Å threshold")
+    print()
+    print("Grades: A≥0.9, B≥0.8, C≥0.7, D≥0.6, F<0.6")
+    print()
+    print("NOTE: Scores shown here are from saved H-bonds only.")
+    print("      The annotator also uses extended H-bond search (up to 5Å)")
+    print("      which may find additional H-bonds for pairs with good geometry.")
+    print("=" * 60)
 
 
 def main():
@@ -104,15 +147,16 @@ Examples:
     parser.add_argument(
         "--results", "-r",
         type=Path,
-        default=Path(__file__).parent / "analysis_results" / "cww_analysis_100",
+        default=Path(__file__).parent / "analysis_results" / "cww_analysis_v6",
         help="Results directory from cww_annotate.py",
     )
     parser.add_argument(
         "--reason",
         type=str,
         choices=[
-            "geometric_outlier", "rmsd_prefers_other", "distance_issues",
-            "wrong_atoms", "extra_hbonds", "missing_hbonds", "no_hbonds", "non_canonical"
+            "no_hbonds", "missing_hbonds", "long_hbonds", "short_hbonds",
+            "wrong_hbonds", "extra_hbonds", "poor_planarity",
+            "geometric_outlier", "rmsd_prefers_other", "non_canonical", "dssr_questionable"
         ],
         help="Filter by specific reason",
     )
@@ -170,6 +214,11 @@ Examples:
         action="store_true",
         help="Launch PyMOL after generating",
     )
+    parser.add_argument(
+        "--include-questionable",
+        action="store_true",
+        help="Include dssr_questionable pairs (excluded by default as they're DSSR errors)",
+    )
 
     args = parser.parse_args()
 
@@ -206,7 +255,7 @@ Examples:
         print(f"Results directory not found: {args.results}")
         return 1
 
-    outliers = load_outliers(args.results, args.reason, args.pdb)
+    outliers = load_outliers(args.results, args.reason, args.pdb, args.include_questionable)
 
     if not outliers:
         print("No outliers found")

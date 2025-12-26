@@ -202,6 +202,45 @@ BASE_CONNECTIVITY = {
     ('I', "O4'"): ["C1'", "C4'"],
     ('I', "O3'"): ["C3'"],
     ('I', "O5'"): ["C5'"],
+
+    # ========================================
+    # DNA BASES (deoxyribose - no O2')
+    # ========================================
+
+    # Deoxyadenosine (DA)
+    ('DA', 'N6'): ['C6'],
+    ('DA', 'N1'): ['C2', 'C6'],
+    ('DA', 'N3'): ['C2', 'C4'],
+    ('DA', 'N7'): ['C5', 'C8'],
+    ('DA', "O4'"): ["C1'", "C4'"],
+    ('DA', "O3'"): ["C3'"],
+    ('DA', "O5'"): ["C5'"],
+
+    # Deoxyguanosine (DG)
+    ('DG', 'N1'): ['C2', 'C6'],
+    ('DG', 'N2'): ['C2'],
+    ('DG', 'O6'): ['C6'],
+    ('DG', 'N3'): ['C2', 'C4'],
+    ('DG', 'N7'): ['C5', 'C8'],
+    ('DG', "O4'"): ["C1'", "C4'"],
+    ('DG', "O3'"): ["C3'"],
+    ('DG', "O5'"): ["C5'"],
+
+    # Deoxycytidine (DC)
+    ('DC', 'N4'): ['C4'],
+    ('DC', 'N3'): ['C2', 'C4'],
+    ('DC', 'O2'): ['C2'],
+    ('DC', "O4'"): ["C1'", "C4'"],
+    ('DC', "O3'"): ["C3'"],
+    ('DC', "O5'"): ["C5'"],
+
+    # Deoxythymidine (DT)
+    ('DT', 'N3'): ['C2', 'C4'],
+    ('DT', 'O2'): ['C2'],
+    ('DT', 'O4'): ['C4'],
+    ('DT', "O4'"): ["C1'", "C4'"],
+    ('DT', "O3'"): ["C3'"],
+    ('DT', "O5'"): ["C5'"],
 }
 
 # Donor capacity: how many H atoms can donate
@@ -232,6 +271,13 @@ DONOR_CAPACITY = {
 
     # Inosine (I) - like guanine but without N2 amino
     ('I', 'N1'): 1,   # Imino NH
+
+    # DNA bases (same as RNA but no O2')
+    ('DA', 'N6'): 2,  # Amino NH2
+    ('DG', 'N1'): 1,  # Imino NH
+    ('DG', 'N2'): 2,  # Amino NH2
+    ('DC', 'N4'): 2,  # Amino NH2
+    ('DT', 'N3'): 1,  # Imino NH
 }
 
 # Acceptor capacity: how many lone pairs can accept
@@ -301,6 +347,29 @@ ACCEPTOR_CAPACITY = {
     ('I', "O4'"): 1,  # Ribose ring
     ('I', 'OP1'): 3,  # Phosphate
     ('I', 'OP2'): 3,
+
+    # DNA bases (no O2' since deoxyribose)
+    # Deoxyadenosine (DA)
+    ('DA', 'N1'): 1,  # Ring N acceptor
+    ('DA', 'N3'): 1,  # Ring N acceptor
+    ('DA', 'N7'): 1,  # Ring N acceptor
+    ('DA', "O4'"): 1, # Deoxyribose ring
+
+    # Deoxyguanosine (DG)
+    ('DG', 'O6'): 2,  # Carbonyl oxygen
+    ('DG', 'N3'): 1,  # Ring N acceptor
+    ('DG', 'N7'): 1,  # Ring N acceptor
+    ('DG', "O4'"): 1, # Deoxyribose ring
+
+    # Deoxycytidine (DC)
+    ('DC', 'O2'): 2,  # Carbonyl oxygen
+    ('DC', 'N3'): 1,  # Ring N acceptor
+    ('DC', "O4'"): 1, # Deoxyribose ring
+
+    # Deoxythymidine (DT)
+    ('DT', 'O2'): 2,  # Carbonyl oxygen
+    ('DT', 'O4'): 2,  # Carbonyl oxygen
+    ('DT', "O4'"): 1, # Deoxyribose ring
 }
 
 

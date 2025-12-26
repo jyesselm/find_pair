@@ -17,7 +17,8 @@ def dssr_to_res_id(dssr_nt: str) -> Optional[str]:
         "A.G1" -> "A-G-1"
         "0.C530" -> "0-C-530"
         "D.DG10" -> "D-DG-10"
-        "A.G1^A" -> "A-G-1A" (insertion code)
+        "A.G1^A" -> "A-G-1A" (alternate conformer)
+        "A.G190^K" -> "A-G-190K" (alternate conformer)
 
     Args:
         dssr_nt: DSSR format nucleotide ID
@@ -28,21 +29,26 @@ def dssr_to_res_id(dssr_nt: str) -> Optional[str]:
     if not dssr_nt or "." not in dssr_nt:
         return None
 
-    # Pattern: chain.base+number[insertion]
+    # Pattern: chain.base+number[insertion][^altconf]
     # Chain can be letter or number
     # Base can be multi-letter (DG, DC, PSU, etc.)
     # Number can have insertion code suffix
+    # ^X indicates alternate conformer (should be included in res_id)
     match = re.match(
-        r"^([A-Za-z0-9]+)\.([A-Za-z]+)(\d+)([A-Za-z]?)(?:\^[A-Za-z])?$", dssr_nt
+        r"^([A-Za-z0-9]+)\.([A-Za-z]+)(\d+)([A-Za-z]?)(?:\^([A-Za-z]))?$", dssr_nt
     )
 
     if not match:
         return None
 
-    chain, base, num, ins_code = match.groups()
+    chain, base, num, ins_code, alt_conf = match.groups()
 
-    # Build res_id
-    seq_num = num + ins_code if ins_code else num
+    # Build res_id - include both insertion code and alternate conformer
+    seq_num = num
+    if ins_code:
+        seq_num += ins_code
+    if alt_conf:
+        seq_num += alt_conf
     return f"{chain}-{base}-{seq_num}"
 
 

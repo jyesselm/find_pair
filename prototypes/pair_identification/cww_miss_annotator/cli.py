@@ -62,6 +62,9 @@ def load_pdb_list(args: argparse.Namespace) -> List[str]:
             data = json.load(f)
         if isinstance(data, list):
             pdb_ids = data
+        elif "pdb_ids" in data:
+            # Format: {"size": 100, "pdb_ids": [...]}
+            pdb_ids = data["pdb_ids"]
         else:
             # Assume it's a dict with PDB IDs in values
             pdb_ids = list(next(iter(data.values())))

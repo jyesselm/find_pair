@@ -1,7 +1,7 @@
 """PyMOL script generator for base pair visualization."""
 
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
 
@@ -59,6 +59,9 @@ class PyMOLScriptGenerator:
         expected_hbonds: List[HBondViz],
         output_name: str,
         title: str = "",
+        bp_score: float = 0.0,
+        bp_grade: str = "",
+        bp_components: Optional[Dict[str, float]] = None,
     ) -> Path:
         """Generate PyMOL script comparing target pair to templates.
 
@@ -69,6 +72,9 @@ class PyMOLScriptGenerator:
             expected_hbonds: Expected H-bonds for classification (green/red).
             output_name: Output filename (without .pml).
             title: Optional title comment.
+            bp_score: Base pair quality score (0-1).
+            bp_grade: Letter grade (A-F).
+            bp_components: Score components (rmsd, coverage, quality).
 
         Returns:
             Path to generated .pml script.
@@ -170,6 +176,19 @@ class PyMOLScriptGenerator:
         lines.append("# ============================================")
         lines.append("# LEGEND")
         lines.append("# ============================================")
+
+        # BP Score section
+        if bp_grade:
+            lines.append("#")
+            lines.append(f"# BP SCORE: {bp_score:.2f} ({bp_grade})")
+            if bp_components:
+                lines.append(f"#   RMSD:     {bp_components.get('rmsd', 0):.2f}")
+                lines.append(f"#   Coverage: {bp_components.get('coverage', 0):.2f}")
+                lines.append(f"#   Quality:  {bp_components.get('quality', 0):.2f}")
+                if bp_components.get('extended_search', False):
+                    lines.append("#   (Extended H-bond search used - good geometry, sparse H-bonds)")
+            lines.append("#")
+
         lines.append(f"# Target = {self.COLORS['target']} (thick sticks)")
         for tmpl in templates:
             status = "" if tmpl.enabled else " [disabled]"
