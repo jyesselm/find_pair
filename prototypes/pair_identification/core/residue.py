@@ -4,22 +4,16 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 import numpy as np
 
-
-# Ring atoms for different base types
-PURINE_RING_ATOMS = ["N9", "C8", "N7", "C5", "C6", "N1", "C2", "N3", "C4"]
-PYRIMIDINE_RING_ATOMS = ["N1", "C2", "N3", "C4", "C5", "C6"]
-
-# Glycosidic nitrogen for each base type
-GLYCOSIDIC_N = {"A": "N9", "G": "N9", "C": "N1", "U": "N1", "T": "N1"}
-
-# Base atoms (exclude sugar/phosphate)
-BASE_ATOMS = {
-    "A": {"N9", "C8", "N7", "C5", "C6", "N6", "N1", "C2", "N3", "C4"},
-    "G": {"N9", "C8", "N7", "C5", "C6", "O6", "N1", "C2", "N2", "N3", "C4"},
-    "C": {"N1", "C2", "O2", "N3", "C4", "N4", "C5", "C6"},
-    "U": {"N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6"},
-    "T": {"N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6", "C7"},
-}
+from .constants import (
+    PURINE_RING_ATOMS,
+    PYRIMIDINE_RING_ATOMS,
+    GLYCOSIDIC_N,
+    BASE_ATOMS,
+    PURINES,
+    PYRIMIDINES,
+    MODIFIED_BASE_MAP,
+    DNA_PREFIX_MAP,
+)
 
 
 @dataclass
@@ -65,7 +59,7 @@ class Residue:
 
     def get_ring_atoms(self) -> Dict[str, np.ndarray]:
         """Get ring atom coordinates for alignment."""
-        if self.base_type.upper() in ("A", "G"):
+        if self.base_type.upper() in PURINES:
             ring_names = PURINE_RING_ATOMS
         else:
             ring_names = PYRIMIDINE_RING_ATOMS
@@ -111,20 +105,20 @@ class Residue:
 
 
 def is_purine(base_type: str) -> bool:
-    """Check if base type is a purine (A or G)."""
-    return base_type.upper() in ("A", "G")
+    """Check if base type is a purine (A, G, I)."""
+    return base_type.upper() in PURINES
 
 
 def is_pyrimidine(base_type: str) -> bool:
     """Check if base type is a pyrimidine (C, U, T)."""
-    return base_type.upper() in ("C", "U", "T")
+    return base_type.upper() in PYRIMIDINES
 
 
 def normalize_base_type(residue_name: str) -> str:
     """Normalize residue name to single letter base type.
 
     Handles:
-    - Standard: A, G, C, U, T
+    - Standard: A, G, C, U, T, I, P
     - DNA prefix: DA, DG, DC, DT -> A, G, C, T
     - Modified bases: 2MG -> G, PSU -> U, etc.
 
@@ -136,27 +130,21 @@ def normalize_base_type(residue_name: str) -> str:
     """
     name = residue_name.upper().strip()
 
-    # Standard single letters
-    if name in ("A", "G", "C", "U", "T"):
+    # Standard single letters (RNA, DNA, modified)
+    standard = PURINES | PYRIMIDINES | {"I", "P"}
+    if name in standard:
         return name
 
     # DNA prefixes
-    if name.startswith("D") and len(name) == 2:
-        return name[1]
+    if name in DNA_PREFIX_MAP:
+        return DNA_PREFIX_MAP[name]
 
     # Common modified bases -> parent
-    MODIFIED_MAP = {
-        "2MG": "G", "7MG": "G", "M2G": "G", "OMG": "G", "YG": "G",
-        "PSU": "U", "H2U": "U", "5MU": "U", "4SU": "U",
-        "5MC": "C", "OMC": "C",
-        "1MA": "A", "MIA": "A", "6MA": "A",
-    }
-
-    if name in MODIFIED_MAP:
-        return MODIFIED_MAP[name]
+    if name in MODIFIED_BASE_MAP:
+        return MODIFIED_BASE_MAP[name]
 
     # Try first letter as fallback
-    if name and name[0] in ("A", "G", "C", "U", "T"):
+    if name and name[0] in standard:
         return name[0]
 
     return name

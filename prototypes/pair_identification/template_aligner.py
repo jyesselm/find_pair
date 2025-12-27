@@ -13,9 +13,9 @@ from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
 
 # Import from core modules
-from core.residue import Residue, Atom
-from core.pdb_parser import parse_pdb, parse_template_pdb
-from core.alignment import kabsch_align, compute_rmsd
+from prototypes.pair_identification.core.residue import Residue, Atom
+from prototypes.pair_identification.core.pdb_parser import parse_pdb, parse_template_pdb
+from prototypes.pair_identification.core.alignment import kabsch_align, compute_rmsd
 
 
 @dataclass

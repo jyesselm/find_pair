@@ -1,7 +1,7 @@
 """Test script for PairCache module."""
 
 from pathlib import Path
-from prototypes.pair_identification import PairCache
+from prototypes.pair_identification.pair_cache import PairCache
 
 
 def test_pair_cache():

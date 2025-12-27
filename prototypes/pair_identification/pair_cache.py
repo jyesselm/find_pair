@@ -14,7 +14,7 @@ import numpy as np
 from scipy.spatial import KDTree
 
 from prototypes.pair_identification.frame_loader import FrameLoader, ReferenceFrame
-from prototypes.pair_identification.geometric_validator import (
+from prototypes.pair_identification.validation import (
     GeometricValidator,
     ValidationResult,
 )

@@ -13,38 +13,8 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Set
 from collections import defaultdict
 
-
-# Expected H-bond patterns for Watson-Crick pairs
-# Format: (donor_res, donor_atom, acceptor_res, acceptor_atom)
-# res is 1 or 2 (first or second residue in pair)
-WC_HBOND_PATTERNS = {
-    "GC": [
-        (1, "O6", 2, "N4"),   # G:O6 accepts from C:N4
-        (1, "N1", 2, "N3"),   # G:N1 donates to C:N3
-        (1, "N2", 2, "O2"),   # G:N2 donates to C:O2
-    ],
-    "CG": [
-        (1, "N4", 2, "O6"),   # C:N4 donates to G:O6
-        (1, "N3", 2, "N1"),   # C:N3 accepts from G:N1
-        (1, "O2", 2, "N2"),   # C:O2 accepts from G:N2
-    ],
-    "AU": [
-        (1, "N6", 2, "O4"),   # A:N6 donates to U:O4
-        (1, "N1", 2, "N3"),   # A:N1 accepts from U:N3
-    ],
-    "UA": [
-        (1, "O4", 2, "N6"),   # U:O4 accepts from A:N6
-        (1, "N3", 2, "N1"),   # U:N3 donates to A:N1
-    ],
-    "GU": [  # Wobble pair
-        (1, "O6", 2, "N3"),   # G:O6 accepts from U:N3
-        (1, "N1", 2, "O2"),   # G:N1 donates to U:O2
-    ],
-    "UG": [
-        (1, "N3", 2, "O6"),   # U:N3 donates to G:O6
-        (1, "O2", 2, "N1"),   # U:O2 accepts from G:N1
-    ],
-}
+# Import centralized H-bond patterns
+from hbond.patterns import get_cww_expected
 
 # Mapping of modified bases to standard bases for H-bond pattern lookup
 MODIFIED_BASE_MAP = {
@@ -262,7 +232,7 @@ def check_hbond_pattern(
     """
     # Normalize bp_type to handle modified bases
     normalized_type = normalize_bp_type(bp_type)
-    pattern = WC_HBOND_PATTERNS.get(normalized_type, [])
+    pattern = get_cww_expected(normalized_type)
     if not pattern:
         return 0, 0, []
 
@@ -270,7 +240,7 @@ def check_hbond_pattern(
     found = 0
     details = []
 
-    for donor_res, donor_atom, acceptor_res, acceptor_atom in pattern:
+    for donor_atom, acceptor_atom in pattern:
         # Look for matching H-bond in either direction
         matched = False
         matched_dist = None

@@ -1,115 +1,201 @@
-"""Consolidated H-bond pattern definitions for all LW classes.
+"""Hydrogen bond patterns for Leontis-Westhof base pair classification.
 
-This module is the single source of truth for expected H-bond patterns
-in base pair classification.
+This module is the single authoritative source for expected H-bond donor-acceptor
+pairs across all 12 Leontis-Westhof (LW) base pair classes. Each pattern defines
+the canonical hydrogen bonding interactions that characterize a specific LW class
+and sequence combination.
+
+Pattern Format:
+    Each pattern is a list of (donor_atom, acceptor_atom) tuples representing
+    expected hydrogen bonds. Atom names follow PDB nomenclature (N1, N2, O6, etc.).
+
+LW Classification System:
+    - Edge notation: W (Watson-Crick), H (Hoogsteen), S (Sugar)
+    - Orientation: c (cis), t (trans)
+    - Classes: cWW, tWW, cWH, tWH, cWS, tWS, cHH, tHH, cHS, tHS, cSS, tSS
+
+Usage:
+    from hbond.patterns import HBOND_PATTERNS, get_expected_hbonds
+
+    # Get expected H-bonds for G-C Watson-Crick pair
+    expected = get_expected_hbonds("cWW", "GC")
+    # Returns: [("N1", "N3"), ("N2", "O2"), ("O6", "N4")]
 """
 
 from typing import Dict, List, Tuple, Set
 
-# Type alias for H-bond pattern: (donor_atom, acceptor_atom)
+# Type alias for clarity
 HBondPattern = Tuple[str, str]
 
 
 # =============================================================================
-# CANONICAL WATSON-CRICK PATTERNS (cWW)
+# WATSON-CRICK CIS (cWW) - Canonical Base Pairing
 # =============================================================================
-
-CWW_PATTERNS: Dict[str, List[HBondPattern]] = {
-    # Standard Watson-Crick
-    "GC": [("N1", "N3"), ("N2", "O2"), ("O6", "N4")],  # 3 H-bonds
-    "CG": [("N4", "O6"), ("N3", "N1"), ("O2", "N2")],  # Reverse of GC
-    "AU": [("N1", "N3"), ("N6", "O4")],                # 2 H-bonds
-    "UA": [("N3", "N1"), ("O4", "N6")],                # Reverse of AU
-    "AT": [("N1", "N3"), ("N6", "O4")],                # DNA
-    "TA": [("N3", "N1"), ("O4", "N6")],                # DNA reverse
-    # Wobble pairs
-    "GU": [("N1", "O2"), ("O6", "N3")],                # G-U wobble
-    "UG": [("N3", "O6"), ("O2", "N1")],                # U-G wobble
-    "GT": [("N1", "O2"), ("O6", "N3")],                # G-T wobble (DNA)
-    "TG": [("N3", "O6"), ("O2", "N1")],                # T-G wobble (DNA)
-}
-
-
-# =============================================================================
-# ALL LEONTIS-WESTHOF CLASS PATTERNS
-# =============================================================================
-
-# Full patterns for all 12 LW classes
-# Format: LW_CLASS -> SEQUENCE -> [(donor, acceptor), ...]
+# The most common base pairing mode in double helices. Watson-Crick edges
+# of both bases face each other in cis orientation.
+#
+# Key patterns:
+# - GC: 3 H-bonds (strongest canonical pair)
+# - AU/AT: 2 H-bonds (standard RNA/DNA pairing)
+# - GU: Wobble pair (2 H-bonds, less stable than GC/AU)
+# - Non-canonical: GA sheared, AA imino, etc.
 
 HBOND_PATTERNS: Dict[str, Dict[str, List[HBondPattern]]] = {
-    "cWW": CWW_PATTERNS,
+    "cWW": {
+        # Standard Watson-Crick pairs (RNA)
+        "GC": [("N1", "N3"), ("N2", "O2"), ("O6", "N4")],  # 3 H-bonds
+        "CG": [("N4", "O6"), ("N3", "N1"), ("O2", "N2")],
+        "AU": [("N6", "O4"), ("N1", "N3")],  # 2 H-bonds
+        "UA": [("O4", "N6"), ("N3", "N1")],
+
+        # DNA Watson-Crick
+        "AT": [("N6", "O4"), ("N1", "N3")],
+        "TA": [("O4", "N6"), ("N3", "N1")],
+
+        # Wobble pairs (G-U/T)
+        "GU": [("N1", "O2")],  # O6-N3 optional
+        "UG": [("O2", "N1")],
+        "GT": [("N1", "O2")],
+        "TG": [("O2", "N1")],
+
+        # Non-canonical cWW (sheared, imino pairs)
+        "GA": [("O6", "N6"), ("N1", "N1")],  # Sheared G-A
+        "AG": [("N6", "O6"), ("N1", "N1")],
+        "AA": [("N6", "N1"), ("N1", "N6")],  # A-A imino
+        "GG": [("O6", "N1"), ("N1", "O6")],  # G-G pairs
+        "UC": [("N3", "N3")],  # U-C pairs
+        "CU": [("N3", "N3")],
+        "UU": [("N3", "O4"), ("O4", "N3")],  # U-U pairs
+        "CC": [("N4", "N3"), ("N3", "N4")],  # C-C pairs
+    },
+
+    # =============================================================================
+    # WATSON-CRICK TRANS (tWW)
+    # =============================================================================
+    # Watson-Crick edges face each other in trans orientation. Common in
+    # parallel duplexes and certain tertiary motifs.
 
     "tWW": {
-        "GC": [("N2", "O2")],
-        "CG": [("O2", "N2")],
+        "GC": [("N2", "O2"), ("N1", "N3")],
+        "CG": [("O2", "N2"), ("N3", "N1")],
         "AU": [("N6", "O4")],
         "UA": [("O4", "N6")],
-        "GU": [("N1", "O4"), ("N2", "O2")],
-        "UG": [("O4", "N1"), ("O2", "N2")],
     },
+
+    # =============================================================================
+    # WATSON-HOOGSTEEN CIS (cWH)
+    # =============================================================================
+    # Watson-Crick edge of first base pairs with Hoogsteen edge of second base
+    # in cis orientation. Common in loop regions and tertiary interactions.
 
     "cWH": {
-        "GA": [("N2", "N7")],
-        "AG": [("N7", "N2")],
-        "GG": [("N2", "N7"), ("N1", "O6")],
-        "AA": [("N6", "N7")],
-        "CA": [("N4", "N7")],
-        "AC": [("N7", "N4")],
+        "AU": [("N6", "N7")],
+        "UA": [("O4", "N6")],
+        "GC": [("N2", "N7")],
     },
+
+    # =============================================================================
+    # WATSON-HOOGSTEEN TRANS (tWH)
+    # =============================================================================
+    # Watson-Crick edge pairs with Hoogsteen edge in trans orientation.
+    # Frequently seen in base triples and higher-order structures.
 
     "tWH": {
-        "GA": [("O6", "N6"), ("N1", "N7")],
-        "AG": [("N6", "O6"), ("N7", "N1")],
-        "UA": [("O4", "N6")],
-        "AU": [("N6", "O4")],
+        "AU": [("N6", "N7"), ("N1", "N6")],
+        "UA": [("N3", "N7")],
+        "GU": [("N1", "O6"), ("O6", "N7")],
+        "UG": [("N3", "N7")],
+        "GG": [("N1", "N7"), ("O6", "N2")],
     },
+
+    # =============================================================================
+    # WATSON-SUGAR CIS (cWS)
+    # =============================================================================
+    # Watson-Crick edge pairs with sugar edge in cis orientation.
+    # Sugar edge uses 2'-OH and other ribose groups for interaction.
 
     "cWS": {
-        "GC": [("N2", "O2")],  # Only 1 H-bond expected
+        "GC": [("N2", "O2")],
         "CG": [("O2", "N2")],
-        "GA": [("N2", "N3")],
-        "AG": [("N3", "N2")],
-    },
-
-    "tWS": {
-        "GU": [("N2", "O2")],
-        "UG": [("O2", "N2")],
         "AU": [("N6", "O2")],
         "UA": [("O2", "N6")],
     },
 
+    # =============================================================================
+    # WATSON-SUGAR TRANS (tWS)
+    # =============================================================================
+    # Watson-Crick edge pairs with sugar edge in trans orientation.
+
+    "tWS": {
+        "GU": [("N2", "O2")],
+        "UG": [("O2", "N2")],
+        "GA": [("N2", "N3")],
+        "AG": [("N3", "N2")],
+    },
+
+    # =============================================================================
+    # HOOGSTEEN-HOOGSTEEN CIS (cHH)
+    # =============================================================================
+    # Both bases use Hoogsteen edges in cis orientation.
+    # Hoogsteen edge uses N7 (purines) for interactions.
+
     "cHH": {
+        "AA": [("N6", "N7")],
+        "GG": [("N2", "N7"), ("O6", "N7")],
+    },
+
+    # =============================================================================
+    # HOOGSTEEN-HOOGSTEEN TRANS (tHH)
+    # =============================================================================
+    # Both bases use Hoogsteen edges in trans orientation.
+
+    "tHH": {
         "AA": [("N6", "N7")],
         "GG": [("N2", "N7")],
     },
 
-    "tHH": {
-        "AA": [("N6", "N7")],
-        "GG": [("O6", "N7")],
-    },
+    # =============================================================================
+    # HOOGSTEEN-SUGAR CIS (cHS)
+    # =============================================================================
+    # Hoogsteen edge pairs with sugar edge in cis orientation.
 
     "cHS": {
-        "GA": [("N7", "N2")],
-        "AG": [("N2", "N7")],
-        "GG": [("N7", "N2")],
+        "GA": [("N2", "N3")],
+        "AG": [("N7", "N6")],
+        "GG": [("N2", "N3")],
     },
+
+    # =============================================================================
+    # HOOGSTEEN-SUGAR TRANS (tHS) - Sheared Pairs
+    # =============================================================================
+    # Hoogsteen edge pairs with sugar edge in trans orientation.
+    # Includes sheared G-A pairs common in GNRA tetraloops.
 
     "tHS": {
-        "AU": [("N7", "N6")],
-        "UA": [("N6", "N7")],
-        "GU": [("N7", "N1"), ("O6", "N3")],
-        "UG": [("N1", "N7"), ("N3", "O6")],
+        "GA": [("N2", "N7"), ("N3", "N6")],  # Sheared G-A
+        "AG": [("N7", "N2"), ("N6", "N3")],
+        "AA": [("N6", "N1")],
+        "GG": [("N2", "N7")],
     },
+
+    # =============================================================================
+    # SUGAR-SUGAR CIS (cSS)
+    # =============================================================================
+    # Both bases use sugar edges in cis orientation.
 
     "cSS": {
-        "GG": [("N2", "N3"), ("N3", "N2")],
-        "AA": [("N3", "N1")],
+        "GC": [("N2", "O2")],
+        "AU": [("O2", "O2")],  # Sugar-sugar interaction
     },
 
+    # =============================================================================
+    # SUGAR-SUGAR TRANS (tSS)
+    # =============================================================================
+    # Both bases use sugar edges in trans orientation.
+
     "tSS": {
-        "AA": [("N1", "N1")],
-        "GG": [("N2", "N2")],
+        "GA": [("N3", "N3")],
+        "AG": [("N3", "N3")],
     },
 }
 
@@ -133,11 +219,17 @@ def get_expected_hbonds(lw_class: str, sequence: str) -> List[HBondPattern]:
 
 
 def get_cww_expected(sequence: str) -> List[HBondPattern]:
-    """Get expected H-bonds for canonical Watson-Crick pair.
+    """Get expected H-bonds for Watson-Crick cis pair.
 
-    Convenience function for the common case.
+    Convenience function for the most common pairing mode.
+
+    Args:
+        sequence: Two-letter sequence (e.g., "GC", "AU")
+
+    Returns:
+        List of (donor_atom, acceptor_atom) tuples for cWW pattern
     """
-    return CWW_PATTERNS.get(sequence.upper(), [])
+    return get_expected_hbonds("cWW", sequence)
 
 
 def is_hbond_match(
@@ -145,7 +237,7 @@ def is_hbond_match(
     expected: List[HBondPattern],
     bidirectional: bool = True,
 ) -> bool:
-    """Check if a found H-bond matches any expected pattern.
+    """Check if found H-bond matches any expected pattern.
 
     Args:
         found: (donor, acceptor) tuple from detection
@@ -166,28 +258,17 @@ def is_hbond_match(
     return False
 
 
-def get_all_donor_atoms() -> Set[str]:
-    """Get set of all atoms that can be H-bond donors."""
-    return {"N1", "N2", "N3", "N4", "N6", "N7", "O2'"}  # O2' for ribose
+def get_all_lw_classes() -> List[str]:
+    """Get list of all 12 Leontis-Westhof classes."""
+    return ["cWW", "tWW", "cWH", "tWH", "cWS", "tWS",
+            "cHH", "tHH", "cHS", "tHS", "cSS", "tSS"]
 
 
-def get_all_acceptor_atoms() -> Set[str]:
-    """Get set of all atoms that can be H-bond acceptors."""
-    return {"N1", "N3", "N7", "O2", "O4", "O6", "O2'", "O3'", "O4'", "O5'"}
+def get_standard_wc_sequences() -> Set[str]:
+    """Get standard Watson-Crick sequences (no wobbles)."""
+    return {"GC", "CG", "AU", "UA", "AT", "TA"}
 
 
-def get_base_atoms() -> Set[str]:
-    """Get set of base atoms (not sugar/phosphate)."""
-    return {"N1", "N2", "N3", "N4", "N6", "N7", "N9", "O2", "O4", "O6",
-            "C2", "C4", "C5", "C6", "C8"}
-
-
-# List of all 12 LW classes
-LW_CLASSES = ["cWW", "tWW", "cWH", "tWH", "cWS", "tWS",
-              "cHH", "tHH", "cHS", "tHS", "cSS", "tSS"]
-
-# Standard Watson-Crick sequences
-STANDARD_WC_SEQUENCES = {"GC", "CG", "AU", "UA", "AT", "TA"}
-
-# Canonical pair sequences (WC + wobble)
-CANONICAL_SEQUENCES = STANDARD_WC_SEQUENCES | {"GU", "UG", "GT", "TG"}
+def get_canonical_sequences() -> Set[str]:
+    """Get canonical sequences including wobbles."""
+    return get_standard_wc_sequences() | {"GU", "UG", "GT", "TG"}

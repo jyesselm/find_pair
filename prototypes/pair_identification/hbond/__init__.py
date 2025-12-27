@@ -7,50 +7,59 @@ This package provides:
 - Scoring and quality assessment
 """
 
+from .finder import HBond, HBondCandidate, HBondFinder
+from .geometry import (
+    ACCEPTOR_CAPACITY,
+    BASE_CONNECTIVITY,
+    DONOR_CAPACITY,
+    HSlot,
+    LPSlot,
+    angle_between,
+    compute_base_normal,
+    normalize,
+    predict_h_slots,
+    predict_lp_slots,
+    rotate_vector,
+)
 from .patterns import (
-    # Type aliases
-    HBondPattern,
-
-    # Pattern dictionaries
-    CWW_PATTERNS,
     HBOND_PATTERNS,
-
-    # Pattern lookup functions
-    get_expected_hbonds,
+    HBondPattern,
+    get_all_lw_classes,
+    get_canonical_sequences,
     get_cww_expected,
+    get_expected_hbonds,
+    get_standard_wc_sequences,
     is_hbond_match,
-
-    # Atom sets
-    get_all_donor_atoms,
-    get_all_acceptor_atoms,
-    get_base_atoms,
-
-    # Constants
-    LW_CLASSES,
-    STANDARD_WC_SEQUENCES,
-    CANONICAL_SEQUENCES,
 )
 
 __all__ = [
-    # Type aliases
+    # Finder classes
+    "HBond",
+    "HBondCandidate",
+    "HBondFinder",
+    # Geometry classes
+    "HSlot",
+    "LPSlot",
+    # Geometry constants
+    "DONOR_CAPACITY",
+    "ACCEPTOR_CAPACITY",
+    "BASE_CONNECTIVITY",
+    # Geometry functions
+    "normalize",
+    "angle_between",
+    "rotate_vector",
+    "compute_base_normal",
+    "predict_h_slots",
+    "predict_lp_slots",
+    # Pattern type aliases
     "HBondPattern",
-
     # Pattern dictionaries
-    "CWW_PATTERNS",
     "HBOND_PATTERNS",
-
     # Pattern lookup functions
     "get_expected_hbonds",
     "get_cww_expected",
     "is_hbond_match",
-
-    # Atom sets
-    "get_all_donor_atoms",
-    "get_all_acceptor_atoms",
-    "get_base_atoms",
-
-    # Constants
-    "LW_CLASSES",
-    "STANDARD_WC_SEQUENCES",
-    "CANONICAL_SEQUENCES",
+    "get_all_lw_classes",
+    "get_standard_wc_sequences",
+    "get_canonical_sequences",
 ]

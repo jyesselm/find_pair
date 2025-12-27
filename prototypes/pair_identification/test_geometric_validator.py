@@ -1,9 +1,9 @@
-"""Quick test to verify geometric_validator.py works correctly."""
+"""Quick test to verify validation package works correctly."""
 
 import numpy as np
 
 from prototypes.pair_identification.frame_loader import ReferenceFrame
-from prototypes.pair_identification.geometric_validator import GeometricValidator
+from prototypes.pair_identification.validation import GeometricValidator
 
 
 def test_basic_validation():

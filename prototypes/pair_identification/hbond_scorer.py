@@ -12,6 +12,9 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Set
 from collections import defaultdict
 
+# Import centralized H-bond patterns
+from prototypes.pair_identification.hbond.patterns import HBOND_PATTERNS, HBondPattern as HBondPatternType
+
 
 @dataclass
 class HBond:
@@ -27,111 +30,6 @@ class HBond:
         """Check if this H-bond matches another (same atoms)."""
         return (self.donor_atom == other.donor_atom and
                 self.acceptor_atom == other.acceptor_atom)
-
-
-@dataclass
-class HBondPattern:
-    """Expected H-bond pattern for an LW class + sequence."""
-    lw_class: str
-    sequence: str
-    hbonds: List[Tuple[str, str]]  # (donor, acceptor) pairs
-
-    def __repr__(self):
-        return f"{self.lw_class}_{self.sequence}: {self.hbonds}"
-
-
-# Expected H-bond patterns for each LW class
-# Format: (donor_atom, acceptor_atom)
-# These are derived from base edge interactions
-HBOND_PATTERNS = {
-    # Watson-Crick cis (cWW) - Standard WC pairing
-    "cWW": {
-        "GC": [("N1", "N3"), ("N2", "O2"), ("O6", "N4")],  # 3 H-bonds
-        "CG": [("N4", "O6"), ("N3", "N1"), ("O2", "N2")],
-        "AU": [("N6", "O4"), ("N1", "N3")],  # 2 H-bonds
-        "UA": [("O4", "N6"), ("N3", "N1")],
-        "GU": [("N1", "O2")],  # Wobble - O6-N3 is optional
-        "UG": [("O2", "N1")],  # Wobble - N3-O6 is optional
-        "GA": [("O6", "N6"), ("N1", "N1")],  # Sheared G-A (DSSR classifies as cWW)
-        "AG": [("N6", "O6"), ("N1", "N1")],
-        "AA": [("N6", "N1"), ("N1", "N6")],  # A-A pairs
-        "GG": [("O6", "N1"), ("N1", "O6")],  # G-G pairs
-        "UC": [("N3", "N3")],  # U-C pairs (limited)
-        "CU": [("N3", "N3")],
-        "UU": [("N3", "O4"), ("O4", "N3")],  # U-U pairs
-        "CC": [("N4", "N3"), ("N3", "N4")],  # C-C pairs
-        "AT": [("N6", "O4"), ("N1", "N3")],  # DNA
-        "TA": [("O4", "N6"), ("N3", "N1")],
-    },
-    # Watson-Crick trans (tWW)
-    "tWW": {
-        "GC": [("N2", "O2"), ("N1", "N3")],
-        "CG": [("O2", "N2"), ("N3", "N1")],
-        "AU": [("N6", "O4")],
-        "UA": [("O4", "N6")],
-    },
-    # Watson-Hoogsteen cis (cWH)
-    "cWH": {
-        "AU": [("N6", "N7")],
-        "UA": [("O4", "N6")],
-        "GC": [("N2", "N7")],
-    },
-    # Watson-Hoogsteen trans (tWH)
-    "tWH": {
-        "AU": [("N6", "N7"), ("N1", "N6")],
-        "UA": [("N3", "N7")],
-        "GU": [("N1", "O6"), ("O6", "N7")],
-        "UG": [("N3", "N7")],
-        "GG": [("N1", "N7"), ("O6", "N2")],
-    },
-    # Watson-Sugar cis (cWS)
-    "cWS": {
-        "GC": [("N2", "O2")],
-        "CG": [("O2", "N2")],
-        "AU": [("N6", "O2")],
-        "UA": [("O2", "N6")],
-    },
-    # Watson-Sugar trans (tWS)
-    "tWS": {
-        "GU": [("N2", "O2")],
-        "UG": [("O2", "N2")],
-        "GA": [("N2", "N3")],
-        "AG": [("N3", "N2")],
-    },
-    # Hoogsteen-Hoogsteen cis (cHH)
-    "cHH": {
-        "AA": [("N6", "N7")],
-        "GG": [("N2", "N7"), ("O6", "N7")],
-    },
-    # Hoogsteen-Hoogsteen trans (tHH)
-    "tHH": {
-        "AA": [("N6", "N7")],
-        "GG": [("N2", "N7")],
-    },
-    # Hoogsteen-Sugar cis (cHS)
-    "cHS": {
-        "GA": [("N2", "N3")],
-        "AG": [("N7", "N6")],
-        "GG": [("N2", "N3")],
-    },
-    # Hoogsteen-Sugar trans (tHS) - Sheared pairs
-    "tHS": {
-        "GA": [("N2", "N7"), ("N3", "N6")],  # Sheared G-A
-        "AG": [("N7", "N2"), ("N6", "N3")],
-        "AA": [("N6", "N1")],
-        "GG": [("N2", "N7")],
-    },
-    # Sugar-Sugar cis (cSS)
-    "cSS": {
-        "GC": [("N2", "O2")],
-        "AU": [("O2", "O2")],  # Sugar-sugar
-    },
-    # Sugar-Sugar trans (tSS)
-    "tSS": {
-        "GA": [("N3", "N3")],
-        "AG": [("N3", "N3")],
-    },
-}
 
 
 @dataclass

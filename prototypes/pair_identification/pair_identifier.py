@@ -12,7 +12,7 @@ import json
 import numpy as np
 
 from prototypes.pair_identification.frame_loader import ReferenceFrame
-from prototypes.pair_identification.geometric_validator import ValidationResult
+from prototypes.pair_identification.validation import ValidationResult
 from prototypes.pair_identification.pair_cache import CachedPair, PairCache, AtomCoords
 from prototypes.pair_identification.template_generator import (
     TemplateGenerator,
