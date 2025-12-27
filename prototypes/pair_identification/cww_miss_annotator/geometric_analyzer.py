@@ -4,6 +4,9 @@
 This module computes RMSD-based diagnostics using template alignment
 to determine if a pair is a geometric outlier or fits better to a
 different LW class.
+
+Note: cWW and tWW are treated as equivalent "WW" edge pair since they
+cannot be reliably distinguished by ring atom RMSD alone.
 """
 
 import sys
@@ -15,6 +18,9 @@ from typing import Dict, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.residue import Residue, Atom
 from template_aligner import TemplateAligner
+
+# Import edge classifier for edge pair grouping
+from prototypes.pair_identification.templates.edge_classifier import get_edge_pair
 
 # Import diagnostics from current directory
 from .diagnostics import GeometricDiagnostics
@@ -126,8 +132,11 @@ class GeometricAnalyzer:
         res1 = self._create_residue("1", sequence[0], res1_atoms)
         res2 = self._create_residue("2", sequence[1], res2_atoms)
 
-        # Try aligning to cWW template
+        # Try aligning to both cWW and tWW templates - use min as WW RMSD
+        # (cWW and tWW are geometrically indistinguishable by ring atom RMSD)
         cww_rmsd = self._align_to_lw_class(res1, res2, sequence, "cWW")
+        tww_rmsd = self._align_to_lw_class(res1, res2, sequence, "tWW")
+        ww_rmsd = min(cww_rmsd, tww_rmsd)  # Best WW RMSD
 
         # Try aligning to all LW classes
         all_rmsds = {}
@@ -139,9 +148,10 @@ class GeometricAnalyzer:
         # Find best and second best
         if not all_rmsds:
             return GeometricDiagnostics(
-                rmsd_cww=cww_rmsd,
-                rmsd_best=cww_rmsd,
+                rmsd_cww=ww_rmsd,
+                rmsd_best=ww_rmsd,
                 best_lw="cWW",
+                best_edge_pair="WW",
                 rmsd_gap=0.0,
                 interbase_angle=interbase_angle,
                 n1n9_distance=n1n9_distance,
@@ -150,11 +160,11 @@ class GeometricAnalyzer:
 
         sorted_rmsds = sorted(all_rmsds.items(), key=lambda x: x[1])
         best_lw, best_rmsd = sorted_rmsds[0]
-        second_lw = sorted_rmsds[1][0] if len(sorted_rmsds) > 1 else None
-        second_rmsd = sorted_rmsds[1][1] if len(sorted_rmsds) > 1 else None
+        best_edge_pair = get_edge_pair(best_lw)
 
-        # Compute RMSD gap (positive = cWW worse than best)
-        rmsd_gap = cww_rmsd - best_rmsd
+        # Compute RMSD gap (positive = WW worse than best)
+        # Use combined WW RMSD, not just cWW
+        rmsd_gap = ww_rmsd - best_rmsd
 
         # Check for geometric outliers
         n1n9_outlier = self._is_n1n9_outlier(sequence, n1n9_distance)
@@ -162,9 +172,10 @@ class GeometricAnalyzer:
         is_geometric_outlier = n1n9_outlier or angle_outlier
 
         return GeometricDiagnostics(
-            rmsd_cww=cww_rmsd,
+            rmsd_cww=ww_rmsd,  # Now means best WW RMSD (min of cWW, tWW)
             rmsd_best=best_rmsd,
             best_lw=best_lw,
+            best_edge_pair=best_edge_pair,
             rmsd_gap=rmsd_gap,
             interbase_angle=interbase_angle,
             n1n9_distance=n1n9_distance,

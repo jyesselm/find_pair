@@ -47,9 +47,10 @@ class GeometricDiagnostics:
     """Geometric diagnostics for base pair quality.
 
     Attributes:
-        rmsd_cww: RMSD to cWW template.
+        rmsd_cww: RMSD to best WW template (min of cWW and tWW).
         rmsd_best: RMSD to best-fitting template.
         best_lw: Leontis-Westhof class of best-fitting template.
+        best_edge_pair: Edge pair of best-fitting template (e.g., "WW", "WS").
         rmsd_gap: Difference (rmsd_cww - rmsd_best).
         interbase_angle: Angle between base planes in degrees.
         n1n9_distance: Distance between glycosidic N atoms (N1/N9).
@@ -59,10 +60,11 @@ class GeometricDiagnostics:
     rmsd_cww: float
     rmsd_best: float
     best_lw: str
-    rmsd_gap: float
-    interbase_angle: float
-    n1n9_distance: float
-    is_geometric_outlier: bool
+    best_edge_pair: str = "WW"
+    rmsd_gap: float = 0.0
+    interbase_angle: float = 0.0
+    n1n9_distance: float = 0.0
+    is_geometric_outlier: bool = False
 
 
 @dataclass
@@ -94,6 +96,7 @@ class MissAnnotation:
             rmsd_cww=0.0,
             rmsd_best=0.0,
             best_lw="",
+            best_edge_pair="WW",
             rmsd_gap=0.0,
             interbase_angle=0.0,
             n1n9_distance=0.0,
@@ -154,6 +157,7 @@ class MissAnnotation:
             "rmsd_cww": self.geometric_diagnostics.rmsd_cww,
             "rmsd_best": self.geometric_diagnostics.rmsd_best,
             "best_lw": self.geometric_diagnostics.best_lw,
+            "best_edge_pair": self.geometric_diagnostics.best_edge_pair,
             "rmsd_gap": self.geometric_diagnostics.rmsd_gap,
             "interbase_angle": self.geometric_diagnostics.interbase_angle,
             "n1n9_distance": self.geometric_diagnostics.n1n9_distance,

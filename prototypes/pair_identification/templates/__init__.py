@@ -33,6 +33,14 @@ from prototypes.pair_identification.templates.stats import (
     TemplateStatsLoader,
     GeometryStats,
 )
+from prototypes.pair_identification.templates.edge_classifier import (
+    get_edge_pair,
+    get_lw_classes_for_edge,
+    is_same_edge_pair,
+    determine_cis_trans,
+    EdgeClassifier,
+    EDGE_PAIR_CLASSES,
+)
 
 __all__ = [
     "TemplateLoader",
@@ -43,4 +51,11 @@ __all__ = [
     "LWClassificationResult",
     "TemplateStatsLoader",
     "GeometryStats",
+    # Edge classifier
+    "get_edge_pair",
+    "get_lw_classes_for_edge",
+    "is_same_edge_pair",
+    "determine_cis_trans",
+    "EdgeClassifier",
+    "EDGE_PAIR_CLASSES",
 ]

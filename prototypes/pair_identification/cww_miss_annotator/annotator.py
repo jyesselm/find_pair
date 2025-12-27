@@ -178,21 +178,9 @@ class MissAnnotator:
             norm_id1 = normalize_res_id_for_hbond_lookup(res_id1)
             norm_id2 = normalize_res_id_for_hbond_lookup(res_id2)
 
-            # Get our H-bonds for this pair
-            # Try original IDs first, then normalized IDs (some files use DNA prefixes, some don't)
-            hbonds = slot_hbonds.get((res_id1, res_id2), [])
-            if not hbonds:
-                hbonds = slot_hbonds.get((norm_id1, norm_id2), [])
-
-            # Analyze H-bonds
             sequence = dssr_pair.bp.replace("-", "")
-            h_diag = self.hbond_analyzer.analyze(
-                sequence=sequence,
-                found_hbonds=hbonds,
-                dssr_hbonds_desc=dssr_pair.hbonds_desc,
-            )
 
-            # Analyze geometry (try original IDs, then normalized)
+            # Step 1: Extract atom coordinates (needed for geometry and extended H-bond search)
             res1_atoms = self._extract_atom_coords(residues, res_id1)
             if not res1_atoms:
                 res1_atoms = self._extract_atom_coords(residues, norm_id1)
@@ -200,6 +188,7 @@ class MissAnnotator:
             if not res2_atoms:
                 res2_atoms = self._extract_atom_coords(residues, norm_id2)
 
+            # Step 2: Analyze geometry FIRST (needed to decide if extended search is warranted)
             g_diag = self.geometric_analyzer.analyze(
                 res1_atoms=res1_atoms,
                 res2_atoms=res2_atoms,
@@ -208,9 +197,42 @@ class MissAnnotator:
                 n1n9_distance=dssr_pair.n1n9_distance,
             )
 
-            # Determine if this is a miss
-            # Pass atom coords for extended H-bond search when geometry is good
-            reasons = self._categorize_miss(h_diag, g_diag, dssr_pair, res1_atoms, res2_atoms)
+            # Step 3: Get original H-bonds from slot_hbonds file
+            hbonds = slot_hbonds.get((res_id1, res_id2), [])
+            if not hbonds:
+                hbonds = slot_hbonds.get((norm_id1, norm_id2), [])
+
+            # Step 4: If geometry is good but H-bonds sparse, try extended search
+            extended_search_used = False
+            if res1_atoms and res2_atoms:
+                try:
+                    from .extended_hbond_finder import find_and_merge_extended_hbonds
+                    hbonds, extended_search_used = find_and_merge_extended_hbonds(
+                        res1_atoms=res1_atoms,
+                        res2_atoms=res2_atoms,
+                        sequence=sequence,
+                        rmsd_ww=g_diag.rmsd_cww,  # Best WW RMSD
+                        existing_hbonds=hbonds,
+                        interbase_angle=g_diag.interbase_angle,
+                        res1_id=res_id1,
+                        res2_id=res_id2,
+                    )
+                except ImportError:
+                    pass  # Extended finder not available
+
+            # Step 5: Analyze H-bonds (now includes any extended H-bonds found)
+            h_diag = self.hbond_analyzer.analyze(
+                sequence=sequence,
+                found_hbonds=hbonds,
+                dssr_hbonds_desc=dssr_pair.hbonds_desc,
+            )
+
+            # Step 6: Determine if this is a miss
+            # Pass extended_search flag so _categorize_miss knows not to redo search
+            reasons = self._categorize_miss(
+                h_diag, g_diag, dssr_pair, res1_atoms, res2_atoms,
+                extended_search_used=extended_search_used
+            )
 
             if reasons:
                 # This is a false negative (we would miss this cWW pair)
@@ -266,6 +288,7 @@ class MissAnnotator:
     def _categorize_miss(
         self, h_diag: HBondDiagnostics, g_diag: GeometricDiagnostics, dssr_pair: DSSRPair,
         res1_atoms: Dict = None, res2_atoms: Dict = None,
+        extended_search_used: bool = False,
     ) -> List[str]:
         """Determine why a pair would be misclassified.
 
@@ -275,6 +298,7 @@ class MissAnnotator:
             dssr_pair: DSSR reference data
             res1_atoms: Optional atom coordinates for residue 1 (for extended H-bond search)
             res2_atoms: Optional atom coordinates for residue 2 (for extended H-bond search)
+            extended_search_used: Whether extended H-bond search was already performed
 
         Returns:
             List of reason codes explaining the miss. Empty list if no miss
@@ -284,12 +308,23 @@ class MissAnnotator:
 
         # Compute BP score first - if score >= threshold, pair is good
         # found_hbonds is already a list of dicts with context, distance, alignment keys
-        # Pass atom coords for extended H-bond search when geometry is good but H-bonds sparse
-        bp_score, bp_components = compute_bp_score(
-            sequence, g_diag.rmsd_cww, h_diag.found_hbonds,
-            res1_atoms=res1_atoms, res2_atoms=res2_atoms,
-            interbase_angle=g_diag.interbase_angle,
-        )
+        # If extended search was already done, don't pass atom coords to avoid duplicate work
+        if extended_search_used:
+            # Extended search already done - just compute score with current H-bonds
+            bp_score, bp_components = compute_bp_score(
+                sequence, g_diag.rmsd_cww, h_diag.found_hbonds,
+                res1_atoms=None, res2_atoms=None,  # Skip extended search
+                interbase_angle=g_diag.interbase_angle,
+            )
+            # Mark that extended search was used upstream
+            bp_components['extended_search'] = True
+        else:
+            # Pass atom coords for extended H-bond search if geometry good but H-bonds sparse
+            bp_score, bp_components = compute_bp_score(
+                sequence, g_diag.rmsd_cww, h_diag.found_hbonds,
+                res1_atoms=res1_atoms, res2_atoms=res2_atoms,
+                interbase_angle=g_diag.interbase_angle,
+            )
 
         # Use lower threshold (0.60) when extended search found H-bonds
         # These pairs have good geometry but stretched H-bonds - likely real cWW
@@ -321,11 +356,10 @@ class MissAnnotator:
                 reasons.append("overloaded_acceptor")
 
         # Geometry based reasons
-        if g_diag.rmsd_gap > 0.5:
-            best_edges = get_edge_pair(g_diag.best_lw)
-            target_edges = "WW"
-            if best_edges != target_edges:
-                reasons.append("rmsd_prefers_other")
+        # Only flag rmsd_prefers_other if best match is a DIFFERENT edge pair
+        # (cWW vs tWW is NOT flagged since they're both "WW" edge pair)
+        if g_diag.rmsd_gap > 0.5 and g_diag.best_edge_pair != "WW":
+            reasons.append("rmsd_prefers_other")
 
         if g_diag.is_geometric_outlier:
             reasons.append("geometric_outlier")

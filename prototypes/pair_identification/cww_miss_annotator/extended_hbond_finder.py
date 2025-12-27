@@ -7,7 +7,7 @@ at normal thresholds, this module recalculates H-bonds with extended distance
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 import numpy as np
 
 # Add parent paths for imports
@@ -18,6 +18,9 @@ from hbond_optimizer.geometry import (
     score_hbond_alignment, DONOR_CAPACITY, ACCEPTOR_CAPACITY
 )
 from hbond_optimizer.optimizer import Residue, HBondCandidate, HBond
+
+if TYPE_CHECKING:
+    from .loaders import SlotHBond
 
 
 # Base atoms that can form Watson-Crick H-bonds
@@ -308,6 +311,123 @@ def recalculate_hbonds_if_needed(
 
     for hb in extended_hbonds:
         pair = (hb['donor_atom'], hb['acceptor_atom'])
+        if pair not in existing_pairs:
+            merged.append(hb)
+
+    return merged, True
+
+
+def extended_hbonds_to_slot_hbonds(
+    extended_hbonds: List[Dict],
+    res1_id: str,
+    res2_id: str,
+) -> List["SlotHBond"]:
+    """Convert extended H-bond dicts to SlotHBond dataclass format.
+
+    Args:
+        extended_hbonds: List of dicts from find_extended_hbonds()
+        res1_id: Residue ID for first residue (donor side)
+        res2_id: Residue ID for second residue (acceptor side)
+
+    Returns:
+        List of SlotHBond objects compatible with HBondAnalyzer
+    """
+    from .loaders import SlotHBond
+
+    slot_hbonds = []
+    for hb in extended_hbonds:
+        # Determine which residue is donor/acceptor based on atom names
+        donor_atom = hb.get('donor_atom', '')
+        acceptor_atom = hb.get('acceptor_atom', '')
+
+        # Create SlotHBond with extended search indicator
+        slot_hbond = SlotHBond(
+            donor_res_id=res1_id,  # Will be corrected by caller if needed
+            donor_atom=donor_atom,
+            acceptor_res_id=res2_id,
+            acceptor_atom=acceptor_atom,
+            distance=hb.get('distance', 0.0),
+            context=hb.get('context', 'base_base'),
+            h_slot=None,  # Extended search doesn't compute slots
+            lp_slot=None,
+            alignment=hb.get('alignment', None),
+        )
+        slot_hbonds.append(slot_hbond)
+
+    return slot_hbonds
+
+
+def find_and_merge_extended_hbonds(
+    res1_atoms: Dict[str, np.ndarray],
+    res2_atoms: Dict[str, np.ndarray],
+    sequence: str,
+    rmsd_ww: float,
+    existing_hbonds: List["SlotHBond"],
+    interbase_angle: float,
+    res1_id: str,
+    res2_id: str,
+    max_distance: float = 5.0,
+) -> Tuple[List["SlotHBond"], bool]:
+    """Find extended H-bonds and merge with existing SlotHBond list.
+
+    This is a higher-level function that combines find_extended_hbonds()
+    with conversion to SlotHBond format and merging with existing H-bonds.
+
+    Args:
+        res1_atoms: Atom coordinates for first residue
+        res2_atoms: Atom coordinates for second residue
+        sequence: Two-letter sequence (e.g., "GC", "AU")
+        rmsd_ww: RMSD to WW template in Angstroms
+        existing_hbonds: Currently detected H-bonds as SlotHBond list
+        interbase_angle: Angle between base planes in degrees
+        res1_id: Residue ID for first residue
+        res2_id: Residue ID for second residue
+        max_distance: Maximum H-bond distance (default 5.0Å)
+
+    Returns:
+        Tuple of (merged_hbonds as SlotHBond list, was_extended)
+    """
+    # Only extend if:
+    # 1. Geometry is good (RMSD < 1.0Å)
+    # 2. Planarity is acceptable (angle < 30°)
+    if rmsd_ww >= 1.0 or interbase_angle >= 30.0:
+        return existing_hbonds, False
+
+    # Expected H-bond count
+    expected = 3 if sequence in ('GC', 'CG') else 2
+    base_base_count = len([hb for hb in existing_hbonds if hb.context == 'base_base'])
+
+    # If we have all expected H-bonds, no need to extend
+    if base_base_count >= expected:
+        return existing_hbonds, False
+
+    # Extract base types
+    base1 = sequence[0].upper()
+    base2 = sequence[1].upper()
+
+    # Find extended H-bonds
+    extended_hbonds = find_extended_hbonds(
+        res1_atoms, res2_atoms, base1, base2,
+        max_distance=max_distance,
+        min_alignment=0.1,  # Lenient alignment threshold
+        res1_id=res1_id,
+        res2_id=res2_id,
+    )
+
+    if not extended_hbonds:
+        return existing_hbonds, False
+
+    # Convert to SlotHBond format
+    extended_slot_hbonds = extended_hbonds_to_slot_hbonds(
+        extended_hbonds, res1_id, res2_id
+    )
+
+    # Merge: keep existing, add new ones that don't duplicate
+    existing_pairs = {(hb.donor_atom, hb.acceptor_atom) for hb in existing_hbonds}
+    merged = list(existing_hbonds)
+
+    for hb in extended_slot_hbonds:
+        pair = (hb.donor_atom, hb.acceptor_atom)
         if pair not in existing_pairs:
             merged.append(hb)
 

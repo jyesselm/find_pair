@@ -646,10 +646,10 @@ class MissAnnotator:
             if h_diag.overloaded_acceptors:
                 reasons.append("overloaded_acceptor")
 
-        if g_diag.rmsd_gap > 0.5:
-            best_edges = g_diag.best_lw[1:3] if len(g_diag.best_lw) >= 3 else ""
-            if best_edges != "WW":
-                reasons.append("rmsd_prefers_other")
+        # Only flag rmsd_prefers_other if best match is a DIFFERENT edge pair
+        # (cWW vs tWW is NOT flagged since they're both "WW" edge pair)
+        if g_diag.rmsd_gap > 0.5 and g_diag.best_edge_pair != "WW":
+            reasons.append("rmsd_prefers_other")
 
         if g_diag.is_geometric_outlier:
             reasons.append("geometric_outlier")
