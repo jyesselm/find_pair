@@ -357,6 +357,42 @@ def extended_hbonds_to_slot_hbonds(
     return slot_hbonds
 
 
+# Expected H-bond patterns for canonical Watson-Crick pairs
+EXPECTED_HBOND_PATTERNS: Dict[str, List[Tuple[str, str]]] = {
+    "GC": [("N1", "N3"), ("N2", "O2"), ("N4", "O6")],
+    "CG": [("N4", "O6"), ("N1", "N3"), ("N2", "O2")],
+    "AU": [("N6", "O4"), ("N3", "N1")],
+    "UA": [("N6", "O4"), ("N3", "N1")],
+    "AT": [("N6", "O4"), ("N3", "N1")],
+    "TA": [("N6", "O4"), ("N3", "N1")],
+}
+
+
+def has_expected_hbond(existing_hbonds: List, sequence: str) -> bool:
+    """Check if any existing H-bond matches an expected pattern.
+
+    Args:
+        existing_hbonds: List of SlotHBond objects
+        sequence: Two-letter sequence (e.g., "GC", "AU")
+
+    Returns:
+        True if at least one H-bond matches expected pattern
+    """
+    expected_patterns = EXPECTED_HBOND_PATTERNS.get(sequence, [])
+    if not expected_patterns:
+        return False
+
+    for hb in existing_hbonds:
+        if hb.context != 'base_base':
+            continue
+        # Check both directions (donor->acceptor and acceptor->donor)
+        for donor, acceptor in expected_patterns:
+            if (hb.donor_atom == donor and hb.acceptor_atom == acceptor) or \
+               (hb.donor_atom == acceptor and hb.acceptor_atom == donor):
+                return True
+    return False
+
+
 def find_and_merge_extended_hbonds(
     res1_atoms: Dict[str, np.ndarray],
     res2_atoms: Dict[str, np.ndarray],
@@ -373,6 +409,10 @@ def find_and_merge_extended_hbonds(
     This is a higher-level function that combines find_extended_hbonds()
     with conversion to SlotHBond format and merging with existing H-bonds.
 
+    Key insight: If we already found ONE expected H-bond, that's strong evidence
+    of a real base pair. In that case, we should try harder to find the others,
+    even if planarity is poor (up to 50° instead of 30°).
+
     Args:
         res1_atoms: Atom coordinates for first residue
         res2_atoms: Atom coordinates for second residue
@@ -387,10 +427,18 @@ def find_and_merge_extended_hbonds(
     Returns:
         Tuple of (merged_hbonds as SlotHBond list, was_extended)
     """
+    # Check if we already have at least one expected H-bond
+    has_evidence = has_expected_hbond(existing_hbonds, sequence)
+
+    # Planarity threshold depends on whether we have evidence of a real pair
+    # - With evidence (found expected H-bond): allow up to 50°
+    # - Without evidence: strict 30° threshold
+    planarity_threshold = 50.0 if has_evidence else 30.0
+
     # Only extend if:
     # 1. Geometry is good (RMSD < 1.0Å)
-    # 2. Planarity is acceptable (angle < 30°)
-    if rmsd_ww >= 1.0 or interbase_angle >= 30.0:
+    # 2. Planarity is acceptable (depends on evidence)
+    if rmsd_ww >= 1.0 or interbase_angle >= planarity_threshold:
         return existing_hbonds, False
 
     # Expected H-bond count

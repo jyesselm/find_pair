@@ -229,7 +229,7 @@ class MissAnnotator:
 
             # Step 6: Determine if this is a miss
             # Pass extended_search flag so _categorize_miss knows not to redo search
-            reasons = self._categorize_miss(
+            reasons, bp_score = self._categorize_miss(
                 h_diag, g_diag, dssr_pair, res1_atoms, res2_atoms,
                 extended_search_used=extended_search_used
             )
@@ -245,6 +245,7 @@ class MissAnnotator:
                     our_prediction=our_prediction,
                     dssr_class="cWW",
                     saenger=dssr_pair.saenger,
+                    bp_score=bp_score,
                     reasons=reasons,
                     hbond_diagnostics=h_diag,
                     geometric_diagnostics=g_diag,
@@ -289,7 +290,7 @@ class MissAnnotator:
         self, h_diag: HBondDiagnostics, g_diag: GeometricDiagnostics, dssr_pair: DSSRPair,
         res1_atoms: Dict = None, res2_atoms: Dict = None,
         extended_search_used: bool = False,
-    ) -> List[str]:
+    ) -> Tuple[List[str], float]:
         """Determine why a pair would be misclassified.
 
         Args:
@@ -301,8 +302,9 @@ class MissAnnotator:
             extended_search_used: Whether extended H-bond search was already performed
 
         Returns:
-            List of reason codes explaining the miss. Empty list if no miss
-            (i.e., pair would be correctly classified).
+            Tuple of (reasons, bp_score):
+            - reasons: List of reason codes explaining the miss. Empty if no miss.
+            - bp_score: Base pair quality score (0-1).
         """
         sequence = dssr_pair.bp.replace("-", "")
 
@@ -330,7 +332,7 @@ class MissAnnotator:
         # These pairs have good geometry but stretched H-bonds - likely real cWW
         threshold = 0.60 if bp_components.get('extended_search', False) else 0.70
         if bp_score >= threshold:
-            return []
+            return [], bp_score
 
         reasons = []
 
@@ -376,4 +378,4 @@ class MissAnnotator:
         if g_diag.rmsd_cww > 1.0 and not h_diag.found_hbonds:
             reasons.append("dssr_questionable")
 
-        return reasons
+        return reasons, bp_score

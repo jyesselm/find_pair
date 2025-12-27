@@ -195,6 +195,10 @@ Examples:
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Print detailed output"
     )
+    parser.add_argument(
+        "--table", "-t", action="store_true",
+        help="Show table of individual pairs with issues (use with --pdb)"
+    )
 
     # Processing options
     parser.add_argument(
@@ -263,6 +267,22 @@ Examples:
                     f"{pdb_id}: {tp}/{total} TP ({acc:.1%}), "
                     f"{fn} FN, {fp} FP"
                 )
+
+            # Print table of individual pairs with issues
+            if args.table and report.fn_annotations:
+                print(f"\n{'='*100}")
+                print(f"False Negatives for {pdb_id}")
+                print(f"{'='*100}")
+                print(f"{'Res1':<14} {'Res2':<14} {'Seq':4} {'RMSD':>6} {'Best LW':8} {'Reasons'}")
+                print(f"{'-'*100}")
+                for ann in report.fn_annotations:
+                    rmsd = ann.geometric_diagnostics.rmsd_cww if ann.geometric_diagnostics else 0.0
+                    best_lw = ann.geometric_diagnostics.best_lw if ann.geometric_diagnostics else "?"
+                    reasons_str = ", ".join(ann.reasons[:4])
+                    print(f"{ann.res_id1:<14} {ann.res_id2:<14} {ann.sequence:4} {rmsd:6.3f} {best_lw:8} {reasons_str}")
+                print(f"\nVisualize with:")
+                print(f"  python -m prototypes.pair_identification.visualization.cli \\")
+                print(f"    --pdb {pdb_id} --res1 <RES1> --res2 <RES2> --launch-pymol")
 
     # Generate and save aggregate report
     if reports:

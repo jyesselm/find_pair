@@ -80,6 +80,7 @@ class MissAnnotation:
         our_prediction: Our LW class prediction.
         dssr_class: DSSR's LW class.
         saenger: Saenger classification or "--".
+        bp_score: Base pair quality score (0-1).
         reasons: List of reason codes explaining the miss.
         hbond_diagnostics: H-bond analysis.
         geometric_diagnostics: Geometric quality metrics.
@@ -90,6 +91,7 @@ class MissAnnotation:
     our_prediction: str
     dssr_class: str
     saenger: str
+    bp_score: float = 0.0
     reasons: List[str] = field(default_factory=list)
     hbond_diagnostics: HBondDiagnostics = field(default_factory=HBondDiagnostics)
     geometric_diagnostics: GeometricDiagnostics = field(
@@ -118,6 +120,7 @@ class MissAnnotation:
             "our_prediction": self.our_prediction,
             "dssr_class": self.dssr_class,
             "saenger": self.saenger,
+            "bp_score": self.bp_score,
             "reasons": self.reasons,
             "hbond_diagnostics": {
                 "expected_hbonds": [
